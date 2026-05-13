@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #07070f;
+            --surface: #0e0e1a;
+            --border: #1e1e30;
+            --muted: #3a3a52;
+            --dim: #6a6a88;
+            --body: #b8b8cc;
+            --heading: #f0f0f8;
+            --accent: #7b6ff0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--body);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            letter-spacing: 0.01em;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 1.2s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            opacity: 0.85;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+            font-size: clamp(2.8rem, 7vw, 4.2rem);
+            font-weight: 400;
+            color: var(--heading);
+            letter-spacing: 0.03em;
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+
+        .domain {
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 3rem;
+        }
+
+        .rule {
+            width: 1px;
+            height: 48px;
+            background: linear-gradient(to bottom, transparent, var(--border), transparent);
+            margin: 0 auto 3rem;
+        }
+
+        .status {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 2.5rem;
+            opacity: 0.8;
+        }
+
+        .angles {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .angles li {
+            font-size: 0.95rem;
+            font-weight: 300;
+            color: var(--dim);
+            line-height: 1.5;
+            transition: color 0.3s ease;
+        }
+
+        .angles li:hover {
+            color: var(--body);
+        }
+
+        .footer {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="logo">
+            <img src="vault-icon.png" alt="The Vault">
+        </div>
+
+        <h1>The Vault</h1>
+        <p class="domain">rawsonvault.com</p>
+
+        <div class="rule"></div>
+
+        <p class="status">Building</p>
+
+        <ul class="angles">
+            <li>The lesson plan is not the lesson.</li>
+            <li>Physics. The kind that makes you see differently.</li>
+            <li>The sea as the first classroom.</li>
+            <li>A teacher's operating system.</li>
+        </ul>
+
+        <p class="footer">rawsonvault.com &nbsp;·&nbsp; 2026</p>
+
+    </div>
+</body>
+</html>
