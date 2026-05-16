@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jos · The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f7f3ec;
+            color: #2a2218;
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-weight: 300;
+            min-height: 100vh;
+            padding: 3rem 2rem 4rem;
+            animation: fadeIn 1s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .breadcrumb a {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: #8a7a62;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .breadcrumb a:hover { color: #2a2218; }
+
+        .breadcrumb .sep {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            color: #c8b89a;
+            margin: 0 0.6rem;
+        }
+
+        .breadcrumb .current {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: #2a2218;
+            text-transform: uppercase;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .vault-icon {
+            width: 44px;
+            height: 44px;
+            opacity: 0.35;
+            display: block;
+            margin: 0 auto 1.25rem;
+        }
+
+        .name {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: clamp(2.8rem, 9vw, 4.5rem);
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            color: #2a2218;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-family: 'IM Fell English', serif;
+            font-size: 1rem;
+            font-style: italic;
+            color: #5a4e3a;
+        }
+
+        .rule {
+            width: 60px;
+            height: 1px;
+            background: #c8b89a;
+            margin: 2rem auto;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .game-card {
+            background: #16202e;
+            border-radius: 12px;
+            padding: 1.75rem;
+            display: block;
+            text-decoration: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        a.game-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.2);
+        }
+
+        .badge {
+            display: inline-block;
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            padding: 0.28rem 0.65rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .badge.live {
+            background: #f0c040;
+            color: #0a0f1e;
+        }
+
+        .badge.python {
+            background: transparent;
+            color: #4a7a9a;
+            border: 1px solid #2a4a6a;
+        }
+
+        .game-title {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #e8e0d0;
+            margin-bottom: 0.6rem;
+        }
+
+        .game-desc {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 0.88rem;
+            color: #7a8a9a;
+            line-height: 1.55;
+            margin-bottom: 1.4rem;
+        }
+
+        .play-btn {
+            display: inline-block;
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.2em;
+            color: #f0c040;
+            border: 1px solid rgba(240,192,64,0.6);
+            padding: 0.5rem 1.1rem;
+            border-radius: 6px;
+            text-transform: uppercase;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        a.game-card:hover .play-btn {
+            background: #f0c040;
+            color: #0a0f1e;
+            border-color: #f0c040;
+        }
+
+        .coming-label {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.58rem;
+            letter-spacing: 0.18em;
+            color: #2e3e4e;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer-link {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: #8a7a62;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .footer-link:hover { color: #2a2218; }
+
+        .footer-year {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #c8b89a;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="/">The Vault</a>
+            <span class="sep">·</span>
+            <span class="current">Jos</span>
+        </nav>
+
+        <header class="header">
+            <img class="vault-icon" src="../vault-icon.png" alt="">
+            <h1 class="name">JOS</h1>
+            <p class="tagline">Game Developer · Age 9</p>
+        </header>
+
+        <div class="rule"></div>
+
+        <div class="game-grid">
+
+            <a class="game-card" href="marble_run.html">
+                <span class="badge live">Live</span>
+                <h2 class="game-title">Marble Run</h2>
+                <p class="game-desc">Drop 15 marbles through a physics course. First three to cross the finish line win.</p>
+                <span class="play-btn">Play Now →</span>
+            </a>
+
+            <div class="game-card">
+                <span class="badge python">Python</span>
+                <h2 class="game-title">Code Red</h2>
+                <p class="game-desc">Planes, towers, a radar blinking — and a control room on high alert. Something's coming.</p>
+                <span class="coming-label">Coming to the web</span>
+            </div>
+
+            <div class="game-card">
+                <span class="badge python">Python</span>
+                <h2 class="game-title">Bombs &amp; Fireworks</h2>
+                <p class="game-desc">Terminal explosions — the kind you want to see. Smoke, scatter, colour.</p>
+                <span class="coming-label">Coming to the web</span>
+            </div>
+
+            <div class="game-card">
+                <span class="badge python">Python</span>
+                <h2 class="game-title">Tsunami Town</h2>
+                <p class="game-desc">A coastal town. A wave forming offshore. Watch what happens next.</p>
+                <span class="coming-label">Coming to the web</span>
+            </div>
+
+            <div class="game-card">
+                <span class="badge python">Python</span>
+                <h2 class="game-title">Storm Lab</h2>
+                <p class="game-desc">Thunderclouds building, lightning forking, a tornado touching down. Weather, one frame at a time.</p>
+                <span class="coming-label">Coming to the web</span>
+            </div>
+
+            <div class="game-card">
+                <span class="badge python">Python</span>
+                <h2 class="game-title">Flappy</h2>
+                <p class="game-desc">You know what it is. Jos made his own.</p>
+                <span class="coming-label">Coming to the web</span>
+            </div>
+
+        </div>
+
+        <div class="rule"></div>
+
+        <footer class="footer">
+            <a class="footer-link" href="/">← Back to The Vault</a>
+            <p class="footer-year">2026</p>
+        </footer>
+
+    </div>
+</body>
+</html>

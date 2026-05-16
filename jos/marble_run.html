@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Marble Run</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #040720; font-family: Arial, sans-serif; color: white; overflow: hidden; width: 100vw; height: 100vh; }
+
+    #title-screen { position: fixed; inset: 0; background: #040720; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+    #title-screen h1 { font-size: 48px; color: #f0c040; text-shadow: 0 0 30px #f0c04099; letter-spacing: 4px; margin-bottom: 10px; }
+    #title-screen p { color: #aaa; font-size: 15px; margin-bottom: 40px; letter-spacing: 2px; }
+
+    .info-grid { display: flex; gap: 20px; margin-bottom: 36px; flex-wrap: wrap; justify-content: center; }
+    .info-card { background: #16213e; border: 1.5px solid #333; border-radius: 12px; padding: 16px 22px; text-align: center; min-width: 110px; }
+    .info-card .label { font-size: 10px; color: #666; letter-spacing: 2px; margin-bottom: 6px; }
+    .info-card .val { font-size: 22px; font-weight: bold; color: #f0c040; }
+    .info-card .val.orange { color: #ff8800; }
+    .info-card .val.purple { color: #9b59b6; }
+    .info-card .val.cyan   { color: #00ffff; }
+
+    .key-guide { display: flex; gap: 12px; margin-bottom: 36px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .key { background: #16213e; border: 2px solid #f0c040; border-radius: 8px; padding: 8px 14px; font-size: 16px; color: #f0c040; font-weight: bold; }
+    .key-desc { color: #aaa; font-size: 13px; }
+
+    #start-btn { background: none; border: 2px solid #f0c040; color: #f0c040; font-size: 18px; letter-spacing: 4px; padding: 14px 40px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    #start-btn:hover { background: #f0c040; color: #000; transform: scale(1.05); }
+
+    #game-canvas { display: block; position: fixed; top: 0; left: 0; }
+    #confetti-canvas { display: block; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 190; }
+
+    #hud { position: fixed; top: 14px; left: 0; right: 0; display: flex; justify-content: center; gap: 16px; z-index: 50; pointer-events: none; }
+    .hud-box { background: rgba(0,0,0,0.85); border: 1.5px solid #333; border-radius: 10px; padding: 7px 20px; text-align: center; }
+    .hud-label { font-size: 9px; color: #555; letter-spacing: 2px; }
+    .hud-val { font-size: 20px; font-weight: bold; color: #f0c040; }
+    .hud-val.green { color: #2ecc71; }
+    .hud-val.cyan  { color: #00ffff; }
+
+    #hint-bar { position: fixed; bottom: 14px; left: 0; right: 0; text-align: center; color: #555; font-size: 12px; letter-spacing: 2px; pointer-events: none; z-index: 50; }
+
+    #reset-btn { position: fixed; bottom: 14px; left: 16px; background: none; border: 2px solid #e74c3c; color: #e74c3c; font-size: 13px; letter-spacing: 2px; padding: 9px 18px; border-radius: 10px; cursor: pointer; z-index: 50; transition: all 0.2s; }
+    #reset-btn:hover { background: #e74c3c; color: #fff; }
+
+    #ramp-controls { position: fixed; top: 14px; right: 14px; display: none; gap: 8px; z-index: 50; }
+    .ramp-btn { background: rgba(0,0,0,0.85); border: 2px solid #00ffff; border-radius: 10px; color: #00ffff; font-size: 28px; width: 60px; height: 60px; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; -webkit-user-select: none; touch-action: manipulation; transition: background 0.1s; }
+    .ramp-btn.active, .ramp-btn:active { background: #00ffff; color: #000; }
+
+    #podium-display { position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%); display: none; flex-direction: column; gap: 6px; z-index: 50; pointer-events: none; background: rgba(4,7,32,0.92); border: 1.5px solid #333; border-radius: 12px; padding: 10px 22px; min-width: 190px; }
+    .pd-row { display: flex; align-items: center; gap: 10px; }
+    .pd-place { color: #555; font-size: 10px; letter-spacing: 2px; min-width: 28px; }
+    .pd-circle { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+    .pd-name { font-weight: bold; font-size: 14px; letter-spacing: 1px; }
+
+    #end-screen { position: fixed; inset: 0; background: rgba(13,13,31,0.92); flex-direction: column; align-items: center; justify-content: center; z-index: 200; display: none; }
+    #end-screen h1 { font-size: 52px; color: #f0c040; text-shadow: 0 0 40px #f0c04099; letter-spacing: 4px; margin-bottom: 28px; }
+    #end-podium { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 22px; }
+    .podium-entry { font-size: 26px; font-weight: bold; padding: 10px 32px; border-radius: 10px; background: rgba(255,255,255,0.05); letter-spacing: 2px; border: 2px solid rgba(255,255,255,0.15); }
+    #end-cp-text { font-size: 13px; color: #555; letter-spacing: 2px; margin-bottom: 36px; }
+    #end-again-btn { background: none; border: 2px solid #f0c040; color: #f0c040; font-size: 18px; letter-spacing: 4px; padding: 14px 40px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    #end-again-btn:hover { background: #f0c040; color: #000; transform: scale(1.05); }
+  </style>
+</head>
+<body>
+
+<div id="title-screen">
+  <h1>🎱 MARBLE RUN</h1>
+  <p>CLICK TO DROP A MARBLE — FIRST 3 TO FINISH WIN!</p>
+  <div class="info-grid">
+    <div class="info-card"><div class="label">MARBLES</div><div class="val">15</div></div>
+    <div class="info-card"><div class="label">RAMPS</div><div class="val">13</div></div>
+    <div class="info-card"><div class="label">CHECKPOINTS</div><div class="val cyan">12</div></div>
+    <div class="info-card"><div class="label">OBSTACLES</div><div class="val orange">6</div></div>
+    <div class="info-card"><div class="label">PENDULUMS</div><div class="val purple">3</div></div>
+    <div class="info-card"><div class="label">FANS</div><div class="val cyan">16</div></div>
+    <div class="info-card"><div class="label">YOUR RAMPS</div><div class="val" style="color:#00ddff">8</div></div>
+    <div class="info-card"><div class="label">SKULLS</div><div class="val" style="color:#ff4444">2</div></div>
+    <div class="info-card"><div class="label">LIGHTNING</div><div class="val" style="color:#00ff44">3</div></div>
+  </div>
+  <div class="key-guide">
+    <div class="key">CLICK</div><div class="key-desc">Drop a marble</div>
+    &nbsp;&nbsp;
+    <div class="key">← →</div><div class="key-desc">Tilt your ramps</div>
+    &nbsp;&nbsp;
+    <div class="key">↺</div><div class="key-desc">Reset</div>
+  </div>
+  <button id="start-btn" onclick="startGame()">▶ START GAME</button>
+</div>
+
+<div id="hud" style="display:none;">
+  <div class="hud-box"><div class="hud-label">MARBLES LEFT</div><div class="hud-val" id="hud-marbles">15</div></div>
+  <div class="hud-box"><div class="hud-label">IN PLAY</div><div class="hud-val" id="hud-inplay">0</div></div>
+  <div class="hud-box"><div class="hud-label">CP PASSES</div><div class="hud-val cyan" id="hud-cp">0</div></div>
+  <div class="hud-box"><div class="hud-label">FINISHED</div><div class="hud-val green" id="hud-score">0</div></div>
+</div>
+
+<canvas id="game-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+<div id="hint-bar" style="display:none;">CLICK = DROP MARBLE &nbsp;|&nbsp; FIRST 3 TO FINISH WIN!</div>
+<div id="ramp-controls">
+  <button class="ramp-btn" id="btn-ramp-left">◀</button>
+  <button class="ramp-btn" id="btn-ramp-right">▶</button>
+</div>
+<button id="reset-btn" style="display:none;" onclick="resetGame()">↺ RESET</button>
+
+<div id="podium-display">
+  <div id="pd-title" style="display:none; text-align:center; color:#f0c040; font-size:12px; font-weight:bold; letter-spacing:2px; margin-bottom:8px; text-shadow:0 0 10px #f0c04099;">🏆 RACE OVER!</div>
+  <div class="pd-row"><span class="pd-place">1ST</span><span id="pd-1"><span style="color:#333">—</span></span></div>
+  <div class="pd-row"><span class="pd-place">2ND</span><span id="pd-2"><span style="color:#333">—</span></span></div>
+  <div class="pd-row"><span class="pd-place">3RD</span><span id="pd-3"><span style="color:#333">—</span></span></div>
+</div>
+
+<div id="end-screen">
+  <h1>🏆 RACE OVER!</h1>
+  <div id="end-podium"></div>
+  <p id="end-cp-text"></p>
+  <button id="end-again-btn" onclick="resetGame()">↺ PLAY AGAIN</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+/* ==================== SETUP ==================== */
+var canvas = document.getElementById('game-canvas');
+var W = window.innerWidth, H = window.innerHeight;
+canvas.width = W; canvas.height = H;
+var ctx2 = canvas.getContext('2d');
+
+var confettiCanvas = document.getElementById('confetti-canvas');
+confettiCanvas.width = W; confettiCanvas.height = H;
+var ctxC = confettiCanvas.getContext('2d');
+
+var ZOOM       = 1.2;
+var ZOOM_NORMAL = 1.2;
+var WW          = W / ZOOM;
+var WORLD_H_CONTENT = 6100;
+var ZOOM_PICK  = H * 0.88 / WORLD_H_CONTENT;
+var camXOffset = 0;
+var WORLD_H = 7000;
+var camY    = 0;
+
+var Engine     = Matter.Engine;
+var Bodies     = Matter.Bodies;
+var Body       = Matter.Body;
+var Composite  = Matter.Composite;
+var Events     = Matter.Events;
+var Constraint = Matter.Constraint;
+
+/* ==================== STATE ==================== */
+var engine, world;
+var marbles      = [];
+var ramps        = [];
+var obstacles    = [];
+var pendulumBobs = [];
+var marblesLeft  = 15;
+var gameStarted  = false;
+var marbleColors = [
+  { hex:'#00ffff', name:'CYAN'    },
+  { hex:'#ff4444', name:'RED'     },
+  { hex:'#f0c040', name:'GOLD'    },
+  { hex:'#44ff44', name:'LIME'    },
+  { hex:'#aa44ff', name:'VIOLET'  },
+  { hex:'#ff8800', name:'ORANGE'  },
+  { hex:'#ff69b4', name:'PINK'    },
+  { hex:'#ffffff', name:'WHITE'   },
+  { hex:'#3498db', name:'BLUE'    },
+  { hex:'#2ecc71', name:'GREEN'   },
+  { hex:'#ff6b35', name:'CORAL'   },
+  { hex:'#87ceeb', name:'SKY'     },
+  { hex:'#98ff98', name:'MINT'    },
+  { hex:'#ffd700', name:'YELLOW'  },
+  { hex:'#e91e63', name:'MAGENTA' },
+];
+function marbleIdx(label)  { return parseInt(label.split('_')[1]); }
+function marbleHex(label)  { var c = marbleColorMap[label]; return marbleColors[c !== undefined ? c : marbleIdx(label) % marbleColors.length].hex; }
+function marbleName(label) { var c = marbleColorMap[label]; return marbleColors[c !== undefined ? c : marbleIdx(label) % marbleColors.length].name; }
+
+var skulls              = [];
+var camPauseFrames      = 0;
+var skullOverlayFrames = 0;
+var lightning          = [];
+var bolts              = [];
+var zaps               = [];
+var lightningFlash     = 0;
+var ceremonyActive     = false;
+var ceremonyFrames     = 0;
+var SKULL_FADE_IN      = 25;
+var SKULL_SOLID        = 90;
+var SKULL_FADE_OUT     = 60;
+var checkpointFlashes   = [0,0,0,0,0,0,0,0,0,0,0,0];
+var checkpointCounts  = [0,0,0,0,0,0,0,0,0,0,0,0];
+var checkpointPasseds = [{},{},{},{},{},{},{},{},{},{},{},{}];
+var endZoneFlashL     = 0;
+var endZoneFlashR     = 0;
+var finishedCount     = 0;
+var finishedLeft      = 0;
+var finishedRight     = 0;
+var finishedSet       = {};
+var podium            = [];
+var gameOver          = false;
+var totalDropped      = 0;
+var powerUps          = [];
+var fans              = [];
+var marbleColorMap    = {};
+var gamePicking       = false;
+var pickFrames        = 0;
+var PICK_TOTAL        = 360;
+var zoomingIn         = false;
+var zoomInFrames      = 0;
+
+/* ==================== PLAYER RAMP STATE ==================== */
+var playerRampBodies    = [];
+var playerRampScrambled = [];
+var playerRampAngle     = 0;
+var playerRampLocked    = 0;
+var playerKeyLeft       = false;
+var playerKeyRight      = false;
+
+/* ==================== CONFETTI ==================== */
+var confettiParticles = [];
+var CONFETTI_COLORS = ['#f0c040','#2ecc71','#e74c3c','#3498db','#9b59b6','#e67e22','#1abc9c','#e91e63','#ffffff','#ff69b4'];
+
+function spawnConfetti() {
+  for (var i = 0; i < 80; i++) {
+    confettiParticles.push({
+      x:    Math.random() * W,
+      y:   -Math.random() * 20,
+      vx:   (Math.random() - 0.5) * 6,
+      vy:   Math.random() * 4 + 2,
+      rot:  Math.random() * Math.PI * 2,
+      vrot: (Math.random() - 0.5) * 0.25,
+      w:    Math.random() * 10 + 5,
+      h:    Math.random() * 6 + 3,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]
+    });
+  }
+}
+
+function updateAndDrawConfetti() {
+  ctxC.clearRect(0, 0, W, H);
+  for (var i = confettiParticles.length - 1; i >= 0; i--) {
+    var c = confettiParticles[i];
+    c.x   += c.vx;
+    c.y   += c.vy;
+    c.rot += c.vrot;
+    c.vy  += 0.07;
+    c.vx  *= 0.99;
+    if (c.y > H + 20) { confettiParticles.splice(i, 1); continue; }
+    ctxC.save();
+    ctxC.translate(c.x, c.y);
+    ctxC.rotate(c.rot);
+    ctxC.fillStyle = c.color;
+    ctxC.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+    ctxC.restore();
+  }
+}
+
+/* ==================== AUDIO ==================== */
+var sndRoll = null, sndHit = null;
+var marblesOnRamp = false;
+var hitCooldown   = 0;
+
+function initAudio() {
+  sndRoll = new Audio('../../Downloads/407178__spyboticer__hollow-ball-rolling%20(2).wav');
+  sndRoll.loop   = true;
+  sndRoll.volume = 0;
+  sndRoll.play().catch(function(){});
+
+  sndHit = new Audio('../../Downloads/618202__yukon456__ball_hits_ground_4.wav');
+  sndHit.load();
+}
+
+function setupAudioEvents() {
+  Events.on(engine, 'collisionStart', function(event) {
+    if (!sndHit || hitCooldown > 0) return;
+    var pairs = event.pairs;
+    for (var i = 0; i < pairs.length; i++) {
+      var la = pairs[i].bodyA.label, lb = pairs[i].bodyB.label;
+      var marble = null, sign = 1;
+      if (la.startsWith('marble_') && (lb === 'ramp' || lb === 'obstacle')) { marble = pairs[i].bodyA; sign = -1; }
+      if (lb.startsWith('marble_') && (la === 'ramp' || la === 'obstacle')) { marble = pairs[i].bodyB; sign =  1; }
+      if (marble) {
+        var nx = pairs[i].collision.normal.x * sign;
+        var ny = pairs[i].collision.normal.y * sign;
+        var approach = Math.abs(marble.velocity.x * nx + marble.velocity.y * ny);
+        if (approach > 2.5) {
+          var clone = sndHit.cloneNode();
+          clone.volume = 0.5;
+          clone.play().catch(function(){});
+          setTimeout(function() { clone.pause(); }, 131);
+          hitCooldown = 6;
+          break;
+        }
+      }
+    }
+  });
+
+  Events.on(engine, 'collisionActive', function(event) {
+    var pairs = event.pairs;
+    for (var i = 0; i < pairs.length; i++) {
+      var la = pairs[i].bodyA.label, lb = pairs[i].bodyB.label;
+      var marble = null;
+      if (la.startsWith('marble_') && lb === 'ramp') marble = pairs[i].bodyA;
+      if (lb.startsWith('marble_') && la === 'ramp') marble = pairs[i].bodyB;
+      if (marble) {
+        var spd = Math.sqrt(marble.velocity.x * marble.velocity.x + marble.velocity.y * marble.velocity.y);
+        if (spd > 0.5) { marblesOnRamp = true; return; }
+      }
+    }
+  });
+}
+
+function updateAudio() {
+  if (!sndRoll) return;
+  if (hitCooldown > 0) hitCooldown--;
+  var target = marblesOnRamp ? 0.45 : 0;
+  sndRoll.volume += (target - sndRoll.volume) * 0.08;
+  marblesOnRamp = false;
+}
+
+/* ==================== RAMP LAYOUT ==================== */
+var RAMP_W       = WW * 0.55;
+var RAMP_H_PX    = 30;
+var RAMP_START   = 210;
+var RAMP_SPACING = 440;
+var NUM_RAMPS    = 13;
+
+/* 12 checkpoints — one between every pair of ramps */
+var CHECKPOINT_YS = [];
+for (var ci = 0; ci < 12; ci++) {
+  CHECKPOINT_YS.push(RAMP_START + (ci + 0.5) * RAMP_SPACING);
+}
+var ENDZONE_Y = (RAMP_START + 12.8 * RAMP_SPACING) | 0;  /* ~4690 */
+
+var RAMP_MAX_ANGLE = Math.PI / 4;
+var RAMP_ANG_SPEED = 0.75;
+
+var rampDefs = [];
+for (var ri = 0; ri < NUM_RAMPS; ri++) {
+  var ry = RAMP_START + ri * RAMP_SPACING;
+  var rcx = (ri % 2 === 0) ? WW * 0.275 : WW * 0.725;
+  rampDefs.push({ cx: rcx, cy: ry, w: RAMP_W, phase: ri * 0.45 });
+}
+
+/* ==================== OBSTACLE DEFS ==================== */
+var obstacleDefs = [
+  { type:'spinner', cx:WW*0.86, cy:RAMP_START+1.5*RAMP_SPACING,  len:95, speed:0.05,  h:14 },
+  { type:'spinner', cx:WW*0.14, cy:RAMP_START+3.5*RAMP_SPACING,  len:95, speed:-0.05, h:14 },
+  { type:'vMover',  cx:WW*0.86, cy:RAMP_START+5.5*RAMP_SPACING,  rangeY:60, speed:2.6,  w:65, h:14, phase:0   },
+  { type:'vMover',  cx:WW*0.14, cy:RAMP_START+7.5*RAMP_SPACING,  rangeY:60, speed:-2.6, w:65, h:14, phase:1.6 },
+  { type:'spinner', cx:WW*0.86, cy:RAMP_START+9.5*RAMP_SPACING,  len:95, speed:0.06,  h:14 },
+  { type:'vMover',  cx:WW*0.14, cy:RAMP_START+11.5*RAMP_SPACING, rangeY:60, speed:2.0,  w:65, h:14, phase:0.8 },
+];
+
+/* ==================== PENDULUM DEFS ==================== */
+var pendulumDefs = [
+  { pivotX:WW*0.14, pivotY:RAMP_START+2.5*RAMP_SPACING-90,  length:140, initVx: 5 },
+  { pivotX:WW*0.86, pivotY:RAMP_START+6.5*RAMP_SPACING-90,  length:140, initVx:-5 },
+  { pivotX:WW*0.14, pivotY:RAMP_START+10.5*RAMP_SPACING-90, length:140, initVx: 5 },
+];
+
+/* ==================== FAN DEFS ==================== */
+var fanDefs = [
+  /* LEFT SIDE — marbles travel near WW*0.275 */
+  { cx: WW*0.16, cy: RAMP_START + 0.3 *RAMP_SPACING, angle:   0 *Math.PI/180, radius: 130, strength: 0.006 }, /* → right */
+  { cx: WW*0.14, cy: RAMP_START + 1.7 *RAMP_SPACING, angle: -45 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↗ up-right */
+  { cx: WW*0.20, cy: RAMP_START + 3.0 *RAMP_SPACING, angle:  30 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↘ down-right */
+  { cx: WW*0.16, cy: RAMP_START + 4.4 *RAMP_SPACING, angle: 160 *Math.PI/180, radius: 130, strength: 0.006 }, /* ← mostly left */
+  { cx: WW*0.14, cy: RAMP_START + 5.8 *RAMP_SPACING, angle:   0 *Math.PI/180, radius: 130, strength: 0.006 }, /* → right */
+  { cx: WW*0.20, cy: RAMP_START + 7.2 *RAMP_SPACING, angle: -30 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↗ up-right */
+  { cx: WW*0.16, cy: RAMP_START + 8.8 *RAMP_SPACING, angle:  45 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↘ down-right diag */
+  { cx: WW*0.14, cy: RAMP_START + 10.3*RAMP_SPACING, angle: -20 *Math.PI/180, radius: 130, strength: 0.006 }, /* → mostly right */
+  /* RIGHT SIDE — marbles travel near WW*0.725 */
+  { cx: WW*0.84, cy: RAMP_START + 0.7 *RAMP_SPACING, angle: 180 *Math.PI/180, radius: 130, strength: 0.006 }, /* ← left */
+  { cx: WW*0.86, cy: RAMP_START + 2.2 *RAMP_SPACING, angle:-160 *Math.PI/180, radius: 130, strength: 0.006 }, /* ← mostly left, up */
+  { cx: WW*0.80, cy: RAMP_START + 3.6 *RAMP_SPACING, angle: 135 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↙ down-left diag */
+  { cx: WW*0.84, cy: RAMP_START + 5.2 *RAMP_SPACING, angle:-135 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↖ up-left diag */
+  { cx: WW*0.86, cy: RAMP_START + 6.8 *RAMP_SPACING, angle: 180 *Math.PI/180, radius: 130, strength: 0.006 }, /* ← left */
+  { cx: WW*0.80, cy: RAMP_START + 8.3 *RAMP_SPACING, angle: 150 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↙ down-left */
+  { cx: WW*0.84, cy: RAMP_START + 9.7 *RAMP_SPACING, angle:   0 *Math.PI/180, radius: 130, strength: 0.006 }, /* → right (chaos!) */
+  { cx: WW*0.86, cy: RAMP_START + 11.2*RAMP_SPACING, angle:-150 *Math.PI/180, radius: 130, strength: 0.006 }, /* ↖ up-left */
+];
+
+/* ==================== PLAYER RAMP DEFS ==================== */
+var PLAYER_RAMP_W = WW * 0.40;
+var playerRampDefs = [
+  { cx: WW*0.50, cy: RAMP_START + 0.5  * RAMP_SPACING },
+  { cx: WW*0.18, cy: RAMP_START + 1.8  * RAMP_SPACING },
+  { cx: WW*0.82, cy: RAMP_START + 2.8  * RAMP_SPACING },
+  { cx: WW*0.50, cy: RAMP_START + 4.2  * RAMP_SPACING },
+  { cx: WW*0.18, cy: RAMP_START + 5.8  * RAMP_SPACING },
+  { cx: WW*0.82, cy: RAMP_START + 7.2  * RAMP_SPACING },
+  { cx: WW*0.50, cy: RAMP_START + 8.8  * RAMP_SPACING },
+  { cx: WW*0.50, cy: ENDZONE_Y  - 220  },
+];
+
+/* ==================== HELPERS ==================== */
+function worldToScreen(wx, wy) {
+  return { x: wx * ZOOM + camXOffset, y: (wy - camY) * ZOOM };
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+/* ==================== COLLISION GROUPS ==================== */
+var CAT_MARBLE   = 0x0001;
+var CAT_RAMP     = 0x0002;
+var CAT_PENDULUM = 0x0004;
+
+/* ==================== BUILD WORLD ==================== */
+function buildWorld() {
+  engine = Engine.create();
+  world  = engine.world;
+
+  engine.gravity.y = 1.8;
+  engine.positionIterations = 12;
+  engine.velocityIterations = 10;
+
+  marbles = []; ramps = []; obstacles = []; pendulumBobs = []; powerUps = []; fans = []; skulls = []; lightning = []; bolts = []; zaps = []; skullOverlayFrames = 0; lightningFlash = 0; camPauseFrames = 0; ceremonyActive = false; ceremonyFrames = 0;
+  marbleColorMap = {};
+  marblesLeft = 15;
+  camY = 0;
+  checkpointFlashes = [0,0,0,0,0,0,0,0,0,0,0,0];
+  checkpointCounts  = [0,0,0,0,0,0,0,0,0,0,0,0];
+  checkpointPasseds = [{},{},{},{},{},{},{},{},{},{},{},{}];
+  endZoneFlashL = 0; endZoneFlashR = 0; finishedCount = 0; finishedLeft = 0; finishedRight = 0; finishedSet = {};
+  podium = []; confettiParticles = [];
+  gameOver = false; totalDropped = 0;
+  document.getElementById('pd-title').style.display  = 'none';
+  document.getElementById('podium-display').style.borderColor = '';
+  document.getElementById('podium-display').style.boxShadow   = '';
+  updatePodiumDisplay();
+  updateHUD();
+
+  var ws = { isStatic:true, friction:0.05, restitution:0.3 };
+  Composite.add(world, [
+    Bodies.rectangle(-60,     WORLD_H/2, 120, WORLD_H, ws),
+    Bodies.rectangle(WW + 60, WORLD_H/2, 120, WORLD_H, ws),
+    Bodies.rectangle(WW/2,    WORLD_H+60, WW, 120,    ws),
+    Bodies.rectangle(WW/2, ENDZONE_Y + 40, WW, 20, { isStatic:true, friction:0.4, restitution:0.2, label:'platform' }),
+  ]);
+
+  for (var i = 0; i < rampDefs.length; i++) {
+    var rd = rampDefs[i];
+    var startAngle = Math.sin(rd.phase) * RAMP_MAX_ANGLE;
+    var rb = Bodies.rectangle(rd.cx, rd.cy, rd.w, RAMP_H_PX, {
+      isStatic:true, angle:startAngle,
+      friction:0.012, restitution:0.1, label:'ramp',
+      collisionFilter:{ category:CAT_RAMP, mask:CAT_MARBLE }
+    });
+    ramps.push({ body:rb, def:rd, phase:rd.phase });
+    Composite.add(world, rb);
+  }
+
+  /* Player-controlled ramps — spread across the map */
+  playerRampAngle     = 0;
+  playerRampLocked    = 0;
+  playerRampBodies    = [];
+  playerRampScrambled = [false,false,false,false,false,false,false,false];
+  var scramblePool = [0,1,2,3,4,5,6,7];
+  for (var si = 0; si < 4; si++) {
+    var sj = si + Math.floor(Math.random() * (8 - si));
+    var tmp = scramblePool[si]; scramblePool[si] = scramblePool[sj]; scramblePool[sj] = tmp;
+  }
+  for (var si = 0; si < 4; si++) playerRampScrambled[scramblePool[si]] = true;
+  for (var pri = 0; pri < playerRampDefs.length; pri++) {
+    var prd = playerRampDefs[pri];
+    var prb = Bodies.rectangle(prd.cx, prd.cy, PLAYER_RAMP_W, RAMP_H_PX, {
+      isStatic: true, angle: 0,
+      friction: 0.012, restitution: 0.1, label: 'ramp',
+      collisionFilter: { category: CAT_RAMP, mask: CAT_MARBLE }
+    });
+    playerRampBodies.push(prb);
+    Composite.add(world, prb);
+  }
+
+  for (var oi = 0; oi < obstacleDefs.length; oi++) {
+    var od  = obstacleDefs[oi];
+    var obB = (od.type === 'spinner')
+      ? Bodies.rectangle(od.cx, od.cy, od.len, od.h, { isStatic:true, friction:0.01, restitution:0.7, label:'obstacle' })
+      : Bodies.rectangle(od.cx, od.cy, od.w,   od.h, { isStatic:true, friction:0.01, restitution:0.5, label:'obstacle' });
+    obstacles.push({ body:obB, def:od, phase:od.phase || 0 });
+    Composite.add(world, obB);
+  }
+
+  for (var pi = 0; pi < pendulumDefs.length; pi++) {
+    var pd  = pendulumDefs[pi];
+    var bob = Bodies.circle(pd.pivotX, pd.pivotY + pd.length, 16, {
+      restitution:0.7, friction:0.01, density:0.004, label:'pendulum',
+      collisionFilter:{ category:CAT_PENDULUM, mask:CAT_MARBLE }
+    });
+    var con = Constraint.create({
+      pointA:{ x:pd.pivotX, y:pd.pivotY },
+      bodyB:bob, length:pd.length, stiffness:1.0, damping:0.015
+    });
+    Body.setVelocity(bob, { x:pd.initVx, y:0 });
+    pendulumBobs.push({ body:bob, pivotX:pd.pivotX, pivotY:pd.pivotY });
+    Composite.add(world, [bob, con]);
+  }
+
+  buildPowerUps();
+  buildSkulls();
+  buildLightningPowerUps();
+  buildFans();
+  setupAudioEvents();
+  setupPowerUpEvents();
+}
+
+/* ==================== BUILD FANS ==================== */
+function buildFans() {
+  fans = [];
+  for (var i = 0; i < fanDefs.length; i++) {
+    fans.push({ def: fanDefs[i], bladeAngle: Math.random() * Math.PI * 2 });
+  }
+}
+
+/* ==================== UPDATE FANS ==================== */
+function updateFans() {
+  fans.forEach(function(fan) {
+    fan.bladeAngle += 0.09;
+    var fd = fan.def;
+    var fx = Math.cos(fd.angle) * fd.strength;
+    var fy = Math.sin(fd.angle) * fd.strength;
+    marbles.forEach(function(m) {
+      var dx = m.position.x - fd.cx;
+      var dy = m.position.y - fd.cy;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < fd.radius) {
+        var falloff = 1 - dist / fd.radius;
+        Body.applyForce(m, m.position, { x: fx * falloff, y: fy * falloff });
+      }
+    });
+  });
+}
+
+/* ==================== UPDATE OBSTACLES ==================== */
+function updateObstacles() {
+  var dt = 1 / 60;
+  obstacles.forEach(function(ob) {
+    var od = ob.def;
+    if (od.type === 'hMover') {
+      ob.phase += od.speed * dt;
+      Body.setPosition(ob.body, { x:od.cx + Math.sin(ob.phase) * od.range, y:od.cy });
+    } else if (od.type === 'vMover') {
+      ob.phase += od.speed * dt;
+      Body.setPosition(ob.body, { x:od.cx, y:od.cy + Math.sin(ob.phase) * od.rangeY });
+    } else if (od.type === 'spinner') {
+      ob.angle = (ob.angle || 0) + od.speed;
+      Body.setAngle(ob.body, ob.angle);
+    }
+  });
+}
+
+/* ==================== UPDATE RAMPS ==================== */
+function updateRamps() {
+  var dt = 1 / 60;
+  ramps.forEach(function(ramp) {
+    ramp.phase += RAMP_ANG_SPEED * dt;
+    Body.setAngle(ramp.body, Math.sin(ramp.phase) * RAMP_MAX_ANGLE);
+    Body.setAngularVelocity(ramp.body, 0);
+  });
+}
+
+/* ==================== DROP ALL MARBLES ==================== */
+function dropAllMarbles() {
+  var count   = marblesLeft;
+  var spacing = WW / (count + 1);
+  for (var i = 0; i < count; i++) {
+    (function(i) {
+      setTimeout(function() {
+        if (marblesLeft <= 0) return;
+        marblesLeft--;
+        totalDropped++;
+        var x = spacing * (i + 1);
+        var m = Bodies.circle(x, 10, 11, {
+          restitution: 0.35, friction: 0.012, density: 0.003,
+          label: 'marble_' + (totalDropped - 1),
+          collisionFilter: { category: CAT_MARBLE, mask: CAT_MARBLE | CAT_RAMP | CAT_PENDULUM }
+        });
+        Body.setVelocity(m, { x: 0, y: 0.5 });
+        marbles.push(m);
+        Composite.add(world, m);
+        updateHUD();
+      }, i * 80);
+    })(i);
+  }
+}
+
+/* ==================== ZOOM IN ANIMATION ==================== */
+function updateZoomIn() {
+  zoomInFrames++;
+  var t    = Math.min(zoomInFrames / 90, 1);
+  var ease = t * t * (3 - 2 * t);
+  ZOOM       = ZOOM_PICK + (ZOOM_NORMAL - ZOOM_PICK) * ease;
+  camXOffset = (W - WW * ZOOM) / 2;
+  camY       = 0;
+  if (zoomInFrames >= 90) {
+    zoomingIn  = false;
+    ZOOM       = ZOOM_NORMAL;
+    camXOffset = 0;
+    finishStart();
+  }
+}
+
+function finishStart() {
+  gameStarted = true;
+  document.getElementById('hud').style.display               = 'flex';
+  document.getElementById('hint-bar').style.display          = 'block';
+  document.getElementById('reset-btn').style.display         = 'block';
+  document.getElementById('ramp-controls').style.display     = 'flex';
+  document.getElementById('podium-display').style.display    = 'flex';
+  setupRampButtons();
+  initAudio();
+  dropAllMarbles();
+}
+
+/* ==================== PICKING CAMERA ==================== */
+function updatePickingCamera() {
+  pickFrames++;
+  var t    = Math.min(pickFrames / 90, 1);
+  var ease = t * t * (3 - 2 * t);
+  ZOOM       = ZOOM_NORMAL + (ZOOM_PICK - ZOOM_NORMAL) * ease;
+  camXOffset = (W - WW * ZOOM) / 2;
+  camY       = 0;
+}
+
+/* ==================== PICKING BANNER ==================== */
+function drawPickingBanner() {
+  var margin  = 18;
+  var padY    = 14;
+  var titleH  = 30;
+  var circleR = 19;
+  var nameH   = 13;
+  var bannerH = padY + titleH + 10 + circleR * 2 + 6 + nameH + 14 + 14;
+  var bx = margin, by = margin, bw = W - margin * 2;
+
+  ctx2.save();
+  ctx2.fillStyle = 'rgba(4,7,32,0.97)';
+  roundRect(ctx2, bx, by, bw, bannerH, 14); ctx2.fill();
+  ctx2.strokeStyle = '#f0c040'; ctx2.lineWidth = 2.5;
+  ctx2.shadowColor = '#f0c040'; ctx2.shadowBlur = 14;
+  roundRect(ctx2, bx, by, bw, bannerH, 14); ctx2.stroke();
+  ctx2.shadowBlur = 0;
+
+  ctx2.fillStyle = '#f0c040';
+  ctx2.font = 'bold 22px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'top';
+  ctx2.fillText("CHOOSE YOUR COLOR AND DON'T GET LAST!", W / 2, by + padY);
+
+  var step    = bw / 15;
+  var circleY = by + padY + titleH + 10 + circleR;
+  for (var i = 0; i < 15; i++) {
+    var cx  = bx + step * i + step / 2;
+    var col = marbleColors[i].hex;
+    ctx2.beginPath(); ctx2.arc(cx, circleY, circleR + 4, 0, Math.PI * 2);
+    ctx2.fillStyle = col + '44'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(cx, circleY, circleR, 0, Math.PI * 2);
+    ctx2.fillStyle = col; ctx2.shadowColor = col; ctx2.shadowBlur = 12;
+    ctx2.fill(); ctx2.shadowBlur = 0;
+    ctx2.beginPath(); ctx2.arc(cx, circleY, circleR * 0.68, 0, Math.PI * 2);
+    ctx2.fillStyle = '#ffffff'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(cx, circleY, circleR * 0.40, 0, Math.PI * 2);
+    ctx2.fillStyle = col; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(cx - circleR * 0.28, circleY - circleR * 0.28, circleR * 0.16, 0, Math.PI * 2);
+    ctx2.fillStyle = 'rgba(255,255,255,0.55)'; ctx2.fill();
+    ctx2.fillStyle = col; ctx2.font = 'bold 8px Arial';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'top';
+    ctx2.fillText(marbleColors[i].name, cx, circleY + circleR + 4);
+  }
+
+  var blink = Math.floor(pickFrames / 22) % 2 === 0;
+  ctx2.fillStyle = blink ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)';
+  ctx2.font = 'bold 11px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'bottom';
+  ctx2.fillText('CLICK ANYWHERE TO START', W / 2, by + bannerH - 6);
+  ctx2.restore();
+}
+
+/* ==================== UPDATE PLAYER RAMP ==================== */
+function updatePlayerRamp() {
+  if (playerRampBodies.length === 0) return;
+  if (playerKeyLeft)       playerRampLocked =  1;
+  else if (playerKeyRight) playerRampLocked = -1;
+  var target = playerRampLocked * (15 * Math.PI / 180);
+  playerRampAngle += (target - playerRampAngle) * 0.25;
+  playerRampBodies.forEach(function(rb, idx) {
+    var angle = playerRampScrambled[idx] ? -playerRampAngle : playerRampAngle;
+    Body.setAngle(rb, angle);
+    Body.setAngularVelocity(rb, 0);
+  });
+}
+
+/* ==================== CAMERA ==================== */
+function updateCamera() {
+  if (camPauseFrames > 0) { camPauseFrames--; return; }
+  var lowestY = 0;
+  marbles.forEach(function(m) {
+    if (finishedSet[m.label]) return;
+    if (m.position.y > lowestY && m.position.y < WORLD_H - 50) lowestY = m.position.y;
+  });
+  if (lowestY === 0) return;
+  var target = lowestY - (H / ZOOM) * 0.40;
+  if (target < 0) target = 0;
+  camY += (target - camY) * 0.06;
+}
+
+/* ==================== INPUT ==================== */
+canvas.addEventListener('click', function() {
+  if (gamePicking) { gamePicking = false; zoomingIn = true; zoomInFrames = 0; return; }
+  if (zoomingIn) return;
+  if (!gameStarted || marblesLeft <= 0 || gameOver) return;
+  dropAllMarbles();
+});
+
+/* ==================== PLAYER RAMP INPUT ==================== */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowLeft')  { playerKeyLeft  = true;  e.preventDefault(); }
+  if (e.key === 'ArrowRight') { playerKeyRight = true;  e.preventDefault(); }
+});
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'ArrowLeft')  playerKeyLeft  = false;
+  if (e.key === 'ArrowRight') playerKeyRight = false;
+});
+
+function setupRampButtons() {
+  var btnL = document.getElementById('btn-ramp-left');
+  var btnR = document.getElementById('btn-ramp-right');
+  function press(key, on) {
+    if (key === 'L') playerKeyLeft  = on;
+    if (key === 'R') playerKeyRight = on;
+    btnL.classList.toggle('active', playerKeyLeft);
+    btnR.classList.toggle('active', playerKeyRight);
+  }
+  btnL.addEventListener('mousedown',   function()  { press('L', true);  });
+  btnL.addEventListener('touchstart',  function(e) { e.preventDefault(); press('L', true);  });
+  btnL.addEventListener('mouseup',     function()  { press('L', false); });
+  btnL.addEventListener('touchend',    function()  { press('L', false); });
+  btnL.addEventListener('mouseleave',  function()  { press('L', false); });
+  btnR.addEventListener('mousedown',   function()  { press('R', true);  });
+  btnR.addEventListener('touchstart',  function(e) { e.preventDefault(); press('R', true);  });
+  btnR.addEventListener('mouseup',     function()  { press('R', false); });
+  btnR.addEventListener('touchend',    function()  { press('R', false); });
+  btnR.addEventListener('mouseleave',  function()  { press('R', false); });
+}
+
+/* ==================== STARFIELD ==================== */
+var stars = [];
+for (var s = 0; s < 120; s++) {
+  stars.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.4+0.3, a:Math.random()*0.18+0.04 });
+}
+function drawStars() {
+  stars.forEach(function(st) {
+    ctx2.beginPath(); ctx2.arc(st.x, st.y, st.r, 0, Math.PI*2);
+    ctx2.fillStyle = 'rgba(255,255,255,' + st.a + ')'; ctx2.fill();
+  });
+}
+
+/* ==================== DRAW: RAMP ==================== */
+function drawRamp(ramp) {
+  var rb = ramp.body;
+  var sp = worldToScreen(rb.position.x, rb.position.y);
+  if (sp.y < -30 || sp.y > H + 30) return;
+  var rw = ramp.def.w * ZOOM;
+  var rh = RAMP_H_PX * ZOOM;
+  ctx2.save();
+  ctx2.translate(sp.x, sp.y);
+  ctx2.rotate(rb.angle);
+  var grad = ctx2.createLinearGradient(0, -rh/2, 0, rh/2);
+  grad.addColorStop(0, '#ffee55');
+  grad.addColorStop(0.4, '#ffdd00');
+  grad.addColorStop(1, '#ccaa00');
+  roundRect(ctx2, -rw/2, -rh/2, rw, rh, 4);
+  ctx2.fillStyle = grad; ctx2.fill();
+  roundRect(ctx2, -rw/2, -rh/2, rw, rh, 4);
+  ctx2.strokeStyle = 'rgba(160,120,0,0.8)'; ctx2.lineWidth = 1.5; ctx2.stroke();
+  ctx2.restore();
+}
+
+/* ==================== DRAW: PLAYER RAMP ==================== */
+function drawPlayerRamp() {
+  playerRampBodies.forEach(function(rb) {
+    var sp = worldToScreen(rb.position.x, rb.position.y);
+    if (sp.y < -30 || sp.y > H + 30) return;
+    var rw = PLAYER_RAMP_W * ZOOM;
+    var rh = RAMP_H_PX * ZOOM;
+    ctx2.save();
+    ctx2.translate(sp.x, sp.y);
+    ctx2.rotate(rb.angle);
+    var grad = ctx2.createLinearGradient(0, -rh / 2, 0, rh / 2);
+    grad.addColorStop(0, '#88ffff');
+    grad.addColorStop(0.4, '#00ddff');
+    grad.addColorStop(1, '#0088aa');
+    roundRect(ctx2, -rw / 2, -rh / 2, rw, rh, 4);
+    ctx2.fillStyle = grad; ctx2.fill();
+    roundRect(ctx2, -rw / 2, -rh / 2, rw, rh, 4);
+    ctx2.strokeStyle = 'rgba(0,150,180,0.9)'; ctx2.lineWidth = 2; ctx2.stroke();
+    ctx2.fillStyle = '#003344';
+    ctx2.font = 'bold ' + Math.round(8 * ZOOM) + 'px Arial';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText('◀ YOU ▶', 0, 0);
+    ctx2.restore();
+  });
+}
+
+/* ==================== DRAW: FAN ==================== */
+function drawFan(fan) {
+  var fd = fan.def;
+  var sp = worldToScreen(fd.cx, fd.cy);
+  if (sp.y < -100 || sp.y > H + 100) return;
+
+  var r     = 28 * ZOOM;
+  var angle = fd.angle;
+  var rangeR = fd.radius * ZOOM;
+  var spread = Math.PI / 5;
+
+  ctx2.save();
+  ctx2.translate(sp.x, sp.y);
+
+  /* wind cone */
+  ctx2.beginPath();
+  ctx2.moveTo(0, 0);
+  ctx2.arc(0, 0, rangeR, angle - spread, angle + spread);
+  ctx2.closePath();
+  ctx2.fillStyle = 'rgba(80,180,255,0.07)';
+  ctx2.fill();
+
+  /* wind stream lines */
+  for (var i = -2; i <= 2; i++) {
+    var offAng = angle + i * spread * 0.4;
+    ctx2.beginPath();
+    ctx2.moveTo(Math.cos(offAng) * r, Math.sin(offAng) * r);
+    ctx2.lineTo(Math.cos(offAng) * rangeR * 0.72, Math.sin(offAng) * rangeR * 0.72);
+    ctx2.strokeStyle = 'rgba(100,200,255,0.18)';
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+  }
+
+  /* outer glow ring */
+  ctx2.beginPath(); ctx2.arc(0, 0, r + 5, 0, Math.PI * 2);
+  ctx2.fillStyle = 'rgba(68,170,255,0.18)'; ctx2.fill();
+
+  /* housing */
+  ctx2.beginPath(); ctx2.arc(0, 0, r, 0, Math.PI * 2);
+  ctx2.fillStyle = '#0f2040';
+  ctx2.shadowColor = '#44aaff'; ctx2.shadowBlur = 16;
+  ctx2.fill(); ctx2.shadowBlur = 0;
+  ctx2.strokeStyle = '#4488ff'; ctx2.lineWidth = 2.5; ctx2.stroke();
+
+  /* spinning blades */
+  ctx2.save();
+  ctx2.rotate(fan.bladeAngle);
+  for (var b = 0; b < 4; b++) {
+    ctx2.save();
+    ctx2.rotate(b * Math.PI / 2);
+    ctx2.beginPath();
+    ctx2.ellipse(r * 0.32, 0, r * 0.52, r * 0.17, 0.3, 0, Math.PI * 2);
+    ctx2.fillStyle = '#5599ee';
+    ctx2.fill();
+    ctx2.restore();
+  }
+  ctx2.restore();
+
+  /* centre hub */
+  ctx2.beginPath(); ctx2.arc(0, 0, r * 0.2, 0, Math.PI * 2);
+  ctx2.fillStyle = '#aaccff'; ctx2.fill();
+
+  /* direction arrow */
+  var arL = r * 1.4;
+  ctx2.beginPath();
+  ctx2.moveTo(Math.cos(angle) * r * 0.22, Math.sin(angle) * r * 0.22);
+  ctx2.lineTo(Math.cos(angle) * arL, Math.sin(angle) * arL);
+  ctx2.strokeStyle = '#ffffff'; ctx2.lineWidth = 2; ctx2.stroke();
+  var hLen = r * 0.38, hAng = 0.45;
+  ctx2.beginPath();
+  ctx2.moveTo(Math.cos(angle) * arL, Math.sin(angle) * arL);
+  ctx2.lineTo(Math.cos(angle - hAng) * (arL - hLen), Math.sin(angle - hAng) * (arL - hLen));
+  ctx2.moveTo(Math.cos(angle) * arL, Math.sin(angle) * arL);
+  ctx2.lineTo(Math.cos(angle + hAng) * (arL - hLen), Math.sin(angle + hAng) * (arL - hLen));
+  ctx2.stroke();
+
+  /* label */
+  ctx2.fillStyle = '#66bbff';
+  ctx2.font = 'bold ' + Math.round(7 * ZOOM) + 'px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'top';
+  ctx2.fillText('FAN', 0, r + 4);
+
+  ctx2.restore();
+}
+
+/* ==================== DRAW: OBSTACLE ==================== */
+function drawObstacle(ob) {
+  var body = ob.body, od = ob.def;
+  var sp   = worldToScreen(body.position.x, body.position.y);
+  if (sp.y < -60 || sp.y > H + 60) return;
+  var bw = (od.type === 'spinner' ? od.len : od.w) * ZOOM;
+  var bh = od.h * ZOOM;
+  ctx2.save();
+  ctx2.translate(sp.x, sp.y);
+  ctx2.rotate(body.angle);
+  ctx2.shadowColor = '#ff8800'; ctx2.shadowBlur = 14;
+  var grad = ctx2.createLinearGradient(0, -bh/2, 0, bh/2);
+  grad.addColorStop(0, '#ffbb44'); grad.addColorStop(0.5, '#ff6600'); grad.addColorStop(1, '#cc2200');
+  roundRect(ctx2, -bw/2, -bh/2, bw, bh, 5);
+  ctx2.fillStyle = grad; ctx2.fill(); ctx2.shadowBlur = 0;
+  ctx2.save();
+  ctx2.beginPath(); roundRect(ctx2, -bw/2, -bh/2, bw, bh, 5); ctx2.clip();
+  ctx2.strokeStyle = 'rgba(255,255,0,0.3)'; ctx2.lineWidth = 4;
+  for (var si = -bw + 8; si < bw; si += 20) {
+    ctx2.beginPath(); ctx2.moveTo(si, -bh/2); ctx2.lineTo(si + bh, bh/2); ctx2.stroke();
+  }
+  ctx2.restore();
+  var lbl = od.type === 'spinner' ? '⟳ SPIN' : od.type === 'vMover' ? '↕' : '↔';
+  ctx2.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx2.font = 'bold ' + Math.round(9 * ZOOM) + 'px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+  ctx2.fillText(lbl, 0, 0);
+  ctx2.restore();
+}
+
+/* ==================== DRAW: PENDULUM ==================== */
+function drawPendulum(pend) {
+  var bs = worldToScreen(pend.body.position.x, pend.body.position.y);
+  var ps = worldToScreen(pend.pivotX, pend.pivotY);
+  if (bs.y < -40 || bs.y > H + 40) return;
+  ctx2.beginPath(); ctx2.moveTo(ps.x, ps.y); ctx2.lineTo(bs.x, bs.y);
+  ctx2.strokeStyle = 'rgba(200,200,200,0.5)'; ctx2.lineWidth = 2; ctx2.stroke();
+  ctx2.beginPath(); ctx2.arc(ps.x, ps.y, 6, 0, Math.PI*2);
+  ctx2.fillStyle = '#666'; ctx2.fill();
+  ctx2.beginPath(); ctx2.arc(bs.x, bs.y, 16*ZOOM, 0, Math.PI*2);
+  ctx2.fillStyle = '#8e44ad'; ctx2.shadowColor = '#bb44ff'; ctx2.shadowBlur = 18;
+  ctx2.fill(); ctx2.shadowBlur = 0;
+  ctx2.beginPath(); ctx2.arc(bs.x, bs.y, 10*ZOOM, 0, Math.PI*2);
+  ctx2.fillStyle = '#c39bd3'; ctx2.fill();
+  ctx2.beginPath(); ctx2.arc(bs.x - 5*ZOOM, bs.y - 5*ZOOM, 3.5*ZOOM, 0, Math.PI*2);
+  ctx2.fillStyle = 'rgba(255,255,255,0.5)'; ctx2.fill();
+}
+
+/* ==================== DRAW: CHECKPOINT GATE ==================== */
+function drawGate(x, y, passed) {
+  var gW  = 22;
+  var gH  = 110;
+  var col = passed ? '#00ee44' : '#ff2222';
+  ctx2.save();
+  ctx2.strokeStyle = col;
+  ctx2.lineWidth   = 3;
+  ctx2.shadowColor = col;
+  ctx2.shadowBlur  = 10;
+  if (passed) {
+    /* open bottom U — marble went through */
+    ctx2.beginPath();
+    ctx2.moveTo(x,      y + gH);
+    ctx2.lineTo(x,      y);
+    ctx2.lineTo(x + gW, y);
+    ctx2.lineTo(x + gW, y + gH);
+    ctx2.stroke();
+  } else {
+    /* closed box — this marble was last (eliminated) */
+    ctx2.strokeRect(x, y, gW, gH);
+  }
+  /* ✓ or ✗ sits above the gate top */
+  ctx2.shadowBlur   = 0;
+  ctx2.fillStyle    = col;
+  ctx2.font         = 'bold 16px Arial';
+  ctx2.textAlign    = 'center';
+  ctx2.textBaseline = 'bottom';
+  ctx2.fillText(passed ? '✓' : '✗', x + gW / 2, y);
+  ctx2.restore();
+}
+
+/* ==================== DRAW: CHECKPOINTS ==================== */
+function drawCheckpoints() {
+  var gW = 22, gGap = 6;
+
+  for (var ci = 0; ci < CHECKPOINT_YS.length; ci++) {
+    var cpY = CHECKPOINT_YS[ci];
+    var sp  = worldToScreen(WW / 2, cpY);
+    if (sp.y < -130 || sp.y > H + 20) continue;
+
+    var count  = checkpointCounts[ci];
+    var isEven = (ci % 2 === 0);
+    /* even: right end of ramp at WW*0.55, gates stack rightward */
+    /* odd:  left  end of ramp at WW*0.45, gates stack leftward  */
+    var baseX  = worldToScreen(isEven ? WW * 0.55 : WW * 0.45, cpY).x;
+
+    for (var gi = 0; gi < count && gi < 15; gi++) {
+      var gx = isEven
+        ? baseX + gi * (gW + gGap)
+        : baseX - gi * (gW + gGap) - gW;
+      /* gate top sits at the checkpoint Y, hangs downward */
+      drawGate(gx, sp.y, true);
+    }
+
+    if (checkpointFlashes[ci] > 0) checkpointFlashes[ci]--;
+  }
+}
+
+/* ==================== POWER-UPS ==================== */
+var lightningDefs = [
+  { cx: WW * 0.50, cy: RAMP_START + 1.2  * RAMP_SPACING },
+  { cx: WW * 0.30, cy: RAMP_START + 6.0  * RAMP_SPACING },
+  { cx: WW * 0.70, cy: RAMP_START + 10.5 * RAMP_SPACING },
+];
+
+var skullDefs = [
+  { cx: WW * 0.50, cy: RAMP_START + 4.0 * RAMP_SPACING },
+  { cx: WW * 0.50, cy: RAMP_START + 9.0 * RAMP_SPACING },
+];
+
+var powerUpDefs = [
+  { cx: WW * 0.50, cy: RAMP_START + 0.6  * RAMP_SPACING },
+  { cx: WW * 0.22, cy: RAMP_START + 2.5  * RAMP_SPACING },
+  { cx: WW * 0.78, cy: RAMP_START + 4.5  * RAMP_SPACING },
+  { cx: WW * 0.50, cy: RAMP_START + 6.5  * RAMP_SPACING },
+  { cx: WW * 0.22, cy: RAMP_START + 8.5  * RAMP_SPACING },
+  { cx: WW * 0.78, cy: RAMP_START + 10.5 * RAMP_SPACING },
+];
+
+function buildLightningPowerUps() {
+  for (var i = 0; i < lightningDefs.length; i++) {
+    var ld = lightningDefs[i];
+    var lb = Bodies.circle(ld.cx, ld.cy, 18, {
+      isStatic: true, isSensor: true, label: 'lightning',
+      collisionFilter: { category: CAT_RAMP, mask: CAT_MARBLE }
+    });
+    lightning.push({ body: lb, flash: 0 });
+    Composite.add(world, lb);
+  }
+}
+
+function handleLightningHit(marbleBody, lightningBody) {
+  for (var i = 0; i < lightning.length; i++) {
+    if (lightning[i].body === lightningBody) { lightning[i].flash = 18; break; }
+  }
+  var oldX = marbleBody.position.x;
+  var oldY = marbleBody.position.y;
+  var newX = WW * 0.1 + Math.random() * WW * 0.8;
+  var newY = RAMP_START + 120 + Math.random() * (ENDZONE_Y - RAMP_START - 350);
+  Body.setPosition(marbleBody, { x: newX, y: newY });
+  Body.setVelocity(marbleBody, { x: (Math.random() - 0.5) * 2, y: 1 });
+  Body.setAngularVelocity(marbleBody, 0);
+  bolts.push({ wx: oldX, wy: oldY, frames: 0, total: 35 });
+  var sparks = [];
+  var sparkCols = ['#00ff88','#aaff00','#ffffff','#88ffff','#ffff44'];
+  for (var s = 0; s < 16; s++) {
+    sparks.push({ angle: Math.random()*Math.PI*2, speed: 2+Math.random()*5, dist: 0,
+                  color: sparkCols[Math.floor(Math.random()*sparkCols.length)] });
+  }
+  zaps.push({ wx: newX, wy: newY, frames: 0, total: 55, sparks: sparks });
+  lightningFlash = 8;
+}
+
+function buildSkulls() {
+  for (var i = 0; i < skullDefs.length; i++) {
+    var sd = skullDefs[i];
+    var sb = Bodies.circle(sd.cx, sd.cy, 18, {
+      isStatic: true, isSensor: true, label: 'skull',
+      collisionFilter: { category: CAT_RAMP, mask: CAT_MARBLE }
+    });
+    skulls.push({ body: sb, flash: 0 });
+    Composite.add(world, sb);
+  }
+}
+
+function buildPowerUps() {
+  for (var i = 0; i < powerUpDefs.length; i++) {
+    var pd = powerUpDefs[i];
+    var pb = Bodies.circle(pd.cx, pd.cy, 18, {
+      isStatic: true, isSensor: true, label: 'powerup',
+      collisionFilter: { category: CAT_RAMP, mask: CAT_MARBLE }
+    });
+    powerUps.push({ body: pb, active: true });
+    Composite.add(world, pb);
+  }
+}
+
+function setupPowerUpEvents() {
+  Events.on(engine, 'collisionStart', function(event) {
+    event.pairs.forEach(function(pair) {
+      var la = pair.bodyA.label, lb = pair.bodyB.label;
+      var mb = null, pb = null;
+      if (la.startsWith('marble_') && lb === 'powerup') { mb = pair.bodyA; pb = pair.bodyB; }
+      if (lb.startsWith('marble_') && la === 'powerup')  { mb = pair.bodyB; pb = pair.bodyA; }
+      if (mb && pb) handlePowerUp(mb, pb);
+
+      var skb = null; mb = null;
+      if (la.startsWith('marble_') && lb === 'skull') { mb = pair.bodyA; skb = pair.bodyB; }
+      if (lb.startsWith('marble_') && la === 'skull')  { mb = pair.bodyB; skb = pair.bodyA; }
+      if (mb && skb) handleSkull(mb, skb);
+
+      var lnb = null; mb = null;
+      if (la.startsWith('marble_') && lb === 'lightning') { mb = pair.bodyA; lnb = pair.bodyB; }
+      if (lb.startsWith('marble_') && la === 'lightning')  { mb = pair.bodyB; lnb = pair.bodyA; }
+      if (mb && lnb) handleLightningHit(mb, lnb);
+    });
+  });
+}
+
+function handleSkull(marbleBody, skullBody) {
+  for (var i = 0; i < skulls.length; i++) {
+    if (skulls[i].body === skullBody) { skulls[i].flash = 25; break; }
+  }
+  skullOverlayFrames = SKULL_FADE_IN + SKULL_SOLID + SKULL_FADE_OUT;
+  var startX = WW * 0.1 + Math.random() * WW * 0.8;
+  Body.setPosition(marbleBody, { x: startX, y: 15 });
+  Body.setVelocity(marbleBody, { x: 0, y: 0.5 });
+  Body.setAngularVelocity(marbleBody, 0);
+}
+
+function handlePowerUp(marbleBody, powerUpBody) {
+  var pu = null;
+  for (var i = 0; i < powerUps.length; i++) {
+    if (powerUps[i].body === powerUpBody && powerUps[i].active) { pu = powerUps[i]; break; }
+  }
+  if (!pu) return;
+  pu.active = false;
+
+  var mLabel  = marbleBody.label;
+  var mPos    = { x: marbleBody.position.x, y: marbleBody.position.y };
+  var mVel    = { x: marbleBody.velocity.x, y: marbleBody.velocity.y };
+  var colorIdx = marbleColorMap[mLabel] !== undefined ? marbleColorMap[mLabel] : marbleIdx(mLabel) % marbleColors.length;
+
+  setTimeout(function() {
+    Composite.remove(world, powerUpBody);
+    var origIdx = marbles.indexOf(marbleBody);
+    if (origIdx !== -1) { Composite.remove(world, marbleBody); marbles.splice(origIdx, 1); }
+
+    for (var d = 0; d < 2; d++) {
+      totalDropped++;
+      var lbl = 'marble_' + (totalDropped - 1);
+      marbleColorMap[lbl] = colorIdx;
+      var nm = Bodies.circle(mPos.x + (d === 0 ? -14 : 14), mPos.y, 11, {
+        restitution: 0.35, friction: 0.012, density: 0.003, label: lbl,
+        collisionFilter: { category: CAT_MARBLE, mask: CAT_MARBLE | CAT_RAMP | CAT_PENDULUM }
+      });
+      Body.setVelocity(nm, { x: mVel.x + (d === 0 ? -1.5 : 1.5), y: mVel.y });
+      marbles.push(nm);
+      Composite.add(world, nm);
+    }
+    spawnConfetti();
+    updateHUD();
+  }, 0);
+}
+
+function drawLightningPowerUps() {
+  var pulse = Math.sin(Date.now() * 0.007) * 0.3 + 0.7;
+  lightning.forEach(function(ln) {
+    var sp = worldToScreen(ln.body.position.x, ln.body.position.y);
+    if (sp.y < -40 || sp.y > H + 40) return;
+    var r = 18 * ZOOM;
+    if (ln.flash > 0) ln.flash--;
+    ctx2.save();
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, r + 9, 0, Math.PI*2);
+    ctx2.fillStyle = 'rgba(0,255,80,' + (pulse * 0.14) + ')'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, r, 0, Math.PI*2);
+    ctx2.fillStyle = ln.flash > 0 ? '#aaffaa' : '#002200';
+    ctx2.shadowColor = '#00ff44';
+    ctx2.shadowBlur  = ln.flash > 0 ? 38 : 14 * pulse;
+    ctx2.fill(); ctx2.shadowBlur = 0;
+    ctx2.strokeStyle = '#00dd44'; ctx2.lineWidth = 2.5; ctx2.stroke();
+    ctx2.font = Math.round(15 * ZOOM) + 'px Arial';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText('⚡', sp.x, sp.y);
+    ctx2.restore();
+  });
+}
+
+function drawBolts() {
+  for (var i = bolts.length - 1; i >= 0; i--) {
+    var b = bolts[i];
+    b.frames++;
+    if (b.frames >= b.total) { bolts.splice(i, 1); continue; }
+    var alpha  = 1 - b.frames / b.total;
+    var sp     = worldToScreen(b.wx, b.wy);
+    var topY   = -10;
+    var numSeg = 10;
+    var stepY  = (sp.y - topY) / numSeg;
+    var pts    = [];
+    for (var s = 0; s <= numSeg; s++) {
+      var px = sp.x + (s === 0 || s === numSeg ? 0 : (Math.random()-0.5) * 44 * ZOOM);
+      pts.push({ x: px, y: topY + s * stepY });
+    }
+    ctx2.save();
+    ctx2.globalAlpha = alpha;
+    ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
+    ctx2.strokeStyle = 'rgba(150,255,100,0.35)'; ctx2.lineWidth = 10 * ZOOM;
+    ctx2.beginPath(); ctx2.moveTo(pts[0].x, pts[0].y);
+    for (var p = 1; p < pts.length; p++) ctx2.lineTo(pts[p].x, pts[p].y);
+    ctx2.stroke();
+    ctx2.strokeStyle = '#ffffff'; ctx2.lineWidth = 2.5 * ZOOM;
+    ctx2.beginPath(); ctx2.moveTo(pts[0].x, pts[0].y);
+    for (var q = 1; q < pts.length; q++) ctx2.lineTo(pts[q].x, pts[q].y);
+    ctx2.stroke();
+    ctx2.restore();
+  }
+}
+
+function drawZaps() {
+  for (var i = zaps.length - 1; i >= 0; i--) {
+    var z = zaps[i];
+    z.frames++;
+    if (z.frames >= z.total) { zaps.splice(i, 1); continue; }
+    var sp    = worldToScreen(z.wx, z.wy);
+    var t     = z.frames / z.total;
+    var alpha = 1 - t;
+    ctx2.save();
+    ctx2.globalAlpha = alpha * 0.55;
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, 32 * ZOOM * (1 - t * 0.5), 0, Math.PI*2);
+    ctx2.fillStyle = '#00ff88'; ctx2.shadowColor = '#00ff88'; ctx2.shadowBlur = 22;
+    ctx2.fill(); ctx2.shadowBlur = 0;
+    ctx2.restore();
+    ctx2.save();
+    ctx2.globalAlpha = alpha;
+    z.sparks.forEach(function(sk) {
+      sk.dist += sk.speed * (1 - t * 0.8);
+      var sx = sp.x + Math.cos(sk.angle) * sk.dist * ZOOM;
+      var sy = sp.y + Math.sin(sk.angle) * sk.dist * ZOOM;
+      ctx2.beginPath(); ctx2.arc(sx, sy, 3 * ZOOM * (1 - t), 0, Math.PI*2);
+      ctx2.fillStyle = sk.color; ctx2.shadowColor = sk.color; ctx2.shadowBlur = 7;
+      ctx2.fill(); ctx2.shadowBlur = 0;
+    });
+    ctx2.restore();
+  }
+}
+
+function drawSkulls() {
+  var pulse = Math.sin(Date.now() * 0.004) * 0.3 + 0.7;
+  skulls.forEach(function(sk) {
+    var sp = worldToScreen(sk.body.position.x, sk.body.position.y);
+    if (sp.y < -40 || sp.y > H + 40) return;
+    var r = 18 * ZOOM;
+    if (sk.flash > 0) sk.flash--;
+    ctx2.save();
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, r + 8, 0, Math.PI * 2);
+    ctx2.fillStyle = 'rgba(255,0,0,' + (pulse * 0.18) + ')'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+    ctx2.fillStyle = sk.flash > 0 ? '#ff2222' : '#1a0000';
+    ctx2.shadowColor = '#ff0000';
+    ctx2.shadowBlur  = sk.flash > 0 ? 35 : 14 * pulse;
+    ctx2.fill(); ctx2.shadowBlur = 0;
+    ctx2.strokeStyle = '#cc0000'; ctx2.lineWidth = 2.5; ctx2.stroke();
+    ctx2.font = Math.round(15 * ZOOM) + 'px Arial';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText('💀', sp.x, sp.y);
+    ctx2.restore();
+  });
+}
+
+function drawPowerUps() {
+  var pulse = Math.sin(Date.now() * 0.005) * 0.3 + 0.7;
+  powerUps.forEach(function(pu) {
+    if (!pu.active) return;
+    var sp = worldToScreen(pu.body.position.x, pu.body.position.y);
+    if (sp.y < -40 || sp.y > H + 40) return;
+    var r = 18 * ZOOM;
+    ctx2.save();
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, r + 6, 0, Math.PI * 2);
+    ctx2.fillStyle = 'rgba(255,220,0,' + (pulse * 0.25) + ')'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+    ctx2.fillStyle = '#ffd700';
+    ctx2.shadowColor = '#ffd700'; ctx2.shadowBlur = 20 * pulse;
+    ctx2.fill(); ctx2.shadowBlur = 0;
+    ctx2.fillStyle = '#1a0d00';
+    ctx2.font = 'bold ' + Math.round(13 * ZOOM) + 'px Arial';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText('x2', sp.x, sp.y);
+    ctx2.restore();
+  });
+}
+
+/* ==================== LIVE PODIUM DISPLAY ==================== */
+function updatePodiumDisplay() {
+  var ids = ['pd-1','pd-2','pd-3'];
+  for (var i = 0; i < 3; i++) {
+    var el = document.getElementById(ids[i]);
+    if (!el) continue;
+    if (podium[i]) {
+      el.innerHTML = '<span class="pd-circle" style="background:'+podium[i].color+';box-shadow:0 0 8px '+podium[i].color+'"></span>'
+                   + '<span class="pd-name" style="color:'+podium[i].color+'">'+podium[i].name+'</span>';
+    } else {
+      el.innerHTML = '<span style="color:#333">—</span>';
+    }
+  }
+  if (podium.length === 3) {
+    document.getElementById('pd-title').style.display = 'block';
+    document.getElementById('podium-display').style.borderColor = '#f0c040';
+    document.getElementById('podium-display').style.boxShadow   = '0 0 16px #f0c04066';
+  }
+}
+
+/* ==================== DRAW: END ZONE ==================== */
+function drawEndZone() {
+  var sp = worldToScreen(WW/2, ENDZONE_Y);
+  if (sp.y < -20 || sp.y > H + 20) return;
+  var bh   = 16 * ZOOM;
+  var midX = W / 2;
+  var gap  = 4;
+
+  /* Left finish — green */
+  var bL = endZoneFlashL > 0;
+  ctx2.save();
+  ctx2.shadowColor = '#00ff88'; ctx2.shadowBlur = bL ? 35 : 10;
+  ctx2.fillStyle   = bL ? 'rgba(0,255,136,0.95)' : 'rgba(0,180,90,0.35)';
+  ctx2.fillRect(0, sp.y - bh/2, midX - gap, bh);
+  ctx2.shadowBlur = 0;
+  ctx2.fillStyle  = bL ? '#ffffff' : 'rgba(160,255,200,0.8)';
+  ctx2.font = 'bold ' + Math.round(11 * ZOOM) + 'px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+  ctx2.fillText('★ LEFT FINISH  ' + finishedLeft, midX / 2, sp.y);
+  ctx2.restore();
+
+  /* Right finish — blue */
+  var bR = endZoneFlashR > 0;
+  ctx2.save();
+  ctx2.shadowColor = '#4488ff'; ctx2.shadowBlur = bR ? 35 : 10;
+  ctx2.fillStyle   = bR ? 'rgba(68,136,255,0.95)' : 'rgba(50,100,220,0.35)';
+  ctx2.fillRect(midX + gap, sp.y - bh/2, midX - gap, bh);
+  ctx2.shadowBlur = 0;
+  ctx2.fillStyle  = bR ? '#ffffff' : 'rgba(160,200,255,0.8)';
+  ctx2.font = 'bold ' + Math.round(11 * ZOOM) + 'px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+  ctx2.fillText('★ RIGHT FINISH  ' + finishedRight, midX + midX / 2, sp.y);
+  ctx2.restore();
+
+  if (endZoneFlashL > 0) endZoneFlashL--;
+  if (endZoneFlashR > 0) endZoneFlashR--;
+}
+
+/* ==================== DRAW: PLATFORM ==================== */
+function drawPlatform() {
+  var sp = worldToScreen(WW / 2, ENDZONE_Y + 40);
+  if (sp.y < -20 || sp.y > H + 20) return;
+  var pw = WW * ZOOM;
+  var ph = 20 * ZOOM;
+  var grad = ctx2.createLinearGradient(sp.x - pw/2, sp.y - ph/2, sp.x - pw/2, sp.y + ph/2);
+  grad.addColorStop(0, '#4a3a6a');
+  grad.addColorStop(1, '#2a1a4a');
+  ctx2.save();
+  roundRect(ctx2, sp.x - pw/2, sp.y - ph/2, pw, ph, 4);
+  ctx2.fillStyle = grad; ctx2.fill();
+  ctx2.strokeStyle = 'rgba(180,140,255,0.4)'; ctx2.lineWidth = 1.5;
+  roundRect(ctx2, sp.x - pw/2, sp.y - ph/2, pw, ph, 4); ctx2.stroke();
+  ctx2.restore();
+}
+
+/* ==================== DRAW: CROWN ==================== */
+function drawCrown(sx, sy, mr, place) {
+  var cols = ['#FFD700', '#C0C0C0', '#CD7F32'];
+  var col  = cols[place];
+  var cw   = mr * 1.05;
+  var ch   = mr * 0.82;
+  ctx2.save();
+  ctx2.translate(sx, sy - mr + 1);
+  ctx2.shadowColor = col; ctx2.shadowBlur = 8;
+  ctx2.fillStyle   = col;
+  ctx2.strokeStyle = 'rgba(0,0,0,0.55)'; ctx2.lineWidth = 1;
+  ctx2.beginPath();
+  ctx2.moveTo(-cw,        0);
+  ctx2.lineTo(-cw,       -ch * 0.50);
+  ctx2.lineTo(-cw * 0.3, -ch * 0.18);
+  ctx2.lineTo( 0,        -ch);
+  ctx2.lineTo( cw * 0.3, -ch * 0.18);
+  ctx2.lineTo( cw,       -ch * 0.50);
+  ctx2.lineTo( cw,        0);
+  ctx2.closePath();
+  ctx2.fill(); ctx2.shadowBlur = 0; ctx2.stroke();
+  ctx2.restore();
+}
+
+/* ==================== DRAW: MARBLE ==================== */
+function drawMarble(mb) {
+  if (ceremonyActive) return;
+  var sp  = worldToScreen(mb.position.x, mb.position.y);
+  if (sp.y < -30 || sp.y > H + 30) return;
+  var col = marbleHex(mb.label);
+  var mr  = 11 * ZOOM;
+  ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr + 4, 0, Math.PI*2);
+  ctx2.fillStyle = col + '44'; ctx2.fill();
+  ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr, 0, Math.PI*2);
+  ctx2.fillStyle = col; ctx2.shadowColor = col; ctx2.shadowBlur = 12;
+  ctx2.fill(); ctx2.shadowBlur = 0;
+  ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr * 0.70, 0, Math.PI*2);
+  ctx2.fillStyle = '#ffffff'; ctx2.fill();
+  ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr * 0.40, 0, Math.PI*2);
+  ctx2.fillStyle = col; ctx2.fill();
+  ctx2.beginPath(); ctx2.arc(sp.x - mr*0.28, sp.y - mr*0.28, mr*0.16, 0, Math.PI*2);
+  ctx2.fillStyle = 'rgba(255,255,255,0.55)'; ctx2.fill();
+  for (var pi = 0; pi < podium.length; pi++) {
+    if (podium[pi].label === mb.label) { drawCrown(sp.x, sp.y, mr, pi); break; }
+  }
+}
+
+/* ==================== CEREMONY ==================== */
+function drawCeremony() {
+  ceremonyFrames++;
+
+  /* build podium label lookup */
+  var podiumLabels = {};
+  for (var pi = 0; pi < podium.length; pi++) podiumLabels[podium[pi].label] = pi;
+
+  /* Step 1 — draw non-podium marbles fading out (in world space, before dark overlay) */
+  var othAlpha = Math.max(0, 1 - ceremonyFrames / 50);
+  if (othAlpha > 0) {
+    ctx2.save();
+    ctx2.globalAlpha = othAlpha;
+    marbles.forEach(function(m) {
+      if (podiumLabels[m.label] !== undefined) return;
+      var sp = worldToScreen(m.position.x, m.position.y);
+      if (sp.y < -30 || sp.y > H + 30) return;
+      var col = marbleHex(m.label);
+      var mr  = 11 * ZOOM;
+      ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr + 4, 0, Math.PI*2);
+      ctx2.fillStyle = col + '44'; ctx2.fill();
+      ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr, 0, Math.PI*2);
+      ctx2.fillStyle = col; ctx2.shadowColor = col; ctx2.shadowBlur = 12;
+      ctx2.fill(); ctx2.shadowBlur = 0;
+      ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr * 0.70, 0, Math.PI*2);
+      ctx2.fillStyle = '#ffffff'; ctx2.fill();
+      ctx2.beginPath(); ctx2.arc(sp.x, sp.y, mr * 0.40, 0, Math.PI*2);
+      ctx2.fillStyle = col; ctx2.fill();
+    });
+    ctx2.restore();
+  }
+
+  /* Step 2 — dark overlay fades in, covering the non-podium marbles */
+  var bgAlpha = Math.min(ceremonyFrames / 50, 0.94);
+  ctx2.fillStyle = 'rgba(4,7,32,' + bgAlpha + ')';
+  ctx2.fillRect(0, 0, W, H);
+
+  /* Step 3 — podium marbles rise from below the screen */
+  var slots = [
+    { x: W*0.50, y: H*0.45, mr: 44, place: 0, lbl: 'FIRST!'  },
+    { x: W*0.26, y: H*0.53, mr: 32, place: 1, lbl: 'SECOND!' },
+    { x: W*0.74, y: H*0.53, mr: 32, place: 2, lbl: 'THIRD!'  },
+  ];
+
+  var riseT = Math.min(ceremonyFrames / 80, 1);
+  var ease  = 1 - Math.pow(1 - riseT, 3);
+
+  for (var i = 0; i < Math.min(podium.length, 3); i++) {
+    var sl = slots[i];
+    var pd = podium[i];
+    var mr = sl.mr;
+    var sx = sl.x;
+    var sy = sl.y + (H + 80 - sl.y) * (1 - ease);
+
+    ctx2.beginPath(); ctx2.arc(sx, sy, mr + 7, 0, Math.PI*2);
+    ctx2.fillStyle = pd.color + '33'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(sx, sy, mr, 0, Math.PI*2);
+    ctx2.fillStyle = pd.color;
+    ctx2.shadowColor = pd.color; ctx2.shadowBlur = 30;
+    ctx2.fill(); ctx2.shadowBlur = 0;
+    ctx2.beginPath(); ctx2.arc(sx, sy, mr * 0.70, 0, Math.PI*2);
+    ctx2.fillStyle = '#ffffff'; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(sx, sy, mr * 0.40, 0, Math.PI*2);
+    ctx2.fillStyle = pd.color; ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(sx - mr*0.28, sy - mr*0.28, mr*0.16, 0, Math.PI*2);
+    ctx2.fillStyle = 'rgba(255,255,255,0.55)'; ctx2.fill();
+
+    drawCrown(sx, sy, mr, sl.place);
+
+    if (riseT > 0.72) {
+      var la = Math.min((riseT - 0.72) / 0.28, 1);
+      ctx2.save();
+      ctx2.globalAlpha = la;
+      ctx2.fillStyle = '#ffffff';
+      ctx2.font = 'bold ' + Math.round(sl.mr * 0.58) + 'px Arial';
+      ctx2.textAlign = 'center'; ctx2.textBaseline = 'bottom';
+      ctx2.shadowColor = pd.color; ctx2.shadowBlur = 18;
+      ctx2.fillText(sl.lbl, sx, sy - mr - 14);
+      ctx2.shadowBlur = 0;
+      ctx2.restore();
+    }
+  }
+}
+
+/* ==================== SKULL OVERLAY ==================== */
+function drawSkullOverlay() {
+  if (skullOverlayFrames <= 0) return;
+  var total = SKULL_FADE_IN + SKULL_SOLID + SKULL_FADE_OUT;
+  var alpha;
+  if (skullOverlayFrames > SKULL_SOLID + SKULL_FADE_OUT) {
+    alpha = (total - skullOverlayFrames) / SKULL_FADE_IN;
+  } else if (skullOverlayFrames > SKULL_FADE_OUT) {
+    alpha = 1.0;
+  } else {
+    alpha = skullOverlayFrames / SKULL_FADE_OUT;
+  }
+  skullOverlayFrames--;
+  ctx2.save();
+  ctx2.globalAlpha = alpha;
+  ctx2.fillStyle = '#000000';
+  ctx2.fillRect(0, 0, W, H);
+  var skullSize = Math.round(Math.min(W, H) * 0.72);
+  ctx2.font = skullSize + 'px Arial';
+  ctx2.textAlign = 'center';
+  ctx2.textBaseline = 'middle';
+  ctx2.fillText('💀', W / 2, H / 2);
+  ctx2.restore();
+}
+
+/* ==================== MAIN LOOP ==================== */
+function drawFrame() {
+  if (!gameStarted && !gamePicking && !zoomingIn) { requestAnimationFrame(drawFrame); return; }
+
+  updateFans();
+  updateObstacles();
+  updateRamps();
+  updatePlayerRamp();
+  Engine.update(engine, 1000 / 60);
+
+  if (gamePicking) {
+    updatePickingCamera();
+  } else if (zoomingIn) {
+    updateZoomIn();
+  } else {
+    updateAudio();
+    updateCamera();
+  }
+
+  /* Position-based detection — runs every frame, never misses */
+  marbles.forEach(function(m) {
+    var lbl = m.label;
+    for (var ci = 0; ci < CHECKPOINT_YS.length; ci++) {
+      if (m.position.y > CHECKPOINT_YS[ci] && !checkpointPasseds[ci][lbl]) {
+        checkpointPasseds[ci][lbl] = true;
+        checkpointCounts[ci]++;
+        checkpointFlashes[ci] = 25;
+      }
+    }
+    if (m.position.y > ENDZONE_Y && !finishedSet[lbl]) {
+      finishedSet[lbl] = true;
+      finishedCount++;
+      camPauseFrames = 60;
+      if (m.position.x < WW / 2) { finishedLeft++;  endZoneFlashL = 30; }
+      else                         { finishedRight++; endZoneFlashR = 30; }
+      if (podium.length < 3) {
+        podium.push({ color: marbleHex(lbl), name: marbleName(lbl), label: lbl });
+        updatePodiumDisplay();
+        spawnConfetti();
+      }
+    }
+  });
+
+  /* Remove marbles that fall off the bottom */
+  for (var i = marbles.length - 1; i >= 0; i--) {
+    if (marbles[i].position.y > WORLD_H + 100) {
+      Composite.remove(world, marbles[i]);
+      marbles.splice(i, 1);
+    }
+  }
+
+  if (marblesLeft === 0 && totalDropped > 0 && !gameOver) {
+    var allDone = true;
+    for (var ai = 0; ai < marbles.length; ai++) {
+      if (!finishedSet[marbles[ai].label]) { allDone = false; break; }
+    }
+    if (allDone) {
+      gameOver = true;
+      setTimeout(showEndScreen, 5000);
+    }
+  }
+
+  /* Background */
+  ctx2.fillStyle = '#040720';
+  ctx2.fillRect(0, 0, W, H);
+  drawStars();
+
+  fans.forEach(function(fan)        { drawFan(fan); });
+  drawSkulls();
+  drawLightningPowerUps();
+  obstacles.forEach(function(ob)   { drawObstacle(ob); });
+  ramps.forEach(function(ramp)     { drawRamp(ramp); });
+  drawPlayerRamp();
+  drawPowerUps();
+  pendulumBobs.forEach(function(p) { drawPendulum(p); });
+  drawCheckpoints();
+  drawEndZone();
+  drawPlatform();
+  marbles.forEach(function(m)      { drawMarble(m); });
+  drawBolts();
+  drawZaps();
+  if (lightningFlash > 0) {
+    ctx2.save();
+    ctx2.globalAlpha = (lightningFlash / 8) * 0.35;
+    ctx2.fillStyle = '#00ff44';
+    ctx2.fillRect(0, 0, W, H);
+    ctx2.restore();
+    lightningFlash--;
+  }
+
+  /* Side strips — follow board edges */
+  var leftEdge  = camXOffset;
+  var rightEdge = WW * ZOOM + camXOffset;
+  ctx2.fillStyle = '#1a1a3a';
+  ctx2.fillRect(0, 0, leftEdge + 8, H);
+  ctx2.fillRect(rightEdge - 8, 0, W - rightEdge + 8, H);
+
+  updateAndDrawConfetti();
+  if (ceremonyActive) drawCeremony();
+  drawSkullOverlay();
+  if (gamePicking) {
+    drawPickingBanner();
+  } else {
+    updateHUD();
+  }
+  requestAnimationFrame(drawFrame);
+}
+
+/* ==================== END SCREEN ==================== */
+function showEndScreen() {
+  ceremonyActive = true;
+  ceremonyFrames = 0;
+  setTimeout(showFinalEndScreen, 4000);
+}
+
+function showFinalEndScreen() {
+  var placeNames = ['🥇 1ST PLACE', '🥈 2ND PLACE', '🥉 3RD PLACE'];
+  var html = '';
+  for (var i = 0; i < podium.length; i++) {
+    html += '<div class="podium-entry" style="color:' + podium[i].color
+          + ';border-color:' + podium[i].color + '66;">'
+          + placeNames[i] + ' — ' + podium[i].name + '</div>';
+  }
+  if (podium.length === 0) {
+    html = '<div class="podium-entry" style="color:#aaa;border-color:#444;">No marbles reached the finish line!</div>';
+  }
+  document.getElementById('end-podium').innerHTML = html;
+
+  var cpTotal = 0;
+  for (var k = 0; k < checkpointCounts.length; k++) cpTotal += checkpointCounts[k];
+  document.getElementById('end-cp-text').textContent =
+    cpTotal + ' checkpoint passes  ·  ' + finishedCount + ' / ' + totalDropped + ' marbles finished';
+
+  document.getElementById('end-screen').style.display = 'flex';
+  var burstCount = 0;
+  var burstTimer = setInterval(function() {
+    spawnConfetti();
+    burstCount++;
+    if (burstCount >= 6) clearInterval(burstTimer);
+  }, 600);
+}
+
+/* ==================== HUD ==================== */
+function updateHUD() {
+  var cpTotal = 0;
+  for (var k = 0; k < checkpointCounts.length; k++) cpTotal += checkpointCounts[k];
+  document.getElementById('hud-marbles').textContent = marblesLeft;
+  document.getElementById('hud-inplay').textContent  = marbles.length;
+  document.getElementById('hud-cp').textContent      = cpTotal;
+  document.getElementById('hud-score').textContent   = finishedCount;
+}
+
+/* ==================== RESET ==================== */
+function resetGame() {
+  ceremonyActive = false;
+  document.getElementById('end-screen').style.display = 'none';
+  Composite.clear(world);
+  Engine.clear(engine);
+  Events.off(engine);
+  buildWorld();
+}
+
+/* ==================== START ==================== */
+function startGame() {
+  document.getElementById('title-screen').style.display = 'none';
+  gamePicking = true;
+  pickFrames  = 0;
+  buildWorld();
+  drawFrame();
+}
+
+</script>
+</body>
+</html>
