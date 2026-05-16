@@ -43,7 +43,7 @@ const GROUND_H  = 80;
 
 // ── state ──
 let state = 'idle'; // idle | playing | dead
-let bird, pipes, score, best, frame, groundX;
+let bird, pipes, score, best, frame, groundX, deathReason;
 
 function init() {
   bird   = { x: 80, y: H/2 - 20, vy: 0, rot: 0, flapTimer: 0 };
@@ -102,17 +102,19 @@ function update() {
   const bx = bird.x - 14, by = bird.y - 12, bw = 28, bh = 24;
 
   // ground / ceiling
-  if (bird.y + 16 >= H - GROUND_H || bird.y - 16 <= 0) { die(); return; }
+  if (bird.y + 16 >= H - GROUND_H) { die('💥 birdy hit the ground!'); return; }
+  if (bird.y - 16 <= 0)            { die('😵 birdy could not breathe!'); return; }
 
   // pipes
   for (let p of pipes) {
     if (bx + bw > p.x + 4 && bx < p.x + PIPE_W - 4) {
-      if (by < p.topH || by + bh > p.topH + PIPE_GAP) { die(); return; }
+      if (by < p.topH || by + bh > p.topH + PIPE_GAP) { die('🪠 birdy hit a pipe!'); return; }
     }
   }
 }
 
-function die() {
+function die(reason) {
+  deathReason = reason;
   state = 'dead';
 }
 
@@ -272,11 +274,16 @@ function drawDead() {
   ctx.fillStyle = '#333';
   ctx.font = 'bold 30px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Game Over!', W/2, H/2 - 60);
+  ctx.fillText('Game Over!', W/2, H/2 - 65);
+
+  ctx.font = '15px Arial';
+  ctx.fillStyle = '#c0392b';
+  ctx.fillText(deathReason, W/2, H/2 - 35);
 
   ctx.font = '20px Arial';
-  ctx.fillText('score: ' + score, W/2, H/2 - 20);
-  ctx.fillText('best: ' + best, W/2, H/2 + 15);
+  ctx.fillStyle = '#333';
+  ctx.fillText('score: ' + score, W/2, H/2 + 5);
+  ctx.fillText('best: ' + best, W/2, H/2 + 32);
 
   ctx.fillStyle = '#5cb85c';
   roundRect(ctx, W/2 - 80, H/2 + 45, 160, 42, 12);
