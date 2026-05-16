@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>how i did it — jos' projects</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #f2ede3;
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1.5rem 4rem;
+            animation: fadeIn 0.8s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .site-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(3rem, 10vw, 5rem);
+            color: #d9643a;
+            text-align: center;
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .nav-tab {
+            background: #3d9595;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .nav-tab:hover { background: #2d7575; }
+        .nav-tab.active { background: #d9643a; }
+
+        /* ── Tool cards ── */
+        .tool-card {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            background: #eee8db;
+            border: 3px solid #2a7070;
+            border-radius: 18px;
+            padding: 2rem 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-card:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        @media (max-width: 600px) {
+            .tool-card,
+            .tool-card:nth-child(even) {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        .tool-icon {
+            flex-shrink: 0;
+            width: 90px;
+            height: 90px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .tool-icon.claude  { background: #d9643a; color: white; font-size: 2.5rem; }
+        .tool-icon.trinket { background: #3d9595; color: white; }
+        .tool-icon.python  { background: #2a5f7a; color: white; }
+
+        .tool-name {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            color: #d9643a;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-intro {
+            font-size: 0.9rem;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .tool-desc {
+            font-size: 0.88rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .vault-link {
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #3d9595;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .vault-link:hover { color: #2d7575; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1 class="site-title">jos' projects</h1>
+
+    <nav class="nav-tabs">
+        <a class="nav-tab" href="../">home</a>
+        <span class="nav-tab active">how i did it</span>
+        <a class="nav-tab" href="../#games">games</a>
+        <a class="nav-tab" href="../#snowman">a good snowman is hard to build</a>
+    </nav>
+
+    <div class="tool-card">
+        <div class="tool-icon claude">✦</div>
+        <div>
+            <div class="tool-name">i created all of my projects with: CLAUDE.AI</div>
+            <div class="tool-intro">Claude is Anthropic's AI tool for problem solvers.</div>
+            <div class="tool-desc">It can challenge you, analyse data, write code, and think through your research with you. I used Claude to help me build all of my games — I told it what I wanted and we figured it out together!</div>
+        </div>
+    </div>
+
+    <div class="tool-card">
+        <div class="tool-icon trinket">🔑</div>
+        <div>
+            <div class="tool-name">and i used TRINKET.CODE</div>
+            <div class="tool-intro">Trinket lets you run and write code in any browser, on any device.</div>
+            <div class="tool-desc">Trinkets work instantly, with no need to log in, download plugins, or install software. I used Trinket to write and run my Python games right in the browser — super easy!</div>
+        </div>
+    </div>
+
+    <div class="tool-card">
+        <div class="tool-icon python">🐍</div>
+        <div>
+            <div class="tool-name">and of course i used PYTHON CODE</div>
+            <div class="tool-intro">Python is a coding language used for a wide range of things.</div>
+            <div class="tool-desc">Including working with data, building systems and software, and even creating games. I learned Python to build my projects — it's one of the best languages for beginners and experts alike!</div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <a class="vault-link" href="/">← back to the vault</a>
+    </footer>
+
+</div>
+</body>
+</html>
