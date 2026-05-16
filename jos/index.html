@@ -75,6 +75,69 @@
         .nav-tab:hover { background: #2d7575; }
         .nav-tab.active { background: #d9643a; }
 
+        /* ── Dropdown menus ── */
+        .nav-item {
+            position: relative;
+        }
+
+        .dropdown-trigger {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #3d9595;
+            border-radius: 14px;
+            min-width: 200px;
+            z-index: 100;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.3s ease;
+        }
+
+        .nav-item:hover .dropdown-menu,
+        .nav-item.open .dropdown-menu {
+            max-height: 700px;
+            opacity: 1;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            padding: 0.45rem 1.4rem;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .dropdown-menu a:first-child  { padding-top: 0.8rem; }
+        .dropdown-menu a:last-child   { padding-bottom: 0.8rem; }
+        .dropdown-menu a:hover        { background: rgba(0,0,0,0.15); }
+
+        .dropdown-label {
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.75);
+            padding: 0.8rem 1.4rem 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.25);
+            margin: 0.35rem 1rem;
+        }
+
         /* ── Two-column layout ── */
         .main-grid {
             display: grid;
@@ -243,8 +306,44 @@
     <nav class="nav-tabs">
         <span class="nav-tab active">home</span>
         <a class="nav-tab" href="snowman/instructions/">how i did it</a>
-        <a class="nav-tab" href="#games">games</a>
-        <a class="nav-tab" href="#snowman">a good snowman is hard to build</a>
+
+        <div class="nav-item">
+            <span class="nav-tab dropdown-trigger">games ▾</span>
+            <div class="dropdown-menu">
+                <a href="whack-a-mole/">whack-a-mole!</a>
+                <a href="yoga/">yoga simulator</a>
+                <a href="gravity/">gravity simulator</a>
+                <a href="brick-breaker/">brick breaker</a>
+                <a href="fortune-teller/">fortune teller</a>
+                <a href="maze-runner/">maze runner</a>
+                <a href="type-speed/">type speed</a>
+                <a href="color-mixer/">colour mixer</a>
+                <a href="the-red-button/">the red button</a>
+                <a href="reaction-time/">reaction time</a>
+                <a href="password-defender/">password defender</a>
+                <a href="snake/">snake</a>
+                <a href="flappy-bird/">flappy bird</a>
+                <a href="marble_run.html">marble run</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <span class="nav-tab dropdown-trigger">a good snowman is hard to build ▾</span>
+            <div class="dropdown-menu">
+                <div class="dropdown-label">tutorials</div>
+                <a href="snowman/tutorial-1/">tutorial 1</a>
+                <a href="snowman/tutorial-2/">tutorial 2</a>
+                <a href="snowman/tutorial-3/">tutorial 3</a>
+                <a href="snowman/instructions/">instructions</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-label">levels</div>
+                <a href="snowman/level-1/">level 1</a>
+                <a href="snowman/level-2/">level 2</a>
+                <a href="snowman/level-3/">level 3</a>
+                <a href="snowman/level-4/">level 4</a>
+                <a href="snowman/level-5/">level 5 (hard!)</a>
+            </div>
+        </div>
     </nav>
 
     <!-- ── Main two-panel grid ── -->
@@ -315,5 +414,20 @@
     </footer>
 
 </div>
+
+<script>
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.querySelector('.dropdown-trigger').addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = item.classList.contains('open');
+            navItems.forEach(i => i.classList.remove('open'));
+            if (!isOpen) item.classList.add('open');
+        });
+    });
+    document.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('open'));
+    });
+</script>
 </body>
 </html>
