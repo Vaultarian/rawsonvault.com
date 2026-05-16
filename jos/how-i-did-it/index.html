@@ -95,9 +95,25 @@
             font-size: 3rem;
         }
 
-        .tool-icon.claude  { background: #d9643a; color: white; font-size: 2.5rem; }
-        .tool-icon.trinket { background: #3d9595; color: white; }
-        .tool-icon.python  { background: #2a5f7a; color: white; }
+        .tool-icon {
+            background: white;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.15s, box-shadow 0.15s;
+            text-decoration: none;
+        }
+
+        .tool-icon:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        }
+
+        .tool-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
 
         .tool-name {
             font-family: 'Fredoka One', cursive;
@@ -151,7 +167,9 @@
     </nav>
 
     <div class="tool-card">
-        <div class="tool-icon claude">✦</div>
+        <a class="tool-icon" href="https://claude.ai/login" target="_blank" rel="noopener">
+            <img src="logos/claude.png" alt="Claude.ai logo">
+        </a>
         <div>
             <div class="tool-name">i created all of my projects with: CLAUDE.AI</div>
             <div class="tool-intro">Claude is Anthropic's AI tool for problem solvers.</div>
@@ -160,7 +178,9 @@
     </div>
 
     <div class="tool-card">
-        <div class="tool-icon trinket">🔑</div>
+        <a class="tool-icon" href="https://trinket.io" target="_blank" rel="noopener">
+            <img src="logos/trinket.png" alt="Trinket logo">
+        </a>
         <div>
             <div class="tool-name">and i used TRINKET.CODE</div>
             <div class="tool-intro">Trinket lets you run and write code in any browser, on any device.</div>
@@ -169,7 +189,9 @@
     </div>
 
     <div class="tool-card">
-        <div class="tool-icon python">🐍</div>
+        <a class="tool-icon" href="https://python.org" target="_blank" rel="noopener">
+            <img src="logos/python.webp" alt="Python logo">
+        </a>
         <div>
             <div class="tool-name">and of course i used PYTHON CODE</div>
             <div class="tool-intro">Python is a coding language used for a wide range of things.</div>
