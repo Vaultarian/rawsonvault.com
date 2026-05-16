@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Typing Speed Test</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: 'Courier New', monospace;
+  background: #0d0d1f;
+  color: white;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+canvas {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  z-index: 0;
+}
+#main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+#main input, #main button { pointer-events: auto; }
+h1 {
+  font-size: 18px;
+  letter-spacing: 4px;
+  color: #f0c040;
+  text-shadow: 0 0 14px #f0c04066;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  background: #000;
+  padding: 7px 20px;
+  border-radius: 10px;
+  width: fit-content;
+}
+#subtitle {
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  background: #000;
+  padding: 3px 14px;
+  border-radius: 7px;
+  width: fit-content;
+}
+#sentence-box {
+  background: rgba(0,0,0,0.9);
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 18px 22px;
+  width: 100%;
+  font-size: 16px;
+  line-height: 1.9;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
+  min-height: 70px;
+}
+#inp {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px; height: 1px;
+}
+#stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+.stat {
+  background: rgba(0,0,0,0.9);
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 8px 16px;
+  text-align: center;
+  min-width: 80px;
+}
+.sl { font-size: 9px; color: #555; letter-spacing: 2px; margin-bottom: 3px; }
+.sv { font-size: 20px; font-weight: bold; color: #f0c040; }
+#start-btn {
+  background: none;
+  border: 2px solid #f0c040;
+  color: #f0c040;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 3px;
+  padding: 10px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+#start-btn:hover { background: #f0c040; color: #000; }
+#countdown {
+  font-size: 44px;
+  font-weight: bold;
+  color: #f0c040;
+  text-shadow: 0 0 30px #f0c040;
+  display: none;
+  margin-bottom: 14px;
+  background: #000;
+  padding: 6px 24px;
+  border-radius: 12px;
+  width: fit-content;
+}
+.char { color: #555; }
+.char.correct { color: #2ecc71; }
+.char.wrong { color: #e74c3c; background: rgba(231,76,60,0.18); border-radius: 2px; }
+.char.cursor { border-left: 2px solid #f0c040; animation: blink 0.8s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+#results {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+#title-badge {
+  font-size: 24px;
+  font-weight: bold;
+  color: #f0c040;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+  background: #000;
+  padding: 8px 22px;
+  border-radius: 12px;
+  width: fit-content;
+}
+#title-sub {
+  font-size: 10px; color: #555; letter-spacing: 3px;
+  margin-bottom: 22px; background:#000; padding:3px 12px;
+  border-radius:7px; width:fit-content;
+}
+.res-stats { display:flex; gap:14px; margin-bottom:22px; }
+.res-stat { background:rgba(0,0,0,0.9); border:1px solid #333; border-radius:10px; padding:12px 20px; min-width:90px; }
+.rl { font-size:9px; color:#555; letter-spacing:2px; margin-bottom:4px; }
+.rv { font-size:22px; font-weight:bold; color:#f0c040; }
+#again-btn {
+  background:none; border:2px solid #f0c040; color:#f0c040;
+  font-family:'Courier New',monospace; font-size:13px; letter-spacing:3px;
+  padding:10px 24px; border-radius:8px; cursor:pointer;
+}
+#again-btn:hover { background:#f0c040; color:#000; }
+
+#pop {
+  position: fixed;
+  font-size: 18px;
+  font-weight: bold;
+  color: #f0c040;
+  pointer-events: none;
+  z-index: 999;
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- floating pop text when clicking letters -->
+<div id="pop"></div>
+
+<div id="main">
+  <h1>⌨ TYPING SPEED TEST</h1>
+  <p id="subtitle">HOW FAST ARE YOUR FINGERS?</p>
+  <div id="countdown"></div>
+  <div id="sentence-box"></div>
+  <input type="text" id="inp" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+  <div id="stats">
+    <div class="stat"><div class="sl">WPM</div><div class="sv" id="wpm">0</div></div>
+    <div class="stat"><div class="sl">ACCURACY</div><div class="sv" id="acc">100%</div></div>
+    <div class="stat"><div class="sl">TIME</div><div class="sv" id="timer">0s</div></div>
+  </div>
+  <button id="start-btn" onclick="startGame()">START TYPING</button>
+</div>
+
+<div id="results">
+  <div id="title-badge">SPEED DEMON</div>
+  <div id="title-sub">YOUR RESULTS</div>
+  <div class="res-stats">
+    <div class="res-stat"><div class="rl">WPM</div><div class="rv" id="r-wpm">0</div></div>
+    <div class="res-stat"><div class="rl">ACCURACY</div><div class="rv" id="r-acc">0%</div></div>
+    <div class="res-stat"><div class="rl">TIME</div><div class="rv" id="r-time">0s</div></div>
+  </div>
+  <button id="again-btn" onclick="resetGame()">TRY AGAIN</button>
+</div>
+
+<script>
+/* ===================== CANVAS BACKGROUND ===================== */
+var cv = document.getElementById("bg");
+var ctx = cv.getContext("2d");
+cv.width = window.innerWidth;
+cv.height = window.innerHeight;
+window.addEventListener("resize", function() {
+  cv.width = window.innerWidth;
+  cv.height = window.innerHeight;
+});
+
+var BAND = 90;
+var floaters = [];
+var popTimer = null;
+
+/* symbols that float around */
+var symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZ⌨🖮↵⇧⌫".split("");
+/* keyboard key shapes */
+var keyChars = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
+
+function edgePos() {
+  var side = Math.floor(Math.random() * 4);
+  var x, y;
+  if (side === 0) { x = Math.random() * cv.width;  y = Math.random() * BAND; }
+  else if (side === 1) { x = Math.random() * cv.width;  y = cv.height - Math.random() * BAND; }
+  else if (side === 2) { x = Math.random() * BAND; y = Math.random() * cv.height; }
+  else                 { x = cv.width - Math.random() * BAND; y = Math.random() * cv.height; }
+  return {x:x, y:y};
+}
+
+function makeFloater() {
+  var p = edgePos();
+  var isKey = Math.random() < 0.5;
+  return {
+    x: p.x, y: p.y,
+    cx: p.x, cy: p.y,
+    type: isKey ? "key" : "letter",
+    char: isKey ? keyChars[Math.floor(Math.random() * keyChars.length)] : symbols[Math.floor(Math.random() * symbols.length)],
+    oa: Math.random() * Math.PI * 2,
+    os: (Math.random() * 0.006 + 0.002) * (Math.random() < 0.5 ? 1 : -1),
+    or: Math.random() * 22 + 12,
+    alpha: Math.random() * 0.35 + 0.4,
+    size: Math.random() * 8 + 14,
+    angle: Math.random() * Math.PI * 2,
+    spin: (Math.random() - 0.5) * 0.02,
+    lit: false,
+    litTimer: 0
+  };
+}
+
+for (var i = 0; i < 32; i++) floaters.push(makeFloater());
+
+function drawKey(f) {
+  var s = f.size;
+  ctx.save();
+  ctx.translate(f.x, f.y);
+  ctx.rotate(f.angle);
+  var col = f.lit ? "#2ecc71" : "#f0c040";
+  if (f.lit) { ctx.shadowColor = "#2ecc71"; ctx.shadowBlur = 16; }
+  else        { ctx.shadowColor = "#f0c040"; ctx.shadowBlur = 7; }
+  /* key body */
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 1.8;
+  var w = s * 1.4, h = s * 1.2, r = 3;
+  ctx.beginPath();
+  ctx.moveTo(-w/2+r, -h/2);
+  ctx.lineTo(w/2-r, -h/2);
+  ctx.arcTo(w/2, -h/2, w/2, -h/2+r, r);
+  ctx.lineTo(w/2, h/2-r);
+  ctx.arcTo(w/2, h/2, w/2-r, h/2, r);
+  ctx.lineTo(-w/2+r, h/2);
+  ctx.arcTo(-w/2, h/2, -w/2, h/2-r, r);
+  ctx.lineTo(-w/2, -h/2+r);
+  ctx.arcTo(-w/2, -h/2, -w/2+r, -h/2, r);
+  ctx.closePath();
+  ctx.stroke();
+  /* letter on key */
+  ctx.fillStyle = col;
+  ctx.font = "bold " + (s * 0.7) + "px Courier New";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(f.char, 0, 0);
+  ctx.restore();
+}
+
+function drawLetter(f) {
+  ctx.save();
+  ctx.translate(f.x, f.y);
+  ctx.rotate(f.angle);
+  var col = f.lit ? "#2ecc71" : "#f0c040";
+  if (f.lit) { ctx.shadowColor = "#2ecc71"; ctx.shadowBlur = 18; }
+  else        { ctx.shadowColor = "#f0c040"; ctx.shadowBlur = 8; }
+  ctx.fillStyle = col;
+  ctx.globalAlpha = f.alpha;
+  ctx.font = "bold " + f.size + "px Courier New";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(f.char, 0, 0);
+  ctx.restore();
+}
+
+function canvasLoop() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+
+  for (var i = 0; i < floaters.length; i++) {
+    var f = floaters[i];
+
+    /* orbit */
+    f.oa += f.os;
+    f.angle += f.spin;
+    f.x = f.cx + Math.cos(f.oa) * f.or;
+    f.y = f.cy + Math.sin(f.oa) * f.or;
+
+    /* keep drifting toward edge if it strays inward */
+    var distX = Math.min(f.x, cv.width - f.x);
+    var distY = Math.min(f.y, cv.height - f.y);
+    if (distX > BAND && distY > BAND) {
+      var nx = f.cx - cv.width/2, ny = f.cy - cv.height/2;
+      var len = Math.sqrt(nx*nx+ny*ny)||1;
+      f.cx += (nx/len)*0.5;
+      f.cy += (ny/len)*0.5;
+    }
+
+    /* lit timer */
+    if (f.lit) {
+      f.litTimer -= 16;
+      if (f.litTimer <= 0) { f.lit = false; }
+    }
+
+    ctx.globalAlpha = f.alpha;
+    if (f.type === "key") drawKey(f);
+    else drawLetter(f);
+    ctx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(canvasLoop);
+}
+canvasLoop();
+
+/* click floating items */
+cv.addEventListener("click", function(e) {
+  var mx = e.clientX, my = e.clientY;
+  var best = null, bestD = 9999;
+  for (var i = 0; i < floaters.length; i++) {
+    var f = floaters[i];
+    var dx = f.x - mx, dy = f.y - my;
+    var d = Math.sqrt(dx*dx+dy*dy);
+    if (d < f.size + 14 && d < bestD) { bestD = d; best = f; }
+  }
+  if (best) {
+    best.lit = true;
+    best.litTimer = 1200;
+    /* show a little pop */
+    var pop = document.getElementById("pop");
+    pop.textContent = best.char;
+    pop.style.left = mx + "px";
+    pop.style.top = (my - 20) + "px";
+    pop.style.display = "block";
+    pop.style.opacity = 1;
+    if (popTimer) clearTimeout(popTimer);
+    popTimer = setTimeout(function() { pop.style.display = "none"; }, 600);
+  }
+});
+
+/* ===================== TYPING GAME ===================== */
+var sentences = [
+  "The quick brown fox jumps over the lazy dog sitting by the river.",
+  "Elephants never forget but they also never learned to type.",
+  "If you can read this then you are already faster than a snail.",
+  "Pizza is just a hot open sandwich that everyone pretends is special.",
+  "The best time to plant a tree was twenty years ago the second best is now.",
+  "A day without laughter is a day completely wasted according to someone wise.",
+  "Somewhere in the world right now a dog is dreaming about chasing something.",
+  "Be yourself because everyone else is already taken.",
+  "In the middle of every difficulty lies opportunity.",
+  "It does not matter how slowly you go as long as you do not stop.",
+  "The only way to do great work is to love what you do.",
+  "You miss one hundred percent of the shots you never take.",
+  "Two things are infinite the universe and human stupidity.",
+  "She sells seashells by the seashore and the shells she sells are seashells.",
+  "How much wood would a woodchuck chuck if a woodchuck could chuck wood.",
+  "Peter Piper picked a peck of pickled peppers from a pepper patch.",
+  "Betty Botter bought some butter but the butter Betty bought was bitter.",
+  "Six slippery snails slid slowly seaward on a sunny Saturday morning.",
+  "Red lorry yellow lorry red lorry yellow lorry said very quickly.",
+];
+
+var sentence = "";
+var typed = "";
+var started = false;
+var finished = false;
+var startTime = 0;
+var elapsed = 0;
+var timerInt = null;
+var cdInt = null;
+
+function pickSentence() {
+  sentence = sentences[Math.floor(Math.random() * sentences.length)];
+}
+
+function renderSentence() {
+  var box = document.getElementById("sentence-box");
+  var html = "";
+  for (var i = 0; i < sentence.length; i++) {
+    var cls = "char";
+    if (i < typed.length) cls += typed[i] === sentence[i] ? " correct" : " wrong";
+    else if (i === typed.length) cls += " cursor";
+    var ch = sentence[i] === " " ? "&nbsp;" : sentence[i];
+    html += '<span class="' + cls + '">' + ch + '</span>';
+  }
+  box.innerHTML = html;
+}
+
+function getWPM() {
+  if (elapsed === 0) return 0;
+  return Math.round((typed.trim().split(" ").length) / (elapsed / 60));
+}
+
+function getAccuracy() {
+  if (typed.length === 0) return 100;
+  var correct = 0;
+  for (var i = 0; i < typed.length; i++) {
+    if (typed[i] === sentence[i]) correct++;
+  }
+  return Math.round((correct / typed.length) * 100);
+}
+
+function getTitle(wpm, acc) {
+  if (wpm >= 80 && acc >= 95) return "⚡ SPEED DEMON";
+  if (wpm >= 60 && acc >= 90) return "🔥 FAST FINGERS";
+  if (wpm >= 40 && acc >= 85) return "💪 SOLID TYPER";
+  if (wpm >= 25 && acc >= 80) return "🐢 GETTING THERE";
+  if (acc < 70)               return "🙈 CHAOS FINGERS";
+  return "🌱 KEEP PRACTISING";
+}
+
+function startGame() {
+  pickSentence();
+  typed = ""; started = false; finished = false; elapsed = 0;
+  renderSentence();
+  document.getElementById("wpm").textContent = "0";
+  document.getElementById("acc").textContent = "100%";
+  document.getElementById("timer").textContent = "0s";
+  document.getElementById("start-btn").style.display = "none";
+
+  var n = 3;
+  var cd = document.getElementById("countdown");
+  cd.style.display = "block";
+  cd.textContent = n;
+  cdInt = setInterval(function() {
+    n--;
+    if (n <= 0) {
+      clearInterval(cdInt);
+      cd.style.display = "none";
+      started = true;
+      startTime = Date.now();
+      document.getElementById("inp").focus();
+      timerInt = setInterval(function() {
+        if (!finished) {
+          elapsed = (Date.now() - startTime) / 1000;
+          document.getElementById("timer").textContent = Math.floor(elapsed) + "s";
+          document.getElementById("wpm").textContent = getWPM();
+          document.getElementById("acc").textContent = getAccuracy() + "%";
+        }
+      }, 200);
+    } else {
+      cd.textContent = n;
+    }
+  }, 1000);
+}
+
+document.getElementById("inp").addEventListener("input", function(e) {
+  if (!started || finished) return;
+  typed = e.target.value;
+  if (typed.length > sentence.length) { typed = typed.slice(0, sentence.length); e.target.value = typed; }
+  renderSentence();
+  if (typed.length === sentence.length) {
+    finished = true;
+    clearInterval(timerInt);
+    elapsed = (Date.now() - startTime) / 1000;
+    setTimeout(showResults, 400);
+  }
+});
+
+document.addEventListener("keydown", function() {
+  if (started && !finished) document.getElementById("inp").focus();
+});
+
+function showResults() {
+  var wpm = getWPM(), acc = getAccuracy();
+  document.getElementById("main").style.display = "none";
+  var r = document.getElementById("results");
+  r.style.display = "flex";
+  document.getElementById("title-badge").textContent = getTitle(wpm, acc);
+  document.getElementById("r-wpm").textContent = wpm;
+  document.getElementById("r-acc").textContent = acc + "%";
+  document.getElementById("r-time").textContent = Math.round(elapsed) + "s";
+}
+
+function resetGame() {
+  typed = ""; started = false; finished = false; elapsed = 0;
+  clearInterval(timerInt);
+  document.getElementById("inp").value = "";
+  document.getElementById("results").style.display = "none";
+  var m = document.getElementById("main");
+  m.style.display = "flex";
+  document.getElementById("start-btn").style.display = "block";
+  document.getElementById("countdown").style.display = "none";
+  document.getElementById("wpm").textContent = "0";
+  document.getElementById("acc").textContent = "100%";
+  document.getElementById("timer").textContent = "0s";
+  pickSentence();
+  renderSentence();
+}
+
+pickSentence();
+renderSentence();
+</script>
+</body>
+</html>

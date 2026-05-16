@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Don't Click The Red Button</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0a0a;
+      color: white;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: crosshair;
+    }
+
+    h1 {
+      font-size: 28px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #ff2222;
+      text-shadow: 0 0 20px #ff222299;
+      margin-bottom: 8px;
+      pointer-events: none;
+    }
+
+    #subtitle {
+      font-size: 13px;
+      color: #555;
+      letter-spacing: 2px;
+      margin-bottom: 0;
+      pointer-events: none;
+    }
+
+    #clicks {
+      font-size: 13px;
+      color: #333;
+      letter-spacing: 2px;
+      margin-top: 12px;
+      pointer-events: none;
+    }
+
+    #speed-bar-wrap {
+      margin-top: 14px;
+      width: 220px;
+      height: 8px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #speed-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 4px;
+      background: #ff2222;
+      transition: width 0.1s, background 0.1s;
+    }
+
+    #speed-label {
+      font-size: 11px;
+      color: #333;
+      letter-spacing: 2px;
+      margin-top: 5px;
+      pointer-events: none;
+    }
+
+    #btn {
+      position: fixed;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ff6666, #cc0000, #880000);
+      border: 4px solid #ff4444;
+      box-shadow: 0 0 30px #ff222266, 0 6px 20px rgba(0,0,0,0.6);
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      letter-spacing: 1px;
+      transition: box-shadow 0.1s;
+      user-select: none;
+    }
+
+    #btn:hover {
+      box-shadow: 0 0 50px #ff2222aa, 0 6px 20px rgba(0,0,0,0.6);
+    }
+
+    #btn:active {
+      transform: scale(0.97);
+    }
+
+    #win-screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.92);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    #win-screen h2 {
+      font-size: 36px;
+      color: #ff2222;
+      text-shadow: 0 0 30px #ff2222;
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+    }
+
+    #win-screen p {
+      font-size: 16px;
+      color: #aaa;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    #win-screen .tries-msg {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
+    }
+
+    #play-again {
+      background: none;
+      border: 2px solid #ff2222;
+      color: #ff2222;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      letter-spacing: 3px;
+      padding: 12px 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    #play-again:hover {
+      background: #ff2222;
+      color: white;
+    }
+
+    #panic-msg {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff2222;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      padding: 8px 20px;
+      border-radius: 8px;
+      display: none;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Don't Click It.</h1>
+  <p id="subtitle">IT KNOWS HOW FAST YOU'RE MOVING.</p>
+  <div id="speed-bar-wrap">
+    <div id="speed-bar"></div>
+  </div>
+  <p id="speed-label">CURSOR SPEED</p>
+  <p id="clicks">ATTEMPTS: 0</p>
+
+  <button id="btn" onclick="clicked()">DO NOT<br>CLICK</button>
+
+  <div id="win-screen">
+    <h2>YOU GOT IT.</h2>
+    <p>The button has been defeated.</p>
+    <p class="tries-msg" id="tries-msg">It took you 0 attempts.</p>
+    <button id="play-again" onclick="reset()">Play Again</button>
+  </div>
+
+<script>
+  var btn = document.getElementById("btn");
+  var winScreen = document.getElementById("win-screen");
+  var clicksEl = document.getElementById("clicks");
+  var speedBar = document.getElementById("speed-bar");
+
+  var attempts = 0;
+  var won = false;
+
+  var mx = window.innerWidth / 2;
+  var my = window.innerHeight / 2;
+  var pmx = mx, pmy = my;
+  var cursorSpeed = 0;
+
+  var ORBIT = 130;
+
+  /* current displayed angle and target angle */
+  var currentAngle = -Math.PI / 2;
+  var targetAngle  = -Math.PI / 2;
+
+  document.addEventListener("mousemove", function(e) {
+    pmx = mx; pmy = my;
+    mx = e.clientX; my = e.clientY;
+    var dx = mx - pmx;
+    var dy = my - pmy;
+    cursorSpeed = Math.sqrt(dx * dx + dy * dy);
+
+    /* update target angle to direction of movement */
+    if (cursorSpeed > 1) {
+      targetAngle = Math.atan2(dy, dx);
+    }
+
+    /* speed bar */
+    var pct = Math.min(cursorSpeed / 60 * 100, 100);
+    speedBar.style.width = pct + "%";
+    if (pct < 30) speedBar.style.background = "#2ecc71";
+    else if (pct < 65) speedBar.style.background = "#f39c12";
+    else speedBar.style.background = "#ff2222";
+  });
+
+  function gameLoop() {
+    if (!won) {
+      /* smoothly rotate currentAngle toward targetAngle
+         always take the shortest path around the circle */
+      var diff = targetAngle - currentAngle;
+
+      /* wrap diff to -PI..PI so it goes the short way round */
+      while (diff >  Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+
+      /* ease toward target — 0.08 = smooth, increase for snappier */
+      currentAngle += diff * 0.08;
+
+      var bx = mx + Math.cos(currentAngle) * ORBIT;
+      var by = my + Math.sin(currentAngle) * ORBIT;
+      btn.style.left = (bx - 55) + "px";
+      btn.style.top  = (by - 55) + "px";
+    }
+    requestAnimationFrame(gameLoop);
+  }
+  gameLoop();
+
+  function clicked() {
+    if (won) return;
+    won = true;
+    attempts++;
+    winScreen.style.display = "flex";
+    document.getElementById("tries-msg").textContent =
+      "It took you " + attempts + " attempt" + (attempts === 1 ? "." : "s.");
+  }
+
+  function reset() {
+    won = false;
+    attempts = 0;
+    clicksEl.textContent = "ATTEMPTS: 0";
+    currentAngle = -Math.PI / 2;
+    targetAngle  = -Math.PI / 2;
+    winScreen.style.display = "none";
+    speedBar.style.width = "0%";
+  }
+</script>
+</body>
+</html>

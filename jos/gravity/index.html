@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Gravity Simulator</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #87CEEB;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+canvas {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  z-index: 0;
+}
+#ui {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+#title-box {
+  background: rgba(0,0,0,0.6);
+  border-radius: 12px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: white;
+}
+#controls {
+  background: rgba(0,0,0,0.6);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 300px;
+}
+.grav-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.grav-label {
+  font-size: 12px;
+  color: #aaa;
+  letter-spacing: 2px;
+  width: 60px;
+}
+.grav-val {
+  font-size: 16px;
+  font-weight: bold;
+  color: #f0c040;
+  width: 36px;
+  text-align: center;
+}
+.grav-btns { display:flex; gap:6px; }
+.gb {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.gb:hover { background: rgba(255,255,255,0.3); }
+.gb.minus { color: #e74c3c; }
+.gb.plus  { color: #2ecc71; }
+#chaos-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #e74c3c;
+  background: rgba(231,76,60,0.2);
+  color: #ff8888;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+#chaos-btn:hover { background: rgba(231,76,60,0.5); }
+#reset-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #555;
+  background: rgba(255,255,255,0.08);
+  color: #aaa;
+  font-size: 12px;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+#reset-btn:hover { background: rgba(255,255,255,0.15); color:white; }
+#status {
+  font-size: 12px;
+  color: #f0c040;
+  letter-spacing: 2px;
+  text-align: center;
+  min-height: 18px;
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="ui">
+  <div id="title-box">🌍 GRAVITY SIMULATOR</div>
+  <div id="controls">
+    <div class="grav-row">
+      <span class="grav-label">⬆ UP</span>
+      <div class="grav-btns">
+        <button class="gb minus" onclick="adj('up',-1)">−</button>
+        <button class="gb plus"  onclick="adj('up', 1)">+</button>
+      </div>
+      <span class="grav-val" id="v-up">0</span>
+    </div>
+    <div class="grav-row">
+      <span class="grav-label">⬇ DOWN</span>
+      <div class="grav-btns">
+        <button class="gb minus" onclick="adj('down',-1)">−</button>
+        <button class="gb plus"  onclick="adj('down', 1)">+</button>
+      </div>
+      <span class="grav-val" id="v-down">0</span>
+    </div>
+    <div class="grav-row">
+      <span class="grav-label">⬅ LEFT</span>
+      <div class="grav-btns">
+        <button class="gb minus" onclick="adj('left',-1)">−</button>
+        <button class="gb plus"  onclick="adj('left', 1)">+</button>
+      </div>
+      <span class="grav-val" id="v-left">0</span>
+    </div>
+    <div class="grav-row">
+      <span class="grav-label">➡ RIGHT</span>
+      <div class="grav-btns">
+        <button class="gb minus" onclick="adj('right',-1)">−</button>
+        <button class="gb plus"  onclick="adj('right', 1)">+</button>
+      </div>
+      <span class="grav-val" id="v-right">0</span>
+    </div>
+    <div id="status"></div>
+    <button id="chaos-btn" onclick="chaosMode()">💥 CHAOS MODE!</button>
+    <button id="reset-btn" onclick="resetAll()">↺ RESET</button>
+  </div>
+</div>
+
+<script>
+var cv = document.getElementById("c");
+var ctx = cv.getContext("2d");
+var W, H;
+function resize() { W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; }
+window.addEventListener("resize", resize); resize();
+
+/* gravity forces — each direction 0-10 */
+var grav = { up:0, down:0, left:0, right:0 };
+var MAX_G = 10;
+
+/* stickman physics */
+var man = {
+  x: 0, y: 0,
+  vx: 0, vy: 0,
+  w: 20, /* half body width */
+  h: 60, /* full height */
+  squish: 1, /* y scale for squash effect */
+  stretch: 1 /* x scale */
+};
+
+/* grass and flowers — fixed decorations */
+var grassBlades = [];
+var flowers = [];
+
+function initScene() {
+  /* place stickman in centre */
+  man.x = W/2; man.y = H - 120;
+  man.vx = 0; man.vy = 0;
+  man.squish = 1; man.stretch = 1;
+
+  /* grass */
+  grassBlades = [];
+  for (var i=0; i<80; i++) {
+    grassBlades.push({
+      x: Math.random()*W,
+      h: Math.random()*18+8,
+      sway: Math.random()*Math.PI*2,
+      swaySpeed: Math.random()*0.03+0.01,
+      col: Math.random()<0.5?"#3a9a2a":"#4ab03a"
+    });
+  }
+
+  /* flowers */
+  flowers = [];
+  for (var i=0; i<18; i++) {
+    flowers.push({
+      x: Math.random()*W,
+      col: ["#ff6b9d","#ff9f43","#ffd32a","#c44dff","#ff4757"][Math.floor(Math.random()*5)],
+      size: Math.random()*6+5,
+      sway: Math.random()*Math.PI*2,
+      swaySpeed: Math.random()*0.025+0.008
+    });
+  }
+}
+
+function adj(dir, delta) {
+  grav[dir] = Math.max(0, Math.min(MAX_G, grav[dir]+delta));
+  document.getElementById("v-"+dir).textContent = grav[dir];
+  updateStatus();
+}
+
+function updateStatus() {
+  var net = getNetGrav();
+  var msgs = [];
+  if (net.y < -0.3) msgs.push("🚀 LAUNCHED UP!");
+  if (net.y > 0.3) msgs.push("⬇ FALLING DOWN");
+  if (net.x < -0.3) msgs.push("⬅ FLYING LEFT!");
+  if (net.x > 0.3) msgs.push("➡ FLYING RIGHT!");
+  if (Math.abs(net.x) > 0.3 && Math.abs(net.y) > 0.3) msgs = ["💫 SPINNING CHAOS!"];
+  if (grav.up>0&&grav.down>0&&grav.left>0&&grav.right>0) msgs = ["💥 BEING CRUSHED!"];
+  document.getElementById("status").textContent = msgs.join(" ");
+}
+
+function getNetGrav() {
+  return {
+    x: (grav.right - grav.left) * 0.25,
+    y: (grav.down - grav.up) * 0.25
+  };
+}
+
+function chaosMode() {
+  grav.up    = Math.floor(Math.random()*8)+3;
+  grav.down  = Math.floor(Math.random()*8)+3;
+  grav.left  = Math.floor(Math.random()*8)+3;
+  grav.right = Math.floor(Math.random()*8)+3;
+  document.getElementById("v-up").textContent    = grav.up;
+  document.getElementById("v-down").textContent  = grav.down;
+  document.getElementById("v-left").textContent  = grav.left;
+  document.getElementById("v-right").textContent = grav.right;
+  updateStatus();
+  /* launch stickman */
+  man.vx = (Math.random()-0.5)*20;
+  man.vy = (Math.random()-0.5)*20;
+}
+
+function resetAll() {
+  grav = {up:0,down:0,left:0,right:0};
+  document.getElementById("v-up").textContent    = 0;
+  document.getElementById("v-down").textContent  = 0;
+  document.getElementById("v-left").textContent  = 0;
+  document.getElementById("v-right").textContent = 0;
+  document.getElementById("status").textContent  = "";
+  man.x=W/2; man.y=H-120;
+  man.vx=0; man.vy=0;
+  man.squish=1; man.stretch=1;
+}
+
+/* ===== DRAWING ===== */
+var groundY; /* set in draw */
+var t = 0;
+
+function drawSky() {
+  /* sky gradient based on up gravity */
+  var skyTop = grav.up > 5 ? "#1a0a3a" : "#87CEEB";
+  var skyBot = "#c8e8ff";
+  var grad = ctx.createLinearGradient(0,0,0,H*0.75);
+  grad.addColorStop(0, skyTop);
+  grad.addColorStop(1, skyBot);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  /* sun */
+  var sunX = W*0.8, sunY = H*0.12;
+  ctx.save();
+  ctx.shadowColor = "#ffee88"; ctx.shadowBlur = 30;
+  ctx.fillStyle = "#ffdd44";
+  ctx.beginPath(); ctx.arc(sunX,sunY,28,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  /* clouds */
+  drawCloud(W*0.15, H*0.1, 60);
+  drawCloud(W*0.55, H*0.07, 80);
+  drawCloud(W*0.82, H*0.15, 50);
+}
+
+function drawCloud(x, y, s) {
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.beginPath(); ctx.arc(x,y,s*0.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+s*0.4,y+s*0.1,s*0.38,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x-s*0.35,y+s*0.1,s*0.32,0,Math.PI*2); ctx.fill();
+}
+
+function drawGround(gy) {
+  /* dirt */
+  var dg = ctx.createLinearGradient(0,gy,0,H);
+  dg.addColorStop(0,"#5a3a1a"); dg.addColorStop(1,"#3a2008");
+  ctx.fillStyle = dg;
+  ctx.fillRect(0,gy,W,H-gy);
+  /* green strip */
+  ctx.fillStyle = "#4a9a20";
+  ctx.fillRect(0,gy,W,14);
+}
+
+function drawGrass(gy) {
+  for (var i=0; i<grassBlades.length; i++) {
+    var g=grassBlades[i];
+    g.sway += g.swaySpeed;
+    var sw = Math.sin(g.sway)*4;
+    ctx.strokeStyle = g.col;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(g.x, gy);
+    ctx.quadraticCurveTo(g.x+sw, gy-g.h*0.5, g.x+sw*1.5, gy-g.h);
+    ctx.stroke();
+  }
+}
+
+function drawFlowers(gy) {
+  for (var i=0; i<flowers.length; i++) {
+    var f=flowers[i];
+    f.sway += f.swaySpeed;
+    var sw = Math.sin(f.sway)*3;
+    /* stem */
+    ctx.strokeStyle="#3a8a10"; ctx.lineWidth=2; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(f.x,gy); ctx.lineTo(f.x+sw,gy-20); ctx.stroke();
+    /* petals */
+    ctx.fillStyle = f.col;
+    for (var p=0; p<5; p++) {
+      var a = p/5*Math.PI*2;
+      ctx.beginPath();
+      ctx.arc(f.x+sw+Math.cos(a)*f.size, gy-20+Math.sin(a)*f.size, f.size*0.7, 0, Math.PI*2);
+      ctx.fill();
+    }
+    /* centre */
+    ctx.fillStyle="#ffdd44";
+    ctx.beginPath(); ctx.arc(f.x+sw,gy-20,f.size*0.5,0,Math.PI*2); ctx.fill();
+  }
+}
+
+function drawStickman(x, y, sq, st) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(st, sq);
+
+  var net = getNetGrav();
+  var totalG = Math.abs(net.x) + Math.abs(net.y);
+
+  ctx.strokeStyle = "#222";
+  ctx.fillStyle = "#222";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+
+  /* shadow */
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.15)";
+  ctx.beginPath(); ctx.ellipse(0, 4, 16, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  /* legs — upside down V */
+  var legSpread = Math.min(Math.abs(net.x)*6 + Math.abs(net.y)*3, 18);
+  ctx.beginPath();
+  ctx.moveTo(-10 + legSpread, 22);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(10 - legSpread, 22);
+  ctx.stroke();
+
+  /* torso — vertical line */
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -30);
+  ctx.stroke();
+
+  /* arms — cross shape, tilt with gravity */
+  var armRaise = net.y * 6;
+  var armTilt  = net.x * 5;
+  ctx.beginPath();
+  ctx.moveTo(-18, -20 + armRaise - armTilt);
+  ctx.lineTo( 18, -20 + armRaise + armTilt);
+  ctx.stroke();
+
+  /* head — circle */
+  ctx.beginPath();
+  ctx.arc(0, -42, 12, 0, Math.PI*2);
+  ctx.strokeStyle = "#222";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = "#f0c8a0";
+  ctx.fill();
+
+  /* eyes — two small dots */
+  ctx.fillStyle = "#222";
+  ctx.beginPath(); ctx.arc(-4, -44, 2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc( 4, -44, 2, 0, Math.PI*2); ctx.fill();
+
+  /* mouth — changes with gravity intensity */
+  ctx.strokeStyle = "#222"; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  if (totalG < 0.2) {
+    /* happy smile */
+    ctx.arc(0, -39, 5, 0, Math.PI);
+  } else if (totalG < 1.5) {
+    /* surprised O */
+    ctx.arc(0, -38, 3, 0, Math.PI*2);
+  } else {
+    /* scared flat line */
+    ctx.moveTo(-5, -38); ctx.lineTo(5, -38);
+  }
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/* physics */
+function physics() {
+  var net = getNetGrav();
+  man.vx += net.x;
+  man.vy += net.y;
+
+  /* damping */
+  man.vx *= 0.97;
+  man.vy *= 0.97;
+
+  man.x += man.vx;
+  man.y += man.vy;
+
+  var gy = H - 80;
+
+  /* floor */
+  if (man.y > gy) {
+    man.y = gy;
+    man.vy *= -0.45;
+    man.vx *= 0.85;
+    /* squash on land */
+    man.squish = 0.6;
+  }
+  /* ceiling */
+  if (man.y < 60) {
+    man.y = 60;
+    man.vy *= -0.45;
+    man.squish = 0.6;
+  }
+  /* walls */
+  if (man.x < 20) { man.x=20; man.vx*=-0.45; man.stretch=0.6; }
+  if (man.x > W-20) { man.x=W-20; man.vx*=-0.45; man.stretch=0.6; }
+
+  /* recover squish */
+  man.squish += (1-man.squish)*0.15;
+  man.stretch += (1-man.stretch)*0.15;
+
+  /* crush effect — all 4 directions */
+  if (grav.up>0&&grav.down>0) man.squish = Math.max(0.2, man.squish - (grav.up+grav.down)*0.01);
+  if (grav.left>0&&grav.right>0) man.stretch = Math.max(0.2, man.stretch - (grav.left+grav.right)*0.01);
+}
+
+function loop() {
+  t++;
+  ctx.clearRect(0,0,W,H);
+  var gy = H-80;
+  groundY = gy;
+  drawSky();
+  drawGround(gy);
+  drawGrass(gy);
+  drawFlowers(gy);
+  physics();
+  drawStickman(man.x, man.y, man.squish, man.stretch);
+  requestAnimationFrame(loop);
+}
+
+initScene();
+loop();
+</script>
+</body>
+</html>

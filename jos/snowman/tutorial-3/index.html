@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>It's Hard to Build a Snowman — Tutorial 3 (Harder Challenge)</title>
+<style>
+  :root { --bg:#e6f2ff; --grid:#d0d0d0; --grass:#2e7d32; --snow:#ffffff; }
+  body { margin:0; font-family:system-ui,Arial,sans-serif; background:var(--bg); color:#111; text-align:center; }
+
+  h1 { margin:20px 0; font-size:28px; }
+  .layout { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+  .middle-row { display:flex; flex-direction:row; align-items:flex-start; justify-content:center; gap:40px; }
+  canvas { background:#a4c9ff33; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.12); }
+  .controls { display:flex; flex-direction:column; align-items:center; gap:20px; }
+  .pad { display:grid; grid-template-columns:80px 80px 80px; grid-template-rows:80px 80px 80px; gap:12px; justify-content:center; }
+  .pad button { font-size:28px; border:0; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,.2); cursor:pointer; background:#fff; }
+  .pad button:active { transform:translateY(1px); }
+  .msg { background:#fff; border-radius:12px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.1); max-width:700px; text-align:left; margin:0 auto; }
+  .msg button { margin-top:10px; font-size:16px; padding:6px 12px; border-radius:10px; border:none; background:#0b6aff; color:white; cursor:pointer; }
+  .msg button:hover { background:#084bb3; }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <h1>Tutorial 3 — Corner Problems (Harder Challenge)</h1>
+    <div class="middle-row">
+      <canvas id="game" width="520" height="240"></canvas>
+      <div class="controls">
+        <div class="pad">
+          <span></span><button id="btnUp">⬆️</button><span></span>
+          <button id="btnLeft">⬅️</button><button id="btnDown">⬇️</button><button id="btnRight">➡️</button>
+        </div>
+        <button id="btnReset">Reset</button>
+      </div>
+    </div>
+    <div class="msg" id="message">
+      Welcome to Tutorial 3 — The Corner Problem (Harder Challenge)!
+
+      This time, your goal is to build a snowman on **F1** — the far upper corner. Every snowball starts as size 1️⃣, but rolling over snow will make it grow:
+      • 1️⃣ → 2️⃣ → 3️⃣ as you roll over snow.
+
+      **Your setup:**
+      • 1 snowball at C1
+      • 1 snowball at D2
+      • 1 snowball at E3
+
+      **Your task:**
+      1. Push the C1 snowball across to F1 to grow it into a 3️⃣.
+      2. Push the D2 snowball across to F2 to grow it into a 2️⃣.
+      3. Push the E3 snowball upward to E1, keeping it as a 1️⃣.
+      4. Stack them: move the 2️⃣ onto the 3️⃣ (F2 → F1), then the 1️⃣ onto the 2️⃣ (E1 → F1) to make your snowman ☃️.
+
+      **Tip:** Column A and Row 4 are grass — no snow grows there. Everything else is snow, so plan your path carefully!
+    </div>
+  </div>
+<script>
+const gridW=6,gridH=4,tile=40;
+const snow='snow',grass='grass';
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+const DPR=Math.max(1,Math.min(window.devicePixelRatio||1,2));
+canvas.width*=DPR;canvas.height*=DPR;ctx.scale(DPR,DPR);
+const startX=(canvas.width/DPR-gridW*tile)/2;
+const startY=(canvas.height/DPR-gridH*tile)/2;
+let level,objects,player,playerHappy;
+function resetLevel(){
+ level=[];
+ for(let r=0;r<gridH;r++){
+   const row=[];
+   for(let c=0;c<gridW;c++){
+     if(c===0||r===3) row.push(grass); // column A or row 4 = grass
+     else row.push(snow);
+   }
+   level.push(row);
+ }
+ objects=new Map([
+  ['2,0',['1']], // C1 small
+  ['3,1',['1']], // D2 small
+  ['4,2',['1']]  // E3 small
+ ]);
+ player={x:0,y:3};playerHappy=false;draw();
+}
+function draw(){
+ ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR);
+ ctx.fillStyle='#e6f2ff';ctx.fillRect(0,0,canvas.width/DPR,canvas.height/DPR);
+ ctx.font='16px Arial';ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='bottom';
+ for(let c=0;c<gridW;c++) ctx.fillText(String.fromCharCode(65+c), startX + c*tile + tile/2, startY - 4);
+ ctx.textAlign='right';ctx.textBaseline='middle';
+ for(let r=0;r<gridH;r++) ctx.fillText((r+1).toString(), startX - 6, startY + r*tile + tile/2);
+ for(let r=0;r<gridH;r++)for(let c=0;c<gridW;c++){
+  const x=startX+c*tile,y=startY+r*tile,cell=level[r][c];
+  ctx.fillStyle=(cell===snow)?'#ffffff':'#2e7d32';ctx.fillRect(x,y,tile,tile);
+  ctx.strokeStyle='#d0d0d0';ctx.lineWidth=1;ctx.strokeRect(x,y,tile,tile);
+  const key=`${c},${r}`;
+  if(objects.has(key)){
+   const stack=objects.get(key);
+   ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='20px Arial';
+   if(stack.length===3&&stack.includes('3')&&stack.includes('2')&&stack.includes('1'))ctx.fillText('☃️',x+tile/2,y+tile/2);
+   else ctx.fillText(stack.join('-'),x+tile/2,y+tile/2);
+  }
+  if(player.x===c&&player.y===r){ctx.font='22px Arial';ctx.fillText(playerHappy?'😁':'🙂',x+tile/2,y+tile/2);}
+ }
+}
+function inside(x,y){return x>=0&&x<gridW&&y>=0&&y<gridH;}
+function key(c,r){return `${c},${r}`;}
+function tryMove(dx,dy){
+ const nx=player.x+dx,ny=player.y+dy;if(!inside(nx,ny))return;
+ const front=key(nx,ny);
+ if(objects.has(front)){
+  const nextX=nx+dx,nextY=ny+dy;if(!inside(nextX,nextY))return;
+  const currentStack=objects.get(front);
+  const topSize=parseInt(currentStack[currentStack.length-1]);
+  const beyond=key(nextX,nextY);
+  if(!objects.has(beyond)){
+    let newSize=topSize;
+    if(level[nextY][nextX]===snow && topSize<3){newSize=topSize+1;level[nextY][nextX]=grass;}
+    objects.set(beyond,[String(newSize)]);
+    objects.delete(front);
+    player.x=nx;player.y=ny;
+  } else {
+    const nextStack=objects.get(beyond);
+    const nextTop=parseInt(nextStack[nextStack.length-1]);
+    if((topSize===1&&(nextTop===2||nextTop===3))||(topSize===2&&nextTop===3)){
+      nextStack.push(String(topSize));
+      objects.delete(front);
+      player.x=nx;player.y=ny;
+      if(nextStack.length===3&&nextStack.includes('3')&&nextStack.includes('2')&&nextStack.includes('1')){
+        playerHappy=true;
+        document.getElementById('message').innerHTML='🎉 Well done! You built your final tutorial snowman on F1!<br><br><button onclick="window.open(\'https://sustruck975.trinket.io/sites/level-1-html\',\'_blank\')">▶️ Play Level 1</button>';
+      }
+    }
+  }
+ } else {player.x=nx;player.y=ny;}
+ draw();
+}
+document.getElementById('btnUp').onclick=()=>tryMove(0,-1);
+document.getElementById('btnDown').onclick=()=>tryMove(0,1);
+document.getElementById('btnLeft').onclick=()=>tryMove(-1,0);
+document.getElementById('btnRight').onclick=()=>tryMove(1,0);
+document.getElementById('btnReset').onclick=resetLevel;
+window.addEventListener('keydown',e=>{
+ if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
+ if(e.key==='ArrowUp')tryMove(0,-1);
+ if(e.key==='ArrowDown')tryMove(0,1);
+ if(e.key==='ArrowLeft')tryMove(-1,0);
+ if(e.key==='ArrowRight')tryMove(1,0);
+});
+resetLevel();
+</script>
+</body>
+</html>

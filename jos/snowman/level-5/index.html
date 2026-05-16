@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>It's Hard to Build a Snowman — New Level (HTML)</title>
+  <style>
+    :root { --bg:#e6f2ff; --grid:#d0d0d0; --grass:#2e7d32; --snow:#ffffff; }
+    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:#111; }
+    .wrap { display:flex; gap:40px; padding:16px; align-items:center; justify-content:center; }
+    canvas { background:#a4c9ff33; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.12); }
+    .panel { display:flex; flex-direction:column; gap:20px; min-width:220px; }
+    .pad { display:grid; grid-template-columns:80px 80px 80px; grid-template-rows:80px 80px 80px; gap:12px; justify-content:center; }
+    .pad button { font-size:28px; border:0; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,.2); cursor:pointer; background:#fff; }
+    .pad button:active { transform:translateY(1px); }
+    .msg { white-space:pre-line; background:#fff; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,.1); max-width:220px; text-align:center; }
+    .msg button { margin-top:10px; font-size:16px; padding:6px 12px; border-radius:10px; border:none; background:#0b6aff; color:white; cursor:pointer; }
+    .msg button:hover { background:#084bb3; }
+    .row { display:flex; gap:8px; justify-content:center; }
+    .row a, .msg a { color:#0b6aff; text-decoration:none; font-weight:600; }
+    .row a:hover, .msg a:hover { text-decoration:underline; }
+    .title { font-weight:700; text-align:center; }
+    .small { color:#444; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="320" height="320" aria-label="Snowman new level grid"></canvas>
+    <div class="panel">
+      <div class="title"> Controls</div>
+      <div class="pad" aria-label="On-screen D-Pad">
+        <span></span>
+        <button id="btnUp" aria-label="Up">⬆️</button>
+        <span></span>
+        <button id="btnLeft" aria-label="Left">⬅️</button>
+        <button id="btnDown" aria-label="Down">⬇️</button>
+        <button id="btnRight" aria-label="Right">➡️</button>
+      </div>
+      <div class="row">
+        <button id="btnReset">Reset Level</button>
+      </div>
+      <div class="msg" id="message">Build a full snowman (3–2–1). Use arrow keys or the on-screen buttons.
+        <div class="small">Tip: Pushing a ball over <b>snow</b> makes it grow. You can only stack 1→2 and 2→3. You cannot move through black walls or push balls into them.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const gridW = 5, gridH = 5;
+  const tile = 48;
+  const cols = ['A','B','C','D','E'];
+  const rows = ['1','2','3','4','5'];
+  const snow = 'snow', grass = 'grass', wall = 'wall';
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+  canvas.width = canvas.width * DPR; canvas.height = canvas.height * DPR; ctx.scale(DPR,DPR);
+
+  const startX = (canvas.width / DPR - gridW * tile) / 2;
+  const startY = (canvas.height / DPR - gridH * tile) / 2;
+
+  let level = [
+    [snow, snow, snow, snow, snow],
+    [snow, wall,  grass, wall,  snow],
+    [snow, grass,  grass,  grass, snow],
+    [snow, wall,  grass,  wall,  snow],
+    [snow, snow,  snow,  snow,  snow],
+    ];
+
+  let objects;
+  let player, playerHappy;
+
+  function resetLevel(){
+    objects = new Map([
+      ['1,2', ['1']], // B3
+      ['3,2', ['1']], // D3
+      ['2,2', ['1']]  // C3
+    ]);
+    player = {x:0, y:1}; // C4
+    playerHappy = false;
+    setMessage('Build a full snowman (3–2–1). Use arrow keys or the on-screen buttons.');
+    draw();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR);
+    ctx.fillStyle = '#e6f2ff';
+    ctx.fillRect(0,0,canvas.width/DPR,canvas.height/DPR);
+
+    ctx.lineWidth = 4; ctx.strokeStyle = '#1b3a7a';
+    ctx.strokeRect(startX-6, startY-6, gridW*tile+12, gridH*tile+12);
+
+    for(let r=0;r<gridH;r++){
+      for(let c=0;c<gridW;c++){
+        const x = startX + c*tile;
+        const y = startY + r*tile;
+        const cell = level[r][c];
+
+        if(cell===wall){
+          ctx.fillStyle = '#000000';
+        } else if(cell===snow){
+          ctx.fillStyle = '#ffffff';
+        } else {
+          ctx.fillStyle = '#2e7d32';
+        }
+        ctx.fillRect(x,y,tile,tile);
+        ctx.strokeStyle = '#d0d0d0'; ctx.lineWidth = 1;
+        ctx.strokeRect(x,y,tile,tile);
+
+        if(player.x===c && player.y===r){
+          ctx.fillStyle = '#000'; ctx.font = '22px Arial';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(playerHappy ? '😁' : '🙂', x+tile/2, y+tile/2+2);
+        }
+
+        const keyPos = `${c},${r}`;
+        if(objects.has(keyPos)){
+          const stack = objects.get(keyPos);
+          ctx.fillStyle = '#000';
+          ctx.font = stack.length===3? '20px Arial' : '16px Arial';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          if(stack.length===3 && stack[0]==='3' && stack[1]==='2' && stack[2]==='1'){
+            ctx.fillText('☃️', x+tile/2, y+tile/2+2);
+          } else {
+            const label = [...stack].reverse().join('-');
+            ctx.fillText(label, x+tile/2, y+tile/2+2);
+          }
+        }
+      }
+    }
+
+    ctx.fillStyle = '#000'; ctx.font = '13px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(let i=0;i<gridW;i++) ctx.fillText(cols[i], startX + i*tile + tile/2, startY - 12);
+    for(let i=0;i<gridH;i++) ctx.fillText(rows[i], startX - 12, startY + i*tile + tile/2);
+  }
+
+  function setMessage(text){
+    const msgBox = document.getElementById('message');
+    msgBox.innerHTML = text;
+  }
+
+  function inside(x,y){ return x>=0 && x<gridW && y>=0 && y<gridH; }
+  function key(c,r){ return `${c},${r}`; }
+  function isWall(x,y){ return level[y][x] === wall; }
+
+  function tryMove(dx,dy){
+    const nx = player.x + dx;
+    const ny = player.y + dy;
+    if(!inside(nx,ny) || isWall(nx,ny)) return;
+
+    const front = key(nx,ny);
+    if(objects.has(front)){
+      const nextX = nx + dx; const nextY = ny + dy;
+      if(!inside(nextX,nextY) || isWall(nextX,nextY)) return;
+
+      const currentStack = objects.get(front);
+      const topSize = parseInt(currentStack[currentStack.length-1],10);
+      const beyond = key(nextX,nextY);
+
+      if(!objects.has(beyond)){
+        let ball = currentStack.pop();
+        if(level[nextY][nextX]===snow) ball = String(Math.min(parseInt(ball,10)+1, 3));
+        level[ny][nx] = grass;
+        objects.set(beyond, [ball]);
+        if(currentStack.length===0) objects.delete(front);
+        player.x = nx; player.y = ny;
+      } else {
+        const nextStack = objects.get(beyond);
+        const nextTop = parseInt(nextStack[nextStack.length-1],10);
+        if(topSize === nextTop - 1){
+          nextStack.push(String(topSize));
+          objects.delete(front);
+          level[ny][nx] = grass;
+          player.x = nx; player.y = ny;
+          if(nextStack.length===3 && nextStack[0]==='3' && nextStack[1]==='2' && nextStack[2]==='1'){
+            playerHappy = true;
+            setMessage('🎉 Well done!<br>You finished the level! <br><button onclick="window.open(\'https://sustruck975.trinket.io/sites/level-4-snowman\', \'_blank\')">Go to Level 4 ▶️</button>');
+          }
+        }
+      }
+    } else {
+      player.x = nx; player.y = ny;
+    }
+    draw();
+  }
+
+  window.addEventListener('keydown', (e)=>{
+    const k = e.key;
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(k)) e.preventDefault();
+    if(k==='ArrowUp') tryMove(0,-1);
+    if(k==='ArrowDown') tryMove(0,1);
+    if(k==='ArrowLeft') tryMove(-1,0);
+    if(k==='ArrowRight') tryMove(1,0);
+  });
+
+  document.getElementById('btnUp').onclick = ()=> tryMove(0,-1);
+  document.getElementById('btnDown').onclick = ()=> tryMove(0,1);
+  document.getElementById('btnLeft').onclick = ()=> tryMove(-1,0);
+  document.getElementById('btnRight').onclick = ()=> tryMove(1,0);
+  document.getElementById('btnReset').onclick = resetLevel;
+
+  resetLevel();
+  </script>
+</body>
+</html>

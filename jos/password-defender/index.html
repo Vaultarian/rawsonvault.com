@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Password Defender</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0d0d1f;
+      color: white;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .main {
+      position: relative;
+      z-index: 1;
+      padding: 30px 20px 60px;
+    }
+
+    h1 {
+      color: #2ecc71;
+      font-size: 32px;
+      text-shadow: 0 0 18px #2ecc7188;
+      margin: 0 auto 10px;
+      background: #000;
+      padding: 10px 28px;
+      border-radius: 16px;
+      width: fit-content;
+    }
+
+    p.subtitle {
+      color: #aaa;
+      font-size: 14px;
+      margin: 0 auto 12px;
+      background: #000;
+      padding: 5px 18px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin: 10px auto;
+      width: 320px;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    input {
+      display: block;
+      margin: 5px auto 15px;
+      width: 300px;
+      padding: 10px;
+      font-size: 15px;
+      border: 2px solid #444;
+      border-radius: 8px;
+      background-color: #16213e;
+      color: white;
+      outline: none;
+    }
+
+    input:focus { border-color: #f0c040; }
+
+    .bar-track {
+      width: 320px;
+      height: 22px;
+      background: #222;
+      border-radius: 11px;
+      margin: 10px auto 5px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 11px;
+      width: 0%;
+      transition: width 0.4s, background 0.4s;
+    }
+
+    .score-line {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 5px 0 15px;
+    }
+
+    .tips {
+      text-align: left;
+      width: 320px;
+      margin: 0 auto;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .done { color: #2ecc71; }
+    .todo { color: #666; }
+
+    .win-box {
+      display: none;
+      background: #1a4731;
+      border: 2px solid #2ecc71;
+      border-radius: 12px;
+      padding: 15px 20px;
+      width: 280px;
+      margin: 20px auto 0;
+    }
+
+    .win-box p {
+      margin: 0 0 5px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #2ecc71;
+    }
+
+    .mode-box {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      padding: 20px;
+    }
+
+    .mode-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #f0c040;
+      margin-bottom: 30px;
+      background: #000;
+      padding: 10px 28px;
+      border-radius: 12px;
+      text-shadow: 0 0 12px #f0c04066;
+    }
+
+    .mode-btn {
+      display: block;
+      width: 480px;
+      max-width: 90vw;
+      margin-bottom: 18px;
+      padding: 22px 24px;
+      border-radius: 16px;
+      border: 2px solid #444;
+      background: #16213e;
+      color: #ccc;
+      font-size: 15px;
+      cursor: pointer;
+      text-align: left;
+      transition: border 0.2s, background 0.2s;
+    }
+
+    .mode-btn:hover { border-color: #f0c040; background: #1e2d50; }
+
+    .mode-btn.selected-easy {
+      border-color: #2ecc71;
+      background: #0e2e1e;
+      color: #2ecc71;
+    }
+
+    .mode-btn.selected-hard {
+      border-color: #e74c3c;
+      background: #2e0e0e;
+      color: #e74c3c;
+    }
+
+    .mode-icon { font-size: 22px; margin-right: 10px; }
+    .mode-label { font-weight: bold; font-size: 16px; }
+    .mode-desc { font-size: 13px; color: #888; margin-top: 6px; padding-left: 32px; }
+    .mode-btn.selected-easy .mode-desc { color: #1a7a45; }
+    .mode-btn.selected-hard .mode-desc { color: #7a1a1a; }
+
+    .game-area { display: none; max-width: 380px; margin: 0 auto; }
+    .fs-wrap {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 999;
+    }
+    .fs-tooltip {
+      display: none;
+      position: absolute;
+      bottom: 52px;
+      right: 0;
+      background: #000;
+      border: 2px solid #f0c040;
+      color: #f0c040;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 7px 14px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .fs-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 14px;
+      border: 6px solid transparent;
+      border-top-color: #f0c040;
+    }
+    .fs-btn {
+      background: #000;
+      border: 2px solid #f0c040;
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fs-btn:hover { background: #1a1500; }
+    .fs-btn svg { width: 24px; height: 24px; }
+
+    .cb-btn {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      z-index: 999;
+      background: #000;
+      border: 2px solid #f0c040;
+      border-radius: 10px;
+      padding: 8px 14px;
+      color: #f0c040;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cb-btn:hover { background: #1a1500; }
+
+    .cb-popup {
+      display: none;
+      position: fixed;
+      bottom: 68px;
+      left: 16px;
+      z-index: 1000;
+      background: #0d0d1f;
+      border: 2px solid #f0c040;
+      border-radius: 14px;
+      padding: 16px;
+      width: 260px;
+      text-align: left;
+    }
+
+    .cb-popup p {
+      color: #f0c040;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .cb-option {
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #444;
+      background: #16213e;
+      color: #ccc;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .cb-option:hover { border-color: #f0c040; background: #1e2d50; }
+    .cb-option.cb-active { border-color: #f0c040; color: #f0c040; background: #1a1500; }
+    .cb-reset {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #555;
+      background: none;
+      color: #888;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .cb-reset:hover { color: #ccc; border-color: #888; }
+  </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<button class="cb-btn" onclick="toggleCBMenu()">&#128065; Colourblind Edition</button>
+
+<div class="cb-popup" id="cbPopup">
+  <p>What type of colour blindness?</p>
+  <button class="cb-option" id="cb-prot" onclick="setColourblind('protanopia')">🔴 Protanopia — can't see red</button>
+  <button class="cb-option" id="cb-deut" onclick="setColourblind('deuteranopia')">🟢 Deuteranopia — red/green mix up</button>
+  <button class="cb-option" id="cb-trit" onclick="setColourblind('tritanopia')">🔵 Tritanopia — can't see blue</button>
+  <button class="cb-option" id="cb-achr" onclick="setColourblind('achromatopsia')">⚫ Achromatopsia — no colour at all</button>
+  <button class="cb-reset" onclick="setColourblind('normal')">✕ Reset to normal colours</button>
+</div>
+
+<div class="fs-wrap" id="fsWrap">
+  <div class="fs-tooltip" id="fsTooltip">Press F11 to go fullscreen!</div>
+  <button class="fs-btn" id="fsBtn" onclick="toggleFS()">
+    <svg id="fsIcon" viewBox="0 0 24 24" fill="none" stroke="#f0c040" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15,3 21,3 21,9"/>
+      <polyline points="9,21 3,21 3,15"/>
+      <polyline points="21,3 14,10"/>
+      <polyline points="3,21 10,14"/>
+    </svg>
+  </button>
+</div>
+
+<div class="main">
+  <div class="mode-box" id="modeBox">
+    <h1 style="margin-bottom:8px;">&#128274; Password Checker &#128274;</h1>
+    <p style="color:#aaa; font-size:14px; background:#000; padding:5px 18px; border-radius:10px; margin-bottom:30px;">How strong do you want to go?</p>
+    <button class="mode-btn" id="btnEasy" onclick="setMode('easy')">
+      <span class="mode-icon"><span id="easyDot" style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#2ecc71; vertical-align:middle; margin-right:8px;"></span></span><span class="mode-label">Not a hacker can crack it, but you can remember it</span>
+      <div class="mode-desc">Get to 100 — eight rules, totally doable!</div>
+    </button>
+    <button class="mode-btn" id="btnHard" onclick="setMode('hard')">
+      <span class="mode-icon"><span id="hardDot" style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#e74c3c; vertical-align:middle; margin-right:8px;"></span></span><span class="mode-label">No one will EVER know it — make the strongest password ever</span>
+      <div class="mode-desc">Get to 1000 — fifteen brutal rules. Good luck!</div>
+    </button>
+  </div>
+
+  <div class="game-area" id="gameArea">
+    <h1 style="font-size:22px; padding:7px 20px; margin-bottom:8px;">&#128274; Password Checker &#128274;</h1>
+    <p class="subtitle" style="font-size:12px; margin-bottom:6px;">Build a password strong enough to stop a hacker!</p>
+    <p class="subtitle" id="hintLine" style="color:#f0c040; font-size:11px; margin-bottom:14px;">Click the locks around the edges!</p>
+    <input type="text" id="uname" placeholder="e.g. Bob the God" />
+
+    <label>Password</label>
+    <input type="text" id="pw" placeholder="Start typing your password..." oninput="check()" />
+
+    <div class="bar-track">
+      <div class="bar-fill" id="bar"></div>
+    </div>
+    <div class="score-line">Strength: <span id="pct">0%</span></div>
+
+    <div class="tips" id="tips"></div>
+
+    <div class="win-box" id="winbox">
+      <p id="winmsg">You did it!</p>
+      <small id="winsmall">100% secure. No hacker is getting past that!</small>
+      <br><br>
+      <button id="copyBtn" onclick="copyPassword()" style="background:#2ecc71; color:#0a2e1a; border:none; padding:10px 24px; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; letter-spacing:1px;">COPY PASSWORD</button>
+      <p id="copymsg" style="display:none; color:#aed6c0; font-size:13px; margin-top:8px;">Copied!</p>
+      <br>
+      <button onclick="rechooseDifficulty()" style="background:none; color:#aed6c0; border:1px solid #aed6c0; padding:7px 18px; border-radius:8px; font-size:13px; cursor:pointer; margin-top:6px;">Re-choose difficulty</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== COLOURBLIND MODE ===================== */
+var cbPalettes = {
+  normal: {
+    good:    "#2ecc71",  /* green — success/done */
+    bad:     "#e74c3c",  /* red — danger/low score */
+    warn:    "#f39c12",  /* orange — medium score */
+    mid:     "#3498db",  /* blue — getting there */
+    key:     "#f0c040",  /* yellow — keys/locks/title */
+    winBg:   "#1a4731",
+    winBorder:"#2ecc71",
+    winText: "#2ecc71",
+    winSmall:"#aed6c0"
+  },
+  protanopia: {
+    /* reds look dark/black, green+yellow blur — use blue+yellow instead */
+    good:    "#0077bb",  /* blue replaces green */
+    bad:     "#ddaa00",  /* gold replaces red */
+    warn:    "#ddaa00",
+    mid:     "#0077bb",
+    key:     "#ffffff",  /* white for keys — yellow is hard */
+    winBg:   "#001a33",
+    winBorder:"#0077bb",
+    winText: "#55bbff",
+    winSmall:"#aaccee"
+  },
+  deuteranopia: {
+    /* similar to protanopia — blue+orange palette */
+    good:    "#0077bb",
+    bad:     "#ee7700",
+    warn:    "#ee7700",
+    mid:     "#0077bb",
+    key:     "#ffffff",
+    winBg:   "#001a33",
+    winBorder:"#0077bb",
+    winText: "#55bbff",
+    winSmall:"#aaccee"
+  },
+  tritanopia: {
+    /* blue/yellow swap — use orange+pink instead */
+    good:    "#ff6688",  /* pink replaces green */
+    bad:     "#cc3300",
+    warn:    "#ff6600",
+    mid:     "#ff6688",
+    key:     "#ff9900",  /* orange — visible without blue */
+    winBg:   "#330011",
+    winBorder:"#ff6688",
+    winText: "#ff99bb",
+    winSmall:"#ffccdd"
+  },
+  achromatopsia: {
+    /* no colour — use white/grey/black contrast only */
+    good:    "#ffffff",
+    bad:     "#666666",
+    warn:    "#999999",
+    mid:     "#cccccc",
+    key:     "#ffffff",
+    winBg:   "#222222",
+    winBorder:"#ffffff",
+    winText: "#ffffff",
+    winSmall:"#cccccc"
+  }
+};
+
+var currentCB = "normal";
+
+function toggleCBMenu() {
+  var popup = document.getElementById("cbPopup");
+  popup.style.display = popup.style.display === "block" ? "none" : "block";
+}
+
+function setColourblind(type) {
+  currentCB = type;
+  var p = cbPalettes[type];
+
+  /* canvas colours */
+  cbGood = p.good;
+  cbKey  = p.key;
+
+  /* all h1 titles */
+  var h1s = document.querySelectorAll("h1");
+  for (var i = 0; i < h1s.length; i++) {
+    h1s[i].style.color = p.good;
+    h1s[i].style.textShadow = "0 0 18px " + p.good + "88";
+  }
+
+  /* subtitles — the "click the locks" line uses key colour */
+  var subs = document.querySelectorAll("p.subtitle");
+  for (var i = 0; i < subs.length; i++) {
+    /* if it was the yellow hint line, use key colour; else white */
+    subs[i].style.color = subs[i].dataset.role === "hint" ? p.key : "#ccc";
+  }
+
+  /* score line */
+  var sl = document.getElementById("scoreline");
+  if (sl) sl.style.color = p.good;
+
+  /* done tick items */
+  var dones = document.querySelectorAll(".done");
+  for (var i = 0; i < dones.length; i++) { dones[i].style.color = p.good; }
+
+  /* win box */
+  var wb = document.getElementById("winbox");
+  wb.style.background  = p.winBg;
+  wb.style.borderColor = p.winBorder;
+  var wm = document.getElementById("winmsg");
+  if (wm) wm.style.color = p.winText;
+  var ws = document.getElementById("winsmall");
+  if (ws) ws.style.color = p.winSmall;
+
+  /* copy password button */
+  var cpBtn = document.getElementById("copyBtn");
+  if (cpBtn) { cpBtn.style.background = p.good; }
+
+  /* mode buttons border/accent */
+  var modeBtns = document.querySelectorAll(".mode-btn");
+  for (var i = 0; i < modeBtns.length; i++) {
+    modeBtns[i].style.borderColor = "#444";
+  }
+
+  /* easy/hard difficulty button selected states */
+  var easyBtn = document.getElementById("btnEasy");
+  var hardBtn = document.getElementById("btnHard");
+  if (easyBtn && easyBtn.classList.contains("selected-easy")) {
+    easyBtn.style.borderColor = p.good;
+    easyBtn.style.color = p.good;
+  }
+  if (hardBtn && hardBtn.classList.contains("selected-hard")) {
+    hardBtn.style.borderColor = p.bad;
+    hardBtn.style.color = p.bad;
+  }
+
+  /* cb popup border and title */
+  document.getElementById("cbPopup").style.borderColor = p.key;
+  document.querySelector(".cb-popup p").style.color = p.key;
+
+  /* cb button border */
+  document.querySelector(".cb-btn").style.borderColor = p.key;
+  document.querySelector(".cb-btn").style.color = p.key;
+
+  /* fullscreen button border */
+  document.querySelector(".fs-btn").style.borderColor = p.key;
+  document.getElementById("fsIcon").style.stroke = p.key;
+
+  /* "click the locks" subtitle */
+  var hintLine = document.getElementById("hintLine");
+  if (hintLine) hintLine.style.color = p.key;
+
+  /* difficulty dots */
+  var easyDot = document.getElementById("easyDot");
+  var hardDot = document.getElementById("hardDot");
+  if (easyDot) easyDot.style.background = p.good;
+  if (hardDot) hardDot.style.background = p.bad;
+
+  /* highlight active cb button */
+  var ids = ["cb-prot","cb-deut","cb-trit","cb-achr"];
+  var map = { protanopia:"cb-prot", deuteranopia:"cb-deut", tritanopia:"cb-trit", achromatopsia:"cb-achr" };
+  for (var i = 0; i < ids.length; i++) {
+    document.getElementById(ids[i]).className = "cb-option";
+    document.getElementById(ids[i]).style.borderColor = "";
+    document.getElementById(ids[i]).style.color = "";
+  }
+  if (map[type]) {
+    var active = document.getElementById(map[type]);
+    active.className = "cb-option cb-active";
+    active.style.borderColor = p.key;
+    active.style.color = p.key;
+  }
+
+  /* re-run check so bar colours update immediately */
+  check();
+
+  /* close popup */
+  document.getElementById("cbPopup").style.display = "none";
+}
+
+/* live colour vars used by canvas loop */
+var cbGood = "#2ecc71";
+var cbKey  = "#f0c040";
+
+/* ===================== FULLSCREEN ===================== */
+var fsTooltipTimer = null;
+var fsOpen = false;
+
+function toggleFS() {
+  var tip = document.getElementById("fsTooltip");
+  tip.textContent = fsOpen ? "Press F11 to exit fullscreen!" : "Press F11 to go fullscreen!";
+  fsOpen = !fsOpen;
+  tip.style.display = "block";
+  if (fsTooltipTimer) clearTimeout(fsTooltipTimer);
+  fsTooltipTimer = setTimeout(function() {
+    tip.style.display = "none";
+  }, 2500);
+}
+
+/* ===================== PASSWORD GAME ===================== */
+var currentMode = null;
+
+var easyRules = [
+  { label: "At least 8 characters (+15)", pts: 15, done: false },
+  { label: "At least 12 characters (+10)", pts: 10, done: false },
+  { label: "An uppercase letter A-Z (+15)", pts: 15, done: false },
+  { label: "A lowercase letter a-z (+10)", pts: 10, done: false },
+  { label: "A number 0-9 (+15)", pts: 15, done: false },
+  { label: "A symbol like ! @ # $ % (+20)", pts: 20, done: false },
+  { label: "At least 16 characters (+10)", pts: 10, done: false },
+  { label: "Does not contain your username (+5)", pts: 5, done: false }
+];
+
+var hardRules = [
+  { label: "At least 8 characters (+50)", pts: 50, done: false },
+  { label: "At least 12 characters (+75)", pts: 75, done: false },
+  { label: "At least 16 characters (+75)", pts: 75, done: false },
+  { label: "At least 20 characters (+100)", pts: 100, done: false },
+  { label: "At least 24 characters (+100)", pts: 100, done: false },
+  { label: "An uppercase letter A-Z (+50)", pts: 50, done: false },
+  { label: "A lowercase letter a-z (+50)", pts: 50, done: false },
+  { label: "A number 0-9 (+50)", pts: 50, done: false },
+  { label: "Two or more numbers (+75)", pts: 75, done: false },
+  { label: "A symbol like ! @ # $ % (+75)", pts: 75, done: false },
+  { label: "Two or more symbols (+75)", pts: 75, done: false },
+  { label: "Does not contain your username (+50)", pts: 50, done: false },
+  { label: "No repeated characters like aaa (+50)", pts: 50, done: false },
+  { label: "No common words like 'password' (+75)", pts: 75, done: false },
+  { label: "At least 3 different symbols (+75)", pts: 75, done: false }
+];
+
+var commonWords = ["password","qwerty","letmein","welcome","monkey","dragon","master","hello","shadow","sunshine","princess","football","baseball","superman","batman","123456","abc123","iloveyou","admin","login","pass","test","guest","user"];
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById("gameArea").style.display = "block";
+  document.getElementById("modeBox").style.display = "none";
+  document.getElementById("btnEasy").className = "mode-btn" + (mode === "easy" ? " selected-easy" : "");
+  document.getElementById("btnHard").className = "mode-btn" + (mode === "hard" ? " selected-hard" : "");
+  document.getElementById("pw").value = "";
+  document.getElementById("pct").textContent = mode === "easy" ? "0%" : "0%";
+  document.getElementById("bar").style.width = "0%";
+  document.getElementById("tips").innerHTML = "";
+  document.getElementById("winbox").style.display = "none";
+  check();
+}
+
+function check() {
+  if (!currentMode) return;
+  var pw = document.getElementById("pw").value;
+  var uname = document.getElementById("uname").value.toLowerCase();
+  var rules, target;
+
+  if (currentMode === "easy") {
+    rules = [
+      { label: "At least 8 characters (+15)", pts: 15, done: pw.length >= 8 },
+      { label: "At least 12 characters (+10)", pts: 10, done: pw.length >= 12 },
+      { label: "An uppercase letter A-Z (+15)", pts: 15, done: /[A-Z]/.test(pw) },
+      { label: "A lowercase letter a-z (+10)", pts: 10, done: /[a-z]/.test(pw) },
+      { label: "A number 0-9 (+15)", pts: 15, done: /[0-9]/.test(pw) },
+      { label: "A symbol like ! @ # $ % (+20)", pts: 20, done: /[^a-zA-Z0-9]/.test(pw) },
+      { label: "At least 16 characters (+10)", pts: 10, done: pw.length >= 16 },
+      { label: "Does not contain your username (+5)", pts: 5, done: pw.length > 0 && uname.length > 0 && !pw.toLowerCase().includes(uname) }
+    ];
+    target = 100;
+  } else {
+    var symbols = (pw.match(/[^a-zA-Z0-9]/g) || []);
+    var uniqueSymbols = symbols.filter(function(v,i,a){ return a.indexOf(v) === i; });
+    var nums = (pw.match(/[0-9]/g) || []);
+    var hasCommon = commonWords.some(function(w){ return pw.toLowerCase().includes(w); });
+    var hasRepeat = /(.)\1\1/.test(pw);
+    rules = [
+      { label: "At least 8 characters (+50)", pts: 50, done: pw.length >= 8 },
+      { label: "At least 12 characters (+75)", pts: 75, done: pw.length >= 12 },
+      { label: "At least 16 characters (+75)", pts: 75, done: pw.length >= 16 },
+      { label: "At least 20 characters (+100)", pts: 100, done: pw.length >= 20 },
+      { label: "At least 24 characters (+100)", pts: 100, done: pw.length >= 24 },
+      { label: "An uppercase letter A-Z (+50)", pts: 50, done: /[A-Z]/.test(pw) },
+      { label: "A lowercase letter a-z (+50)", pts: 50, done: /[a-z]/.test(pw) },
+      { label: "A number 0-9 (+50)", pts: 50, done: nums.length >= 1 },
+      { label: "Two or more numbers (+75)", pts: 75, done: nums.length >= 2 },
+      { label: "A symbol like ! @ # $ % (+75)", pts: 75, done: symbols.length >= 1 },
+      { label: "Two or more symbols (+75)", pts: 75, done: symbols.length >= 2 },
+      { label: "Does not contain your username (+50)", pts: 50, done: pw.length > 0 && uname.length > 0 && !pw.toLowerCase().includes(uname) },
+      { label: "No repeated characters like aaa (+50)", pts: 50, done: pw.length > 0 && !hasRepeat },
+      { label: "No common words like 'password' (+75)", pts: 75, done: pw.length > 0 && !hasCommon },
+      { label: "At least 3 different symbols (+75)", pts: 75, done: uniqueSymbols.length >= 3 }
+    ];
+    target = 1000;
+  }
+
+  var score = 0;
+  for (var i = 0; i < rules.length; i++) { if (rules[i].done) score += rules[i].pts; }
+  if (score > target) score = target;
+
+  var pct = Math.round((score / target) * 100);
+  var p = cbPalettes[currentCB];
+  var bar = document.getElementById("bar");
+  bar.style.width = pct + "%";
+  if      (pct < 30) bar.style.background = p.bad;
+  else if (pct < 60) bar.style.background = p.warn;
+  else if (pct < 85) bar.style.background = p.mid;
+  else               bar.style.background = p.good;
+
+  document.getElementById("pct").textContent = score + " / " + target;
+
+  var html = "";
+  for (var j = 0; j < rules.length; j++) {
+    var r = rules[j];
+    html += r.done
+      ? '<div class="done" style="color:' + cbPalettes[currentCB].good + '">&#10003; ' + r.label + '</div>'
+      : '<div class="todo">&#9675; ' + r.label + '</div>';
+  }
+  document.getElementById("tips").innerHTML = html;
+
+  var name = document.getElementById("uname").value.trim();
+  var winbox = document.getElementById("winbox");
+  if (score >= target) {
+    winbox.style.display = "block";
+    document.getElementById("winmsg").textContent = (name.length > 0 ? name : "You") + ", you did it!";
+    document.getElementById("winsmall").textContent = target === 1000
+      ? "1000 / 1000! Not even a supercomputer is cracking that!"
+      : "100% secure. No hacker is getting past that!";
+    document.getElementById("copymsg").style.display = "none";
+  } else {
+    winbox.style.display = "none";
+  }
+}
+
+function rechooseDifficulty() {
+  currentMode = null;
+  document.getElementById("modeBox").style.display = "flex";
+  document.getElementById("gameArea").style.display = "none";
+  document.getElementById("winbox").style.display = "none";
+  document.getElementById("pw").value = "";
+  document.getElementById("uname").value = "";
+  document.getElementById("bar").style.width = "0%";
+  document.getElementById("pct").textContent = "0";
+  document.getElementById("tips").innerHTML = "";
+  document.getElementById("btnEasy").className = "mode-btn";
+  document.getElementById("btnHard").className = "mode-btn";
+}
+
+function copyPassword() {
+  var pw = document.getElementById("pw").value;
+  var d = document.createElement("textarea");
+  d.value = pw; document.body.appendChild(d); d.select();
+  document.execCommand("copy"); document.body.removeChild(d);
+  document.getElementById("copymsg").style.display = "block";
+}
+
+/* ===================== CANVAS ANIMATION ===================== */
+var canvas = document.getElementById("bg");
+var ctx = canvas.getContext("2d");
+var W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* Spawn locks around the edge in a ring */
+var locks = [];
+var keys  = [];
+var flyingKeys = [];  /* animated key projectiles */
+
+var LOCK_COUNT = 16;
+
+function makeLock(index) {
+  var total = LOCK_COUNT;
+  var angle = (index / total) * Math.PI * 2 - Math.PI / 2;
+  var rx = W * 0.5 - 36;
+  var ry = H * 0.5 - 36;
+  return {
+    index:    index,
+    angle:    angle,
+    x:        W / 2 + Math.cos(angle) * rx,
+    y:        H / 2 + Math.sin(angle) * ry,
+    rx:       rx,
+    ry:       ry,
+    orbitT:   angle,
+    orbitSpeed: 0.0012 * (index % 2 === 0 ? 1 : -1),
+    size:     22,
+    unlocked: false,
+    unlockTimer: 0,
+    shake:    0
+  };
+}
+
+for (var i = 0; i < LOCK_COUNT; i++) {
+  locks.push(makeLock(i));
+}
+
+/* Loose floating keys — always drifting around the edge band */
+function makeKey() {
+  var side = Math.floor(Math.random() * 4);
+  var band = 80;
+  var x, y;
+  if (side === 0) { x = Math.random() * W; y = Math.random() * band; }
+  else if (side === 1) { x = Math.random() * W; y = H - Math.random() * band; }
+  else if (side === 2) { x = Math.random() * band; y = Math.random() * H; }
+  else { x = W - Math.random() * band; y = Math.random() * H; }
+  return {
+    x: x, y: y,
+    vx: (Math.random() - 0.5) * 0.6,
+    vy: (Math.random() - 0.5) * 0.6,
+    angle: Math.random() * Math.PI * 2,
+    spin: (Math.random() - 0.5) * 0.02,
+    size: Math.random() * 8 + 14,
+    alpha: Math.random() * 0.4 + 0.4,
+    id: i
+  };
+}
+
+for (var k = 0; k < 18; k++) { keys.push(makeKey()); }
+
+/* ---- Draw helpers ---- */
+function drawKeyShape(ctx, s, col) {
+  ctx.save();
+  ctx.strokeStyle = col; ctx.fillStyle = col;
+  ctx.lineWidth = 2.8;
+  ctx.beginPath(); ctx.arc(0, 0, 9 * s, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(9 * s, 0);
+  ctx.lineTo(26 * s, 0);
+  ctx.moveTo(22 * s, 0); ctx.lineTo(22 * s,  6 * s);
+  ctx.moveTo(17 * s, 0); ctx.lineTo(17 * s, -5 * s);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawLockShape(ctx, s, col, open) {
+  ctx.save();
+  ctx.strokeStyle = col; ctx.fillStyle = col;
+  ctx.lineWidth = 2.8;
+  var bw = 20 * s, bh = 16 * s;
+  ctx.strokeRect(-bw / 2, 0, bw, bh);
+  ctx.beginPath();
+  if (open) {
+    ctx.arc(-4 * s, -9 * s, 7 * s, Math.PI, 0);
+  } else {
+    ctx.arc(0, 0, 7 * s, Math.PI, 0);
+  }
+  ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 8 * s, 2.5 * s, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+/* ---- Floating keys: bounce within edge band ---- */
+var BAND = 85;
+function tickKey(key) {
+  key.x += key.vx;
+  key.y += key.vy;
+  key.angle += key.spin;
+  /* wrap gently within the border band */
+  if (key.x < 0)     { key.x = 0;  key.vx *= -1; }
+  if (key.x > W)     { key.x = W;  key.vx *= -1; }
+  if (key.y < 0)     { key.y = 0;  key.vy *= -1; }
+  if (key.y > H)     { key.y = H;  key.vy *= -1; }
+  /* nudge back toward edge if strayed into centre */
+  var distX = Math.min(key.x, W - key.x);
+  var distY = Math.min(key.y, H - key.y);
+  if (distX > BAND && distY > BAND) {
+    var cx = W / 2, cy = H / 2;
+    var nx = key.x - cx, ny = key.y - cy;
+    var len = Math.sqrt(nx * nx + ny * ny) || 1;
+    key.vx += (nx / len) * 0.08;
+    key.vy += (ny / len) * 0.08;
+  }
+  /* speed cap */
+  var spd = Math.sqrt(key.vx * key.vx + key.vy * key.vy);
+  if (spd > 1.2) { key.vx *= 0.95; key.vy *= 0.95; }
+}
+
+/* ---- Locks orbit slowly ---- */
+function tickLock(lock) {
+  lock.rx = W * 0.5 - 36;
+  lock.ry = H * 0.5 - 36;
+  lock.orbitT += lock.orbitSpeed;
+  lock.x = W / 2 + Math.cos(lock.orbitT) * lock.rx;
+  lock.y = H / 2 + Math.sin(lock.orbitT) * lock.ry;
+  if (lock.unlockTimer > 0) {
+    lock.unlockTimer -= 16;
+    if (lock.unlockTimer <= 0) {
+      lock.unlockTimer = 0;
+      lock.unlocked = false;
+      lock.shake = 8; /* little shake on relock */
+    }
+  }
+  if (lock.shake > 0) lock.shake *= 0.75;
+}
+
+/* ---- Flying key projectile ---- */
+function spawnFlyingKey(fromKey, toLock) {
+  flyingKeys.push({
+    x:  fromKey.x,
+    y:  fromKey.y,
+    tx: toLock.x,
+    ty: toLock.y,
+    lock: toLock,
+    progress: 0,
+    speed: 0.025,
+    angle: Math.atan2(toLock.y - fromKey.y, toLock.x - fromKey.x),
+    size: fromKey.size,
+    done: false
+  });
+  /* remove that key from floating pool temporarily */
+  fromKey.flying = true;
+}
+
+function tickFlyingKey(fk) {
+  fk.progress += fk.speed;
+  if (fk.progress >= 1) {
+    fk.progress = 1;
+    fk.done = true;
+    /* unlock the target lock */
+    fk.lock.unlocked = true;
+    fk.lock.unlockTimer = 3000; /* 3 seconds */
+    fk.lock.shake = 12;
+  }
+  /* ease in-out */
+  var t = fk.progress < 0.5
+    ? 2 * fk.progress * fk.progress
+    : -1 + (4 - 2 * fk.progress) * fk.progress;
+  fk.x = fk.x + (fk.tx - fk.x) * 0.06;
+  fk.y = fk.y + (fk.ty - fk.y) * 0.06;
+}
+
+/* ---- Main draw loop ---- */
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+
+  /* subtle star field */
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  for (var s = 0; s < 60; s++) {
+    var sx = ((s * 137 + 50) % W);
+    var sy = ((s * 97  + 30) % H);
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* floating keys */
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    if (k.flying) continue;
+    tickKey(k);
+    ctx.save();
+    ctx.globalAlpha = k.alpha;
+    ctx.translate(k.x, k.y);
+    ctx.rotate(k.angle);
+    ctx.shadowColor = cbKey; ctx.shadowBlur = 10;
+    drawKeyShape(ctx, k.size / 22, cbKey);
+    ctx.restore();
+  }
+
+  /* locks */
+  for (var j = 0; j < locks.length; j++) {
+    var lk = locks[j];
+    tickLock(lk);
+    var shakeX = lk.shake > 0.5 ? (Math.random() - 0.5) * lk.shake : 0;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.translate(lk.x + shakeX, lk.y);
+    if (lk.unlocked) {
+      ctx.shadowColor = cbGood; ctx.shadowBlur = 22;
+      drawLockShape(ctx, lk.size / 22, cbGood, true);
+      ctx.beginPath();
+      ctx.arc(0, 8, lk.size * 1.2, 0, Math.PI * 2);
+      ctx.strokeStyle = cbGood;
+      ctx.globalAlpha = 0.25;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    } else {
+      ctx.shadowColor = cbKey; ctx.shadowBlur = 10;
+      drawLockShape(ctx, lk.size / 22, cbKey, false);
+    }
+    ctx.restore();
+  }
+
+  /* flying keys */
+  for (var f = flyingKeys.length - 1; f >= 0; f--) {
+    var fk = flyingKeys[f];
+    tickFlyingKey(fk);
+    if (fk.done) {
+      /* re-enable the original floating key */
+      for (var ki = 0; ki < keys.length; ki++) {
+        if (keys[ki].flying) { keys[ki].flying = false; break; }
+      }
+      flyingKeys.splice(f, 1);
+      continue;
+    }
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    ctx.translate(fk.x, fk.y);
+    ctx.rotate(fk.angle);
+    ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 18;
+    drawKeyShape(ctx, fk.size / 22, "#ffffff");
+    ctx.restore();
+  }
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+/* ---- Click detection on locks ---- */
+canvas.addEventListener("click", function(e) {
+  var mx = e.clientX, my = e.clientY;
+
+  /* find nearest unlocked lock */
+  var bestLock = null, bestD = 9999;
+  for (var j = 0; j < locks.length; j++) {
+    if (locks[j].unlocked) continue; /* already unlocked */
+    var dx = locks[j].x - mx, dy = locks[j].y - my;
+    var d = Math.sqrt(dx * dx + dy * dy);
+    if (d < 30 && d < bestD) { bestD = d; bestLock = locks[j]; }
+  }
+  if (!bestLock) return;
+
+  /* find a free floating key */
+  var freeKey = null;
+  for (var ki = 0; ki < keys.length; ki++) {
+    if (!keys[ki].flying) { freeKey = keys[ki]; break; }
+  }
+  if (!freeKey) return;
+
+  spawnFlyingKey(freeKey, bestLock);
+});
+</script>
+</body>
+</html>

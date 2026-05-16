@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fortune Teller</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Georgia, serif;
+  background: #060612;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  user-select: none;
+}
+canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+#main {
+  position:relative; z-index:1;
+  display:flex; flex-direction:column; align-items:center;
+  padding:20px; max-width:420px; width:100%;
+}
+h1 {
+  font-size:22px; letter-spacing:5px; color:#c084fc;
+  text-shadow:0 0 20px #c084fc88; margin-bottom:6px;
+  background:rgba(0,0,0,0.7); padding:8px 22px;
+  border-radius:12px; width:fit-content;
+}
+#hint {
+  font-size:11px; color:#666; letter-spacing:3px; margin-bottom:30px;
+  background:rgba(0,0,0,0.6); padding:4px 14px;
+  border-radius:8px; width:fit-content;
+}
+#fortune-box {
+  background:rgba(0,0,0,0.82); border:2px solid #c084fc44;
+  border-radius:18px; padding:28px 24px; width:100%;
+  margin-bottom:24px; min-height:120px;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+}
+#fortune-emoji { font-size:38px; margin-bottom:12px; display:none; }
+#fortune-text { font-size:17px; line-height:1.7; color:#e9d5ff; font-style:italic; display:none; }
+#waiting-text { font-size:14px; color:#555; letter-spacing:2px; }
+#ask-btn {
+  background:none; border:2px solid #c084fc; color:#c084fc;
+  font-family:Georgia,serif; font-size:15px; letter-spacing:3px;
+  padding:13px 32px; border-radius:12px; cursor:pointer;
+}
+#ask-btn:hover { background:#c084fc22; }
+#again-btn {
+  display:none; background:none; border:1px solid #444; color:#888;
+  font-family:Georgia,serif; font-size:12px; letter-spacing:2px;
+  padding:8px 20px; border-radius:10px; cursor:pointer; margin-top:10px;
+}
+#again-btn:hover { color:#ccc; border-color:#888; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="main">
+  <h1>🔮 THE VORTEX SPEAKS</h1>
+  <p id="hint">CLICK THE BUTTON TO REVEAL YOUR FATE</p>
+  <div id="fortune-box">
+    <div id="waiting-text">The vortex awaits your question...</div>
+    <div id="fortune-emoji"></div>
+    <div id="fortune-text"></div>
+  </div>
+  <button id="ask-btn" onclick="revealFortune()">✨ ASK THE VORTEX ✨</button>
+  <button id="again-btn" onclick="resetFortune()">Ask again...</button>
+</div>
+<script>
+var fortunes = [
+  {e:"💀",t:"The spirits have seen your future... and they are giggling."},
+  {e:"🌑",t:"Darkness surrounds you. Also your Wi-Fi signal. Both are bad signs."},
+  {e:"👁️",t:"Something is watching you right now. It has been watching for a while. It finds you interesting."},
+  {e:"🕷️",t:"Your destiny is written in the stars. Unfortunately none of us can read."},
+  {e:"🦇",t:"The ancient ones foretell great change. Or maybe that's just the wind. Hard to tell these days."},
+  {e:"☠️",t:"You will face a great challenge. You will pretend everything is fine. This will work surprisingly well."},
+  {e:"🌫️",t:"A mysterious stranger will enter your life. They will immediately ask if you have seen their keys."},
+  {e:"🔮",t:"The vortex sees all... but it is choosing not to tell you this one. For your own protection."},
+  {e:"🌒",t:"The moon knows your secrets. It has told no one. Yet."},
+  {e:"🕯️",t:"A shadow follows you everywhere. It is just your shadow. But it has been acting suspicious lately."},
+  {e:"🦉",t:"The owl of fate hoots twice at midnight. Nobody knows what this means. Not even the owl."},
+  {e:"🌀",t:"You are destined to open the fridge, stare into it for 30 seconds, and close it without taking anything."},
+  {e:"🧿",t:"An ancient curse has been lifted from your family. A new, slightly worse one has taken its place."},
+  {e:"🌙",t:"The spirits say you left something important somewhere. They won't say what. Or where."},
+  {e:"⚡",t:"Great power is coming your way. Unfortunately so is a large bill."},
+  {e:"🦆",t:"Today is a great day to do absolutely nothing. The duck approves."},
+  {e:"🍕",t:"Your future holds great riches. Specifically, someone will offer you the last slice of pizza."},
+  {e:"😴",t:"The universe recommends a nap. Possibly two naps. Maybe three. Just stay in bed honestly."},
+  {e:"🐔",t:"You will make a bold decision today. Everyone will question it. You will be right."},
+  {e:"🎲",t:"Fortune favours the bold. You are moderately bold at best. Medium fortune incoming."},
+  {e:"🦥",t:"Great things are coming to those who wait. You may wait quite a long time. Get comfy."},
+  {e:"🤡",t:"The vortex has looked into your soul and found it... surprisingly chaotic. Godspeed."},
+  {e:"🧀",t:"Cheese will play an unexpected role in your near future. The vortex cannot explain further."},
+  {e:"🐸",t:"A frog has been thinking about you. This is either very good or very bad. Frogs are unpredictable."},
+  {e:"🍩",t:"Today you will achieve something great. Then immediately celebrate with a snack."},
+  {e:"🎺",t:"Someone nearby is about to make a very unexpected noise. You will not be ready."},
+  {e:"🦔",t:"The hedgehog of destiny is cautiously optimistic about your future. That is the best we have heard all week."},
+  {e:"🍌",t:"A slippery situation awaits you. The vortex tried to warn you. You didn't listen. Classic."},
+  {e:"🐌",t:"Success is on its way to you. It is moving at its own pace. Please be patient."},
+  {e:"🎪",t:"Your life is about to become significantly more chaotic. You will secretly enjoy every second of it."},
+  {e:"🦩",t:"Stand on one leg today for at least 10 seconds. The flamingo demands it. Don't ask why."},
+  {e:"🍟",t:"Someone will offer you chips and then eat most of them themselves. You saw this coming."},
+  {e:"🐠",t:"You will forget something important today. A fish has already forgotten it for you. Good company."},
+  {e:"⭐",t:"A great opportunity approaches. It will be disguised as an ordinary Tuesday."},
+  {e:"🌈",t:"After every storm comes a rainbow. After every rainbow comes more storm. Such is life."},
+  {e:"🚀",t:"You are destined for greatness. The journey begins the moment you put your phone down."},
+  {e:"🎭",t:"You will soon play two roles simultaneously. One of them will be a disaster. Both will be you."},
+  {e:"🦋",t:"Change is coming. It will feel uncomfortable. You will come out the other side wearing a cape."},
+  {e:"🌊",t:"Go with the flow. Unless the flow is going somewhere weird. Then swim sideways."},
+  {e:"🏆",t:"Victory is yours — but not today. Check back Thursday."},
+  {e:"🐉",t:"The ancient dragon of destiny says: have you tried turning it off and on again?"},
+  {e:"🌺",t:"Something beautiful is about to bloom in your life. Water it. Don't forget this time."},
+  {e:"🎯",t:"You will hit your target. You will then immediately set a harder target. This is your curse."},
+  {e:"🧲",t:"Good things are being drawn toward you. Unfortunately so are minor inconveniences."},
+  {e:"🌟",t:"You shine brightly. Some people find this blinding. They are just not ready for you."},
+  {e:"🎸",t:"Today you will hear a song that gets stuck in your head for three days. The vortex apologises in advance."},
+  {e:"🦁",t:"Be brave today. The lion of fortune is watching. It gives points for effort."},
+  {e:"🍀",t:"Luck is on your side. It keeps switching sides though. Stay alert."},
+  {e:"🌍",t:"The whole world is not against you. Just a small but very organised portion of it."},
+  {e:"🎩",t:"A surprise is coming. The vortex has already forgotten what it is. Should be fun though."},
+  {e:"🧊",t:"Stay cool under pressure. Actually just stay cool in general. It suits you."},
+  {e:"🦚",t:"You are more spectacular than you realise. The peacock of destiny agrees and it has high standards."},
+  {e:"🎵",t:"Life is about to get a lot more musical. This could mean literally anything. Good luck."},
+  {e:"🌵",t:"You will thrive even in difficult conditions. You are basically a cactus. This is a compliment."},
+  {e:"🔑",t:"The answer you are looking for is closer than you think. Check your other pocket."},
+  {e:"🧁",t:"Something sweet is heading your way. Enjoy it fully and do not share it if you don't want to."},
+  {e:"🦊",t:"Be clever today. The fox of fate is taking notes and you really want a good review."},
+];
+
+var lastUsed = -1;
+
+function getFortune() {
+  var idx;
+  do { idx = Math.floor(Math.random()*fortunes.length); } while(idx===lastUsed);
+  lastUsed = idx;
+  return fortunes[idx];
+}
+
+function revealFortune() {
+  var f = getFortune();
+  document.getElementById("waiting-text").style.display = "none";
+  document.getElementById("fortune-emoji").textContent = f.e;
+  document.getElementById("fortune-emoji").style.display = "block";
+  document.getElementById("fortune-text").textContent = '"' + f.t + '"';
+  document.getElementById("fortune-text").style.display = "block";
+  document.getElementById("ask-btn").style.display = "none";
+  document.getElementById("again-btn").style.display = "inline-block";
+  flashVortex();
+}
+
+function resetFortune() {
+  document.getElementById("waiting-text").style.display = "block";
+  document.getElementById("fortune-emoji").style.display = "none";
+  document.getElementById("fortune-text").style.display = "none";
+  document.getElementById("ask-btn").style.display = "inline-block";
+  document.getElementById("again-btn").style.display = "none";
+}
+
+/* ===== VORTEX ===== */
+var cv = document.getElementById("c");
+var ctx = cv.getContext("2d");
+var W, H;
+function resize(){ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; }
+window.addEventListener("resize", resize); resize();
+
+var vortexFlash = 0;
+var particles = [];
+for (var i=0;i<180;i++) {
+  particles.push({
+    angle:Math.random()*Math.PI*2,
+    radius:Math.random()*Math.min(W,H)*0.38+20,
+    speed:(Math.random()*0.012+0.004)*(Math.random()<0.5?1:-1),
+    size:Math.random()*2.5+0.5,
+    hue:Math.random()*60+260,
+    alpha:Math.random()*0.6+0.2,
+    drift:(Math.random()-0.5)*0.004
+  });
+}
+
+function flashVortex(){ vortexFlash=1; }
+
+function vortexLoop(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#060612"; ctx.fillRect(0,0,W,H);
+  var cx=W/2, cy=H/2;
+  var fb=vortexFlash>0?vortexFlash*1.5:0;
+  if(vortexFlash>0) vortexFlash-=0.03;
+  var gr=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*0.35);
+  gr.addColorStop(0,"rgba(192,132,252,"+(0.12+fb*0.3)+")");
+  gr.addColorStop(0.4,"rgba(124,58,237,"+(0.06+fb*0.1)+")");
+  gr.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(cx,cy,Math.min(W,H)*0.38,0,Math.PI*2); ctx.fill();
+  for(var r=1;r<=5;r++){
+    var rad=r*Math.min(W,H)*0.07;
+    var al=Math.max(0,(0.06-r*0.008)+fb*0.05);
+    ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2);
+    ctx.strokeStyle="rgba(192,132,252,"+al+")"; ctx.lineWidth=1; ctx.stroke();
+  }
+  for(var i=0;i<particles.length;i++){
+    var p=particles[i];
+    p.angle+=p.speed; p.radius+=p.drift;
+    if(p.radius>Math.min(W,H)*0.42) p.radius=Math.min(W,H)*0.42;
+    if(p.radius<10) p.radius=10;
+    var px2=cx+Math.cos(p.angle)*p.radius;
+    var py2=cy+Math.sin(p.angle)*p.radius;
+    ctx.beginPath(); ctx.arc(px2,py2,p.size+(fb*0.8),0,Math.PI*2);
+    ctx.fillStyle="hsla("+p.hue+",80%,70%,"+Math.min(p.alpha+fb*0.3,1)+")";
+    ctx.fill();
+  }
+  var eyeR=18+fb*6;
+  var eg=ctx.createRadialGradient(cx,cy,0,cx,cy,eyeR);
+  eg.addColorStop(0,"rgba(255,255,255,"+(0.9+fb*0.1)+")");
+  eg.addColorStop(0.3,"rgba(192,132,252,0.9)");
+  eg.addColorStop(1,"rgba(60,20,120,0)");
+  ctx.beginPath(); ctx.arc(cx,cy,eyeR,0,Math.PI*2);
+  ctx.fillStyle=eg; ctx.fill();
+  requestAnimationFrame(vortexLoop);
+}
+vortexLoop();
+</script>
+</body>
+</html>

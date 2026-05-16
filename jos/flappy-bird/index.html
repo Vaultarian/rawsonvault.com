@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Flappy Bird HTML</title>
+<style>
+  body { background:black; color:white; font-family:monospace; }
+  #game { white-space:pre; font-size:26px; line-height:26px; }
+</style>
+</head>
+<body>
+<div>Press P to Play. Tap SPACE to flap.</div>
+<pre id="game"></pre>
+<script>
+const W=40,H=20,BX=8,GAP=6;
+let running=false;
+let started=false;
+let birdY,vy,score,speed,tubes;
+
+function reset(){
+  birdY=H/2; vy=0; score=0; speed=0; started=false;
+  tubes=[];
+  for(let i=0;i<3;i++) tubes.push(makeTube(W+i*20));
+}
+
+function makeTube(x){
+  let g=Math.floor(Math.random()*(H-GAP-4))+2;
+  return {x,g};
+}
+
+function draw(){
+  let grid=[...Array(H)].map(()=>Array(W).fill(" "));
+  tubes.forEach(t=>{
+    let ix=Math.floor(t.x);
+    if(ix>=0 && ix<W){
+      for(let y=0;y<H;y++){
+        if(!(y>=t.g && y<t.g+GAP)) grid[y][ix]="|";
+      }
+    }
+  });
+  if(birdY>=0&&birdY<H) grid[Math.floor(birdY)][BX]="●";
+  if(birdY-1>=0) grid[Math.floor(birdY-1)][BX]=String(score);
+  document.getElementById("game").textContent=grid.map(r=>r.join("")) .join("
+");
+}
+
+function tick(){
+  if(!running) return;
+
+  if(started){
+    vy+=0.3; 
+    birdY+=vy;
+    tubes.forEach(t=>t.x -= 0.3 + speed);
+
+    tubes.forEach(t=>{
+      if(t.x+(1+speed)<BX && t.x+(2+speed)>=BX){ score++; speed+=0.05; }
+    });
+
+    if(tubes[0].x<-2){ tubes.shift(); tubes.push(makeTube(W+10)); }
+
+    tubes.forEach(t=>{
+      if(Math.floor(t.x)===BX){
+        if(!(birdY>=t.g && birdY<t.g+GAP)) gameOver("You touched a tube.");
+      }
+    });
+
+    if(birdY<=0||birdY>=H-1) gameOver("Don't touch the floor.");
+  }
+
+  draw();
+  requestAnimationFrame(tick);
+}
+
+function gameOver(msg){
+  running=false;
+  document.getElementById("game").textContent=msg+" Score: "+score+"
+Press P to play again.";
+}
+
+document.getElementById("game").textContent = "Press P to Play";
+
+window.onkeydown=e=>{
+  if(e.key==='p' || e.key==='P'){
+    running=true; reset(); draw(); tick();
+  }
+  if(running && e.key===' '){
+    if(!started) started=true;
+    vy=-2;
+  }
+};
+</script>
+</body>
+</html>

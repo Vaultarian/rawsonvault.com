@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Whack a Mole</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #2d5a1b;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  padding: 16px;
+}
+
+/* grass stripes background */
+body::before {
+  content:'';
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 40px,
+    transparent 40px, transparent 80px
+  );
+  pointer-events:none; z-index:0;
+}
+
+#screen { position:relative; z-index:1; width:100%; max-width:480px; }
+
+/* START */
+#start-screen h1 { font-size:36px; margin-bottom:6px; text-shadow:0 3px 8px rgba(0,0,0,0.4); }
+#start-screen p { font-size:14px; color:#c8e6a0; margin-bottom:28px; }
+.diff-title { font-size:13px; color:#c8e6a0; letter-spacing:2px; margin-bottom:12px; }
+.diff-btns { display:flex; gap:12px; justify-content:center; margin-bottom:0; }
+.diff-btn {
+  padding:14px 22px; border-radius:12px; border:3px solid transparent;
+  font-size:14px; font-weight:bold; cursor:pointer; letter-spacing:1px;
+  transition: transform 0.1s;
+}
+.diff-btn:hover { transform:scale(1.06); }
+#btn-easy   { background:#4a9e2a; border-color:#6ac040; color:white; }
+#btn-medium { background:#d4820a; border-color:#f0a820; color:white; }
+#btn-hard   { background:#c0281a; border-color:#e04030; color:white; }
+
+/* HUD */
+#hud {
+  display:none;
+  align-items:center; justify-content:space-between;
+  background:rgba(0,0,0,0.35); border-radius:12px;
+  padding:10px 16px; margin-bottom:16px;
+}
+#hud-score { font-size:22px; font-weight:bold; }
+#hud-lives { font-size:22px; }
+#hud-diff  { font-size:11px; color:#c8e6a0; letter-spacing:2px; }
+
+/* GRID */
+#grid {
+  display:none;
+  grid-template-columns: repeat(3,1fr);
+  gap:14px;
+  margin-bottom:14px;
+}
+.hole-wrap { position:relative; cursor:pointer; }
+.hole-bg {
+  width:100%; padding-bottom:80%;
+  background: radial-gradient(ellipse at 50% 60%, #1a0e08 60%, #3a2010 100%);
+  border-radius:50%;
+  border:4px solid #5a3010;
+  position:relative; overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,0.5), inset 0 -4px 12px rgba(0,0,0,0.6);
+}
+.mole-container {
+  position:absolute; bottom:0; left:50%;
+  transform:translateX(-50%) translateY(100%);
+  width:70%; transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;
+}
+.mole-container.up {
+  transform:translateX(-50%) translateY(20%);
+}
+.mole-container.whacked {
+  transform:translateX(-50%) translateY(100%);
+  transition:transform 0.1s ease-in;
+}
+canvas.mole { width:100%; display:block; }
+
+/* dirt mound over hole */
+.dirt {
+  position:absolute; bottom:-6px; left:-8px; right:-8px; height:28px;
+  background: radial-gradient(ellipse at 50% 0%, #6a3a10 0%, #4a2008 70%);
+  border-radius:50%;
+  z-index:2;
+}
+
+/* whack effect */
+.whack-star {
+  position:fixed;
+  font-size:28px;
+  font-weight:bold;
+  color:#ffdd00;
+  pointer-events:none;
+  z-index:999;
+  text-shadow:0 2px 6px rgba(0,0,0,0.5);
+  animation:popfade 0.6s forwards;
+}
+@keyframes popfade {
+  0%   { transform:scale(0.5) translateY(0); opacity:1; }
+  100% { transform:scale(1.4) translateY(-40px); opacity:0; }
+}
+
+/* miss flash */
+.miss-flash {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(200,0,0,0.25); pointer-events:none; z-index:500;
+  animation:flashout 0.4s forwards;
+}
+@keyframes flashout { 0%{opacity:1} 100%{opacity:0} }
+
+/* combo */
+#combo {
+  font-size:13px; color:#ffdd00; font-weight:bold;
+  letter-spacing:2px; height:22px; margin-bottom:6px;
+}
+
+/* GAME OVER */
+#gameover-screen { display:none; }
+#gameover-screen h2 { font-size:30px; margin-bottom:8px; }
+.go-sub { font-size:14px; color:#c8e6a0; margin-bottom:20px; }
+.go-stats { display:flex; gap:14px; justify-content:center; margin-bottom:24px; }
+.go-stat { background:rgba(0,0,0,0.3); border-radius:10px; padding:10px 20px; min-width:90px; }
+.go-stat-l { font-size:10px; color:#c8e6a0; letter-spacing:2px; margin-bottom:4px; }
+.go-stat-v { font-size:24px; font-weight:bold; color:#ffdd00; }
+#play-again {
+  background:#4a9e2a; border:3px solid #6ac040; color:white;
+  font-size:15px; font-weight:bold; padding:12px 32px;
+  border-radius:12px; cursor:pointer; letter-spacing:2px;
+}
+#play-again:hover { transform:scale(1.04); }
+</style>
+</head>
+<body>
+<div id="screen">
+
+  <!-- START -->
+  <div id="start-screen">
+    <h1>🔨 WHACK A MOLE!</h1>
+    <p>Click the moles before they disappear!<br>Miss 3 and it's game over!</p>
+    <p class="diff-title">CHOOSE YOUR DIFFICULTY</p>
+    <div class="diff-btns">
+      <button class="diff-btn" id="btn-easy"   onclick="startGame('easy')">🟢<br>EASY</button>
+      <button class="diff-btn" id="btn-medium" onclick="startGame('medium')">🟡<br>MEDIUM</button>
+      <button class="diff-btn" id="btn-hard"   onclick="startGame('hard')">🔴<br>HARD</button>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div>
+      <div id="hud-diff">EASY</div>
+      <div id="hud-score">⭐ 0</div>
+    </div>
+    <div id="combo"></div>
+    <div id="hud-lives">❤️❤️❤️</div>
+  </div>
+
+  <!-- GRID -->
+  <div id="grid"></div>
+
+  <!-- GAME OVER -->
+  <div id="gameover-screen">
+    <h2>💥 GAME OVER!</h2>
+    <p class="go-sub" id="go-msg">The moles win this time!</p>
+    <div class="go-stats">
+      <div class="go-stat"><div class="go-stat-l">SCORE</div><div class="go-stat-v" id="go-score">0</div></div>
+      <div class="go-stat"><div class="go-stat-l">BEST</div><div class="go-stat-v" id="go-best">0</div></div>
+      <div class="go-stat"><div class="go-stat-l">WHACKS</div><div class="go-stat-v" id="go-whacks">0</div></div>
+    </div>
+    <button id="play-again" onclick="goBack()">PLAY AGAIN 🔨</button>
+  </div>
+
+</div>
+
+<script>
+var DIFFS = {
+  easy:   { startMs:1400, minMs:900,  speedup:30, label:"EASY" },
+  medium: { startMs:1100, minMs:650,  speedup:20, label:"MEDIUM" },
+  hard:   { startMs:800,  minMs:420,  speedup:14, label:"HARD" }
+};
+
+var score=0, lives=5, whacks=0, combo=0, bestScore=0;
+var currentDiff=null, moleMs=1400;
+var holes=[], moleTimers=[], spawnTimer=null;
+var gameRunning=false;
+
+/* ===== BUILD GRID ===== */
+function buildGrid() {
+  var grid=document.getElementById("grid");
+  grid.innerHTML=""; holes=[];
+  grid.style.display="grid";
+  for(var i=0;i<9;i++){
+    var wrap=document.createElement("div");
+    wrap.className="hole-wrap";
+    var holeBg=document.createElement("div");
+    holeBg.className="hole-bg";
+    var mc=document.createElement("div");
+    mc.className="mole-container";
+    mc.dataset.idx=i;
+    var cv=document.createElement("canvas");
+    cv.className="mole";
+    cv.width=100; cv.height=100;
+    drawMole(cv, false);
+    mc.appendChild(cv);
+    holeBg.appendChild(mc);
+    var dirt=document.createElement("div");
+    dirt.className="dirt";
+    holeBg.appendChild(dirt);
+    wrap.appendChild(holeBg);
+    wrap.addEventListener("click", function(e){ whackHole(parseInt(this.querySelector(".mole-container").dataset.idx)); });
+    grid.appendChild(wrap);
+    holes.push({ wrap:wrap, mc:mc, cv:cv, up:false, recentlyUp:false, timer:null, graceTimer:null });
+  }
+}
+
+/* ===== DRAW MOLE ON CANVAS ===== */
+function drawMole(cv, whacked) {
+  var c=cv.getContext("2d");
+  c.clearRect(0,0,100,100);
+  if(!whacked){
+    /* body */
+    c.fillStyle="#7a5030";
+    c.beginPath(); c.ellipse(50,72,32,28,0,0,Math.PI*2); c.fill();
+    /* head */
+    c.fillStyle="#8a6040";
+    c.beginPath(); c.ellipse(50,42,28,26,0,0,Math.PI*2); c.fill();
+    /* snout */
+    c.fillStyle="#c08060";
+    c.beginPath(); c.ellipse(50,54,14,10,0,0,Math.PI*2); c.fill();
+    /* nose */
+    c.fillStyle="#e04060";
+    c.beginPath(); c.ellipse(50,50,6,5,0,0,Math.PI*2); c.fill();
+    /* eyes */
+    c.fillStyle="#1a0a00";
+    c.beginPath(); c.arc(38,36,5,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(62,36,5,0,Math.PI*2); c.fill();
+    /* eye shine */
+    c.fillStyle="white";
+    c.beginPath(); c.arc(40,34,2,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(64,34,2,0,Math.PI*2); c.fill();
+    /* ears */
+    c.fillStyle="#8a6040";
+    c.beginPath(); c.ellipse(32,24,9,13,-0.3,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(68,24,9,13,0.3,0,Math.PI*2); c.fill();
+    c.fillStyle="#c08060";
+    c.beginPath(); c.ellipse(32,24,5,9,-0.3,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(68,24,5,9,0.3,0,Math.PI*2); c.fill();
+    /* claws */
+    c.strokeStyle="#5a3010"; c.lineWidth=2.5; c.lineCap="round";
+    c.beginPath(); c.moveTo(24,80); c.lineTo(20,92); c.stroke();
+    c.beginPath(); c.moveTo(32,84); c.lineTo(30,96); c.stroke();
+    c.beginPath(); c.moveTo(68,84); c.lineTo(70,96); c.stroke();
+    c.beginPath(); c.moveTo(76,80); c.lineTo(80,92); c.stroke();
+  } else {
+    /* whacked — dizzy stars */
+    c.fillStyle="#8a6040";
+    c.beginPath(); c.ellipse(50,55,28,22,0.2,0,Math.PI*2); c.fill();
+    c.fillStyle="#c08060";
+    c.beginPath(); c.ellipse(50,60,14,10,0.2,0,Math.PI*2); c.fill();
+    /* X eyes */
+    c.strokeStyle="#1a0a00"; c.lineWidth=3;
+    c.beginPath(); c.moveTo(34,42); c.lineTo(42,50); c.stroke();
+    c.beginPath(); c.moveTo(42,42); c.lineTo(34,50); c.stroke();
+    c.beginPath(); c.moveTo(58,42); c.lineTo(66,50); c.stroke();
+    c.beginPath(); c.moveTo(66,42); c.lineTo(58,50); c.stroke();
+    /* stars */
+    c.font="18px Arial"; c.fillText("⭐",18,28); c.fillText("⭐",62,22);
+  }
+}
+
+/* ===== SHOW / HIDE MOLE ===== */
+function showMole(idx) {
+  if(!gameRunning) return;
+  var h=holes[idx];
+  if(h.up) return;
+  h.up=true;
+  h.recentlyUp=true;
+  drawMole(h.cv, false);
+  h.mc.classList.add("up");
+  h.mc.classList.remove("whacked");
+  if(h.timer) clearTimeout(h.timer);
+  h.timer=setTimeout(function(){
+    if(h.up){ hideMole(idx, true); }
+  }, moleMs);
+}
+
+function hideMole(idx, missed) {
+  var h=holes[idx];
+  h.up=false;
+  if(h.timer){ clearTimeout(h.timer); h.timer=null; }
+  h.mc.classList.remove("up");
+  /* grace period — clicking this hole just after mole leaves is fine */
+  if(h.graceTimer) clearTimeout(h.graceTimer);
+  h.graceTimer=setTimeout(function(){ h.recentlyUp=false; }, 500);
+  if(missed){
+    combo=0;
+    document.getElementById("combo").textContent="";
+    loseLife();
+  }
+}
+
+function whackHole(idx) {
+  var h=holes[idx];
+  if(!gameRunning) return;
+  if(!h.up) return; /* just do nothing if hole is empty */
+  h.up=false;
+  if(h.timer){ clearTimeout(h.timer); h.timer=null; }
+  drawMole(h.cv, true);
+  h.mc.classList.add("whacked");
+  setTimeout(function(){ h.mc.classList.remove("up","whacked"); drawMole(h.cv,false); },300);
+
+  whacks++;
+  combo++;
+  var pts = combo>=5 ? 3 : combo>=3 ? 2 : 1;
+  score+=pts;
+
+  /* speed up */
+  var diff=DIFFS[currentDiff];
+  moleMs=Math.max(diff.minMs, moleMs - diff.speedup);
+
+  document.getElementById("hud-score").textContent="⭐ "+score;
+
+  /* combo message */
+  var comboEl=document.getElementById("combo");
+  if(combo>=10) comboEl.textContent="🔥 x"+combo+" UNSTOPPABLE!!";
+  else if(combo>=5) comboEl.textContent="💥 x"+combo+" COMBO!";
+  else if(combo>=3) comboEl.textContent="⚡ x"+combo+" combo!";
+  else comboEl.textContent="";
+
+  /* pop text */
+  var msgs=["+"+pts,"POW!","WHACK!","GOT EM!","NICE!"];
+  var msg=combo>=5?["COMBO!","ON FIRE!","UNSTOPPABLE!"][Math.floor(Math.random()*3)]:msgs[Math.floor(Math.random()*msgs.length)];
+  spawnPop(msg, h.wrap);
+}
+
+function spawnPop(msg, el) {
+  var r=el.getBoundingClientRect();
+  var div=document.createElement("div");
+  div.className="whack-star";
+  div.textContent=msg;
+  div.style.left=(r.left+r.width/2-20)+"px";
+  div.style.top=(r.top+r.height/3)+"px";
+  document.body.appendChild(div);
+  setTimeout(function(){ div.remove(); },650);
+}
+
+function loseLife() {
+  lives--;
+  var hearts="";
+  for(var i=0;i<lives;i++) hearts+="❤️";
+  for(var i=0;i<5-lives;i++) hearts+="🖤";
+  document.getElementById("hud-lives").textContent=hearts;
+  /* red flash */
+  var fl=document.createElement("div");
+  fl.className="miss-flash";
+  document.body.appendChild(fl);
+  setTimeout(function(){fl.remove();},450);
+  if(lives<=0) endGame();
+}
+
+/* ===== SPAWNING ===== */
+function spawnLoop() {
+  if(!gameRunning) return;
+  /* pick a random hole that isn't already up */
+  var available=[];
+  for(var i=0;i<9;i++) if(!holes[i].up) available.push(i);
+  if(available.length>0){
+    var idx=available[Math.floor(Math.random()*available.length)];
+    showMole(idx);
+  }
+  /* how many active moles based on score */
+  var maxActive = score<10?1:score<25?2:score<50?3:4;
+  var active=holes.filter(function(h){return h.up;}).length;
+  var delay = active < maxActive ? moleMs*0.4 : moleMs*0.7;
+  spawnTimer=setTimeout(spawnLoop, delay);
+}
+
+/* ===== GAME FLOW ===== */
+function startGame(diff){
+  currentDiff=diff;
+  moleMs=DIFFS[diff].startMs;
+  score=0; lives=3; whacks=0; combo=0;
+  gameRunning=true;
+  document.getElementById("start-screen").style.display="none";
+  document.getElementById("gameover-screen").style.display="none";
+  document.getElementById("hud").style.display="flex";
+  document.getElementById("hud-score").textContent="⭐ 0";
+  document.getElementById("hud-lives").textContent="❤️❤️❤️❤️❤️";
+  document.getElementById("hud-diff").textContent=DIFFS[diff].label;
+  document.getElementById("combo").textContent="";
+  buildGrid();
+  setTimeout(spawnLoop, 600);
+}
+
+function endGame(){
+  gameRunning=false;
+  if(spawnTimer) clearTimeout(spawnTimer);
+  holes.forEach(function(h,i){ if(h.timer) clearTimeout(h.timer); h.mc.classList.remove("up"); });
+  if(score>bestScore) bestScore=score;
+  document.getElementById("hud").style.display="none";
+  document.getElementById("grid").style.display="none";
+  document.getElementById("gameover-screen").style.display="block";
+  var msgs=["The moles win this time! 🐾","They were too fast for you! 😅","Better luck next time! 🔨","The moles are celebrating! 🎉"];
+  document.getElementById("go-msg").textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById("go-score").textContent=score;
+  document.getElementById("go-best").textContent=bestScore;
+  document.getElementById("go-whacks").textContent=whacks;
+}
+
+function goBack(){
+  document.getElementById("gameover-screen").style.display="none";
+  document.getElementById("start-screen").style.display="block";
+}
+</script>
+</body>
+</html>

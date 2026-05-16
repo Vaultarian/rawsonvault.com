@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Colour Mixer</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  overflow: hidden;
+}
+canvas#bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ctext y='28' font-size='28'%3E🖌️%3C/text%3E%3C/svg%3E") 4 28, crosshair;
+}
+#start-screen, #game {
+  position: relative;
+  z-index: 1;
+}
+h1 { font-size: 24px; letter-spacing: 3px; color: #fff; margin-bottom: 4px; }
+#subtitle { font-size: 12px; color: #555; letter-spacing: 2px; margin-bottom: 24px; }
+
+#game { width: 100%; max-width: 420px; }
+
+/* colour swatches */
+#swatches {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.swatch-wrap { flex: 1; }
+.swatch-label { font-size: 10px; color: #666; letter-spacing: 2px; margin-bottom: 6px; }
+.swatch {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  border: 2px solid #333;
+}
+#target-swatch { background: rgb(128,128,128); }
+#mix-swatch    { background: rgb(128,128,128); }
+
+/* sliders */
+#sliders { margin-bottom: 20px; }
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.slider-row label {
+  font-size: 13px;
+  font-weight: bold;
+  width: 16px;
+  text-align: center;
+}
+.slider-row input[type=range] {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+#r-slider { accent-color: #e74c3c; }
+#g-slider { accent-color: #2ecc71; }
+#b-slider { accent-color: #3498db; }
+.slider-val {
+  font-size: 13px;
+  font-weight: bold;
+  width: 32px;
+  text-align: right;
+  color: #aaa;
+}
+
+/* score */
+#score-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+.stat {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 8px 16px;
+  min-width: 90px;
+}
+.stat-l { font-size: 9px; color: #555; letter-spacing: 2px; margin-bottom: 3px; }
+.stat-v { font-size: 20px; font-weight: bold; color: #f0c040; }
+
+#accuracy-bar-wrap {
+  background: #222;
+  border-radius: 6px;
+  height: 10px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+#accuracy-bar {
+  height: 100%;
+  border-radius: 6px;
+  width: 0%;
+  transition: width 0.3s, background 0.3s;
+}
+
+#feedback {
+  font-size: 15px;
+  font-weight: bold;
+  color: #f0c040;
+  min-height: 24px;
+  margin-bottom: 14px;
+}
+
+#submit-btn {
+  background: none;
+  border: 2px solid #f0c040;
+  color: #f0c040;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 11px 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  width: 100%;
+}
+#submit-btn:hover { background: #f0c040; color: #000; }
+
+#next-btn {
+  background: none;
+  border: 2px solid #2ecc71;
+  color: #2ecc71;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 11px 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  display: none;
+}
+#next-btn:hover { background: #2ecc71; color: #000; }
+
+/* start screen */
+#start-screen {
+  width: 100%; max-width: 420px;
+}
+#start-screen h1 { font-size: 28px; margin-bottom: 8px; }
+#start-screen p { font-size: 14px; color: #aaa; margin-bottom: 28px; line-height: 1.6; }
+#start-btn {
+  background: linear-gradient(135deg, #e96c2e, #f0c040);
+  border: none; color: white; font-size: 16px; font-weight: bold;
+  padding: 14px 40px; border-radius: 12px; cursor: pointer; letter-spacing: 2px;
+}
+#start-btn:hover { transform: scale(1.04); }
+
+/* result flash */
+#result-flash {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 500; opacity: 0;
+  transition: opacity 0.3s;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div id="result-flash"></div>
+
+<!-- START -->
+<div id="start-screen">
+  <h1>🎨 COLOUR MIXER</h1>
+  <p>A target colour appears on the left.<br>Use the RGB sliders to mix a matching colour on the right.<br>Get as close as you can — every percentage counts!</p>
+  <button id="start-btn" onclick="startGame()">LET'S MIX! 🎨</button>
+</div>
+
+<!-- GAME -->
+<div id="game" style="display:none;">
+  <h1>🎨 COLOUR MIXER</h1>
+  <p id="subtitle">MATCH THE COLOUR ON THE LEFT</p>
+
+  <div id="swatches">
+    <div class="swatch-wrap">
+      <div class="swatch-label">TARGET</div>
+      <div class="swatch" id="target-swatch"></div>
+    </div>
+    <div class="swatch-wrap">
+      <div class="swatch-label">YOUR MIX</div>
+      <div class="swatch" id="mix-swatch"></div>
+    </div>
+  </div>
+
+  <div id="sliders">
+    <div class="slider-row">
+      <label style="color:#e74c3c;">R</label>
+      <input type="range" id="r-slider" min="0" max="255" value="128" oninput="updateMix()">
+      <div class="slider-val" id="r-val">128</div>
+    </div>
+    <div class="slider-row">
+      <label style="color:#2ecc71;">G</label>
+      <input type="range" id="g-slider" min="0" max="255" value="128" oninput="updateMix()">
+      <div class="slider-val" id="g-val">128</div>
+    </div>
+    <div class="slider-row">
+      <label style="color:#3498db;">B</label>
+      <input type="range" id="b-slider" min="0" max="255" value="128" oninput="updateMix()">
+      <div class="slider-val" id="b-val">128</div>
+    </div>
+  </div>
+
+  <div id="accuracy-bar-wrap">
+    <div id="accuracy-bar"></div>
+  </div>
+
+  <div id="score-row">
+    <div class="stat"><div class="stat-l">ROUND</div><div class="stat-v" id="round-num">1</div></div>
+    <div class="stat"><div class="stat-l">BEST</div><div class="stat-v" id="best-score">0%</div></div>
+    <div class="stat"><div class="stat-l">AVERAGE</div><div class="stat-v" id="avg-score">0%</div></div>
+  </div>
+
+  <div id="feedback"></div>
+
+  <button id="submit-btn" onclick="submitGuess()">✅ SUBMIT COLOUR</button>
+  <button id="next-btn" onclick="nextRound()">NEXT COLOUR ➡️</button>
+</div>
+
+<script>
+/* ===== PAINT SPLAT BACKGROUND ===== */
+var bgcv = document.getElementById("bg");
+var bgctx = bgcv.getContext("2d");
+bgcv.width = window.innerWidth;
+bgcv.height = window.innerHeight;
+window.addEventListener("resize", function() {
+  bgcv.width = window.innerWidth;
+  bgcv.height = window.innerHeight;
+});
+
+var splats = [];
+var BAND = 100;
+
+function randCol() {
+  return "hsl(" + Math.floor(Math.random()*360) + "," + (50+Math.floor(Math.random()*40)) + "%," + (45+Math.floor(Math.random()*25)) + "%)";
+}
+
+function edgePos() {
+  var side = Math.floor(Math.random() * 4);
+  var x, y;
+  if (side === 0) { x = Math.random() * bgcv.width;  y = Math.random() * BAND; }
+  else if (side === 1) { x = Math.random() * bgcv.width;  y = bgcv.height - Math.random() * BAND; }
+  else if (side === 2) { x = Math.random() * BAND; y = Math.random() * bgcv.height; }
+  else { x = bgcv.width - Math.random() * BAND; y = Math.random() * bgcv.height; }
+  return {x:x, y:y};
+}
+
+function drawSplat(s) {
+  bgctx.save();
+  bgctx.globalAlpha = s.alpha;
+  bgctx.translate(s.x, s.y);
+  bgctx.rotate(s.rot);
+  bgctx.fillStyle = s.col;
+
+  /* main body — irregular polygon */
+  bgctx.beginPath();
+  var bodyPoints = s.bodyPoints;
+  bgctx.moveTo(bodyPoints[0].x, bodyPoints[0].y);
+  for (var i = 1; i < bodyPoints.length; i++) {
+    var prev = bodyPoints[i-1];
+    var curr = bodyPoints[i];
+    var mx = (prev.x + curr.x) / 2;
+    var my = (prev.y + curr.y) / 2;
+    bgctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+  }
+  bgctx.closePath();
+  bgctx.fill();
+
+  /* spiky spatter rays shooting out */
+  for (var j = 0; j < s.spikes.length; j++) {
+    var sp = s.spikes[j];
+    bgctx.save();
+    bgctx.rotate(sp.angle);
+    /* elongated teardrop spike */
+    bgctx.beginPath();
+    bgctx.ellipse(sp.dist, 0, sp.len, sp.width, 0, 0, Math.PI * 2);
+    bgctx.fill();
+    /* tiny dot at tip */
+    if (sp.hasDot) {
+      bgctx.beginPath();
+      bgctx.arc(sp.dist + sp.len + sp.gap, 0, sp.dotR, 0, Math.PI * 2);
+      bgctx.fill();
+    }
+    bgctx.restore();
+  }
+
+  bgctx.restore();
+}
+
+function makeSplat() {
+  var p = edgePos();
+  var col = randCol();
+  var baseR = Math.random() * 16 + 12;
+
+  /* irregular main body */
+  var numBody = Math.floor(Math.random() * 4) + 8;
+  var bodyPoints = [];
+  for (var i = 0; i < numBody; i++) {
+    var a = (i / numBody) * Math.PI * 2;
+    var r = baseR * (0.7 + Math.random() * 0.6);
+    bodyPoints.push({ x: Math.cos(a)*r, y: Math.sin(a)*r });
+  }
+
+  /* spiky rays */
+  var numSpikes = Math.floor(Math.random() * 8) + 10;
+  var spikes = [];
+  for (var j = 0; j < numSpikes; j++) {
+    spikes.push({
+      angle: Math.random() * Math.PI * 2,
+      dist: baseR * (0.6 + Math.random() * 0.5),
+      len: Math.random() * baseR * 0.9 + baseR * 0.3,
+      width: Math.random() * 3 + 1.5,
+      hasDot: Math.random() < 0.5,
+      gap: Math.random() * 4 + 2,
+      dotR: Math.random() * 2.5 + 1
+    });
+  }
+
+  return {
+    cx: p.x, cy: p.y,
+    x: p.x, y: p.y,
+    col: col,
+    bodyPoints: bodyPoints,
+    spikes: spikes,
+    baseR: baseR,
+    oa: Math.random() * Math.PI * 2,
+    os: (Math.random() * 0.005 + 0.002) * (Math.random() < 0.5 ? 1 : -1),
+    or: Math.random() * 20 + 10,
+    rot: Math.random() * Math.PI * 2,
+    spin: (Math.random() - 0.5) * 0.012,
+    alpha: Math.random() * 0.4 + 0.35
+  };
+}
+
+/* click to paint a splat that fades after 3 seconds */
+var tempSplats = [];
+
+bgcv.addEventListener("click", function(e) {
+  var sp = makeSplat();
+  sp.cx = e.clientX; sp.cy = e.clientY;
+  sp.x  = e.clientX; sp.y  = e.clientY;
+  sp.or = 0; /* no orbit — stays put */
+  sp.alpha = 0.75;
+  sp.fadeStart = Date.now();
+  sp.fadeDur = 3000;
+  sp.col = randCol();
+  tempSplats.push(sp);
+});
+
+function bgLoop() {
+  bgctx.clearRect(0, 0, bgcv.width, bgcv.height);
+  bgctx.fillStyle = "#111";
+  bgctx.fillRect(0, 0, bgcv.width, bgcv.height);
+
+  /* draw permanent edge splats */
+  for (var i = 0; i < splats.length; i++) {
+    var s = splats[i];
+    s.oa += s.os;
+    s.rot += s.spin;
+    s.x = s.cx + Math.cos(s.oa) * s.or;
+    s.y = s.cy + Math.sin(s.oa) * s.or;
+    var distX = Math.min(s.cx, bgcv.width - s.cx);
+    var distY = Math.min(s.cy, bgcv.height - s.cy);
+    if (distX > BAND && distY > BAND) {
+      var dx = s.cx - bgcv.width/2, dy = s.cy - bgcv.height/2;
+      var len = Math.sqrt(dx*dx+dy*dy)||1;
+      s.cx += (dx/len)*0.4; s.cy += (dy/len)*0.4;
+    }
+    drawSplat(s);
+  }
+
+  /* draw and fade temp splats */
+  var now = Date.now();
+  for (var j = tempSplats.length - 1; j >= 0; j--) {
+    var ts = tempSplats[j];
+    ts.rot += ts.spin;
+    var elapsed = now - ts.fadeStart;
+    ts.alpha = Math.max(0, 0.75 * (1 - elapsed / ts.fadeDur));
+    if (ts.alpha <= 0) { tempSplats.splice(j, 1); continue; }
+    drawSplat(ts);
+  }
+
+  requestAnimationFrame(bgLoop);
+}
+bgLoop();
+var round = 1;
+var scores = [];
+var submitted = false;
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function newTarget() {
+  /* avoid colours too close to grey which are hard to distinguish */
+  do {
+    targetR = randInt(20, 235);
+    targetG = randInt(20, 235);
+    targetB = randInt(20, 235);
+  } while (
+    Math.abs(targetR - targetG) < 30 &&
+    Math.abs(targetG - targetB) < 30 &&
+    Math.abs(targetR - targetB) < 30
+  );
+  document.getElementById("target-swatch").style.background =
+    "rgb(" + targetR + "," + targetG + "," + targetB + ")";
+}
+
+function updateMix() {
+  var r = document.getElementById("r-slider").value;
+  var g = document.getElementById("g-slider").value;
+  var b = document.getElementById("b-slider").value;
+  document.getElementById("r-val").textContent = r;
+  document.getElementById("g-val").textContent = g;
+  document.getElementById("b-val").textContent = b;
+  document.getElementById("mix-swatch").style.background =
+    "rgb(" + r + "," + g + "," + b + ")";
+
+  /* live accuracy bar */
+  if (!submitted) {
+    var acc = getAccuracy(r, g, b);
+    updateBar(acc);
+  }
+}
+
+function getAccuracy(r, g, b) {
+  var dr = targetR - r;
+  var dg = targetG - g;
+  var db = targetB - b;
+  var maxDist = Math.sqrt(255*255*3);
+  var dist = Math.sqrt(dr*dr + dg*dg + db*db);
+  return Math.round((1 - dist / maxDist) * 100);
+}
+
+function updateBar(acc) {
+  var bar = document.getElementById("accuracy-bar");
+  bar.style.width = acc + "%";
+  if (acc >= 90) bar.style.background = "#2ecc71";
+  else if (acc >= 70) bar.style.background = "#f0c040";
+  else if (acc >= 50) bar.style.background = "#e67e22";
+  else bar.style.background = "#e74c3c";
+}
+
+function getFeedback(acc) {
+  if (acc >= 98) return "🎯 PERFECT MATCH!";
+  if (acc >= 93) return "🔥 INCREDIBLE! So close!";
+  if (acc >= 85) return "⭐ Great mix!";
+  if (acc >= 75) return "👍 Pretty good!";
+  if (acc >= 60) return "😅 Getting warmer!";
+  if (acc >= 45) return "🙈 Way off!";
+  return "💀 Are you colour blind? 😂";
+}
+
+function submitGuess() {
+  if (submitted) return;
+  submitted = true;
+
+  var r = document.getElementById("r-slider").value;
+  var g = document.getElementById("g-slider").value;
+  var b = document.getElementById("b-slider").value;
+  var acc = getAccuracy(r, g, b);
+  scores.push(acc);
+
+  updateBar(acc);
+  document.getElementById("feedback").textContent = getFeedback(acc) + " — " + acc + "%";
+
+  /* flash */
+  var flash = document.getElementById("result-flash");
+  flash.style.background = acc >= 80 ? "rgba(46,204,113,0.25)" : "rgba(231,76,60,0.2)";
+  flash.style.opacity = 1;
+  setTimeout(function() { flash.style.opacity = 0; }, 400);
+
+  /* reveal target RGB */
+  document.getElementById("subtitle").textContent =
+    "TARGET: rgb(" + targetR + ", " + targetG + ", " + targetB + ")";
+
+  /* update stats */
+  var best = Math.max.apply(null, scores);
+  var avg = Math.round(scores.reduce(function(a,b){return a+b;},0) / scores.length);
+  document.getElementById("best-score").textContent = best + "%";
+  document.getElementById("avg-score").textContent = avg + "%";
+
+  document.getElementById("submit-btn").style.display = "none";
+  document.getElementById("next-btn").style.display = "block";
+}
+
+function nextRound() {
+  submitted = false;
+  round++;
+  document.getElementById("round-num").textContent = round;
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("subtitle").textContent = "MATCH THE COLOUR ON THE LEFT";
+  document.getElementById("r-slider").value = 128;
+  document.getElementById("g-slider").value = 128;
+  document.getElementById("b-slider").value = 128;
+  document.getElementById("r-val").textContent = 128;
+  document.getElementById("g-val").textContent = 128;
+  document.getElementById("b-val").textContent = 128;
+  document.getElementById("mix-swatch").style.background = "rgb(128,128,128)";
+  document.getElementById("accuracy-bar").style.width = "0%";
+  document.getElementById("submit-btn").style.display = "block";
+  document.getElementById("next-btn").style.display = "none";
+  newTarget();
+}
+
+function startGame() {
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("game").style.display = "block";
+  newTarget();
+  updateMix();
+}
+</script>
+</body>
+</html>

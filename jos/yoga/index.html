@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Yoga Simulator</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #1a1a2e;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  padding: 20px;
+}
+.floater {
+  position: fixed;
+  font-size: 26px;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  0%   { transform: translateY(0px) rotate(0deg); opacity:0.12; }
+  50%  { transform: translateY(-18px) rotate(8deg); opacity:0.2; }
+  100% { transform: translateY(0px) rotate(0deg); opacity:0.12; }
+}
+#screen { position:relative; z-index:1; width:100%; max-width:420px; }
+
+/* START */
+#start-screen h1 { font-size:28px; margin-bottom:8px; }
+.tagline { font-size:13px; color:#aaa; margin-bottom:24px; }
+.mat-msg {
+  font-size:16px; font-weight:bold;
+  background:rgba(255,255,255,0.07);
+  border:2px dashed #f0c040;
+  border-radius:14px; padding:16px 20px;
+  margin-bottom:22px; color:#f0c040; line-height:1.7;
+}
+#go-btn {
+  background:linear-gradient(135deg,#e96c2e,#f0c040);
+  border:none; color:white; font-size:16px; font-weight:bold;
+  padding:13px 36px; border-radius:12px; cursor:pointer; letter-spacing:2px;
+}
+#go-btn:hover { transform:scale(1.04); }
+
+/* COUNTDOWN */
+#countdown-screen { display:none; }
+#cd-label { font-size:13px; color:#aaa; letter-spacing:3px; margin-bottom:8px; }
+#cd-num { font-size:80px; font-weight:bold; color:#f0c040; text-shadow:0 0 30px #f0c04088; line-height:1; }
+#cd-msg { font-size:16px; color:#ccc; margin-top:12px; }
+
+/* EXERCISE */
+#exercise-screen { display:none; }
+#ex-progress { font-size:11px; color:#888; letter-spacing:3px; margin-bottom:8px; }
+#ex-name { font-size:24px; font-weight:bold; color:#f0c040; margin-bottom:4px; }
+#ex-badge {
+  display:inline-block; padding:3px 14px; border-radius:20px;
+  font-size:11px; letter-spacing:2px; margin-bottom:12px;
+  background:#2e4a8a; color:#80b0ff; font-weight:bold;
+}
+canvas#sc { display:block; margin:0 auto 12px; }
+#ex-inst {
+  font-size:13px; color:#ccc; margin-bottom:12px;
+  background:rgba(255,255,255,0.06); border-radius:10px;
+  padding:10px 14px; line-height:1.6;
+}
+#encourage { font-size:14px; font-weight:bold; color:#f0c040; min-height:22px; margin-bottom:12px; }
+
+/* timer ring */
+#timer-ring { position:relative; width:86px; height:86px; margin:0 auto; }
+#timer-ring svg { position:absolute; top:0; left:0; transform:rotate(-90deg); }
+#timer-num { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px; font-weight:bold; color:#f0c040; }
+
+/* FINISH */
+#finish-screen { display:none; }
+#finish-screen h2 { font-size:28px; margin-bottom:8px; }
+.fin-sub { font-size:14px; color:#aaa; margin-bottom:20px; }
+.star-row { font-size:34px; margin-bottom:20px; }
+#again-btn {
+  background:linear-gradient(135deg,#e96c2e,#f0c040);
+  border:none; color:white; font-size:15px; font-weight:bold;
+  padding:12px 32px; border-radius:12px; cursor:pointer; letter-spacing:2px;
+}
+#again-btn:hover { transform:scale(1.04); }
+</style>
+</head>
+<body>
+
+<script>
+var emojis=["🧘","🌟","✨","💪","🌈","🦋","🌸","⭐","🎯","🏆","🌺","🔥"];
+for(var e=0;e<18;e++){
+  var d=document.createElement("div");
+  d.className="floater";
+  d.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  d.style.left=Math.random()*100+"vw";
+  d.style.top=Math.random()*100+"vh";
+  d.style.animationDelay=(Math.random()*8)+"s";
+  d.style.animationDuration=(6+Math.random()*7)+"s";
+  document.body.appendChild(d);
+}
+</script>
+
+<div id="screen">
+
+  <div id="start-screen">
+    <h1>🧘 YOGA TIME! 🧘</h1>
+    <p class="tagline">Stretch, move and feel amazing!</p>
+    <div class="mat-msg">🛁 First things first...<br><br>Go grab your yoga mat!<br><span style="font-size:13px;color:#aaa;">(or a towel, we don't judge 😄)</span></div>
+    <button id="go-btn" onclick="beginCountdown()">I'M READY! LET'S GO! 💪</button>
+  </div>
+
+  <div id="countdown-screen">
+    <div id="cd-label">STARTING IN</div>
+    <div id="cd-num">3</div>
+    <div id="cd-msg">Get into position! 🧘</div>
+  </div>
+
+  <div id="exercise-screen">
+    <div id="ex-progress">EXERCISE 1 OF 6</div>
+    <div id="ex-name">MOUNTAIN POSE</div>
+    <div id="ex-badge">⏱ HOLD FOR 20 SECONDS</div>
+    <canvas id="sc" width="160" height="180"></canvas>
+    <div id="ex-inst">Stand tall!</div>
+    <div id="encourage">You got this! 💪</div>
+    <div id="timer-ring">
+      <svg width="86" height="86">
+        <circle cx="43" cy="43" r="36" fill="none" stroke="#333" stroke-width="7"/>
+        <circle id="ring" cx="43" cy="43" r="36" fill="none" stroke="#f0c040" stroke-width="7"
+          stroke-dasharray="226" stroke-dashoffset="0" stroke-linecap="round"/>
+      </svg>
+      <div id="timer-num">20</div>
+    </div>
+  </div>
+
+  <div id="finish-screen">
+    <h2>🏆 AMAZING WORK! 🏆</h2>
+    <div class="fin-sub" id="fin-msg">You're a yoga legend!</div>
+    <div class="star-row">⭐⭐⭐</div>
+    <button id="again-btn" onclick="resetGame()">DO IT AGAIN! 🔄</button>
+  </div>
+
+</div>
+
+<script>
+var exercises = [
+  {
+    name:"MOUNTAIN POSE", duration:20,
+    inst:"Stand up straight, feet together, arms by your side. Take a big deep breath in and out!",
+    pose:"mountain",
+    msgs:["Stand tall like a mountain! ⛰️","Feel the ground beneath your feet!","Breathe in... and out... 😌"]
+  },
+  {
+    name:"STAR JUMPS", duration:20,
+    inst:"Jump up and spread your arms and legs out wide like a star! Keep jumping for the whole time!",
+    pose:"star",
+    msgs:["Jump jump jump! ⭐","You're a total STAR! 🌟","Keep going, you legend! 💪"]
+  },
+  {
+    name:"TREE POSE", duration:25,
+    inst:"Stand on one leg. Place your other foot on your ankle or knee. Arms up like branches!",
+    pose:"tree",
+    msgs:["Wobbling is totally fine! 🌳","Balance is a superpower!","You're doing amazing! 🌟"]
+  },
+  {
+    name:"DOWNWARD DOG", duration:20,
+    inst:"Hands and feet on the floor, push your hips up high to make a triangle shape with your body!",
+    pose:"downdog",
+    msgs:["Woof woof! 🐶","Push those hips to the sky!","Stretch it right out! ✨"]
+  },
+  {
+    name:"WARRIOR POSE", duration:20,
+    inst:"Step one foot forward into a lunge, arms stretched wide. Look straight ahead like a warrior!",
+    pose:"warrior",
+    msgs:["You ARE a warrior! ⚔️","Strong and powerful! 💪","Hold it, hero! 🦸"]
+  },
+  {
+    name:"VICTORY POSE", duration:15,
+    inst:"Stand up, throw your arms in the air in a big V shape and SMILE — you crushed it!",
+    pose:"victory",
+    msgs:["YOU DID IT! 🏆","AMAZING HUMAN! 🌟","That's a winner right there! 🥇"]
+  }
+];
+
+/* shuffle */
+function shuffle(arr) {
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+var order = [];
+var currentEx = 0;
+var timerInt = null;
+var encInt = null;
+var animInt = null;
+var timeLeft = 0;
+var animT = 0;
+
+var sc = document.getElementById("sc");
+var sctx = sc.getContext("2d");
+
+/* 11 joints: head, neck, lShoulder, rShoulder, lHand, rHand, hip, lKnee, rKnee, lFoot, rFoot */
+var poseJoints = {
+  stand: [ /* neutral standing — used as waypoint */
+    [80,20],[80,38],[65,56],[95,56],[55,80],[105,80],[80,98],[68,125],[92,125],[63,150],[97,150]
+  ],
+  mountain: [
+    [80,20],[80,38],[65,56],[95,56],[55,80],[105,80],[80,98],[68,125],[92,125],[63,150],[97,150]
+  ],
+  star: [
+    [80,15],[80,32],[65,50],[95,50],[28,22],[132,22],[80,90],[52,140],[108,140],[38,158],[122,158]
+  ],
+  tree: [
+    [80,20],[80,38],[62,55],[98,55],[48,28],[112,28],[80,98],[80,130],[80,98],[80,150],[60,115]
+  ],
+  downdog: [
+    [34,58],[34,72],[34,72],[80,38],[16,148],[144,148],[80,38],[52,95],[108,95],[18,150],[142,150]
+  ],
+  warrior: [
+    [80,20],[80,38],[65,56],[95,56],[30,58],[130,58],[80,95],[58,140],[110,130],[44,150],[128,115]
+  ],
+  victory: [
+    [80,20],[80,38],[65,52],[95,52],[36,16],[124,16],[80,100],[64,145],[96,145],[60,150],[100,150]
+  ],
+  /* extra waypoints for natural transitions */
+  crouch: [ /* halfway standing up from floor */
+    [80,55],[80,70],[65,82],[95,82],[55,100],[105,100],[80,108],[60,135],[100,135],[55,150],[105,150]
+  ],
+  armsup: [ /* standing with arms raised ready */
+    [80,20],[80,38],[65,56],[95,56],[55,30],[105,30],[80,98],[68,125],[92,125],[63,150],[97,150]
+  ],
+  legout: [ /* standing, one leg lifted to side */
+    [80,20],[80,38],[65,56],[95,56],[55,80],[105,80],[80,98],[80,125],[92,125],[80,148],[97,150]
+  ]
+};
+
+/* transition waypoints between poses — natural human movement */
+var transitions = {
+  "downdog-tree":   ["crouch","stand","legout","armsup"],
+  "downdog-mountain":["crouch","stand"],
+  "downdog-warrior": ["crouch","stand"],
+  "downdog-star":    ["crouch","stand"],
+  "downdog-victory": ["crouch","stand","armsup"],
+  "star-downdog":    ["stand","crouch"],
+  "star-tree":       ["stand","legout","armsup"],
+  "star-warrior":    ["stand"],
+  "tree-downdog":    ["stand","crouch"],
+  "tree-star":       ["stand","armsup"],
+  "warrior-downdog": ["stand","crouch"],
+  "mountain-downdog":["crouch"],
+  "victory-downdog": ["crouch"]
+};
+
+var bones = [
+  [1,0],[1,2],[1,3],[2,4],[3,5],[1,6],[6,7],[6,8],[7,9],[8,10]
+];
+
+var animT = 0;
+var animInt = null;
+var currentPose = "mountain";
+
+/* morph chain: list of [fromJoints, toJoints, duration] steps */
+var morphChain = [];
+var morphChainIdx = 0;
+var morphT = 0;
+var morphDur = 18; /* frames per waypoint step */
+var onMorphDone = null;
+
+function easeInOut(t) {
+  return t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+}
+
+function getIdleJoints(pose, baseJoints, t) {
+  var j = baseJoints.map(function(p){return[p[0],p[1]];});
+  if(pose==="mountain"||pose==="stand"){
+    var lift=Math.sin(t*0.05)*7;
+    j[4][1]-=lift; j[5][1]-=lift; j[4][0]-=lift*0.3; j[5][0]+=lift*0.3;
+  } else if(pose==="star"){
+    var jump=Math.abs(Math.sin(t*0.13))*18;
+    var sp=Math.abs(Math.sin(t*0.13))*12;
+    for(var i=0;i<j.length;i++){ if(j[i][1]<145) j[i][1]-=jump; }
+    j[4][0]-=sp; j[5][0]+=sp; j[9][0]-=sp*0.4; j[10][0]+=sp*0.4;
+  } else if(pose==="tree"){
+    var sw=Math.sin(t*0.04)*4;
+    for(var i=0;i<j.length;i++) j[i][0]+=sw;
+  } else if(pose==="downdog"){
+    var hp=Math.sin(t*0.07)*4;
+    j[6][1]-=hp; j[3][1]-=hp;
+  } else if(pose==="warrior"){
+    var pu=Math.sin(t*0.06)*4;
+    j[4][0]-=pu; j[5][0]+=pu;
+  } else if(pose==="victory"){
+    var wv=Math.sin(t*0.1)*10;
+    j[4][1]-=wv; j[5][1]+=wv;
+  }
+  return j;
+}
+
+function drawJoints(joints) {
+  sctx.clearRect(0,0,160,180);
+  sctx.strokeStyle="#f0c040"; sctx.lineWidth=4; sctx.lineCap="round";
+  for(var b=0;b<bones.length;b++){
+    var a=joints[bones[b][0]], bb=joints[bones[b][1]];
+    sctx.beginPath(); sctx.moveTo(a[0],a[1]); sctx.lineTo(bb[0],bb[1]); sctx.stroke();
+  }
+  sctx.beginPath(); sctx.arc(joints[0][0],joints[0][1],13,0,Math.PI*2); sctx.stroke();
+}
+
+function buildChain(fromPose, toPose) {
+  var key = fromPose + "-" + toPose;
+  var waypoints = transitions[key] || ["stand"];
+  var chain = [];
+  var prev = poseJoints[fromPose] || poseJoints["stand"];
+  for(var i=0;i<waypoints.length;i++){
+    var wp = poseJoints[waypoints[i]];
+    chain.push([prev, wp]);
+    prev = wp;
+  }
+  chain.push([prev, poseJoints[toPose]]);
+  return chain;
+}
+
+function startAnim(toPose, fromPose) {
+  if(animInt) clearInterval(animInt);
+  animT=0;
+
+  if(fromPose && fromPose !== "" && poseJoints[fromPose]) {
+    morphChain = buildChain(fromPose, toPose);
+    morphChainIdx = 0;
+    morphT = 0;
+  } else {
+    morphChain = [];
+  }
+
+  currentPose = toPose;
+
+  animInt = setInterval(function() {
+    animT++;
+    var joints;
+
+    if(morphChain.length > 0 && morphChainIdx < morphChain.length) {
+      /* morphing through waypoints */
+      morphT++;
+      var progress = Math.min(morphT / morphDur, 1);
+      var ease = easeInOut(progress);
+      var step = morphChain[morphChainIdx];
+      joints = [];
+      for(var i=0;i<step[0].length;i++){
+        joints.push([
+          step[0][i][0] + (step[1][i][0]-step[0][i][0])*ease,
+          step[0][i][1] + (step[1][i][1]-step[0][i][1])*ease
+        ]);
+      }
+      if(progress >= 1) {
+        morphChainIdx++;
+        morphT = 0;
+        if(morphChainIdx >= morphChain.length) morphChain = [];
+      }
+    } else {
+      /* idle animation on final pose */
+      joints = getIdleJoints(toPose, poseJoints[toPose], animT);
+    }
+
+    drawJoints(joints);
+  }, 33);
+}
+
+/* ===== GAME FLOW ===== */
+function beginCountdown(){
+  document.getElementById("start-screen").style.display="none";
+  document.getElementById("countdown-screen").style.display="block";
+  order = shuffle(exercises);
+  currentEx=0;
+  var n=3;
+  document.getElementById("cd-num").textContent=n;
+  document.getElementById("cd-label").textContent="STARTING IN";
+  document.getElementById("cd-msg").textContent="Get into position! 🧘";
+  var cdi=setInterval(function(){
+    n--;
+    if(n<=0){ clearInterval(cdi); document.getElementById("countdown-screen").style.display="none"; showEx(""); }
+    else document.getElementById("cd-num").textContent=n;
+  },1000);
+}
+
+function showEx(fromPose){
+  var ex=order[currentEx];
+  document.getElementById("exercise-screen").style.display="block";
+  document.getElementById("ex-progress").textContent="EXERCISE "+(currentEx+1)+" OF "+order.length;
+  document.getElementById("ex-name").textContent=ex.name;
+  document.getElementById("ex-badge").textContent="⏱ HOLD FOR "+ex.duration+" SECONDS";
+  document.getElementById("ex-inst").textContent=ex.inst;
+  document.getElementById("encourage").textContent=ex.msgs[0];
+  if(encInt) clearInterval(encInt);
+  var ei=0;
+  encInt=setInterval(function(){
+    ei=(ei+1)%ex.msgs.length;
+    document.getElementById("encourage").textContent=ex.msgs[ei];
+  },3000);
+  if(fromPose !== null) startAnim(ex.pose, fromPose);
+  startTimer(ex.duration);
+}
+
+function startTimer(dur){
+  if(timerInt) clearInterval(timerInt);
+  timeLeft=dur;
+  var circ=2*Math.PI*36;
+  document.getElementById("timer-num").textContent=timeLeft;
+  document.getElementById("ring").setAttribute("stroke-dasharray",circ);
+  document.getElementById("ring").setAttribute("stroke-dashoffset",0);
+  document.getElementById("ring").setAttribute("stroke","#f0c040");
+  timerInt=setInterval(function(){
+    timeLeft--;
+    document.getElementById("timer-num").textContent=timeLeft;
+    var offset=circ*(1-timeLeft/dur);
+    document.getElementById("ring").setAttribute("stroke-dashoffset",offset);
+    if(timeLeft<=5) document.getElementById("ring").setAttribute("stroke","#e74c3c");
+    if(timeLeft<=0){ clearInterval(timerInt); nextEx(); }
+  },1000);
+}
+
+function nextEx(){
+  if(encInt) clearInterval(encInt);
+  var prevPose = order[currentEx].pose;
+  currentEx++;
+  if(currentEx>=order.length){ showFinish(); return; }
+  /* show next exercise name as overlay but keep stickman visible while morphing */
+  document.getElementById("ex-progress").textContent="EXERCISE "+(currentEx+1)+" OF "+order.length;
+  document.getElementById("cd-label").textContent="NEXT UP:";
+  document.getElementById("cd-num").style.fontSize="22px";
+  document.getElementById("cd-num").textContent=order[currentEx].name;
+  document.getElementById("cd-msg").textContent="Get into position! 💪";
+  document.getElementById("countdown-screen").style.display="block";
+  document.getElementById("exercise-screen").style.display="none";
+  /* start morphing the stickman immediately in the background */
+  startAnim(order[currentEx].pose, prevPose);
+  setTimeout(function(){
+    document.getElementById("countdown-screen").style.display="none";
+    document.getElementById("cd-num").style.fontSize="80px";
+    showEx(null); /* morph already started, pass null so it doesn't restart */
+  },2200);
+}
+
+function showFinish(){
+  document.getElementById("exercise-screen").style.display="none";
+  var msgs=["You are an absolute yoga LEGEND! 🧘","That was seriously impressive! 🌟","Your body thanks you! 💪","A+ student of the yoga arts! 🏆"];
+  document.getElementById("fin-msg").textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById("finish-screen").style.display="block";
+}
+
+function resetGame(){
+  if(timerInt) clearInterval(timerInt);
+  if(encInt) clearInterval(encInt);
+  if(animInt) clearInterval(animInt);
+  currentEx=0;
+  document.getElementById("finish-screen").style.display="none";
+  document.getElementById("cd-num").style.fontSize="80px";
+  document.getElementById("start-screen").style.display="block";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reaction Time Tester</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  transition: background 0.15s;
+  background: #1a1a2e;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+}
+
+#main { width:100%; max-width:460px; pointer-events:none; }
+
+h1 { font-size:26px; letter-spacing:3px; margin-bottom:6px; }
+#subtitle { font-size:12px; color:#888; letter-spacing:2px; margin-bottom:30px; }
+
+#big-msg {
+  font-size:36px; font-weight:bold;
+  margin-bottom:12px; min-height:50px;
+  text-shadow: 0 0 20px currentColor;
+}
+#small-msg { font-size:14px; color:#aaa; margin-bottom:30px; min-height:20px; }
+
+/* dots showing round progress */
+#dots { display:flex; gap:10px; justify-content:center; margin-bottom:28px; }
+.dot {
+  width:14px; height:14px; border-radius:50%;
+  background:#333; border:2px solid #555;
+  transition: background 0.3s, border 0.3s;
+}
+.dot.done  { background:#2ecc71; border-color:#2ecc71; }
+.dot.best  { background:#f0c040; border-color:#f0c040; }
+.dot.curr  { background:#3498db; border-color:#3498db; animation:pulse 0.6s infinite alternate; }
+@keyframes pulse { from{transform:scale(1)} to{transform:scale(1.3)} }
+
+/* results table */
+#results-box {
+  background:rgba(255,255,255,0.06);
+  border:1px solid #333; border-radius:14px;
+  padding:16px; margin-bottom:20px; display:none;
+}
+.res-row {
+  display:flex; justify-content:space-between;
+  font-size:13px; padding:5px 0;
+  border-bottom:1px solid #222;
+}
+.res-row:last-child { border-bottom:none; }
+.res-label { color:#888; }
+.res-val { font-weight:bold; color:#f0c040; }
+
+/* stat cards */
+#stat-cards { display:flex; gap:12px; justify-content:center; margin-bottom:20px; display:none; }
+.card {
+  background:rgba(255,255,255,0.06);
+  border:1px solid #333; border-radius:12px;
+  padding:12px 16px; min-width:100px;
+}
+.card-l { font-size:9px; color:#666; letter-spacing:2px; margin-bottom:4px; }
+.card-v { font-size:22px; font-weight:bold; color:#f0c040; }
+
+/* title badge */
+#title-badge {
+  font-size:28px; font-weight:bold;
+  margin-bottom:6px; display:none;
+  text-shadow: 0 0 20px #f0c04088;
+}
+#ranking { font-size:13px; color:#aaa; margin-bottom:20px; display:none; }
+
+#action-btn {
+  background:none; border:2px solid #f0c040; color:#f0c040;
+  font-size:14px; font-weight:bold; letter-spacing:2px;
+  padding:12px 32px; border-radius:10px; cursor:pointer;
+  pointer-events:auto;
+}
+#action-btn:hover { background:#f0c040; color:#000; }
+
+/* mode picker */
+#mode-screen { width:100%; max-width:460px; }
+#mode-screen h1 { font-size:26px; letter-spacing:3px; margin-bottom:6px; }
+#mode-screen p { font-size:12px; color:#888; letter-spacing:2px; margin-bottom:28px; }
+.mode-cards { display:flex; gap:14px; justify-content:center; }
+.mode-card {
+  flex:1; max-width:200px;
+  background:rgba(255,255,255,0.05);
+  border:2px solid #333; border-radius:14px;
+  padding:22px 14px; cursor:pointer;
+  transition:border 0.2s, transform 0.15s;
+}
+.mode-card:hover { border-color:#f0c040; transform:scale(1.04); }
+.mode-card .mc-icon { font-size:40px; margin-bottom:10px; }
+.mode-card .mc-title { font-size:15px; font-weight:bold; color:#f0c040; margin-bottom:6px; letter-spacing:1px; }
+.mode-card .mc-desc { font-size:11px; color:#888; line-height:1.5; }
+#rings {
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none; z-index:0; opacity:0.06;
+}
+.ring {
+  position:absolute; border-radius:50%;
+  border:2px solid white;
+  transform:translate(-50%,-50%);
+  animation:expand linear infinite;
+}
+@keyframes expand {
+  from { width:0; height:0; opacity:0.8; }
+  to   { width:600px; height:600px; opacity:0; }
+}
+#click-screen { display:none; width:100%; max-width:460px; }
+#click-btn {
+  width:160px; height:160px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #e96c2e, #c0392b);
+  border:4px solid #e74c3c; color:white;
+  font-size:18px; font-weight:bold; cursor:pointer;
+  box-shadow:0 0 30px rgba(231,76,60,0.4);
+  margin:0 auto 20px; display:block;
+  transition:transform 0.05s;
+}
+#click-btn:active { transform:scale(0.94); }
+#click-timer-ring { position:relative; width:100px; height:100px; margin:0 auto 16px; }
+#click-timer-ring svg { position:absolute; top:0; left:0; transform:rotate(-90deg); }
+#click-timer-num { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:26px; font-weight:bold; color:#f0c040; }
+#click-count { font-size:52px; font-weight:bold; color:#f0c040; margin-bottom:4px; }
+#click-label { font-size:12px; color:#888; letter-spacing:3px; margin-bottom:20px; }
+</style>
+</head>
+<body>
+
+<div id="rings">
+  <div class="ring" style="animation-duration:3s;animation-delay:0s;"></div>
+  <div class="ring" style="animation-duration:3s;animation-delay:1s;"></div>
+  <div class="ring" style="animation-duration:3s;animation-delay:2s;"></div>
+</div>
+
+<!-- MODE PICKER -->
+<div id="mode-screen">
+  <h1>⚡ SPEED TESTER</h1>
+  <p>CHOOSE YOUR CHALLENGE</p>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="setMode('reaction')">
+      <div class="mc-icon">🟢</div>
+      <div class="mc-title">REACTION TIME</div>
+      <div class="mc-desc">Wait for the screen to turn green then click as fast as you can! 5 rounds.</div>
+    </div>
+    <div class="mode-card" onclick="setMode('clicker')">
+      <div class="mc-icon">👆</div>
+      <div class="mc-title">CLICK SPEED</div>
+      <div class="mc-desc">Click the button as many times as you can in 5 seconds!</div>
+    </div>
+  </div>
+</div>
+
+<!-- REACTION TIME -->
+<div id="main" style="display:none;">
+  <h1>⚡ REACTION TESTER</h1>
+  <p id="subtitle">HOW FAST ARE YOUR REFLEXES?</p>
+  <div id="big-msg">Get Ready...</div>
+  <div id="small-msg">Click anywhere when the screen turns GREEN</div>
+  <div id="dots">
+    <div class="dot" id="dot-0"></div>
+    <div class="dot" id="dot-1"></div>
+    <div class="dot" id="dot-2"></div>
+    <div class="dot" id="dot-3"></div>
+    <div class="dot" id="dot-4"></div>
+  </div>
+  <div id="results-box">
+    <div class="res-row"><span class="res-label">Round 1</span><span class="res-val" id="r1">—</span></div>
+    <div class="res-row"><span class="res-label">Round 2</span><span class="res-val" id="r2">—</span></div>
+    <div class="res-row"><span class="res-label">Round 3</span><span class="res-val" id="r3">—</span></div>
+    <div class="res-row"><span class="res-label">Round 4</span><span class="res-val" id="r4">—</span></div>
+    <div class="res-row"><span class="res-label">Round 5</span><span class="res-val" id="r5">—</span></div>
+  </div>
+  <div id="stat-cards">
+    <div class="card"><div class="card-l">AVERAGE</div><div class="card-v" id="avg-ms">—</div></div>
+    <div class="card"><div class="card-l">BEST</div><div class="card-v" id="best-ms">—</div></div>
+    <div class="card"><div class="card-l">WORST</div><div class="card-v" id="worst-ms">—</div></div>
+  </div>
+  <div id="title-badge"></div>
+  <div id="ranking"></div>
+  <button id="action-btn" onclick="handleBtn()">START ⚡</button>
+  <button onclick="goBack()" style="display:block;background:none;border:2px solid #555;color:#888;font-size:12px;letter-spacing:2px;padding:8px 20px;border-radius:10px;cursor:pointer;margin-top:10px;pointer-events:auto;">← BACK</button>
+</div>
+
+<!-- CLICK SPEED -->
+<div id="click-screen">
+  <h1>👆 CLICK SPEED</h1>
+  <p style="font-size:12px;color:#888;letter-spacing:2px;margin-bottom:20px;">CLICK AS FAST AS YOU CAN!</p>
+  <div id="click-count">0</div>
+  <div id="click-label">CLICKS</div>
+  <div id="click-timer-ring">
+    <svg width="100" height="100">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="#333" stroke-width="7"/>
+      <circle id="click-ring" cx="50" cy="50" r="42" fill="none" stroke="#f0c040" stroke-width="7"
+        stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="round"/>
+    </svg>
+    <div id="click-timer-num">5</div>
+  </div>
+  <button id="click-btn" onclick="doClick()">CLICK ME!</button>
+  <div id="click-title" style="font-size:22px;font-weight:bold;color:#f0c040;margin-bottom:6px;display:none;"></div>
+  <div id="click-ranking" style="font-size:13px;color:#aaa;margin-bottom:20px;display:none;"></div>
+  <button id="click-again" onclick="resetClicker()" style="display:none;background:none;border:2px solid #f0c040;color:#f0c040;font-size:14px;font-weight:bold;letter-spacing:2px;padding:11px 28px;border-radius:10px;cursor:pointer;">PLAY AGAIN 🔄</button>
+  <button id="click-back" onclick="goBack()" style="display:block;background:none;border:2px solid #555;color:#888;font-size:12px;letter-spacing:2px;padding:8px 20px;border-radius:10px;cursor:pointer;margin-top:10px;">← BACK</button>
+</div>
+
+<script>
+/* ===== MODE SWITCHING ===== */
+function setMode(mode) {
+  document.getElementById("mode-screen").style.display = "none";
+  if (mode === "reaction") {
+    document.getElementById("main").style.display = "block";
+    setState("idle");
+  } else {
+    document.getElementById("click-screen").style.display = "block";
+    resetClicker();
+  }
+}
+
+function goBack() {
+  document.getElementById("click-screen").style.display = "none";
+  document.getElementById("main").style.display = "none";
+  document.body.style.background = "#1a1a2e";
+  document.getElementById("mode-screen").style.display = "block";
+}
+
+/* ===== CLICK SPEED GAME ===== */
+var clickCount = 0;
+var clickTimer = null;
+var clickRunning = false;
+var clickDur = 5;
+
+function doClick() {
+  if (clickRunning) {
+    clickCount++;
+    document.getElementById("click-count").textContent = clickCount;
+    return;
+  }
+  /* first click starts the timer */
+  clickCount = 1;
+  clickRunning = true;
+  document.getElementById("click-count").textContent = 1;
+  document.getElementById("click-btn").textContent = "KEEP CLICKING!";
+  var timeLeft = clickDur;
+  var circ = 2 * Math.PI * 42;
+  document.getElementById("click-ring").setAttribute("stroke-dasharray", circ);
+  document.getElementById("click-ring").setAttribute("stroke-dashoffset", 0);
+  document.getElementById("click-ring").setAttribute("stroke", "#f0c040");
+  clickTimer = setInterval(function() {
+    timeLeft -= 0.1;
+    document.getElementById("click-timer-num").textContent = Math.ceil(timeLeft);
+    var offset = circ * (1 - timeLeft / clickDur);
+    document.getElementById("click-ring").setAttribute("stroke-dashoffset", offset);
+    if (timeLeft <= 1) document.getElementById("click-ring").setAttribute("stroke", "#e74c3c");
+    if (timeLeft <= 0) {
+      clearInterval(clickTimer);
+      endClicker();
+    }
+  }, 100);
+}
+
+function endClicker() {
+  clickRunning = false;
+  document.getElementById("click-btn").style.display = "none";
+  document.getElementById("click-timer-num").textContent = "0";
+  var cps = (clickCount / clickDur).toFixed(1);
+  document.getElementById("click-label").textContent = "CLICKS IN 5 SECONDS — " + cps + " PER SECOND";
+
+  var title, ranking;
+  if (clickCount >= 80)      { title = "🤖 INHUMAN CLICKER";  ranking = "Top 1% — are you using two hands?!"; }
+  else if (clickCount >= 60) { title = "⚡ LIGHTNING FINGERS"; ranking = "Top 5% — incredibly fast!"; }
+  else if (clickCount >= 45) { title = "🔥 RAPID FIRE";        ranking = "Top 20% — really impressive!"; }
+  else if (clickCount >= 30) { title = "👍 SOLID CLICKER";     ranking = "Top 50% — pretty decent!"; }
+  else if (clickCount >= 20) { title = "🐢 SLOW TAPPER";       ranking = "Bottom 40% — keep practising!"; }
+  else                       { title = "🦥 ONE FINGER FRED";   ranking = "Bottom 10% — are you using your elbow? 😂"; }
+
+  document.getElementById("click-title").textContent = title;
+  document.getElementById("click-title").style.display = "block";
+  document.getElementById("click-ranking").textContent = ranking;
+  document.getElementById("click-ranking").style.display = "block";
+  document.getElementById("click-again").style.display = "inline-block";
+}
+
+function resetClicker() {
+  clickCount = 0; clickRunning = false;
+  if (clickTimer) clearInterval(clickTimer);
+  document.getElementById("click-count").textContent = "0";
+  document.getElementById("click-label").textContent = "CLICKS";
+  document.getElementById("click-timer-num").textContent = "5";
+  document.getElementById("click-btn").textContent = "CLICK ME!";
+  document.getElementById("click-btn").style.display = "block";
+  document.getElementById("click-title").style.display = "none";
+  document.getElementById("click-ranking").style.display = "none";
+  document.getElementById("click-again").style.display = "none";
+  var circ = 2 * Math.PI * 42;
+  document.getElementById("click-ring").setAttribute("stroke-dasharray", circ);
+  document.getElementById("click-ring").setAttribute("stroke-dashoffset", 0);
+  document.getElementById("click-ring").setAttribute("stroke", "#f0c040");
+}
+
+/* ===== REACTION TIME ===== */
+var round = 0;
+var times = [];
+var waitTimer = null;
+var goTime = 0;
+var tooEarly = false;
+
+/* state machine */
+function setState(s) {
+  STATE = s;
+  var bg, bigMsg, smallMsg;
+
+  if (s === "idle") {
+    bg = "#1a1a2e";
+    bigMsg = "Get Ready...";
+    smallMsg = "Click anywhere when the screen turns GREEN";
+    document.getElementById("action-btn").textContent = "START ⚡";
+    document.getElementById("action-btn").style.display = "block";
+  }
+  else if (s === "waiting") {
+    bg = "#c0392b"; /* red — wait! */
+    bigMsg = "WAIT...";
+    smallMsg = "Don't click yet! Wait for GREEN...";
+    document.getElementById("action-btn").style.display = "none";
+    /* mark current dot */
+    updateDots();
+    /* random delay 1.5 - 5 seconds */
+    var delay = 1500 + Math.random() * 3500;
+    waitTimer = setTimeout(function() {
+      if (STATE === "waiting") setState("go");
+    }, delay);
+  }
+  else if (s === "go") {
+    bg = "#27ae60"; /* green — GO! */
+    bigMsg = "CLICK NOW!";
+    smallMsg = "As fast as you can!";
+    goTime = Date.now();
+  }
+  else if (s === "tooearly") {
+    bg = "#8e44ad"; /* purple — oops */
+    bigMsg = "TOO EARLY! 😬";
+    smallMsg = "You clicked before it turned green! Try again.";
+    document.getElementById("action-btn").textContent = "TRY THIS ROUND AGAIN";
+    document.getElementById("action-btn").style.display = "block";
+  }
+  else if (s === "result") {
+    bg = "#1a1a2e";
+    var ms = times[times.length - 1];
+    bigMsg = ms + "ms";
+    smallMsg = getQuickComment(ms);
+    if (round < 5) {
+      document.getElementById("action-btn").textContent = "NEXT ROUND ➡️";
+    } else {
+      document.getElementById("action-btn").textContent = "SEE RESULTS 🏆";
+    }
+    document.getElementById("action-btn").style.display = "block";
+    /* update round row */
+    document.getElementById("r" + round).textContent = ms + "ms";
+    document.getElementById("results-box").style.display = "block";
+    updateDots();
+  }
+  else if (s === "done") {
+    bg = "#1a1a2e";
+    bigMsg = "";
+    smallMsg = "";
+    showFinalResults();
+    document.getElementById("action-btn").textContent = "PLAY AGAIN 🔄";
+    document.getElementById("action-btn").style.display = "block";
+  }
+
+  document.body.style.background = bg;
+  document.getElementById("big-msg").textContent = bigMsg;
+  document.getElementById("small-msg").textContent = smallMsg;
+}
+
+function updateDots() {
+  var bestIdx = -1;
+  if (times.length > 0) {
+    var best = Math.min.apply(null, times);
+    for (var i = 0; i < times.length; i++) {
+      if (times[i] === best) { bestIdx = i; break; }
+    }
+  }
+  for (var d = 0; d < 5; d++) {
+    var dot = document.getElementById("dot-" + d);
+    dot.className = "dot";
+    if (d < times.length) {
+      dot.className = d === bestIdx ? "dot best" : "dot done";
+    } else if (d === round - 1 && STATE === "waiting") {
+      dot.className = "dot curr";
+    }
+  }
+}
+
+/* clicking the whole body */
+document.body.addEventListener("click", function(e) {
+  if (document.getElementById("main").style.display === "none") return;
+  if (e.target.id === "action-btn") return;
+
+  if (STATE === "waiting") {
+    /* clicked too early! */
+    clearTimeout(waitTimer);
+    tooEarly = true;
+    setState("tooearly");
+  }
+  else if (STATE === "go") {
+    var ms = Date.now() - goTime;
+    times.push(ms);
+    if (round >= 5) {
+      setState("done");
+    } else {
+      setState("result");
+    }
+  }
+});
+
+function handleBtn() {
+  if (STATE === "idle") {
+    round = 0; times = [];
+    document.getElementById("results-box").style.display = "none";
+    document.getElementById("stat-cards").style.display = "none";
+    document.getElementById("title-badge").style.display = "none";
+    document.getElementById("ranking").style.display = "none";
+    for (var d = 0; d < 5; d++) document.getElementById("dot-"+d).className = "dot";
+    for (var r = 1; r <= 5; r++) document.getElementById("r"+r).textContent = "—";
+    nextRound();
+  }
+  else if (STATE === "result") {
+    if (round >= 5) setState("done");
+    else nextRound();
+  }
+  else if (STATE === "tooearly") {
+    /* retry same round */
+    nextRound(true);
+  }
+  else if (STATE === "done") {
+    document.getElementById("main").style.display = "none";
+    document.body.style.background = "#1a1a2e";
+    document.getElementById("mode-screen").style.display = "block";
+  }
+}
+
+function nextRound(retry) {
+  if (!retry) round++;
+  setState("waiting");
+}
+
+function getQuickComment(ms) {
+  if (ms < 150) return "INSANE! Are you even human?! 🤖";
+  if (ms < 200) return "Lightning fast! ⚡";
+  if (ms < 250) return "Really quick! 🔥";
+  if (ms < 300) return "Pretty good! 👍";
+  if (ms < 400) return "Not bad! Keep practising!";
+  if (ms < 500) return "A bit slow... 😅";
+  return "Were you asleep? 😴";
+}
+
+function getTitle(avg) {
+  if (avg < 150) return "🤖 SUPERHUMAN";
+  if (avg < 200) return "⚡ LIGHTNING BOLT";
+  if (avg < 250) return "🔥 QUICK DRAW";
+  if (avg < 300) return "👍 SOLID REFLEXES";
+  if (avg < 400) return "🐢 AVERAGE HUMAN";
+  if (avg < 500) return "😴 SLOW COACH";
+  return "🦥 SLEEPING SLOTH";
+}
+
+function getRanking(avg) {
+  if (avg < 150) return "Top 1% of all humans — possibly a robot 🤖";
+  if (avg < 200) return "Top 10% — seriously impressive reflexes!";
+  if (avg < 250) return "Top 25% — faster than most people!";
+  if (avg < 300) return "Top 50% — right around average for humans";
+  if (avg < 400) return "Bottom 40% — room to improve!";
+  return "Bottom 20% — maybe put the phone down and get some sleep 😂";
+}
+
+function showFinalResults() {
+  var avg = Math.round(times.reduce(function(a,b){return a+b;},0) / times.length);
+  var best = Math.min.apply(null, times);
+  var worst = Math.max.apply(null, times);
+
+  document.getElementById("avg-ms").textContent = avg + "ms";
+  document.getElementById("best-ms").textContent = best + "ms";
+  document.getElementById("worst-ms").textContent = worst + "ms";
+  document.getElementById("stat-cards").style.display = "flex";
+
+  document.getElementById("title-badge").textContent = getTitle(avg);
+  document.getElementById("title-badge").style.display = "block";
+  document.getElementById("ranking").textContent = getRanking(avg);
+  document.getElementById("ranking").style.display = "block";
+
+  document.getElementById("big-msg").textContent = "All done!";
+  document.getElementById("small-msg").textContent = "Here are your results 👇";
+}
+</script>
+</body>
+</html>

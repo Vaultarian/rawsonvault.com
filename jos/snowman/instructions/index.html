@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>It's Hard to Build a Snowman — Game Rules</title>
+<style>
+  /* Define the keyframes for the fading animation */
+  @keyframes backgroundFade {
+    0% {
+      background-color: #E0FFFF; /* Start color (Light Cyan) */
+    }
+    100% {
+      background-color: #008B8B; /* End color (Dark Cyan) */
+    }
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    /* Apply the animation to the body with infinite alternating loop */
+    animation: backgroundFade 5s infinite alternate;
+    padding: 30px;
+    line-height: 1.6;
+    color: #333; /* Improved readability on varying backgrounds */
+  }
+  h1 {
+    color: #0057b7;
+  }
+  h2 {
+    color: #003f7d;
+    margin-top: 28px;
+  }
+  .section {
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  ul {
+    margin-left: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background: #d9edff;
+  }
+</style>
+</head>
+<body>
+
+<h1>❄️ It’s Hard to Build a Snowman – Game Rules</h1>
+
+<div class="section">
+<h2>🎯 Goal</h2>
+<p>Build <strong>one complete snowman</strong> made of three snowballs stacked in size order:</p>
+<p><strong>3 → 2 → 1</strong> (big at bottom, small at top)</p>
+<p>When any tile has a stack <code>3-2-1</code>, you win the level.</p>
+</div>
+
+<div class="section">
+<h2>🧊 The Board</h2>
+<p>The world is a grid with:</p>
+<ul>
+  <li>Letters across the top (ABCDE.etc)</li>
+  <li>Numbers down the side (1234.etc)</li>
+</ul>
+<p>Each tile is one of these types:</p>
+
+<table>
+<tr><th>Tile</th><th>Colour</th><th>What it does</th></tr>
+<tr><td><strong>Snow</strong></td><td>White</td><td>Rolling a ball across it can make the ball grow</td></tr>
+<tr><td><strong>Grass</strong></td><td>Green</td><td>Normal ground</td></tr>
+<tr><td><strong>Wall</strong></td><td>Black</td><td>Solid. Cannot walk into or push balls into it</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>🙂 The Player</h2>
+<ul>
+  <li>You are the little face icon 🙂 (or 😁 when you win)</li>
+  <li>Move using arrow keys or the on‑screen buttons</li>
+  <li>You cannot step on walls or leave the grid</li>
+<br>
+🎉 now you know the instructions try the tutorials! 
+<br>
+            setMessage('🎉 Well done!<br>You finished the level! <br><button onclick="window.open(\'https://sustruck975.trinket.io/sites/l1-html-v1\', \'_blank\')">Go to Level 1 ▶️</button>
+</ul>
+</div>
+
+</body>
+</html>
