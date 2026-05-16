@@ -250,10 +250,10 @@ canvas {
 <canvas id="bg"></canvas>
 
 <!-- Password hint banner -->
-<div id="hint-banner" style="position:fixed;top:0;left:0;width:100%;background:white;color:#111;text-align:center;font-family:Nunito,Arial,sans-serif;font-weight:700;font-size:1rem;padding:0.8rem 1rem;z-index:99999;transform:translateY(-100%);transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+<div id="hint-banner" style="position:fixed;top:0;left:50%;transform:translate(-50%,-100%);background:white;color:#111;font-family:Nunito,Arial,sans-serif;font-weight:700;font-size:0.8rem;padding:0.35rem 1rem;border-radius:0 0 10px 10px;z-index:99999;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);box-shadow:0 4px 10px rgba(0,0,0,0.3);white-space:nowrap;">
   the password is: 1235489
 </div>
-<script>window.addEventListener('load',function(){setTimeout(function(){document.getElementById('hint-banner').style.transform='translateY(0)';},400);});</script>
+<script>window.addEventListener('load',function(){setTimeout(function(){document.getElementById('hint-banner').style.transform='translate(-50%,0)';},400);});</script>
 
 <div id="screen">
 
