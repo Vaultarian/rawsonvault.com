@@ -4,432 +4,188 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>jos' projects</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background-color: #f2ede3;
-            font-family: 'Nunito', sans-serif;
-            min-height: 100vh;
-            padding: 2rem 1.5rem 4rem;
-            animation: fadeIn 0.8s ease both;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .container {
-            max-width: 820px;
-            margin: 0 auto;
-        }
-
-        /* ── Header ── */
-        .site-title {
-            font-family: 'Fredoka One', cursive;
-            font-size: clamp(3rem, 10vw, 5rem);
-            color: #d9643a;
-            text-align: center;
-            margin-bottom: 1.25rem;
-            letter-spacing: 0.02em;
-        }
-
-        .welcome-box {
-            background: #d9643a;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1.6;
-            border-radius: 18px;
-            padding: 1.25rem 1.75rem;
-            max-width: 480px;
-            margin: 0 auto 2.5rem;
-            text-align: center;
-        }
-
-        /* ── Nav tabs (decorative, matching Wix style) ── */
-        .nav-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .nav-tab {
-            background: #3d9595;
-            color: white;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            font-size: 0.85rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 50px;
-            text-decoration: none;
-            transition: background 0.15s;
-        }
-
-        .nav-tab:hover { background: #2d7575; }
-        .nav-tab.active { background: #d9643a; }
-
-        /* ── Dropdown menus ── */
-        .nav-item {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .dropdown-trigger {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #3d9595;
-            border-radius: 14px;
-            min-width: 200px;
-            z-index: 100;
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                        opacity 0.3s ease;
-        }
-
-        .nav-item:hover .dropdown-menu,
-        .nav-item.open .dropdown-menu {
-            max-height: 700px;
-            opacity: 1;
-        }
-
-        .dropdown-menu a {
-            display: block;
-            color: white;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-decoration: none;
-            padding: 0.45rem 1.4rem;
-            transition: background 0.15s;
-            white-space: nowrap;
-        }
-
-        .dropdown-menu a:first-child  { padding-top: 0.8rem; }
-        .dropdown-menu a:last-child   { padding-bottom: 0.8rem; }
-        .dropdown-menu a:hover        { background: rgba(0,0,0,0.15); }
-
-        .dropdown-label {
-            font-family: 'Fredoka One', cursive;
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.75);
-            padding: 0.8rem 1.4rem 0.2rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.25);
-            margin: 0.35rem 1rem;
-        }
-
-        /* ── Two-column layout ── */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-            border: 3px solid #2a7070;
-            border-radius: 18px;
-            overflow: hidden;
-            margin-bottom: 2.5rem;
-        }
-
-        @media (max-width: 600px) {
-            .main-grid { grid-template-columns: 1fr; }
-        }
-
-        .panel {
-            padding: 1.75rem 1.5rem;
-            background: #eee8db;
-        }
-
-        .panel:first-child {
-            border-right: 3px solid #2a7070;
-        }
-
-        @media (max-width: 600px) {
-            .panel:first-child {
-                border-right: none;
-                border-bottom: 3px solid #2a7070;
-            }
-        }
-
-        .panel-heading {
-            font-family: 'Fredoka One', cursive;
-            font-size: 1.1rem;
-            color: #d9643a;
-            margin-bottom: 1.25rem;
-            line-height: 1.3;
-        }
-
-        /* ── Pill buttons ── */
-        .pill-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .pill-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.6rem;
-        }
-
-        .pill {
-            display: block;
-            background: #3d9595;
-            color: white;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            font-size: 0.82rem;
-            text-align: center;
-            padding: 0.55rem 0.75rem;
-            border-radius: 50px;
-            text-decoration: none;
-            transition: background 0.15s, transform 0.1s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .pill:hover {
-            background: #2d7575;
-            transform: scale(1.03);
-        }
-
-        /* ── Snowman panel ── */
-        .snowman-heading {
-            font-family: 'Fredoka One', cursive;
-            font-size: 1.1rem;
-            color: #d9643a;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-        }
-
-        .snowman-sub {
-            font-size: 0.8rem;
-            color: #3d9595;
-            font-weight: 700;
-            margin-bottom: 0.35rem;
-        }
-
-        .snowman-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 1rem;
-            margin-top: 0.75rem;
-        }
-
-        .snowman-col { display: flex; flex-direction: column; gap: 0.5rem; }
-
-        .snowman-col-label {
-            font-family: 'Fredoka One', cursive;
-            font-size: 1rem;
-            color: #d9643a;
-            margin-bottom: 0.3rem;
-        }
-
-        .pill.hard { background: #2a5f7a; }
-        .pill.hard:hover { background: #1d4a5f; }
-
-        .pill.instructions {
-            background: #2a3d5a;
-            grid-column: span 1;
-        }
-        .pill.instructions:hover { background: #1d2d45; }
-
-        /* ── Bonus marble run ── */
-        .bonus-section {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .bonus-label {
-            font-family: 'Fredoka One', cursive;
-            font-size: 1.1rem;
-            color: #3d9595;
-            margin-bottom: 0.75rem;
-        }
-
-        .pill.marble {
-            display: inline-block;
-            background: #c8a020;
-            font-size: 1rem;
-            padding: 0.7rem 2.5rem;
-        }
-
-        .pill.marble:hover { background: #a88010; }
-
-        /* ── Footer ── */
-        .footer {
-            text-align: center;
-        }
-
-        .vault-link {
-            font-family: 'Nunito', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            color: #3d9595;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
-
-        .vault-link:hover { color: #2d7575; }
+        #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; } 
+        #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; } 
+        #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; } 
+        .whiteout-bg { background-color: #ffffff !important; } 
+        .fade-out-content { opacity: 0 !important; pointer-events: none; } 
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; } 
+        body { background-color: #f2ede3; font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 2rem 1.5rem 4rem; animation: fadeIn 0.8s ease both; transition: background-color 1.2s ease-in-out; } 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } 
+        .container { max-width: 820px; margin: 0 auto; } 
+        .site-title { font-family: 'Fredoka One', cursive; font-size: clamp(3rem, 10vw, 5rem); color: #d9643a; text-align: center; margin-bottom: 1.25rem; letter-spacing: 0.02em; } 
+        .welcome-box { background: #d9643a; color: white; font-size: 1rem; font-weight: 600; line-height: 1.6; border-radius: 18px; padding: 1.25rem 1.75rem; max-width: 480px; margin: 0 auto 2.5rem; text-align: center; }
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2.5rem; } 
+        .nav-tab { background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; padding: 0.5rem 1.25rem; border-radius: 50px; text-decoration: none; transition: background 0.15s; } 
+        .nav-tab:hover { background: #2d7575; } .nav-tab.active { background: #d9643a; } 
+        .nav-item { position: relative; display: flex; align-items: center; } .dropdown-trigger { cursor: pointer; user-select: none; } 
+        .dropdown-menu { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #3d9595; border-radius: 14px; min-width: 200px; z-index: 100; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; } 
+        .nav-item:hover .dropdown-menu, .nav-item.open .dropdown-menu { max-height: 700px; opacity: 1; } 
+        .dropdown-menu a { display: block; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.45rem 1.4rem; transition: background 0.15s; white-space: nowrap; } 
+        .dropdown-menu a:first-child { padding-top: 0.8rem; } .dropdown-menu a:last-child { padding-bottom: 0.8rem; } .dropdown-menu a:hover { background: rgba(0,0,0,0.15); } 
+        .dropdown-label { font-family: 'Fredoka One', cursive; font-size: 0.75rem; color: rgba(255,255,255,0.75); padding: 0.8rem 1.4rem 0.2rem; text-transform: uppercase; letter-spacing: 0.06em; } 
+        .dropdown-divider { height: 1px; background: rgba(255,255,255,0.25); margin: 0.35rem 1rem; } 
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 3px solid #2a7070; border-radius: 18px; overflow: hidden; margin-bottom: 2.5rem; }
+        @media (max-width: 600px) { .main-grid { grid-template-columns: 1fr; } } 
+        .panel { padding: 1.75rem 1.5rem; background: #eee8db; } .panel:first-child { border-right: 3px solid #2a7070; } 
+        @media (max-width: 600px) { .panel:first-child { border-right: none; border-bottom: 3px solid #2a7070; } } 
+        .panel-heading { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #d9643a; margin-bottom: 1.25rem; line-height: 1.3; } 
+        .pill-grid { display: flex; flex-direction: column; gap: 0.6rem; } .pill-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; } 
+        .pill { display: block; background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem; text-align: center; padding: 0.55rem 0.75rem; border-radius: 50px; text-decoration: none; transition: background 0.15s, transform 0.1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+        .pill:hover { background: #2d7575; transform: scale(1.03); } 
+        .snowman-heading { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #d9643a; margin-bottom: 0.5rem; line-height: 1.3; } 
+        .snowman-sub { font-size: 0.8rem; color: #3d9595; font-weight: 700; margin-bottom: 0.35rem; } 
+        .snowman-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; margin-top: 0.75rem; } 
+        .snowman-col { display: flex; flex-direction: column; gap: 0.5rem; } .snowman-col-label { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #d9643a; margin-bottom: 0.3rem; } 
+        .pill.hard { background: #2a5f7a; } .pill.hard:hover { background: #1d4a5f; } .pill.instructions { background: #2a3d5a; grid-column: span 1; } .pill.instructions:hover { background: #1d2d45; } 
+        .footer { text-align: center; } .vault-link { font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: #3d9595; text-decoration: none; text-transform: uppercase; } .vault-link:hover { color: #2d7575; }
     </style>
 </head>
 <body>
-<div class="container">
-
-    <h1 class="site-title">jos' projects</h1>
-
-    <div class="welcome-box">
-        welcome to jos' projects — a fun home page for all the games
-        i made with claude.ai and chatgpt (try them!)
-    </div>
-
-    <nav class="nav-tabs">
-        <span class="nav-tab active">home</span>
-        <a class="nav-tab" href="how-i-did-it/">how i did it</a>
-
-        <div class="nav-item">
-            <span class="nav-tab dropdown-trigger">games ▾</span>
-            <div class="dropdown-menu">
-                <a href="whack-a-mole/">whack-a-mole!</a>
-                <a href="yoga/">yoga simulator</a>
-                <a href="gravity/">gravity simulator</a>
-                <a href="brick-breaker/">brick breaker</a>
-                <a href="fortune-teller/">fortune teller</a>
-                <a href="maze-runner/">maze runner</a>
-                <a href="type-speed/">type speed</a>
-                <a href="color-mixer/">colour mixer</a>
-                <a href="the-red-button/">the red button</a>
-                <a href="reaction-time/">reaction time</a>
-                <a href="password-defender/">password defender</a>
-                <a href="snake/">snake</a>
-                <a href="flappy-bird/">flappy bird</a>
-                <a href="marble_run.html">marble run</a>
+    <div id="canvasContainer"><canvas id="loaderCanvas"></canvas><div id="loadingText">0%</div></div>
+    <div class="container">
+        <h1 class="site-title">jos' projects</h1>
+        <div class="welcome-box">welcome to jos' projects — a fun home page for all the games i made with claude.ai and chatgpt (try them!)</div>
+        <nav class="nav-tabs">
+            <span class="nav-tab active">home</span><a class="nav-tab" href="how-i-did-it/">how i did it</a>
+            <div class="nav-item">
+                <span class="nav-tab dropdown-trigger">games ▾</span>
+                <div class="dropdown-menu">
+                    <a href="whack-a-mole/">whack-a-mole!</a><a href="yoga/">yoga simulator</a><a href="gravity/">gravity simulator</a><a href="brick-breaker/">brick breaker</a><a href="fortune-teller/">fortune teller</a><a href="maze-runner/">maze runner</a><a href="type-speed/">type speed</a><a href="color-mixer/">colour mixer</a><a href="the-red-button/">the red button</a><a href="reaction-time/">reaction time</a><a href="password-defender/">password defender</a><a href="snake/">snake</a><a href="flappy-bird/">flappy bird</a><a href="marble_run.html">marble run</a>
+                </div>
             </div>
-        </div>
-
-        <div class="nav-item">
-            <span class="nav-tab dropdown-trigger">a good snowman is hard to build ▾</span>
-            <div class="dropdown-menu">
-                <div class="dropdown-label">tutorials</div>
-                <a href="snowman/tutorial-1/">tutorial 1</a>
-                <a href="snowman/tutorial-2/">tutorial 2</a>
-                <a href="snowman/tutorial-3/">tutorial 3</a>
-                <a href="snowman/instructions/">instructions</a>
-                <div class="dropdown-divider"></div>
-                <div class="dropdown-label">levels</div>
-                <a href="snowman/level-1/">level 1</a>
-                <a href="snowman/level-2/">level 2</a>
-                <a href="snowman/level-3/">level 3</a>
-                <a href="snowman/level-4/">level 4</a>
-                <a href="snowman/level-5/">level 5 (hard!)</a>
+            <div class="nav-item">
+                <span class="nav-tab dropdown-trigger">a good snowman is hard to build ▾</span>
+                <div class="dropdown-menu">
+                    <div class="dropdown-label">tutorials</div>
+                    <a href="snowman/tutorial-1/">tutorial 1</a><a href="snowman/tutorial-2/">tutorial 2</a><a href="snowman/tutorial-3/">tutorial 3</a><a href="snowman/instructions/">instructions</a><div class="dropdown-divider"></div><div class="dropdown-label">levels</div>
+                    <a href="snowman/level-1/">level 1</a><a href="snowman/level-2/">level 2</a><a href="snowman/level-3/">level 3</a><a href="snowman/level-4/">level 4</a><a href="snowman/level-5/">level 5 (hard!)</a>
+                </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- ── Main two-panel grid ── -->
-    <div class="main-grid" id="games">
-
-        <!-- LEFT: Claude games -->
-        <div class="panel">
-            <p class="panel-heading">these are my projects i made with claude. some fun games i made!</p>
-            <div class="pill-grid">
-                <div class="pill-row">
-                    <a class="pill" href="whack-a-mole/">whack-a-mole!</a>
-                    <a class="pill" href="yoga/">yoga simulator</a>
+        </nav>
+        <div class="main-grid" id="games">
+            <div class="panel">
+                <p class="panel-heading">these are my projects i made with claude. some fun games i made!</p>
+                <div class="pill-grid">
+                    <div class="pill-row"><a class="pill" href="whack-a-mole/">whack-a-mole!</a><a class="pill" href="yoga/">yoga simulator</a></div>
+                    <div class="pill-row"><a class="pill" href="gravity/">gravity simulator</a><a class="pill" href="brick-breaker/">brick breaker</a></div>
+                    <div class="pill-row"><a class="pill" href="fortune-teller/">fortune teller</a><a class="pill" href="maze-runner/">maze runner</a></div>
+                    <div class="pill-row"><a class="pill" href="type-speed/">type speed</a><a class="pill" href="color-mixer/">colour mixer</a></div>
+                    <div class="pill-row"><a class="pill" href="the-red-button/">the red button</a><a class="pill" href="reaction-time/">reaction time</a></div>
+                    <div class="pill-row"><a class="pill" href="password-defender/">password defender</a><a class="pill" href="snake/">snake</a></div>
+                    <div class="pill-row"><a class="pill" href="flappy-bird/">flappy bird</a><a class="pill" href="marble_run.html">marble run</a></div>
                 </div>
-                <div class="pill-row">
-                    <a class="pill" href="gravity/">gravity simulator</a>
-                    <a class="pill" href="brick-breaker/">brick breaker</a>
-                </div>
-                <div class="pill-row">
-                    <a class="pill" href="fortune-teller/">fortune teller</a>
-                    <a class="pill" href="maze-runner/">maze runner</a>
-                </div>
-                <div class="pill-row">
-                    <a class="pill" href="type-speed/">type speed</a>
-                    <a class="pill" href="color-mixer/">colour mixer</a>
-                </div>
-                <div class="pill-row">
-                    <a class="pill" href="the-red-button/">the red button</a>
-                    <a class="pill" href="reaction-time/">reaction time</a>
-                </div>
-                <div class="pill-row">
-                    <a class="pill" href="password-defender/">password defender</a>
-                    <a class="pill" href="snake/">snake</a>
-                </div>
-                <div class="pill-row">
-                    <a class="pill" href="flappy-bird/">flappy bird</a>
-                    <a class="pill" href="marble_run.html">marble run</a>
+            </div>
+            <div class="panel" id="snowman">
+                <p class="snowman-heading">and i made: a good snowman is hard to build — with chatgpt and tutorials!</p>
+                <div class="snowman-grid">
+                    <div class="snowman-col">
+                        <div class="snowman-col-label">tutorials</div>
+                        <a class="pill" href="snowman/tutorial-1/">tutorial 1</a><a class="pill" href="snowman/tutorial-2/">tutorial 2</a><a class="pill" href="snowman/tutorial-3/">tutorial 3</a><a class="pill instructions" href="snowman/instructions/">instructions</a>
+                    </div>
+                    <div class="snowman-col">
+                        <div class="snowman-col-label">levels</div>
+                        <a class="pill" href="snowman/level-1/">level 1</a><a class="pill" href="snowman/level-2/">level 2</a><a class="pill" href="snowman/level-3/">level 3</a><a class="pill" href="snowman/level-4/">level 4</a><a class="pill hard" href="snowman/level-5/">level 5 (hard!)</a>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- RIGHT: ChatGPT + snowman levels -->
-        <div class="panel" id="snowman">
-            <p class="snowman-heading">and i made: a good snowman is hard to build — with chatgpt and tutorials!</p>
-
-            <div class="snowman-grid">
-                <div class="snowman-col">
-                    <div class="snowman-col-label">tutorials</div>
-                    <a class="pill" href="snowman/tutorial-1/">tutorial 1</a>
-                    <a class="pill" href="snowman/tutorial-2/">tutorial 2</a>
-                    <a class="pill" href="snowman/tutorial-3/">tutorial 3</a>
-                    <a class="pill instructions" href="snowman/instructions/">instructions</a>
-                </div>
-                <div class="snowman-col">
-                    <div class="snowman-col-label">levels</div>
-                    <a class="pill" href="snowman/level-1/">level 1</a>
-                    <a class="pill" href="snowman/level-2/">level 2</a>
-                    <a class="pill" href="snowman/level-3/">level 3</a>
-                    <a class="pill" href="snowman/level-4/">level 4</a>
-                    <a class="pill hard" href="snowman/level-5/">level 5 (hard!)</a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <footer class="footer">
-        <a class="vault-link" href="/">← back to the vault</a>
-    </footer>
-
-</div>
-
-<script>
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.querySelector('.dropdown-trigger').addEventListener('click', e => {
-            e.stopPropagation();
-            const isOpen = item.classList.contains('open');
-            navItems.forEach(i => i.classList.remove('open'));
-            if (!isOpen) item.classList.add('open');
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.querySelector('.dropdown-trigger').addEventListener('click', e => {
+                e.stopPropagation(); const isOpen = item.classList.contains('open');
+                navItems.forEach(i => i.classList.remove('open')); if (!isOpen) item.classList.add('open');
+            });
         });
-    });
-    document.addEventListener('click', () => {
-        navItems.forEach(i => i.classList.remove('open'));
-    });
-</script>
+        document.addEventListener('click', () => { navItems.forEach(i => i.classList.remove('open')); });
+
+        const canvas = document.getElementById('loaderCanvas'), ctx = canvas.getContext('2d');
+        const textElement = document.getElementById('loadingText'), container = document.getElementById('canvasContainer');
+        let centerX = window.innerWidth / 2, centerY = window.innerHeight / 2;
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const orbitRadius = 160; let currentPercent = 0, emitterAngle = -Math.PI / 2, particles = [];
+        let isFullyLoaded = false, didSkipTo100 = false, solidRingAlpha = 0, drawProgress = 0, particleFadeAlpha = 1, skipTriggered = false;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            centerX = canvas.width / 2; centerY = canvas.height / 2;
+        });
+
+        class RacingCircle {
+            constructor(startAngle, currentPercentage) {
+                this.angle = startAngle;
+                this.speed = 0.018 + (currentPercentage * 0.0025) + (Math.random() * 0.01);
+                this.radius = Math.random() * 1.5 + 4; this.history = [];
+            }
+            update() {
+                this.angle += this.speed;
+                this.x = centerX + Math.cos(this.angle) * orbitRadius;
+                this.y = centerY + Math.sin(this.angle) * orbitRadius;
+                this.history.push({x: this.x, y: this.y});
+                if (this.history.length > 6) this.history.shift();
+            }
+            draw(globalAlpha) {
+                if (this.history.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    for (let p of this.history) { ctx.lineTo(p.x, p.y); }
+                    ctx.strokeStyle = `rgba(0, 60, 255, ${0.4 * globalAlpha})`; ctx.lineWidth = this.radius * 0.7; ctx.stroke();
+                }
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 85, 255, ${globalAlpha})`; ctx.fill();
+            }
+        }
+
+        function increasePercentageRandomly() {
+            if (currentPercent < 100) {
+                let percentJump = Math.floor(Math.random() * 5) + 1; currentPercent += percentJump;
+                if (currentPercent >= 20 && currentPercent <= 75 && !skipTriggered && percentJump >= 4) {
+                    if (Math.random() < 0.5 && Math.random() < 0.5) { currentPercent = 100; didSkipTo100 = true; skipTriggered = true; }
+                }
+                if (currentPercent > 100) currentPercent = 100;
+                textElement.innerText = currentPercent + "%";
+                if (currentPercent === 100) {
+                    isFullyLoaded = true; setTimeout(triggerWhiteout, 2000);
+                } else {
+                    for (let i = 0; i < percentJump; i++) { particles.push(new RacingCircle(emitterAngle + (i * 0.04), currentPercent)); }
+                    setTimeout(increasePercentageRandomly, Math.random() * 400 + 100);
+                }
+            }
+        }
+
+        function drawLoop() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            emitterAngle += (0.02 + (currentPercent * 0.002));
+            if (isFullyLoaded && didSkipTo100) { particleFadeAlpha = Math.max(0, particleFadeAlpha - 0.02); }
+            for (let particle of particles) { particle.update(); particle.draw(particleFadeAlpha); }
+            if (isFullyLoaded) {
+                ctx.beginPath(); ctx.lineWidth = 10; ctx.lineCap = 'round';
+                if (didSkipTo100) {
+                    drawProgress = Math.min(1, drawProgress + 0.012);
+                    ctx.arc(centerX, centerY, orbitRadius, -Math.PI / 2, (-Math.PI / 2) + (drawProgress * Math.PI * 2), false);
+                    ctx.strokeStyle = '#0055ff';
+                } else {
+                    solidRingAlpha = Math.min(1, solidRingAlpha + 0.015);
+                    ctx.arc(centerX, centerY, orbitRadius, 0, Math.PI * 2); ctx.strokeStyle = `rgba(0, 85, 255, ${solidRingAlpha})`;
+                }
+                ctx.stroke();
+            }
+            requestAnimationFrame(drawLoop);
+        }
+
+        function triggerWhiteout() {
+            document.body.classList.add('whiteout-bg'); container.classList.add('fade-out-content');
+            setTimeout(() => { container.remove(); document.body.classList.remove('whiteout-bg'); }, 800);
+        }
+
+        // FIXED: Marbles spawn and orbit instantly, but counter waits exactly 2 seconds (2000ms) to start ticking
+        setTimeout(increasePercentageRandomly, 2000); 
+        drawLoop();
+    </script>
 </body>
 </html>
