@@ -9,10 +9,10 @@
     <link href="https://googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* ================================================== 
-           LOADING OVERLAY ELEMENT (Sits cleanly on top of your layout) 
+           LOADING OVERLAY ELEMENT 
            ================================================== */ 
         #canvasContainer { 
-            position: fixed; /* Fixed over your entire site layout */ 
+            position: fixed; 
             top: 0; 
             left: 0; 
             width: 100%; 
@@ -21,7 +21,7 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            z-index: 999999; /* Higher value keeps it above buttons and headers */ 
+            z-index: 999999; 
             transition: opacity 0.8s ease-in-out; 
         } 
         #loaderCanvas { 
@@ -41,18 +41,16 @@
             pointer-events: none; 
             z-index: 1000000; 
         } 
-        /* Page body flash modifier class */ 
         .whiteout-bg { 
             background-color: #ffffff !important; 
         }
-        /* Smoothly dissolves the overlay screen away */ 
         .fade-out-content { 
             opacity: 0 !important; 
             pointer-events: none; 
         } 
 
         /* ================================================== 
-           MAIN INTERACTIVE GAMES HUB PAGE CONTENT STYLES
+           MAIN INTERACTIVE HUB LAYOUT
            ================================================== */ 
         *, *::before, *::after { 
             margin: 0; 
@@ -75,7 +73,6 @@
             max-width: 820px; 
             margin: 0 auto; 
         } 
-        /* ── Header ── */ 
         .site-title { 
             font-family: 'Fredoka One', cursive; 
             font-size: clamp(3rem, 10vw, 5rem); 
@@ -96,7 +93,6 @@
             margin: 0 auto 2.5rem; 
             text-align: center; 
         }
-        /* ── Nav tabs ── */ 
         .nav-tabs { 
             display: flex; 
             flex-wrap: wrap; 
@@ -117,7 +113,6 @@
         } 
         .nav-tab:hover { background: #2d7575; } 
         .nav-tab.active { background: #d9643a; } 
-        /* ── Dropdown menus ── */ 
         .nav-item { 
             position: relative; 
             display: flex; 
@@ -172,7 +167,6 @@
             background: rgba(255,255,255,0.25); 
             margin: 0.35rem 1rem; 
         } 
-        /* ── Main two-column grid layout ── */ 
         .main-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -205,7 +199,6 @@
             margin-bottom: 1.25rem; 
             line-height: 1.3; 
         } 
-        /* ── Pill buttons ── */ 
         .pill-grid { 
             display: flex; 
             flex-direction: column; 
@@ -236,7 +229,6 @@
             background: #2d7575; 
             transform: scale(1.03); 
         } 
-        /* ── Snowman panel custom elements ── */ 
         .snowman-heading { 
             font-family: 'Fredoka One', cursive; 
             font-size: 1.1rem; 
@@ -271,8 +263,6 @@
         .pill.hard:hover { background: #1d4a5f; } 
         .pill.instructions { background: #2a3d5a; grid-column: span 1; } 
         .pill.instructions:hover { background: #1d2d45; } 
-        
-        /* ── Footer ── */ 
         .footer { 
             text-align: center; 
         } 
@@ -303,3 +293,13 @@
             welcome to jos' projects — a fun home page for all the games i made with claude.ai and chatgpt (try them!)
         </div>
 
+        <nav class="nav-tabs">
+            <span class="nav-tab active">home</span>
+            <a class="nav-tab" href="how-i-did-it/">how i did it</a>
+            
+            <div class="nav-item">
+                <span class="nav-tab dropdown-trigger">games ▾</span>
+                <div class="dropdown-menu">
+                    <a href="whack-a-mole/">whack-a-mole!</a>
+                    <a href="yoga/">yoga simulator</a>
+                    <a href="gravity/">gravity simulator</a>
