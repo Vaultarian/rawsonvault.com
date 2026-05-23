@@ -11,7 +11,7 @@
         #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; } 
         #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; } 
         #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; } 
-        .whiteout-bg { background-color: #ffffff !important; }
+        .whiteout-bg { background-color: #ffffff !important; } 
         .fade-out-content { opacity: 0 !important; pointer-events: none; } 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; } 
         body { background-color: #f2ede3; font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 2rem 1.5rem 4rem; animation: fadeIn 0.8s ease both; transition: background-color 1.2s ease-in-out; } 
@@ -21,10 +21,8 @@
         .welcome-box { background: #d9643a; color: white; font-size: 1rem; font-weight: 600; line-height: 1.6; border-radius: 18px; padding: 1.25rem 1.75rem; max-width: 480px; margin: 0 auto 2.5rem; text-align: center; }
         .nav-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2.5rem; } 
         .nav-tab { background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; padding: 0.5rem 1.25rem; border-radius: 50px; text-decoration: none; transition: background 0.15s; } 
-        .nav-tab:hover { background: #2d7575; } 
-        .nav-tab.active { background: #d9643a; } 
-        .nav-item { position: relative; display: flex; align-items: center; } 
-        .dropdown-trigger { cursor: pointer; user-select: none; } 
+        .nav-tab:hover { background: #2d7575; } .nav-tab.active { background: #d9643a; } 
+        .nav-item { position: relative; display: flex; align-items: center; } .dropdown-trigger { cursor: pointer; user-select: none; } 
         .dropdown-menu { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #3d9595; border-radius: 14px; min-width: 200px; z-index: 100; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; } 
         .nav-item:hover .dropdown-menu, .nav-item.open .dropdown-menu { max-height: 700px; opacity: 1; } 
         .dropdown-menu a { display: block; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.45rem 1.4rem; transition: background 0.15s; white-space: nowrap; } 
@@ -48,50 +46,24 @@
     </style>
 </head>
 <body>
-    <div id="canvasContainer">
-        <canvas id="loaderCanvas"></canvas>
-        <div id="loadingText">0%</div>
-    </div>
+    <div id="canvasContainer"><canvas id="loaderCanvas"></canvas><div id="loadingText">0%</div></div>
     <div class="container">
         <h1 class="site-title">jos' projects</h1>
         <div class="welcome-box">welcome to jos' projects — a fun home page for all the games i made with claude.ai and chatgpt (try them!)</div>
         <nav class="nav-tabs">
-            <span class="nav-tab active">home</span>
-            <a class="nav-tab" href="how-i-did-it/">how i did it</a>
+            <span class="nav-tab active">home</span><a class="nav-tab" href="how-i-did-it/">how i did it</a>
             <div class="nav-item">
                 <span class="nav-tab dropdown-trigger">games ▾</span>
                 <div class="dropdown-menu">
-                    <a href="whack-a-mole/">whack-a-mole!</a>
-                    <a href="yoga/">yoga simulator</a>
-                    <a href="gravity/">gravity simulator</a>
-                    <a href="brick-breaker/">brick breaker</a>
-                    <a href="fortune-teller/">fortune teller</a>
-                    <a href="maze-runner/">maze runner</a>
-                    <a href="type-speed/">type speed</a>
-                    <a href="color-mixer/">colour mixer</a>
-                    <a href="the-red-button/">the red button</a>
-                    <a href="reaction-time/">reaction time</a>
-                    <a href="password-defender/">password defender</a>
-                    <a href="snake/">snake</a>
-                    <a href="flappy-bird/">flappy bird</a>
-                    <a href="marble_run.html">marble run</a>
+                    <a href="whack-a-mole/">whack-a-mole!</a><a href="yoga/">yoga simulator</a><a href="gravity/">gravity simulator</a><a href="brick-breaker/">brick breaker</a><a href="fortune-teller/">fortune teller</a><a href="maze-runner/">maze runner</a><a href="type-speed/">type speed</a><a href="color-mixer/">colour mixer</a><a href="the-red-button/">the red button</a><a href="reaction-time/">reaction time</a><a href="password-defender/">password defender</a><a href="snake/">snake</a><a href="flappy-bird/">flappy bird</a><a href="marble_run.html">marble run</a>
                 </div>
             </div>
             <div class="nav-item">
                 <span class="nav-tab dropdown-trigger">a good snowman is hard to build ▾</span>
                 <div class="dropdown-menu">
                     <div class="dropdown-label">tutorials</div>
-                    <a href="snowman/tutorial-1/">tutorial 1</a>
-                    <a href="snowman/tutorial-2/">tutorial 2</a>
-                    <a href="snowman/tutorial-3/">tutorial 3</a>
-                    <a href="snowman/instructions/">instructions</a>
-                    <div class="dropdown-divider"></div>
-                    <div class="dropdown-label">levels</div>
-                    <a href="snowman/level-1/">level 1</a>
-                    <a href="snowman/level-2/">level 2</a>
-                    <a href="snowman/level-3/">level 3</a>
-                    <a href="snowman/level-4/">level 4</a>
-                    <a href="snowman/level-5/">level 5 (hard!)</a>
+                    <a href="snowman/tutorial-1/">tutorial 1</a><a href="snowman/tutorial-2/">tutorial 2</a><a href="snowman/tutorial-3/">tutorial 3</a><a href="snowman/instructions/">instructions</a><div class="dropdown-divider"></div><div class="dropdown-label">levels</div>
+                    <a href="snowman/level-1/">level 1</a><a href="snowman/level-2/">level 2</a><a href="snowman/level-3/">level 3</a><a href="snowman/level-4/">level 4</a><a href="snowman/level-5/">level 5 (hard!)</a>
                 </div>
             </div>
         </nav>
@@ -128,18 +100,14 @@
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
             item.querySelector('.dropdown-trigger').addEventListener('click', e => {
-                e.stopPropagation();
-                const isOpen = item.classList.contains('open');
-                navItems.forEach(i => i.classList.remove('open'));
-                if (!isOpen) item.classList.add('open');
+                e.stopPropagation(); const isOpen = item.classList.contains('open');
+                navItems.forEach(i => i.classList.remove('open')); if (!isOpen) item.classList.add('open');
             });
         });
         document.addEventListener('click', () => { navItems.forEach(i => i.classList.remove('open')); });
 
-        const canvas = document.getElementById('loaderCanvas');
-        const ctx = canvas.getContext('2d');
-        const textElement = document.getElementById('loadingText');
-        const container = document.getElementById('canvasContainer');
+        const canvas = document.getElementById('loaderCanvas'), ctx = canvas.getContext('2d');
+        const textElement = document.getElementById('loadingText'), container = document.getElementById('canvasContainer');
         let centerX = window.innerWidth / 2, centerY = window.innerHeight / 2;
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         const orbitRadius = 160; let currentPercent = 0, emitterAngle = -Math.PI / 2, particles = [];
@@ -154,8 +122,7 @@
             constructor(startAngle, currentPercentage) {
                 this.angle = startAngle;
                 this.speed = 0.018 + (currentPercentage * 0.0025) + (Math.random() * 0.01);
-                this.radius = Math.random() * 1.5 + 4;
-                this.history = [];
+                this.radius = Math.random() * 1.5 + 4; this.history = [];
             }
             update() {
                 this.angle += this.speed;
@@ -167,11 +134,9 @@
             draw(globalAlpha) {
                 if (this.history.length > 1) {
                     ctx.beginPath();
-                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    ctx.moveTo(this.history[0].x, this.history[0].y); // FIX READ ARRAY COORDINATE ERROR
                     for (let p of this.history) { ctx.lineTo(p.x, p.y); }
-                    ctx.strokeStyle = `rgba(0, 60, 255, ${0.4 * globalAlpha})`;
-                    ctx.lineWidth = this.radius * 0.7;
-                    ctx.stroke();
+                    ctx.strokeStyle = `rgba(0, 60, 255, ${0.4 * globalAlpha})`; ctx.lineWidth = this.radius * 0.7; ctx.stroke();
                 }
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(0, 85, 255, ${globalAlpha})`; ctx.fill();
@@ -180,8 +145,7 @@
 
         function increasePercentageRandomly() {
             if (currentPercent < 100) {
-                let percentJump = Math.floor(Math.random() * 5) + 1;
-                currentPercent += percentJump;
+                let percentJump = Math.floor(Math.random() * 5) + 1; currentPercent += percentJump;
                 if (currentPercent >= 20 && currentPercent <= 75 && !skipTriggered && percentJump >= 4) {
                     if (Math.random() < 0.5 && Math.random() < 0.5) { currentPercent = 100; didSkipTo100 = true; skipTriggered = true; }
                 }
@@ -209,8 +173,7 @@
                     ctx.strokeStyle = '#0055ff';
                 } else {
                     solidRingAlpha = Math.min(1, solidRingAlpha + 0.015);
-                    ctx.arc(centerX, centerY, orbitRadius, 0, Math.PI * 2);
-                    ctx.strokeStyle = `rgba(0, 85, 255, ${solidRingAlpha})`;
+                    ctx.arc(centerX, centerY, orbitRadius, 0, Math.PI * 2); ctx.strokeStyle = `rgba(0, 85, 255, ${solidRingAlpha})`;
                 }
                 ctx.stroke();
             }
