@@ -94,8 +94,6 @@
                 </div>
             </div>
         </div>
-        <footer class="footer"><a class="vault-link" href="/">← back to the vault</a></footer>
-    </div>
     <script>
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -134,7 +132,7 @@
             draw(globalAlpha) {
                 if (this.history.length > 1) {
                     ctx.beginPath();
-                    ctx.moveTo(this.history[0].x, this.history[0].y); // FIX READ ARRAY COORDINATE ERROR
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
                     for (let p of this.history) { ctx.lineTo(p.x, p.y); }
                     ctx.strokeStyle = `rgba(0, 60, 255, ${0.4 * globalAlpha})`; ctx.lineWidth = this.radius * 0.7; ctx.stroke();
                 }
@@ -184,7 +182,10 @@
             document.body.classList.add('whiteout-bg'); container.classList.add('fade-out-content');
             setTimeout(() => { container.remove(); document.body.classList.remove('whiteout-bg'); }, 800);
         }
-        increasePercentageRandomly(); drawLoop();
+
+        // FIXED: Marbles spawn and orbit instantly, but counter waits exactly 2 seconds (2000ms) to start ticking
+        setTimeout(increasePercentageRandomly, 2000); 
+        drawLoop();
     </script>
 </body>
 </html>
