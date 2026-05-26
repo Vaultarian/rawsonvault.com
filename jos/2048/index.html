@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 — Jos' Projects</title>
+    <link rel="stylesheet" href="2048.css">
+</head>
+<body>
+
+<!-- MAIN 2048 GAME DASHBOARD WRAPPER -->
+<div id="game2048Wrapper">
+
+    <!-- TOP HUD AREA: TITLE, HIGHSCORE & CONTROLS -->
+    <div id="hudHeader">
+        <h1 class="game-title">2048<span>∞</span></h1>
+        <div class="score-container">
+            <div class="score-box">SCORE<span id="currentScore">0</span></div>
+            <div class="score-box">BEST<span id="highScore">0</span></div>
+        </div>
+    </div>
+
+    <!-- MAIN INTERACTIVE INTERFACE DESKTOP GRIDS -->
+    <div id="boardContainer">
+        <!-- 16 absolute background placeholder cells -->
+        <div class="grid-cell" style="top: 12px; left: 12px;"></div>
+        <div class="grid-cell" style="top: 12px; left: 121.5px;"></div>
+        <div class="grid-cell" style="top: 12px; left: 231px;"></div>
+        <div class="grid-cell" style="top: 12px; left: 340.5px;"></div>
+
+        <div class="grid-cell" style="top: 121.5px; left: 12px;"></div>
+        <div class="grid-cell" style="top: 121.5px; left: 121.5px;"></div>
+        <div class="grid-cell" style="top: 121.5px; left: 231px;"></div>
+        <div class="grid-cell" style="top: 121.5px; left: 340.5px;"></div>
+
+        <div class="grid-cell" style="top: 231px; left: 12px;"></div>
+        <div class="grid-cell" style="top: 231px; left: 121.5px;"></div>
+        <div class="grid-cell" style="top: 231px; left: 231px;"></div>
+        <div class="grid-cell" style="top: 231px; left: 340.5px;"></div>
+
+        <div class="grid-cell" style="top: 340.5px; left: 12px;"></div>
+        <div class="grid-cell" style="top: 340.5px; left: 121.5px;"></div>
+        <div class="grid-cell" style="top: 340.5px; left: 231px;"></div>
+        <div class="grid-cell" style="top: 340.5px; left: 340.5px;"></div>
+
+        <!-- Target sandbox container where tiles slide across coordinate tracks -->
+        <div id="tileContainer"></div>
+
+        <!-- THE SYSTEM GAME OVER OVERLAY LAYER -->
+        <div id="gameOverOverlay">
+            <h2 class="game-over-text">Game Over!</h2>
+            <p class="game-over-sub">No space left!</p>
+            <button id="retryButton">TRY AGAIN</button>
+        </div>
+    </div>
+
+</div>
+
+<a href="../" style="position:fixed;top:12px;left:12px;background:#3d9595;color:white;font-family:Nunito,Arial,sans-serif;font-weight:700;font-size:0.85rem;padding:0.45rem 1.1rem;border-radius:50px;text-decoration:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.background='#2d7575'" onmouseout="this.style.background='#3d9595'">← home</a>
+
+<script src="2048.js"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+/* ==================================================
+   MAIN ENDLESS 2048 COHESIVE SYSTEM STYLES
+   ================================================== */
+body {
+    background-color: #121216;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: sans-serif;
+    user-select: none;
+    overflow: hidden;
+}
+
+#game2048Wrapper {
+    width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#hudHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.game-title {
+    color: #ffffff;
+    font-size: 48px;
+    margin: 0;
+    font-weight: bold;
+    letter-spacing: -0.02em;
+}
+
+.game-title span {
+    color: #d9643a;
+    margin-left: 4px;
+}
+
+.score-container {
+    display: flex;
+    gap: 8px;
+}
+
+.score-box {
+    background: #4a4d53;
+    color: #bcbfc4;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    padding: 6px 16px;
+    border-radius: 6px;
+    min-width: 75px;
+    box-shadow: inset -2px -2px 0px #2b2d31, inset 2px 2px 0px #6c717a;
+}
+
+.score-box span {
+    display: block;
+    color: #ffffff;
+    font-size: 22px;
+    margin-top: 2px;
+}
+
+/* ── Absolute Pixel-Locked Board Layout ── */
+#boardContainer {
+    width: 450px;
+    height: 450px;
+    background: #2b2d31;
+    border-radius: 8px;
+    box-shadow: inset 4px 4px 8px rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.grid-cell {
+    position: absolute;
+    width: 97.5px;
+    height: 97.5px;
+    background: rgba(13, 14, 16, 0.4);
+    border-radius: 6px;
+    box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+#tileContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ── ABSOLUTE HARDWARE-ACCELERATED SLIDING TILES ── */
+.tile-element {
+    position: absolute;
+    width: 97.5px;
+    height: 97.5px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    size: 32px;
+    font-size: 32px;
+    color: #ffffff;
+    transition: top 0.12s cubic-bezier(0.25, 1, 0.5, 1), left 0.12s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.15s ease;
+    will-change: top, left;
+}
+
+/* ── NEW: Game Over Overlay Layer Design ── */
+#gameOverOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(18, 18, 22, 0.85); /* Dark translucent frosting mask */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease-in-out;
+}
+
+#gameOverOverlay.active {
+    opacity: 1;
+    pointer-events: auto; /* Activates interactive clicks when running */
+}
+
+.game-over-text {
+    color: #ff2222;
+    font-size: 38px;
+    margin: 0 0 5px 0;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 34, 34, 0.3);
+}
+
+.game-over-sub {
+    color: #bcbfc4;
+    font-size: 16px;
+    margin: 0 0 25px 0;
+    font-weight: bold;
+}
+
+#retryButton {
+    background-color: #d9643a;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: inset -3px -3px 0px #9c3f20, inset 3px 3px 0px #f08965, 0 4px 10px rgba(0,0,0,0.3);
+    transition: background-color 0.15s, transform 0.1s;
+}
+
+#retryButton:hover { background-color: #be532e; }
+#retryButton:active { transform: scale(0.96); }
+
+/* ── Standard Low Tier Color Maps ── */
+.tile-2 { background-color: #3d9595; box-shadow: inset -3px -3px 0px #225a5a, inset 3px 3px 0px #5bc5c5; }
+.tile-4 { background-color: #2a7070; box-shadow: inset -3px -3px 0px #164040, inset 3px 3px 0px #42a3a3; }
+.tile-8 { background-color: #2a5f7a; box-shadow: inset -3px -3px 0px #153748, inset 3px 3px 0px #4491b9; }
+.tile-16 { background-color: #1d4a5f; box-shadow: inset -3px -3px 0px #0c2633, inset 3px 3px 0px #317698; }
+
+/* ── Mid Tier Color Maps ── */
+.tile-32 { background-color: #c8a020; box-shadow: inset -3px -3px 0px #826811, inset 3px 3px 0px #f3c739; }
+.tile-64 { background-color: #a88010; box-shadow: inset -3px -3px 0px #6a5008, inset 3px 3px 0px #d8aa25; }
+.tile-128 { background-color: #d9643a; font-size: 26px; box-shadow: inset -3px -3px 0px #974121, inset 3px 3px 0px #f28b63; }
+.tile-256 { background-color: #be532e; font-size: 26px; box-shadow: inset -3px -3px 0px #81341a, inset 3px 3px 0px #da7451; }
+
+/* ── Elite High Tier Color Maps ── */
+.tile-512 { background-color: #8c3a1e; font-size: 26px; box-shadow: inset -3px -3px 0px #5e2411, inset 3px 3px 0px #ba5b3a; }
+.tile-1024 { background-color: #551a3b; font-size: 22px; box-shadow: 0 0 10px #ff0077, inset -3px -3px 0px #380e25, inset 3px 3px 0px #812f5e; }
+.tile-2048 { background-color: #7b1248; font-size: 22px; box-shadow: 0 0 15px #ff0077, inset -3px -3px 0px #510a2e, inset 3px 3px 0px #b2266f; }
+.tile-super { background-color: #ff0055; font-size: 20px; box-shadow: 0 0 25px #ff0055, inset -3px -3px 0px #990033, inset 3px 3px 0px #ff5599; }
+
+/* ── Discrete Scale Animation States ── */
+@keyframes tileSpawn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes tileMerge { 0% { transform: scale(1); } 50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(255,255,255,0.4); } 100% { transform: scale(1); } }
+.animate-spawn { animation: tileSpawn 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+.animate-merge { animation: tileMerge 0.12s ease-in-out both; }
+
+@media (max-width: 480px) {
+    .game-title { font-size: 38px; }
+    .score-box span { font-size: 18px; }
+    #boardContainer { padding: 8px; }
+}
+

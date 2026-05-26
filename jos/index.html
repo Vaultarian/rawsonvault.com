@@ -3,93 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>jos' projects</title>
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Jos' Projects</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; } 
-        #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; } 
-        #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; } 
-        .whiteout-bg { background-color: #ffffff !important; } 
-        .fade-out-content { opacity: 0 !important; pointer-events: none; } 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; } 
-        body { background-color: #f2ede3; font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 2rem 1.5rem 4rem; animation: fadeIn 0.8s ease both; transition: background-color 1.2s ease-in-out; } 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } 
-        .container { max-width: 820px; margin: 0 auto; } 
-        .site-title { font-family: 'Fredoka One', cursive; font-size: clamp(3rem, 10vw, 5rem); color: #d9643a; text-align: center; margin-bottom: 1.25rem; letter-spacing: 0.02em; } 
+        #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; }
+        #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; }
+        #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; }
+        .whiteout-bg { background-color: #ffffff !important; }
+        .fade-out-content { opacity: 0 !important; pointer-events: none; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #f2ede3; font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 2rem 1.5rem 4rem; animation: fadeIn 0.8s ease both; transition: background-color 1.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .container { max-width: 820px; margin: 0 auto; }
+        .site-title { font-family: 'Fredoka One', cursive; font-size: clamp(3rem, 10vw, 5rem); color: #d9643a; text-align: center; margin-bottom: 1.25rem; letter-spacing: 0.02em; }
         .welcome-box { background: #d9643a; color: white; font-size: 1rem; font-weight: 600; line-height: 1.6; border-radius: 18px; padding: 1.25rem 1.75rem; max-width: 480px; margin: 0 auto 2.5rem; text-align: center; }
-        .nav-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2.5rem; } 
-        .nav-tab { background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; padding: 0.5rem 1.25rem; border-radius: 50px; text-decoration: none; transition: background 0.15s; } 
-        .nav-tab:hover { background: #2d7575; } .nav-tab.active { background: #d9643a; } 
-        .nav-item { position: relative; display: flex; align-items: center; } .dropdown-trigger { cursor: pointer; user-select: none; } 
-        .dropdown-menu { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #3d9595; border-radius: 14px; min-width: 200px; z-index: 100; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; } 
-        .nav-item:hover .dropdown-menu, .nav-item.open .dropdown-menu { max-height: 700px; opacity: 1; } 
-        .dropdown-menu a { display: block; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.45rem 1.4rem; transition: background 0.15s; white-space: nowrap; } 
-        .dropdown-menu a:first-child { padding-top: 0.8rem; } .dropdown-menu a:last-child { padding-bottom: 0.8rem; } .dropdown-menu a:hover { background: rgba(0,0,0,0.15); } 
-        .dropdown-label { font-family: 'Fredoka One', cursive; font-size: 0.75rem; color: rgba(255,255,255,0.75); padding: 0.8rem 1.4rem 0.2rem; text-transform: uppercase; letter-spacing: 0.06em; } 
-        .dropdown-divider { height: 1px; background: rgba(255,255,255,0.25); margin: 0.35rem 1rem; } 
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2.5rem; }
+        .nav-tab { background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; padding: 0.5rem 1.25rem; border-radius: 50px; text-decoration: none; transition: background 0.15s; }
+        .nav-tab:hover { background: #2d7575; } .nav-tab.active { background: #d9643a; }
+        .nav-item { position: relative; display: flex; align-items: center; } .dropdown-trigger { cursor: pointer; user-select: none; }
+        .dropdown-menu { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #3d9595; border-radius: 14px; min-width: 200px; z-index: 100; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
+        .nav-item:hover .dropdown-menu, .nav-item.open .dropdown-menu { max-height: 700px; opacity: 1; }
+        .dropdown-menu a { display: block; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.45rem 1.4rem; transition: background 0.15s; white-space: nowrap; }
+        .dropdown-menu a:first-child { padding-top: 0.8rem; } .dropdown-menu a:last-child { padding-bottom: 0.8rem; } .dropdown-menu a:hover { background: rgba(0,0,0,0.15); }
+        .dropdown-label { font-family: 'Fredoka One', cursive; font-size: 0.75rem; color: rgba(255,255,255,0.75); padding: 0.8rem 1.4rem 0.2rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .dropdown-divider { height: 1px; background: rgba(255,255,255,0.25); margin: 0.35rem 1rem; }
         .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 3px solid #2a7070; border-radius: 18px; overflow: hidden; margin-bottom: 2.5rem; }
-        @media (max-width: 600px) { .main-grid { grid-template-columns: 1fr; } } 
-        .panel { padding: 1.75rem 1.5rem; background: #eee8db; } .panel:first-child { border-right: 3px solid #2a7070; } 
-        @media (max-width: 600px) { .panel:first-child { border-right: none; border-bottom: 3px solid #2a7070; } } 
-        .panel-heading { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #d9643a; margin-bottom: 1.25rem; line-height: 1.3; } 
-        .pill-grid { display: flex; flex-direction: column; gap: 0.6rem; } .pill-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; } 
-        .pill { display: block; background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem; text-align: center; padding: 0.55rem 0.75rem; border-radius: 50px; text-decoration: none; transition: background 0.15s, transform 0.1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
-        .pill:hover { background: #2d7575; transform: scale(1.03); } 
-        .snowman-heading { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #d9643a; margin-bottom: 0.5rem; line-height: 1.3; } 
-        .snowman-sub { font-size: 0.8rem; color: #3d9595; font-weight: 700; margin-bottom: 0.35rem; } 
-        .snowman-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; margin-top: 0.75rem; } 
-        .snowman-col { display: flex; flex-direction: column; gap: 0.5rem; } .snowman-col-label { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #d9643a; margin-bottom: 0.3rem; } 
-        .pill.hard { background: #2a5f7a; } .pill.hard:hover { background: #1d4a5f; } .pill.instructions { background: #2a3d5a; grid-column: span 1; } .pill.instructions:hover { background: #1d2d45; } 
+        @media (max-width: 600px) { .main-grid { grid-template-columns: 1fr; } }
+        .panel { padding: 1.75rem 1.5rem; background: #eee8db; } .panel:first-child { border-right: 3px solid #2a7070; }
+        @media (max-width: 600px) { .panel:first-child { border-right: none; border-bottom: 3px solid #2a7070; } }
+        .panel-heading { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #d9643a; margin-bottom: 1.25rem; line-height: 1.3; }
+        .pill-grid { display: flex; flex-direction: column; gap: 0.6rem; } .pill-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .pill { display: block; background: #3d9595; color: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem; text-align: center; padding: 0.55rem 0.75rem; border-radius: 50px; text-decoration: none; transition: background 0.15s, transform 0.1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pill:hover { background: #2d7575; transform: scale(1.03); }
+        .snowman-heading { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #d9643a; margin-bottom: 0.5rem; line-height: 1.3; }
+        .snowman-sub { font-size: 0.8rem; color: #3d9595; font-weight: 700; margin-bottom: 0.35rem; }
+        .snowman-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; margin-top: 0.75rem; }
+        .snowman-col { display: flex; flex-direction: column; gap: 0.5rem; } .snowman-col-label { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #d9643a; margin-bottom: 0.3rem; }
+        .pill.hard { background: #2a5f7a; } .pill.hard:hover { background: #1d4a5f; } .pill.instructions { background: #2a3d5a; grid-column: span 1; } .pill.instructions:hover { background: #1d2d45; }
         .footer { text-align: center; } .vault-link { font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: #3d9595; text-decoration: none; text-transform: uppercase; } .vault-link:hover { color: #2d7575; }
     </style>
 </head>
 <body>
     <div id="canvasContainer"><canvas id="loaderCanvas"></canvas><div id="loadingText">0%</div></div>
     <div class="container">
-        <h1 class="site-title">jos' projects</h1>
-        <div class="welcome-box">welcome to jos' projects — a fun home page for all the games i made with claude.ai and chatgpt (try them!)</div>
+        <h1 class="site-title">Jos' Projects</h1>
+        <div class="welcome-box">Welcome to Jos' Projects — a fun home page for all the games I made with Claude.ai and ChatGPT (try them!)</div>
         <nav class="nav-tabs">
-            <span class="nav-tab active">home</span><a class="nav-tab" href="how-i-did-it/">how i did it</a>
+            <span class="nav-tab active">Home</span><a class="nav-tab" href="how-i-did-it/">How I Did It</a>
             <div class="nav-item">
-                <span class="nav-tab dropdown-trigger">games ▾</span>
+                <span class="nav-tab dropdown-trigger">Games ▾</span>
                 <div class="dropdown-menu">
-                    <a href="whack-a-mole/">whack-a-mole!</a><a href="yoga/">yoga simulator</a><a href="gravity/">gravity simulator</a><a href="brick-breaker/">brick breaker</a><a href="fortune-teller/">fortune teller</a><a href="maze-runner/">maze runner</a><a href="type-speed/">type speed</a><a href="color-mixer/">colour mixer</a><a href="the-red-button/">the red button</a><a href="reaction-time/">reaction time</a><a href="password-defender/">password defender</a><a href="snake/">snake</a><a href="flappy-bird/">flappy bird</a><a href="marble_run.html">marble run</a>
+                    <a href="whack-a-mole/">Whack-a-Mole!</a><a href="yoga/">Yoga Simulator</a><a href="gravity/">Gravity Simulator</a><a href="brick-breaker/">Brick Breaker</a><a href="fortune-teller/">Fortune Teller</a><a href="maze-runner/">Maze Runner</a><a href="type-speed/">Type Speed</a><a href="color-mixer/">Colour Mixer</a><a href="the-red-button/">The Red Button</a><a href="reaction-time/">Reaction Time</a><a href="password-defender/">Password Defender</a><a href="snake/">Snake</a><a href="flappy-bird/">Flappy Bird</a><a href="marble_run.html">Marble Run</a><a href="simon-says-among-us/">Simon Says (Among Us)</a><a href="2048/">2048</a>
                 </div>
             </div>
             <div class="nav-item">
-                <span class="nav-tab dropdown-trigger">a good snowman is hard to build ▾</span>
+                <span class="nav-tab dropdown-trigger">A Good Snowman is Hard to Build ▾</span>
                 <div class="dropdown-menu">
-                    <div class="dropdown-label">tutorials</div>
-                    <a href="snowman/tutorial-1/">tutorial 1</a><a href="snowman/tutorial-2/">tutorial 2</a><a href="snowman/tutorial-3/">tutorial 3</a><a href="snowman/instructions/">instructions</a><div class="dropdown-divider"></div><div class="dropdown-label">levels</div>
-                    <a href="snowman/level-1/">level 1</a><a href="snowman/level-2/">level 2</a><a href="snowman/level-3/">level 3</a><a href="snowman/level-4/">level 4</a><a href="snowman/level-5/">level 5 (hard!)</a>
+                    <div class="dropdown-label">Tutorials</div>
+                    <a href="snowman/tutorial-1/">Tutorial 1</a><a href="snowman/tutorial-2/">Tutorial 2</a><a href="snowman/tutorial-3/">Tutorial 3</a><a href="snowman/instructions/">Instructions</a><div class="dropdown-divider"></div><div class="dropdown-label">Levels</div>
+                    <a href="snowman/level-1/">Level 1</a><a href="snowman/level-2/">Level 2</a><a href="snowman/level-3/">Level 3</a><a href="snowman/level-4/">Level 4</a><a href="snowman/level-5/">Level 5 (Hard!)</a>
                 </div>
             </div>
         </nav>
         <div class="main-grid" id="games">
             <div class="panel">
-                <p class="panel-heading">these are my projects i made with claude. some fun games i made!</p>
+                <p class="panel-heading">These are my projects I made with Claude. Some fun games I made!</p>
                 <div class="pill-grid">
-                    <div class="pill-row"><a class="pill" href="whack-a-mole/">whack-a-mole!</a><a class="pill" href="yoga/">yoga simulator</a></div>
-                    <div class="pill-row"><a class="pill" href="gravity/">gravity simulator</a><a class="pill" href="brick-breaker/">brick breaker</a></div>
-                    <div class="pill-row"><a class="pill" href="fortune-teller/">fortune teller</a><a class="pill" href="maze-runner/">maze runner</a></div>
-                    <div class="pill-row"><a class="pill" href="type-speed/">type speed</a><a class="pill" href="color-mixer/">colour mixer</a></div>
-                    <div class="pill-row"><a class="pill" href="the-red-button/">the red button</a><a class="pill" href="reaction-time/">reaction time</a></div>
-                    <div class="pill-row"><a class="pill" href="password-defender/">password defender</a><a class="pill" href="snake/">snake</a></div>
-                    <div class="pill-row"><a class="pill" href="flappy-bird/">flappy bird</a><a class="pill" href="marble_run.html">marble run</a></div>
+                    <div class="pill-row"><a class="pill" href="whack-a-mole/">Whack-a-Mole!</a><a class="pill" href="yoga/">Yoga Simulator</a></div>
+                    <div class="pill-row"><a class="pill" href="gravity/">Gravity Simulator</a><a class="pill" href="brick-breaker/">Brick Breaker</a></div>
+                    <div class="pill-row"><a class="pill" href="fortune-teller/">Fortune Teller</a><a class="pill" href="maze-runner/">Maze Runner</a></div>
+                    <div class="pill-row"><a class="pill" href="type-speed/">Type Speed</a><a class="pill" href="color-mixer/">Colour Mixer</a></div>
+                    <div class="pill-row"><a class="pill" href="the-red-button/">The Red Button</a><a class="pill" href="reaction-time/">Reaction Time</a></div>
+                    <div class="pill-row"><a class="pill" href="password-defender/">Password Defender</a><a class="pill" href="snake/">Snake</a></div>
+                    <div class="pill-row"><a class="pill" href="flappy-bird/">Flappy Bird</a><a class="pill" href="marble_run.html">Marble Run</a></div>
+                    <div class="pill-row"><a class="pill" href="simon-says-among-us/">Simon Says (Among Us)</a><a class="pill" href="2048/">2048</a></div>
                 </div>
             </div>
             <div class="panel" id="snowman">
-                <p class="snowman-heading">and i made: a good snowman is hard to build — with chatgpt and tutorials!</p>
+                <p class="snowman-heading">And I made: A Good Snowman is Hard to Build — with ChatGPT and tutorials!</p>
                 <div class="snowman-grid">
                     <div class="snowman-col">
-                        <div class="snowman-col-label">tutorials</div>
-                        <a class="pill" href="snowman/tutorial-1/">tutorial 1</a><a class="pill" href="snowman/tutorial-2/">tutorial 2</a><a class="pill" href="snowman/tutorial-3/">tutorial 3</a><a class="pill instructions" href="snowman/instructions/">instructions</a>
+                        <div class="snowman-col-label">Tutorials</div>
+                        <a class="pill" href="snowman/tutorial-1/">Tutorial 1</a><a class="pill" href="snowman/tutorial-2/">Tutorial 2</a><a class="pill" href="snowman/tutorial-3/">Tutorial 3</a><a class="pill instructions" href="snowman/instructions/">Instructions</a>
                     </div>
                     <div class="snowman-col">
-                        <div class="snowman-col-label">levels</div>
-                        <a class="pill" href="snowman/level-1/">level 1</a><a class="pill" href="snowman/level-2/">level 2</a><a class="pill" href="snowman/level-3/">level 3</a><a class="pill" href="snowman/level-4/">level 4</a><a class="pill hard" href="snowman/level-5/">level 5 (hard!)</a>
+                        <div class="snowman-col-label">Levels</div>
+                        <a class="pill" href="snowman/level-1/">Level 1</a><a class="pill" href="snowman/level-2/">Level 2</a><a class="pill" href="snowman/level-3/">Level 3</a><a class="pill" href="snowman/level-4/">Level 4</a><a class="pill hard" href="snowman/level-5/">Level 5 (Hard!)</a>
                     </div>
                 </div>
             </div>
@@ -184,7 +185,7 @@
         }
 
         // FIXED: Marbles spawn and orbit instantly, but counter waits exactly 2 seconds (2000ms) to start ticking
-        setTimeout(increasePercentageRandomly, 2000); 
+        setTimeout(increasePercentageRandomly, 2000);
         drawLoop();
     </script>
 </body>

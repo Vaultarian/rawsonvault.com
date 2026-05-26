@@ -1,0 +1,202 @@
+/* ==================================================
+   MAIN REACTOR ENDLESS MINI-GAME PANEL STYLES
+   ================================================== */
+body {
+    background-color: #121216;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: sans-serif;
+    user-select: none;
+    overflow: hidden;
+}
+
+#reactorFrame {
+    display: flex;
+    gap: 20px;
+    background: #4a4d53;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: inset -5px -5px 0px #2b2d31, inset 5px 5px 0px #6c717a, 0 15px 30px rgba(0,0,0,0.5);
+    max-width: 900px;
+    width: 95%;
+}
+
+.panel-box {
+    flex: 1;
+    background: #7a7e85;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: inset 4px 4px 0px #9da2ab, inset -4px -4px 0px #54575c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ── Screens & Keypad Layout ── */
+.display-screen, .keypad-screen {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #0d0e10;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: inset 4px 4px 8px rgba(0,0,0,0.8), inset -2px -2px 4px rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Individual Left Tiles ── */
+.tile {
+    background: #1a1c1e;
+    border-radius: 6px;
+    box-shadow: inset -3px -3px 0px #0b0c0d, inset 3px 3px 0px #2b2d31;
+    transition: background-color 0.8s ease, box-shadow 0.8s ease; 
+}
+
+/* Left Screen: Blue Flashes */
+.tile.flash-blue {
+    background-color: #0066ff !important;
+    box-shadow: 0 0 20px #0066ff, inset -2px -2px 0px #0044bb;
+    transition: background-color 0.1s, box-shadow 0.1s !important;
+}
+
+/* ── Individual Right Tiles ── */
+.interactive-tile {
+    background: #101c36;
+    cursor: pointer;
+    box-shadow: inset -4px -4px 0px #080d1a, inset 4px 4px 0px #1e3360;
+}
+
+/* Right Screen Taps: Neon Green Glow State */
+.interactive-tile:active, .interactive-tile.pressed {
+    background-color: #39ff14 !important;
+    box-shadow: 0 0 20px #39ff14, inset 4px 4px 0px #2ccb0f;
+    transform: scale(0.97);
+    transition: none !important;
+}
+
+/* ── Meltdown Spiral State Modifier ── */
+.tile.meltdown-red {
+    background-color: #ff2222 !important;
+    box-shadow: 0 0 15px #ff2222, inset -2px -2px 0px #990000 !important;
+    transition: background-color 0.1s, box-shadow 0.1s !important;
+}
+
+/* ── HUD Dashboard Area ── */
+#controlPanel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 95%;
+    max-width: 900px;
+    margin-top: 25px;
+    padding: 0 10px;
+}
+
+#scoreBox {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 8px rgba(255,255,255,0.2);
+}
+
+/* ── Reset button framework ── */
+#resetContainer {
+    position: relative;
+    display: inline-block;
+}
+
+#resetButton {
+    background-color: #d9643a;
+    color: #ffffff;
+    font-family: sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: inset -3px -3px 0px #9c3f20, inset 3px 3px 0px #f08965, 0 4px 10px rgba(0,0,0,0.3);
+    transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+#resetButton:hover {
+    background-color: #be532e;
+    box-shadow: inset -3px -3px 0px #85371c, inset 3px 3px 0px #e07450, 0 6px 14px rgba(0,0,0,0.4);
+}
+
+#resetButton:active {
+    transform: scale(0.96);
+    box-shadow: inset 3px 3px 0px #6b2a14, inset -1px -1px 0px #e07450;
+}
+
+/* Smooth 0.5s fade-out layer mapping */
+#cooldownOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(60, 64, 70, 0.65);
+    border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#cooldownOverlay.active {
+    opacity: 1;
+    pointer-events: auto;
+    cursor: not-allowed;
+}
+
+/* ── Panel Victory Side Glow Animation ── */
+.panel-box.victory-pulse {
+    animation: sideGlowPulse 0.6s ease-out;
+}
+
+@keyframes sideGlowPulse {
+    0% {
+        box-shadow: inset 4px 4px 0px #9da2ab, inset -4px -4px 0px #54575c, 0 0 0px rgba(0, 255, 50, 0);
+        background-color: #7a7e85;
+    }
+    30% {
+        box-shadow: inset 4px 4px 0px #2ccb0f, inset -4px -4px 0px #1a7c09, 0 0 25px rgba(57, 255, 20, 0.6);
+        background-color: #658c6b;
+    }
+    100% {
+        box-shadow: inset 4px 4px 0px #9da2ab, inset -4px -4px 0px #54575c, 0 0 0px rgba(0, 255, 50, 0);
+        background-color: #7a7e85;
+    }
+}
+
+@media (max-width: 650px) {
+    #reactorFrame { flex-direction: column; gap: 15px; }
+    #controlPanel { flex-direction: column; gap: 15px; text-align: center; }
+}
+

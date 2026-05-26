@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Says (Among Us) — Jos' Projects</title>
+    <link rel="stylesheet" href="simon-says.css">
+</head>
+<body>
+
+<!-- MAIN REACTOR FRAME CONTROLLER -->
+<div id="reactorFrame">
+
+    <!-- LEFT PANEL: THE VISUAL PREVIEW DISPLAY SCREEN -->
+    <div class="panel-box">
+        <div class="display-screen">
+            <div class="grid-container" id="previewGrid">
+                <!-- Generated dynamically by engine -->
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: THE INTERACTIVE USER KEYPAD PANEL -->
+    <div class="panel-box">
+        <div class="keypad-screen">
+            <div class="grid-container" id="interactiveKeypad">
+                <!-- Generated dynamically by engine -->
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- CORE PANEL CONTROLS & HUD LAYOUT -->
+<div id="controlPanel">
+    <div id="scoreBox">SCORE: <span id="currentScore">0</span></div>
+
+    <!-- WRAPPER ANCHOR FOR DYNAMIC BARRIER PROTECTION -->
+    <div id="resetContainer">
+        <button id="resetButton">RESET</button>
+        <div id="cooldownOverlay"></div>
+    </div>
+</div>
+
+<a href="../" style="position:fixed;top:12px;left:12px;background:#3d9595;color:white;font-family:Nunito,Arial,sans-serif;font-weight:700;font-size:0.85rem;padding:0.45rem 1.1rem;border-radius:50px;text-decoration:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.background='#2d7575'" onmouseout="this.style.background='#3d9595'">← home</a>
+
+<script src="simon-says.js"></script>
+</body>
+</html>
