@@ -1,0 +1,430 @@
+/* ============================================================
+   vault.css — rawsonvault.com master stylesheet
+   Brand: The Vault · Alex Rawson
+   Version: 1.0 · 2026-05-30
+   Import into every site page.
+   ============================================================ */
+
+/* ── Google Fonts (add to <head> of each page) ──────────────
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+   ─────────────────────────────────────────────────────────── */
+
+/* ── Brand Tokens ─────────────────────────────────────────── */
+:root {
+  /* Bronze family */
+  --bronze-deep:    #883800;   /* shadow bronze */
+  --bronze-dark:    #984808;   /* dark copper — hover/active states */
+  --bronze-rich:    #A05818;
+  --bronze-warm:    #B07030;
+  --bronze-core:    #B88040;   /* ★ primary accent */
+  --bronze-mid:     #C89868;
+  --bronze-light:   #D0A880;   /* ★ light accent / decorative */
+  --bronze-soft:    #D8B898;
+  --bronze-cream:   #E0C8B0;
+  --bronze-parch:   #E8D8C8;   /* ★ warm background */
+
+  /* Neutrals */
+  --ink-black:      #1A1008;   /* ★ primary text — warm near-black */
+  --charcoal:       #303030;
+  --gray-dark:      #505050;   /* ★ secondary text */
+  --gray-mid:       #707070;
+  --gray-silver:    #909090;
+  --gray-light:     #C0C0C0;   /* ★ dividers / borders */
+  --gray-logo:      #D2D2D2;
+  --white:          #FFFFFF;   /* ★ clean background */
+
+  /* Site background */
+  --bg-site:        #f7f3ec;   /* existing site body — slightly warmer than parchment */
+
+  /* Typography scale */
+  --font-display:  'Cinzel', 'Trajan Pro', Georgia, serif;
+  --font-heading:  'Merriweather', Georgia, serif;
+  --font-body:     Georgia, 'Times New Roman', serif;
+  --font-ui:       'Inter', -apple-system, sans-serif;
+
+  /* Spacing */
+  --gap-xs:   0.4rem;
+  --gap-sm:   0.75rem;
+  --gap-md:   1.25rem;
+  --gap-lg:   2rem;
+  --gap-xl:   3rem;
+
+  /* Borders */
+  --radius:     4px;
+  --rule-color: var(--bronze-light);
+}
+
+/* ── Reset ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg-site);
+  color: var(--ink-black);
+  font-family: var(--font-ui);
+  font-weight: 300;
+  line-height: 1.6;
+  animation: fadeIn 1.2s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Typography ───────────────────────────────────────────── */
+h1 {
+  font-family: var(--font-display);
+  color: var(--ink-black);
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 600;
+}
+
+h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--ink-black);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+h2 { font-size: clamp(1.2rem, 3vw, 1.6rem); font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+h4 { font-size: 0.9rem; font-weight: 400; text-transform: uppercase; }
+
+p, li {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--gray-dark);
+  line-height: 1.7;
+}
+
+a {
+  color: var(--bronze-core);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+a:hover { color: var(--bronze-dark); }
+
+/* ── Layout ───────────────────────────────────────────────── */
+.container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--gap-xl) var(--gap-lg);
+}
+
+.container--wide {
+  max-width: 1100px;
+}
+
+.container--narrow {
+  max-width: 640px;
+}
+
+/* ── Rule (decorative divider) ────────────────────────────── */
+.rule {
+  width: 60px;
+  height: 1px;
+  background: var(--rule-color);
+  margin: 0 auto var(--gap-lg);
+}
+
+.rule--full {
+  width: 100%;
+  margin: var(--gap-lg) 0;
+}
+
+/* ── Logo banner ──────────────────────────────────────────── */
+.logo-banner {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  display: block;
+  margin: 0 auto var(--gap-lg);
+}
+
+/* ── Navigation cards (homepage) ─────────────────────────── */
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap-md);
+  margin-bottom: var(--gap-xl);
+}
+
+@media (max-width: 620px) {
+  .nav-grid { grid-template-columns: 1fr; }
+}
+
+.nav-card {
+  display: block;
+  text-decoration: none;
+  border: 1px solid var(--bronze-light);
+  border-radius: var(--radius);
+  padding: var(--gap-lg) var(--gap-md);
+  background: var(--white);
+  transition: border-color 0.2s ease, background 0.2s ease;
+  text-align: left;
+}
+
+.nav-card:hover {
+  border-color: var(--bronze-core);
+  background: #fdf9f4;
+  color: inherit;
+}
+
+.nav-card:hover .card-title { color: var(--bronze-dark); }
+
+/* ── Card internals ───────────────────────────────────────── */
+.card-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bronze-core);
+  margin-bottom: var(--gap-xs);
+  display: block;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--ink-black);
+  margin-bottom: var(--gap-sm);
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.card-desc {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-style: italic;
+  color: var(--gray-dark);
+  line-height: 1.6;
+  display: block;
+}
+
+.card-arrow {
+  display: block;
+  margin-top: var(--gap-md);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--bronze-core);
+  font-family: var(--font-display);
+}
+
+/* ── Class page: lesson table ─────────────────────────────── */
+.lesson-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  margin-bottom: var(--gap-xl);
+}
+
+.lesson-table thead th {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  padding: var(--gap-sm) var(--gap-md);
+  border-bottom: 1px solid var(--gray-light);
+  text-align: left;
+  font-weight: 400;
+}
+
+.lesson-table tbody tr {
+  border-bottom: 1px solid #f0ece4;
+  transition: background 0.15s ease;
+}
+
+.lesson-table tbody tr:hover { background: #fdf9f4; }
+
+.lesson-table td {
+  padding: var(--gap-sm) var(--gap-md);
+  vertical-align: middle;
+  color: var(--ink-black);
+}
+
+.lesson-table td.date {
+  font-size: 0.8rem;
+  color: var(--gray-mid);
+  white-space: nowrap;
+  font-family: var(--font-ui);
+}
+
+.lesson-table td.topic {
+  font-family: var(--font-body);
+  font-style: italic;
+}
+
+.lesson-table td.files {
+  white-space: nowrap;
+}
+
+.lesson-table .file-link {
+  display: inline-block;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-family: var(--font-display);
+  color: var(--bronze-core);
+  border: 1px solid var(--bronze-light);
+  border-radius: var(--radius);
+  padding: 2px 8px;
+  margin-right: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lesson-table .file-link:hover {
+  background: var(--bronze-core);
+  color: var(--white);
+  border-color: var(--bronze-core);
+}
+
+.lesson-table .file-link--answers {
+  border-color: var(--gray-light);
+  color: var(--gray-dark);
+}
+
+.lesson-table .file-link--answers:hover {
+  background: var(--gray-dark);
+  color: var(--white);
+  border-color: var(--gray-dark);
+}
+
+/* ── Section header (class page) ─────────────────────────── */
+.section-header {
+  margin-bottom: var(--gap-lg);
+}
+
+.section-header .eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bronze-core);
+  display: block;
+  margin-bottom: var(--gap-xs);
+}
+
+.section-header h1 {
+  margin-bottom: var(--gap-xs);
+}
+
+.section-header .subtitle {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--gray-dark);
+  font-size: 1rem;
+}
+
+/* ── Calendar section ─────────────────────────────────────── */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--gap-sm);
+  margin-bottom: var(--gap-xl);
+}
+
+.calendar-month {
+  display: block;
+  text-decoration: none;
+  border: 1px solid var(--bronze-light);
+  border-radius: var(--radius);
+  padding: var(--gap-sm);
+  text-align: center;
+  background: var(--white);
+  transition: border-color 0.2s ease;
+}
+
+.calendar-month:hover { border-color: var(--bronze-core); }
+
+.calendar-month .month-name {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-black);
+  display: block;
+  margin-bottom: var(--gap-xs);
+}
+
+.calendar-month .month-icon {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bronze-core);
+  font-family: var(--font-display);
+}
+
+/* ── Breadcrumb nav ───────────────────────────────────────── */
+.breadcrumb {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: var(--font-display);
+  color: var(--gray-mid);
+  margin-bottom: var(--gap-lg);
+}
+
+.breadcrumb a { color: var(--bronze-core); }
+.breadcrumb span { margin: 0 0.4em; }
+
+/* ── Chipp block ──────────────────────────────────────────── */
+.chipp-block {
+  text-align: center;
+  margin-bottom: var(--gap-lg);
+}
+
+.chipp-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  margin-bottom: var(--gap-md);
+  font-family: var(--font-display);
+  display: block;
+}
+
+.qr-code {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto var(--gap-sm);
+}
+
+.chipp-sub {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--bronze-soft);
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+.site-footer {
+  text-align: center;
+  padding: var(--gap-lg) 0;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-light);
+  font-family: var(--font-display);
+}

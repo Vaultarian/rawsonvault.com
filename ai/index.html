@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vault.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        .nav-grid {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 520px;
+            margin: 0 auto var(--gap-xl);
+        }
+        @media (max-width: 480px) {
+            .nav-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../">The Vault</a>
+            <span>·</span>
+            AI
+        </nav>
+
+        <img class="logo-banner" src="../vault-banner.png" alt="The Vault">
+
+        <div class="rule"></div>
+
+        <nav class="nav-grid">
+
+            <a class="nav-card" href="students/">
+                <span class="card-eyebrow">AI Club</span>
+                <span class="card-title">Student Training</span>
+                <span class="card-desc">Learn to think with AI — what it is, how it works, and what it means for your future.</span>
+                <span class="card-arrow">Enter →</span>
+            </a>
+
+            <a class="nav-card" href="staff/">
+                <span class="card-eyebrow">Professional Development</span>
+                <span class="card-title">Staff Training</span>
+                <span class="card-desc">Practical AI literacy for teachers — the tools, the risks, and how to use them well.</span>
+                <span class="card-arrow">Enter →</span>
+            </a>
+
+        </nav>
+
+        <footer class="site-footer">2026</footer>
+
+    </div>
+</body>
+</html>

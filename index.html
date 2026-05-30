@@ -16,7 +16,7 @@
 
         body {
             background-color: #f7f3ec;
-            color: #2a2218;
+            color: #1A1008;
             font-family: 'Inter', -apple-system, sans-serif;
             font-weight: 300;
             display: flex;
@@ -34,7 +34,7 @@
         }
 
         .container {
-            max-width: 640px;
+            max-width: 800px;
             width: 100%;
             text-align: center;
         }
@@ -50,74 +50,80 @@
         .rule {
             width: 60px;
             height: 1px;
-            background: #c8b89a;
-            margin: 0 auto 2rem;
+            background: #D0A880;
+            margin: 0 auto 2.5rem;
         }
 
-        .coming-soon {
-            font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
-            font-size: clamp(1.4rem, 4vw, 2rem);
-            font-weight: 600;
-            letter-spacing: 0.15em;
-            color: #2a2218;
-            margin-bottom: 0.6rem;
-        }
+        /* ── Section Cards ── */
 
-        .lorem-ipsum {
-            font-family: 'IM Fell English', 'Times New Roman', Georgia, serif;
-            font-size: 1rem;
-            font-style: italic;
-            color: #5a4e3a;
-            margin-bottom: 0.4rem;
-        }
-
-        .iykyk {
-            font-family: 'Cinzel', Georgia, serif;
-            font-size: 0.75rem;
-            letter-spacing: 0.25em;
-            color: #4a3e2e;
-            margin-bottom: 2.5rem;
-        }
-
-        .angles {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.9rem;
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
             margin-bottom: 3rem;
         }
 
-        .angles li {
-            font-family: 'IM Fell English', 'Times New Roman', Georgia, serif;
-            font-size: 0.95rem;
-            color: #8a7a62;
+        @media (max-width: 620px) {
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .chipp-block {
-            margin-bottom: 2.5rem;
-        }
-
-        .chipp-label {
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #8a7a62;
-            margin-bottom: 1rem;
-        }
-
-        .qr-code {
-            width: 160px;
-            height: 160px;
-            object-fit: contain;
+        .nav-card {
             display: block;
-            margin: 0 auto 0.75rem;
+            text-decoration: none;
+            border: 1px solid #D0A880;
+            border-radius: 4px;
+            padding: 2rem 1.5rem;
+            background: #FFFFFF;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            text-align: left;
         }
 
-        .chipp-sub {
-            font-family: 'IM Fell English', 'Times New Roman', Georgia, serif;
-            font-size: 0.85rem;
+        .nav-card:hover {
+            border-color: #B88040;
+            background: #fdf9f4;
+        }
+
+        .nav-card:hover .card-title {
+            color: #984808;
+        }
+
+        .card-eyebrow {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #B88040;
+            margin-bottom: 0.6rem;
+        }
+
+        .card-title {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: #1A1008;
+            margin-bottom: 0.75rem;
+            transition: color 0.2s ease;
+        }
+
+        .card-desc {
+            font-family: 'IM Fell English', Georgia, serif;
+            font-size: 0.875rem;
             font-style: italic;
-            color: #b0a088;
+            color: #505050;
+            line-height: 1.6;
+        }
+
+        .card-arrow {
+            display: block;
+            margin-top: 1.25rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #B88040;
+            font-family: 'Cinzel', Georgia, serif;
         }
 
         .footer {
@@ -135,24 +141,30 @@
 
         <div class="rule"></div>
 
-        <p class="coming-soon">COMING SOON</p>
-        <p class="lorem-ipsum">We're at the Lorem Ipsum Stage</p>
-        <p class="iykyk">IYKYK</p>
+        <nav class="nav-grid">
 
-        <ul class="angles">
-            <li>Teaching kids to ask better questions. Before the machines answer all of them.</li>
-            <li>The sea was the first classroom. Still the best one.</li>
-            <li>Physics. The kind that makes you see everything differently.</li>
-            <li>Games! Pool. Darts. Cornhole. Cards. Who's playing?</li>
-        </ul>
+            <a class="nav-card" href="physics/">
+                <p class="card-eyebrow">Science</p>
+                <p class="card-title">Physics</p>
+                <p class="card-desc">The kind that makes you see everything differently.</p>
+                <span class="card-arrow">Enter →</span>
+            </a>
 
-        <div class="rule"></div>
+            <a class="nav-card" href="cs/">
+                <p class="card-eyebrow">Computing</p>
+                <p class="card-title">Computer Science</p>
+                <p class="card-desc">Code as a way of thinking. Build things that think.</p>
+                <span class="card-arrow">Enter →</span>
+            </a>
 
-        <div class="chipp-block">
-            <p class="chipp-label">AI Club · Chipp HQ</p>
-            <img class="qr-code" src="chipp-hq.png" alt="Chipp HQ QR Code">
-            <p class="chipp-sub">Scan to visit the AI Club hub</p>
-        </div>
+            <a class="nav-card" href="ai/">
+                <p class="card-eyebrow">Artificial Intelligence</p>
+                <p class="card-title">AI</p>
+                <p class="card-desc">Understanding the tools that are changing everything.</p>
+                <span class="card-arrow">Enter →</span>
+            </a>
+
+        </nav>
 
         <p class="footer">2026</p>
 
