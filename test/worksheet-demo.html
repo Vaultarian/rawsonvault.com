@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worksheet Component — Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vault.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 2rem;
+            gap: 4rem;
+        }
+
+        .demo-block {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .demo-label {
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--ink-black);
+            margin-bottom: 1.25rem;
+            display: block;
+        }
+
+        /* ── Worksheet pair ── */
+        .doc-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .doc-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            border: 1px solid var(--bronze-light);
+            border-radius: 6px;
+            padding: 1.5rem 1rem 1.25rem;
+            background: var(--white);
+            transition: border-color 0.2s, background 0.2s;
+            text-align: center;
+            position: relative;
+        }
+
+        .doc-card:hover {
+            border-color: var(--bronze-core);
+            background: #fdf9f4;
+        }
+
+        /* The Q / A badge */
+        .doc-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-display);
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: var(--bronze-core);
+            color: var(--white);
+            border-radius: 20px;
+            padding: 2px 10px;
+            white-space: nowrap;
+        }
+
+        .doc-card--answers .doc-badge {
+            background: #5a7a4a;   /* a muted green — distinct but harmonious */
+        }
+
+        /* PDF page icon — drawn in CSS, no image needed */
+        .doc-icon {
+            width: 48px;
+            height: 60px;
+            background: #f7f3ec;
+            border: 1.5px solid var(--bronze-light);
+            border-radius: 3px 6px 3px 3px;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dog-eared corner */
+        .doc-icon::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            width: 12px;
+            height: 12px;
+            background: var(--white);
+            border-left: 1.5px solid var(--bronze-light);
+            border-bottom: 1.5px solid var(--bronze-light);
+            border-radius: 0 0 0 3px;
+        }
+
+        .doc-card--answers .doc-icon {
+            border-color: #a8c090;
+            background: #f4f8f2;
+        }
+
+        /* Lines of "text" on the page */
+        .doc-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 28px;
+        }
+
+        .doc-line {
+            height: 2px;
+            border-radius: 1px;
+            background: var(--bronze-light);
+        }
+        .doc-line:nth-child(1) { width: 100%; }
+        .doc-line:nth-child(2) { width: 80%; }
+        .doc-line:nth-child(3) { width: 90%; }
+        .doc-line:nth-child(4) { width: 60%; }
+        .doc-line:nth-child(5) { width: 85%; }
+
+        .doc-card--answers .doc-line {
+            background: #a8c090;
+        }
+
+        .doc-title {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--ink-black);
+            margin-bottom: 0.25rem;
+        }
+
+        .doc-subtitle {
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .doc-open {
+            margin-top: 0.9rem;
+            font-family: var(--font-display);
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--bronze-core);
+        }
+
+        .doc-card--answers .doc-open {
+            color: #5a7a4a;
+        }
+
+        /* ─────────────────────────────────── */
+        /* VARIANT B — simpler pill-button row */
+        /* ─────────────────────────────────── */
+
+        .doc-pair--compact {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .doc-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-display);
+            font-size: 0.58rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--bronze-core);
+            border: 1px solid var(--bronze-light);
+            border-radius: var(--radius);
+            padding: 5px 12px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .doc-pill:hover {
+            background: var(--bronze-core);
+            color: var(--white);
+            border-color: var(--bronze-core);
+        }
+
+        .doc-pill--answers {
+            color: #5a7a4a;
+            border-color: #a8c090;
+        }
+
+        .doc-pill--answers:hover {
+            background: #5a7a4a;
+            color: var(--white);
+            border-color: #5a7a4a;
+        }
+
+        /* Small page SVG inline */
+        .pill-icon {
+            width: 10px;
+            height: 12px;
+            display: inline-block;
+            position: relative;
+            border: 1px solid currentColor;
+            border-radius: 1px 2px 1px 1px;
+            flex-shrink: 0;
+        }
+        .pill-icon::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            width: 4px;
+            height: 4px;
+            background: var(--bg-parchment);
+            border-left: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+        }
+
+        /* Context row — how it looks inside a lesson list */
+        .lesson-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #f0ece4;
+        }
+
+        .lesson-title {
+            font-family: var(--font-body);
+            font-style: normal;
+            color: var(--ink-black);
+            font-size: 0.9rem;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- VARIANT A — Card view (standalone, visual)  -->
+    <!-- ═══════════════════════════════════════════ -->
+
+    <div class="demo-block">
+        <span class="demo-label">Variant A — Document Cards (standalone page or section header)</span>
+
+        <div class="doc-pair">
+
+            <a class="doc-card doc-card--questions" href="#">
+                <span class="doc-badge">Questions</span>
+                <div class="doc-icon">
+                    <div class="doc-lines">
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                    </div>
+                </div>
+                <span class="doc-title">Unit 3</span>
+                <span class="doc-subtitle">Kinematics — Worksheet</span>
+                <span class="doc-open">Open PDF ↗</span>
+            </a>
+
+            <a class="doc-card doc-card--answers" href="#">
+                <span class="doc-badge">Answers</span>
+                <div class="doc-icon">
+                    <div class="doc-lines">
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line"></div>
+                    </div>
+                </div>
+                <span class="doc-title">Unit 3</span>
+                <span class="doc-subtitle">Kinematics — Answer Sheet</span>
+                <span class="doc-open">Open PDF ↗</span>
+            </a>
+
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- VARIANT B — Compact pills (inline, inside a lesson table)  -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <div class="demo-block">
+        <span class="demo-label">Variant B — Compact Pills (inside a lesson row, like the staff page)</span>
+
+        <div class="lesson-row">
+            <span class="lesson-title">Kinematics — Forces and Motion</span>
+            <div class="doc-pair--compact">
+                <a class="doc-pill doc-pill--questions" href="#">
+                    <span class="pill-icon"></span> Questions
+                </a>
+                <a class="doc-pill doc-pill--answers" href="#">
+                    <span class="pill-icon"></span> Answers
+                </a>
+            </div>
+        </div>
+
+        <div class="lesson-row">
+            <span class="lesson-title">Kinematics — Velocity-Time Graphs</span>
+            <div class="doc-pair--compact">
+                <a class="doc-pill doc-pill--questions" href="#">
+                    <span class="pill-icon"></span> Questions
+                </a>
+                <a class="doc-pill doc-pill--answers" href="#">
+                    <span class="pill-icon"></span> Answers
+                </a>
+            </div>
+        </div>
+
+        <div class="lesson-row">
+            <span class="lesson-title">Kinematics — Problem Set</span>
+            <div class="doc-pair--compact">
+                <a class="doc-pill doc-pill--questions" href="#">
+                    <span class="pill-icon"></span> Questions
+                </a>
+                <a class="doc-pill doc-pill--answers" href="#">
+                    <span class="pill-icon"></span> Answers
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
