@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S4E1 · Post-Truth — AI Club — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .hero-banner {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: var(--radius);
+            margin-bottom: var(--gap-lg);
+            box-shadow: 0 2px 14px rgba(26,16,8,0.12);
+        }
+        .article p { margin-bottom: var(--gap-md); }
+        .article p:first-of-type::first-letter {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            float: left;
+            line-height: 0.8;
+            padding: 0.1em 0.12em 0 0;
+            color: var(--bronze-core);
+        }
+        .question-box {
+            border-left: 3px solid var(--bronze-core);
+            background: #fdf9f4;
+            padding: var(--gap-md) var(--gap-lg);
+            margin: var(--gap-lg) 0;
+            font-family: var(--font-heading);
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--ink-black);
+        }
+        .vocab { margin: var(--gap-lg) 0; }
+        .vocab dt {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            color: var(--ink-black);
+            margin-top: var(--gap-sm);
+        }
+        .vocab dd {
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            color: var(--gray-dark);
+            margin: 0 0 var(--gap-xs) 0;
+            line-height: 1.6;
+        }
+        .sources h3 { margin: var(--gap-md) 0 var(--gap-xs); }
+        .sources ul { list-style: none; }
+        .sources li {
+            padding: var(--gap-xs) 0;
+            border-bottom: 1px solid #f0ece4;
+            font-size: 0.9rem;
+        }
+        .sources .tag {
+            font-family: var(--font-display);
+            font-size: 0.55rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--bronze-dark);
+            border: 1px solid var(--bronze-light);
+            border-radius: var(--radius);
+            padding: 1px 6px;
+            margin-right: 6px;
+        }
+        .trust-note {
+            font-family: var(--font-body);
+            font-style: italic;
+            font-size: 0.88rem;
+            color: var(--gray-dark);
+            background: #faf6ef;
+            border-radius: var(--radius);
+            padding: var(--gap-md);
+            margin: var(--gap-lg) 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">AI</a><span>·</span>
+            <a href="../../">Students</a><span>·</span>
+            <a href="../">Season 4</a><span>·</span>
+            Post-Truth
+        </nav>
+
+        <img class="hero-banner" src="banner.png"
+             alt="AI Club — Season 4, Truth &amp; Trust. The End of Evidence? AI deepfakes are coming for the courtroom. Can a jury ever trust a video again?">
+
+        <div class="section-header">
+            <span class="eyebrow">Season 4 · Truth &amp; Trust · Episode 1</span>
+            <h1>Post-Truth</h1>
+            <p class="subtitle">When seeing is no longer believing</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <p>For most of the last century, a photograph or a video was treated as close to proof. Recordings could be faked, but faking them was slow, costly, skilled work, and a careful eye could usually catch it. Because faking was hard, trusting was reasonable. Generative AI has broken that arrangement. Convincing fake video, cloned voices, and invented photographs are now cheap, fast, and difficult to detect. The obvious danger is that people will be fooled by a fake. The more interesting danger is quieter, and it is what this session is about.</p>
+
+            <p>The philosopher Regina Rini argues that recordings have long done a hidden job: they keep people honest. A witness is less likely to lie if a camera might have caught the truth, so the mere <em>possibility</em> of a recording disciplines what people are willing to claim. Rini calls this the <strong>epistemic backstop</strong>. Her warning is that deepfakes do not only let liars manufacture footage. They quietly lower the value of <em>every</em> recording. Once any video could be fake, video stops being something we trust directly and becomes something we trust only as much as we trust whoever supplied it. A recording starts to behave like testimony rather than proof.</p>
+
+            <p>This leads to a twist that the legal scholars Danielle Citron and Robert Chesney named the <strong>liar's dividend</strong>. The threat is not only that a fake will be believed. It is that a <em>real</em> recording can now be waved away. Someone genuinely caught on camera can simply claim "that is a deepfake," and a doubtful audience may let them go. Stranger still, this escape route grows wider the more people know that deepfakes exist, which means a lesson like this one is, in a small way, part of the problem. Recent research by Kaylyn Schiff and colleagues suggests the effect is real but not a magic shield: a false "that's fake" claim sways opinion more easily about written claims than about video, and does not collapse trust in everything at once.</p>
+
+            <p>Not everyone thinks this is a disaster. The philosopher Joshua Habgood-Coote argues the panic is overblown, because we have always judged recordings by their source and context, not the pixels alone. That disagreement is the position you will test in the debate.</p>
+
+            <p>So what could rebuild trust? The leading idea is <strong>provenance</strong>: systems such as C2PA Content Credentials attach a tamper-evident record of where a file came from and how it was edited. Provenance has a hard limit, though. It can show where something came from, not whether it is <em>true</em>, and a single screenshot strips the record away. Detection tools, meanwhile, fight a constant arms race with the fakers, and none is right every time.</p>
+        </div>
+
+        <div class="question-box">
+            In a world where any image, video, or voice can be faked, what should it take to believe that a recording is real?
+        </div>
+
+        <h2>Key vocabulary</h2>
+        <dl class="vocab">
+            <dt>Epistemic</dt>
+            <dd>To do with knowledge and how we come to know things.</dd>
+            <dt>Testimony</dt>
+            <dd>Knowledge we gain because someone tells us, rather than witnessing it ourselves.</dd>
+            <dt>Epistemic backstop (Rini)</dt>
+            <dd>The quiet way recordings keep people honest, because anything might be on camera.</dd>
+            <dt>Deepfake</dt>
+            <dd>AI-generated video, image, or audio showing someone doing or saying something they never did.</dd>
+            <dt>The liar's dividend (Citron and Chesney)</dt>
+            <dd>When the existence of fakes lets someone dismiss real evidence as fake.</dd>
+            <dt>Provenance / Content Credentials (C2PA)</dt>
+            <dd>A tamper-evident record of where a file came from. It proves origin, not truth.</dd>
+            <dt>Authenticity</dt>
+            <dd>Whether something really is what it claims to be.</dd>
+        </dl>
+
+        <div class="rule--full"></div>
+
+        <div class="sources">
+            <h2>Where these ideas come from</h2>
+            <p class="trust-note">Every link below was checked against the real source before it went here. AI tools (this club's bots included) can invent convincing-looking citations. Click-check anything before you rely on it — "I verified the source myself" is exactly the habit this session is about.</p>
+
+            <h3>Start here</h3>
+            <ul>
+                <li><span class="tag">Watch</span><a href="https://www.youtube.com/watch?v=cZFqcvhHkcI" target="_blank" rel="noopener">BBC Newsround — What is a deepfake?</a> (2024). Short, plain-language video; the cleanest place to begin.</li>
+                <li><span class="tag">Core</span><a href="https://quod.lib.umich.edu/p/phimp/3521354.0020.024/--deepfakes-and-the-epistemic-backstop" target="_blank" rel="noopener">Rini, R. (2020). Deepfakes and the Epistemic Backstop.</a> <em>Philosophers' Imprint</em> 20(24). The idea at the heart of this session.</li>
+                <li><span class="tag">Twist</span><a href="https://www.californialawreview.org/print/deep-fakes-a-looming-challenge-for-privacy-democracy-and-national-security" target="_blank" rel="noopener">Chesney, R. &amp; Citron, D. (2019). Deep Fakes: A Looming Challenge…</a> <em>107 California Law Review 1753</em>. Where the "liar's dividend" comes from.</li>
+            </ul>
+
+            <h3>Go deeper</h3>
+            <ul>
+                <li><span class="tag">Counter</span><a href="https://link.springer.com/article/10.1007/s11229-023-04097-3" target="_blank" rel="noopener">Habgood-Coote, J. (2023). Deepfakes and the epistemic apocalypse.</a> <em>Synthese</em> 201(3). The argument that the panic is overblown.</li>
+                <li><span class="tag">Evidence</span><a href="https://www.semanticscholar.org/paper/The-Liar%E2%80%99s-Dividend%3A-Can-Politicians-Claim-to-Evade-Schiff-Schiff/5c0029655674cd8b247e8475464afe3766fcb79b" target="_blank" rel="noopener">Schiff, Schiff &amp; Bueno (2024). The Liar's Dividend.</a> <em>American Political Science Review</em>. Does the dividend actually work?</li>
+                <li><span class="tag">Model</span><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7406872/" target="_blank" rel="noopener">Fallis, D. (2020). The Epistemic Threat of Deepfakes.</a> <em>Philosophy &amp; Technology</em>. How much "evidence" a video loses.</li>
+                <li><span class="tag">Courtroom</span><a href="https://fordhamlawreview.org/wp-content/uploads/2024/05/Vol.-92_19_Capra-2491-2506.pdf" target="_blank" rel="noopener">Capra, D. (2024). Authenticating Digital Evidence in the Age of Deepfakes.</a> <em>92 Fordham Law Review 2491</em>.</li>
+                <li><span class="tag">Scotland</span><a href="https://www.sccjr.ac.uk/publication/chamberfakes-assessing-the-threats-scotland/" target="_blank" rel="noopener">Collier, Currie &amp; Catanzariti (2024). Chamberfakes.</a> SCCJR, for the Scottish Parliament. Deepfake risk to our own democracy.</li>
+                <li><span class="tag">UK law</span><a href="https://www.gov.uk/government/news/government-crackdown-on-explicit-deepfakes" target="_blank" rel="noopener">UK Government (2025). Crackdown on explicit deepfakes.</a> Criminalising the <em>creation</em> of explicit deepfakes (proposed).</li>
+                <li><span class="tag">UK law</span><a href="https://www.gov.uk/government/publications/online-safety-act-explainer/online-safety-act-explainer" target="_blank" rel="noopener">UK Government / DSIT. Online Safety Act: explainer.</a></li>
+                <li><span class="tag">Rebuild</span><a href="https://spec.c2pa.org/specifications/specifications/2.2/explainer/Explainer.html" target="_blank" rel="noopener">C2PA. Content Credentials — Explainer.</a> How a provenance stamp is meant to work.</li>
+            </ul>
+        </div>
+
+        <footer class="site-footer">Perth AI Club · Season 4 · 2026</footer>
+
+    </div>
+</body>
+</html>
