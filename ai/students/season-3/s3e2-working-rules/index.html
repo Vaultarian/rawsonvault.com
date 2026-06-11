@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3E2 · Working Rules — AI Club — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .article p { margin-bottom: var(--gap-md); }
+        .chipp-wrap { text-align: center; margin: var(--gap-lg) 0; }
+        .chipp-btn {
+            display: inline-block;
+            background: var(--bronze-core);
+            color: #fff;
+            padding: 0.7rem 1.4rem;
+            border-radius: var(--radius);
+            font-family: var(--font-display);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .chipp-btn:hover { background: var(--bronze-dark); color: #fff; }
+        .readings ul { list-style: none; }
+        .readings li {
+            padding: var(--gap-xs) 0;
+            border-bottom: 1px solid #f0ece4;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">AI</a><span>·</span>
+            <a href="../../">Students</a><span>·</span>
+            <a href="../">Season 3</a><span>·</span>
+            Working Rules
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">Season 3 · Build It · Episode 2</span>
+            <h1>Working Rules</h1>
+            <p class="subtitle">Give your agent a job, an identity, and rules it always follows</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <h2>What this lesson is about</h2>
+            <p>Today you build the instructions file for your own personal agent, called working-rules.md. Your README.md from last week described who you are, and now you decide what your agent does and how it behaves. Along the way you will learn what RAG means, the way an AI reads your uploaded files to answer questions, and how that is different from the system prompt that is always switched on. By the end you will have given your agent a name, a single clear job, and the rules it should never break.</p>
+        </div>
+
+        <h2>What you'll be able to do</h2>
+        <ul>
+            <li>I can explain what RAG (Retrieval-Augmented Generation) is in simple terms.</li>
+            <li>I can explain the difference between a system prompt and a knowledge source.</li>
+            <li>I can write a working-rules.md file that defines my agent's identity, job, and rules.</li>
+            <li>I can create the folder structure for my agent inside my-ai-toolkit/.</li>
+        </ul>
+
+        <div class="article">
+            <h2>A little background</h2>
+            <p>RAG, short for Retrieval-Augmented Generation, is how an AI reads documents to answer your questions. When you ask something, it searches your uploaded files, finds the most relevant section, and uses that alongside what it already knows. The Chipp bot you are about to open is itself a RAG system, because your README.md from last week is already loaded before you type a word.</p>
+            <p>Before you open the bot, think about the three-times-a-week test. What do you do at least three times a week where you always want help, but never quite get the right kind? That is your agent's job. A tool you would genuinely use beats one that just sounds impressive.</p>
+        </div>
+
+        <div class="readings">
+            <h2>Readings</h2>
+            <ul>
+                <li><a href="https://www.youtube.com/watch?v=xPMQ2cVbUTI" target="_blank" rel="noopener">What Is RAG? Retrieval-Augmented Generation Explained Simply</a> — 5-min video, no technical background needed.</li>
+                <li><a href="https://www.prompthub.us/blog/retrieval-augmented-generation-for-beginners" target="_blank" rel="noopener">Retrieval Augmented Generation for Beginners</a> — PromptHub, short and non-technical.</li>
+                <li><a href="https://michielh.medium.com/rag-for-dummies-a-beginners-guide-to-retrieval-augmented-generation-ac3348d31302" target="_blank" rel="noopener">RAG for Dummies</a> — Medium, plain-language overview with diagrams.</li>
+            </ul>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="chipp-wrap">
+            <a class="chipp-btn" href="https://s2e2-rag.on.chipp.ai" target="_blank" rel="noopener">Open the bot →</a>
+        </div>
+
+        <footer class="site-footer">Perth AI Club · Season 3 · 2026</footer>
+
+    </div>
+</body>
+</html>

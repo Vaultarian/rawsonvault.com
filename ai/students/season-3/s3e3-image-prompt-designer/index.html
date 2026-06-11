@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3E3 · Image Prompt Designer — AI Club — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .article p { margin-bottom: var(--gap-md); }
+        .chipp-wrap { text-align: center; margin: var(--gap-lg) 0; }
+        .chipp-btn {
+            display: inline-block;
+            background: var(--bronze-core);
+            color: #fff;
+            padding: 0.7rem 1.4rem;
+            border-radius: var(--radius);
+            font-family: var(--font-display);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .chipp-btn:hover { background: var(--bronze-dark); color: #fff; }
+        .readings ul { list-style: none; }
+        .readings li {
+            padding: var(--gap-xs) 0;
+            border-bottom: 1px solid #f0ece4;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">AI</a><span>·</span>
+            <a href="../../">Students</a><span>·</span>
+            <a href="../">Season 3</a><span>·</span>
+            Image Prompt Designer
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">Season 3 · Build It · Episode 3</span>
+            <h1>Image Prompt Designer</h1>
+            <p class="subtitle">Test what you built, find what's missing, and ship a better version</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <h2>What this lesson is about</h2>
+            <p>Building something is only half the job. The other half is making it better. Today you open your image prompt agent, use it to generate a real prompt, and then turn it into a critic to spot at least three things it could do better. This is the cycle every developer and designer lives by, test, identify, fix, and retest, and you will use it to upgrade your agent from version 1 to version 2.</p>
+        </div>
+
+        <h2>What you'll be able to do</h2>
+        <ul>
+            <li>I can test my agent and identify at least three specific improvements.</li>
+            <li>I can explain what makes an image prompt specific vs vague.</li>
+            <li>I can write a v2 system prompt that addresses the gaps in v1.</li>
+        </ul>
+
+        <div class="article">
+            <h2>A little background</h2>
+            <p>A vague image prompt gives the AI too much freedom and produces unpredictable results, while a precise one constrains it to produce what you actually had in mind. Precision comes from being specific about the subject, style, mood, lighting, composition, and medium. Order matters too, because image generators read a prompt from top to bottom and give the most weight to what comes first. Every prompt also has two halves, a positive prompt for what you want and a negative prompt for what to leave out, such as blurry, watermark, or distorted faces.</p>
+        </div>
+
+        <div class="readings">
+            <h2>Readings</h2>
+            <ul>
+                <li><a href="https://www.transmedia.co.uk/article/prompt-engineering-for-ai-image-generation-essential-techniques-for-creative-professionals" target="_blank" rel="noopener">Prompt Engineering for AI Image Generation</a> — Transmedia, practical framework for structure and ordering.</li>
+                <li><a href="https://cookbook.openai.com/examples/gpt_image_prompting_guide" target="_blank" rel="noopener">GPT Image Generation Prompting Guide</a> — OpenAI Cookbook, the ladder approach and iterative refinement.</li>
+            </ul>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="chipp-wrap">
+            <a class="chipp-btn" href="https://snappy-climbing-jungle-9gyu.on.chipp.ai" target="_blank" rel="noopener">Open the bot →</a>
+        </div>
+
+        <footer class="site-footer">Perth AI Club · Season 3 · 2026</footer>
+
+    </div>
+</body>
+</html>

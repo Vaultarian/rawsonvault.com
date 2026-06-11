@@ -3,34 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Season 3 — AI Club — The Vault</title>
+    <title>Season 3 · Build It — AI Club — The Vault</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../vault.css">
+    <style>
+        .ep-row {
+            display: flex;
+            align-items: baseline;
+            gap: var(--gap-sm);
+            padding: var(--gap-md) 0;
+            border-bottom: 1px solid #f0ece4;
+            text-decoration: none;
+        }
+        .ep-row:hover .ep-title { color: var(--bronze-dark); }
+        .ep-code {
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: var(--bronze-core);
+            white-space: nowrap;
+        }
+        .ep-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--ink-black);
+            transition: color 0.2s ease;
+        }
+        .ep-sub {
+            font-family: var(--font-body);
+            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--gray-mid);
+            display: block;
+            margin-top: 2px;
+        }
+        .ep-soon {
+            padding: var(--gap-md) 0;
+            border-bottom: 1px solid #f0ece4;
+            font-family: var(--font-body);
+            font-style: italic;
+            color: var(--gray-silver);
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="container" style="text-align:center;">
+    <div class="container">
 
-        <nav class="breadcrumb" style="text-align:left;">
-            <a href="../../../">The Vault</a><span>&middot;</span>
-            <a href="../../">AI</a><span>&middot;</span>
-            <a href="../">Students</a><span>&middot;</span>
+        <nav class="breadcrumb">
+            <a href="../../../">The Vault</a><span>·</span>
+            <a href="../../">AI</a><span>·</span>
+            <a href="../">Students</a><span>·</span>
             Season 3
         </nav>
 
         <div class="section-header">
-            <span class="eyebrow">AI Club</span>
-            <h1>Season 3</h1>
+            <span class="eyebrow">AI Club · Season 3</span>
+            <h1>Build It</h1>
+            <p class="subtitle">Build your own AI toolkit, one file and one agent at a time.</p>
         </div>
 
-        <div class="rule"></div>
+        <div class="rule--full"></div>
 
-        <p style="font-family:var(--font-body); font-style:italic; color:var(--gray-mid); max-width:480px; margin:0 auto;">
-            Episodes from this season will appear here soon.
-        </p>
+        <a class="ep-row" href="s3e1-personal-ai/">
+            <span class="ep-code">S3 · E1</span>
+            <span>
+                <span class="ep-title">What is Personal AI?</span>
+                <span class="ep-sub">Give the AI a map of who you are, and its answers stop being generic.</span>
+            </span>
+        </a>
 
-        <footer class="site-footer">Perth AI Club &middot; 2026</footer>
+        <a class="ep-row" href="s3e2-working-rules/">
+            <span class="ep-code">S3 · E2</span>
+            <span>
+                <span class="ep-title">Working Rules</span>
+                <span class="ep-sub">Give your agent a job, an identity, and rules it always follows.</span>
+            </span>
+        </a>
+
+        <a class="ep-row" href="s3e3-image-prompt-designer/">
+            <span class="ep-code">S3 · E3</span>
+            <span>
+                <span class="ep-title">Image Prompt Designer</span>
+                <span class="ep-sub">Test what you built, find what's missing, and ship a better version.</span>
+            </span>
+        </a>
+
+        <div class="ep-soon">More episodes this season — coming soon.</div>
+
+        <footer class="site-footer">Perth AI Club · Season 3 · 2026</footer>
 
     </div>
 </body>

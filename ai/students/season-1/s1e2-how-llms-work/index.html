@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S1E2 · How LLMs Work — AI Club — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .article p { margin-bottom: var(--gap-md); }
+        .chipp-block { text-align: center; margin: var(--gap-lg) 0; }
+        .chipp-btn {
+            display: inline-block;
+            background: var(--bronze-core);
+            color: #fff;
+            padding: 0.7rem 1.4rem;
+            border-radius: var(--radius);
+            font-family: var(--font-display);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .chipp-btn:hover { background: var(--bronze-dark); color: #fff; }
+        .sources ul { list-style: none; }
+        .sources li {
+            padding: var(--gap-xs) 0;
+            border-bottom: 1px solid #f0ece4;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">AI</a><span>·</span>
+            <a href="../../">Students</a><span>·</span>
+            <a href="../">Season 1</a><span>·</span>
+            How LLMs Work
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">Season 1 · The Foundations · Episode 2</span>
+            <h1>How LLMs Work</h1>
+            <p class="subtitle">A machine that does one thing, billions of times: guess the next word</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <h2>What this lesson is about</h2>
+            <p>A large language model works by predicting the next word in a sequence, over and over again. During training it does this billions of times, and along the way it builds a vast internal map of language where words, meanings, and contexts are stored as numbers. In this lesson you will open up that process and follow it from raw training data, through tokenisation and embeddings, to the moment the model picks its next word. The goal is for the inner workings of an LLM to stop feeling like magic and start feeling like something you can explain.</p>
+
+            <h2>What you'll be able to do</h2>
+            <ul>
+                <li>I can analyse how predictive-text systems generate next-word suggestions.</li>
+                <li>I can participate in a structured discussion using evidence from readings and my conversation with Chipp.</li>
+            </ul>
+
+            <h2>A little background</h2>
+            <p>When you type a prompt, the model navigates its internal word map using an architecture called a transformer, paying attention to the parts of your input that matter most. It then uses probability to choose the most likely next token, one piece at a time. The key terms to get comfortable with are training data, tokens, embeddings, the transformer, and self-attention, and you will build your own definition of each.</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="sources">
+            <h2>Readings</h2>
+            <ul>
+                <li><a href="https://ig.ft.com/generative-ai/" target="_blank" rel="noopener">How Generative AI Works</a> — Financial Times interactive visual explainer covering next-word prediction, tokens, and training.</li>
+                <li><a href="https://cset.georgetown.edu" target="_blank" rel="noopener">CSET AI Explainer Series</a> — In-depth series from the Center for Security and Emerging Technology on how AI language systems are built and deployed. (Optional further reading.)</li>
+            </ul>
+        </div>
+
+        <div class="chipp-block">
+            <a class="chipp-btn" href="https://bouncy-laughing-octopus-smmj.on.chipp.ai" target="_blank" rel="noopener">Open the bot →</a>
+        </div>
+
+        <footer class="site-footer">Perth AI Club · Season 1 · 2026</footer>
+
+    </div>
+</body>
+</html>
