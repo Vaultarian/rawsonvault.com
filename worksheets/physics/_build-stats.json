@@ -1,0 +1,98 @@
+{
+  "circuitry": {
+    "total": 8,
+    "ws": 4,
+    "ans": 4,
+    "copied": 0
+  },
+  "energy": {
+    "total": 15,
+    "ws": 7,
+    "ans": 8,
+    "copied": 0
+  },
+  "forces": {
+    "total": 14,
+    "ws": 9,
+    "ans": 5,
+    "copied": 0
+  },
+  "introduction": {
+    "total": 3,
+    "ws": 2,
+    "ans": 1,
+    "copied": 0
+  },
+  "magnetism": {
+    "total": 2,
+    "ws": 1,
+    "ans": 1,
+    "copied": 0
+  },
+  "momentum": {
+    "total": 10,
+    "ws": 5,
+    "ans": 5,
+    "copied": 0
+  },
+  "motion-1d": {
+    "total": 10,
+    "ws": 8,
+    "ans": 2,
+    "copied": 0
+  },
+  "optics": {
+    "total": 30,
+    "ws": 18,
+    "ans": 12,
+    "copied": 0
+  },
+  "projectile-motion": {
+    "total": 18,
+    "ws": 9,
+    "ans": 9,
+    "copied": 0
+  },
+  "rotational-motion": {
+    "total": 8,
+    "ws": 4,
+    "ans": 4,
+    "copied": 0
+  },
+  "sound-waves": {
+    "total": 13,
+    "ws": 8,
+    "ans": 5,
+    "copied": 0
+  },
+  "thermodynamics": {
+    "total": 18,
+    "ws": 9,
+    "ans": 9,
+    "copied": 0
+  },
+  "latex-archive": {
+    "total": 64,
+    "ws": 58,
+    "ans": 6,
+    "copied": 0
+  },
+  "myp": {
+    "total": 2,
+    "ws": 1,
+    "ans": 1,
+    "copied": 0
+  },
+  "webassign": {
+    "total": 6,
+    "ws": 3,
+    "ans": 3,
+    "copied": 0
+  },
+  "mixed": {
+    "total": 22,
+    "ws": 13,
+    "ans": 9,
+    "copied": 0
+  }
+}
