@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.1 Simple Harmonic Motion — DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .hl-ext { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); border: 1px solid var(--gray-light); border-radius: var(--radius); padding: 1px 5px; margin-right: 4px; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../../">Physics</a><span>·</span>
+            <a href="../../../">DP Physics</a><span>·</span>
+            <a href="../">Theme C</a><span>·</span>
+            C.1 Simple Harmonic Motion
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">Theme C · Wave Behaviour · SL 3h + HL extension 4h</span>
+            <h1>C.1 Simple Harmonic Motion</h1>
+            <p class="subtitle">What makes the harmonic oscillator model applicable to such a wide range of phenomena?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Simple harmonic motion (SHM) is the physics of restoring forces. Whenever a displaced body experiences a force directed back towards its equilibrium position, and that force is proportional to the displacement, the body will oscillate sinusoidally. The defining equation <em>a = −ω²x</em> encodes both conditions: the negative sign means restoring (back towards equilibrium), and the proportionality means the oscillation is mathematically simple enough to solve exactly.</p>
+            <p>The model is powerful because it appears everywhere: a mass on a spring, a pendulum for small angles, a charged particle in a parabolic potential, an atom vibrating in a crystal lattice, a current oscillating in an LC circuit. Once you know SHM, you know the shape of all these motions.</p>
+        </div>
+        <div class="question-box">
+            A mass of 0.25 kg is attached to a spring of spring constant 16 N m<sup>−1</sup>. It is displaced 0.08 m from equilibrium and released. Write expressions for displacement, velocity, and acceleration as functions of time, and calculate the total energy of the oscillation.
+        </div>
+        <h2>Key equations</h2>
+        <div class="eq-box">Defining equation: a = −ω²x</div>
+        <div class="eq-box">T = 1/f = 2π/ω</div>
+        <div class="eq-box">Mass-spring: T = 2π√(m/k)</div>
+        <div class="eq-box">Simple pendulum: T = 2π√(l/g)</div>
+        <div class="eq-box"><span class="hl-ext">HL</span> x = x₀ sin(ωt + φ); v = ωx₀ cos(ωt + φ); v = ±ω√(x₀² − x²)</div>
+        <div class="eq-box"><span class="hl-ext">HL</span> E<sub>T</sub> = ½mω²x₀²; E<sub>p</sub> = ½mω²x²</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Conditions for SHM: restoring force proportional to displacement, directed towards equilibrium</li>
+            <li>Defining equation: a = −ω²x (minus sign is critical — restoring)</li>
+            <li>Descriptors: period T, frequency f, angular frequency ω, amplitude x₀, equilibrium, displacement x</li>
+            <li>T = 2π√(m/k) for mass-spring; T = 2π√(l/g) for pendulum</li>
+            <li>Qualitative energy description: KE maximum at equilibrium, PE maximum at amplitude, total mechanical energy constant</li>
+            <li><span class="hl-ext">HL</span> Phase angle φ; full sinusoidal equations for x, v, and a</li>
+            <li><span class="hl-ext">HL</span> Speed at any displacement: v = ±ω√(x₀² − x²)</li>
+            <li><span class="hl-ext">HL</span> Quantitative energy analysis: E<sub>T</sub> = ½mω²x₀²</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How can greenhouse gases be modelled as simple harmonic oscillators? → <em>B.2 Greenhouse Effect</em></li>
+            <li>How can circular motion visualise SHM? → <em>A.2 Forces and Momentum</em></li>
+            <li>How does damping affect periodic motion? → <em>C.4 Standing Waves and Resonance</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · DP Physics · C.1 Simple Harmonic Motion · 2026</footer>
+    </div>
+</body>
+</html>
