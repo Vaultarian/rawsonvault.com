@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../vault.css">
+    <style>
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--gap-md);
+            margin-bottom: var(--gap-xl);
+        }
+        .theme-card {
+            display: block;
+            text-decoration: none;
+            border: 1px solid var(--bronze-light);
+            border-radius: var(--radius);
+            padding: var(--gap-lg) var(--gap-md);
+            background: var(--white);
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .theme-card:hover {
+            border-color: var(--bronze-core);
+            background: #fdf9f4;
+        }
+        .theme-card:hover .theme-letter { color: var(--bronze-dark); }
+        .theme-letter {
+            font-family: var(--font-display);
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: var(--bronze-core);
+            line-height: 1;
+            display: block;
+            margin-bottom: var(--gap-sm);
+            letter-spacing: 0.05em;
+            transition: color 0.2s ease;
+        }
+        .theme-name {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            color: var(--ink-black);
+            display: block;
+            margin-bottom: var(--gap-xs);
+        }
+        .theme-topics {
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            color: var(--gray-dark);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../">The Vault</a><span>·</span>
+            <a href="../">Physics</a><span>·</span>
+            DP Physics
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">IB Diploma Programme · First Assessment 2025</span>
+            <h1>DP Physics</h1>
+            <p class="subtitle">Five themes. From classical mechanics to the structure of stars.</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="theme-grid">
+
+            <a class="theme-card" href="theme-a/">
+                <span class="theme-letter">A</span>
+                <span class="theme-name">Space, Time and Motion</span>
+                <span class="theme-topics">Kinematics · Forces · Energy · Rigid Bodies · Relativity</span>
+            </a>
+
+            <a class="theme-card" href="theme-b/">
+                <span class="theme-letter">B</span>
+                <span class="theme-name">Particulate Nature of Matter</span>
+                <span class="theme-topics">Thermal Energy · Greenhouse Effect · Gas Laws · Thermodynamics · Circuits</span>
+            </a>
+
+            <a class="theme-card" href="theme-c/">
+                <span class="theme-letter">C</span>
+                <span class="theme-name">Wave Behaviour</span>
+                <span class="theme-topics">SHM · Wave Model · Wave Phenomena · Standing Waves · Doppler</span>
+            </a>
+
+            <a class="theme-card" href="theme-d/">
+                <span class="theme-letter">D</span>
+                <span class="theme-name">Fields</span>
+                <span class="theme-topics">Gravitational · Electric &amp; Magnetic · EM Motion · Induction</span>
+            </a>
+
+            <a class="theme-card" href="theme-e/">
+                <span class="theme-letter">E</span>
+                <span class="theme-name">Nuclear and Quantum Physics</span>
+                <span class="theme-topics">Atomic Structure · Quantum Physics · Radioactivity · Fission · Fusion &amp; Stars</span>
+            </a>
+
+        </div>
+
+        <div class="rule--full"></div>
+
+        <p style="font-family:var(--font-body);font-size:0.85rem;color:var(--gray-dark);font-style:italic;">
+            Source: IB Physics Guide — First Assessment 2025, published February 2023 by the International Baccalaureate Organization. SL and HL content; 24 topics across five themes.
+        </p>
+
+        <footer class="site-footer">The Vault · DP Physics · 2026</footer>
+
+    </div>
+</body>
+</html>

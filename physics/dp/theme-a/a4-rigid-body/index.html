@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.4 Rigid Body Mechanics — DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--gray-dark);
+            padding: var(--gap-xs) 0;
+            border-bottom: 1px solid #f0ece4;
+            line-height: 1.6;
+        }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box {
+            font-family: var(--font-body);
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--ink-black);
+            background: #fdf9f4;
+            border-left: 3px solid var(--bronze-light);
+            padding: var(--gap-sm) var(--gap-md);
+            margin: var(--gap-xs) 0;
+        }
+        .hl-banner {
+            background: #f0ece4;
+            border-radius: var(--radius);
+            padding: var(--gap-md);
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gray-mid);
+            text-align: center;
+            margin-bottom: var(--gap-lg);
+        }
+        .linking li {
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            color: var(--gray-dark);
+            padding: var(--gap-xs) 0;
+            border-bottom: 1px solid #f0ece4;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../../">Physics</a><span>·</span>
+            <a href="../../../">DP Physics</a><span>·</span>
+            <a href="../">Theme A</a><span>·</span>
+            A.4 Rigid Body Mechanics
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">Theme A · Space, Time and Motion · HL only · 7 hours</span>
+            <h1>A.4 Rigid Body Mechanics</h1>
+            <p class="subtitle">How does the distribution of mass within a body affect its rotational motion?</p>
+        </div>
+
+        <div class="hl-banner">Higher Level only — no Standard Level content in this topic</div>
+
+        <div class="article">
+            <p>Everything in A.1–A.3 was about point masses — objects treated as having no size, so rotation doesn't arise. Real bodies have extent, and when a force acts at a distance from a pivot, it produces rotation. Torque is the rotational equivalent of force; moment of inertia is the rotational equivalent of mass; angular momentum is the rotational equivalent of linear momentum. Every linear equation has a rotational analogue, and the elegance of that correspondence is one of the things that makes this topic satisfying to teach.</p>
+
+            <p>Angular momentum is conserved when no net torque acts — this is why a spinning ice skater speeds up when they pull their arms in (decreasing <em>I</em> forces ω to increase to keep <em>L = Iω</em> constant). The same principle governs the formation of solar systems, the spin-up of neutron stars, and the control of spacecraft attitude.</p>
+        </div>
+
+        <div class="question-box">
+            A solid disc of mass 2 kg and radius 0.4 m spins at 6 rad s<sup>−1</sup>. A student then drops a ring of mass 1 kg and the same radius onto the spinning disc. What is the new angular velocity? (Disc: <em>I = ½MR²</em>; ring: <em>I = MR²</em>)
+        </div>
+
+        <h2>Key equations</h2>
+        <div class="eq-box">Torque: τ = <em>Fr</em>sinθ</div>
+        <div class="eq-box">Moment of inertia (point masses): <em>I</em> = Σ<em>mr²</em></div>
+        <div class="eq-box">Newton's second law (rotation): τ = <em>I</em>α</div>
+        <div class="eq-box">Angular momentum: <em>L = Iω</em></div>
+        <div class="eq-box">Angular impulse: Δ<em>L</em> = τΔ<em>t</em> = Δ(<em>Iω</em>)</div>
+        <div class="eq-box">Rotational kinetic energy: <em>E_k = ½Iω²</em> = <em>L²/2I</em></div>
+
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Torque τ = <em>Fr</em>sinθ — the turning effect of a force about an axis</li>
+            <li>Rotational equilibrium: resultant torque is zero</li>
+            <li>Angular displacement, velocity, and acceleration; the four rotational equations of motion analogous to A.1</li>
+            <li>Moment of inertia depends on the distribution of mass — <em>I = Σmr²</em> for point masses; formula given for extended bodies</li>
+            <li>Newton's second law for rotation: τ = <em>I</em>α</li>
+            <li>Angular momentum <em>L = Iω</em> is conserved unless an external torque acts</li>
+            <li>Rolling without slipping: simultaneous rotational and translational motion</li>
+        </ul>
+
+        <div class="rule--full"></div>
+
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How does rotation apply to charged particles or satellites in orbit? → <em>D.1, D.3</em></li>
+            <li>How does conservation of angular momentum relate to the Bohr radius? → <em>E.1</em></li>
+            <li>How can a torque lead to simple harmonic motion? → <em>C.1</em></li>
+            <li>How can rotation generate an electric current? → <em>D.4 Induction</em></li>
+        </ul>
+
+        <footer class="site-footer">The Vault · DP Physics · A.4 Rigid Body Mechanics · 2026</footer>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.5 Current and Circuits — DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../../">Physics</a><span>·</span>
+            <a href="../../../">DP Physics</a><span>·</span>
+            <a href="../">Theme B</a><span>·</span>
+            B.5 Current and Circuits
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">Theme B · Particulate Nature of Matter · SL + HL · 6 hours</span>
+            <h1>B.5 Current and Circuits</h1>
+            <p class="subtitle">How do charged particles flow through materials, and what are the consequences of resistance?</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <p>Current is the flow of charge carriers — electrons in metals, ions in electrolytes, and holes in semiconductors. The rate of flow, measured in amperes, is charge per unit time. Potential difference is the energy per unit charge available to drive that flow; resistance is the opposition to it. Ohm's law — V = IR — holds for metallic conductors at constant temperature, but not for all materials or all conditions.</p>
+
+            <p>Internal resistance is the part of Ohm's law that textbooks gloss over but real circuits cannot ignore. Every cell has an internal resistance r; when current flows, some of the EMF is "used up" driving current through the cell itself, so the terminal voltage is always less than the EMF. Understanding this is essential for analysing real circuits, where the battery is not an ideal voltage source.</p>
+        </div>
+
+        <div class="question-box">
+            A battery of EMF 12 V and internal resistance 0.8 Ω is connected to an external resistor of 3.2 Ω. Calculate the current, the terminal voltage of the battery, and the power dissipated in the external resistor. What fraction of the total power is wasted in the internal resistance?
+        </div>
+
+        <h2>Key equations</h2>
+        <div class="eq-box">Current: I = Δq/Δt</div>
+        <div class="eq-box">Potential difference: V = W/q</div>
+        <div class="eq-box">Resistance: R = V/I; Resistivity: ρ = RA/L</div>
+        <div class="eq-box">Power: P = IV = I²R = V²/R</div>
+        <div class="eq-box">Series: R<sub>s</sub> = R₁ + R₂; Parallel: 1/R<sub>p</sub> = 1/R₁ + 1/R₂</div>
+        <div class="eq-box">EMF and internal resistance: ε = I(R + r); terminal voltage = ε − Ir</div>
+
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>EMF sources: chemical cells and solar cells as energy sources in circuits</li>
+            <li>Direct current I = Δq/Δt; current as flow of charge carriers</li>
+            <li>Potential difference V = W/q — work done per unit charge</li>
+            <li>Conductors and insulators in terms of mobility of charge carriers</li>
+            <li>Resistance R = V/I; resistivity ρ = RA/L</li>
+            <li>Ohm's law: for ohmic conductors (metals at constant T), V ∝ I</li>
+            <li>Non-ohmic devices: filament bulb, diode, thermistor, LDR</li>
+            <li>Power dissipation: P = IV = I²R = V²/R</li>
+            <li>Series and parallel combinations — rules for current, voltage, and resistance</li>
+            <li>EMF ε and internal resistance r: ε = I(R + r); terminal voltage always &lt; EMF under load</li>
+            <li>Variable resistors: thermistors, LDRs, potentiometers</li>
+        </ul>
+
+        <div class="rule--full"></div>
+
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How is an electrical circuit analogous to the Earth's atmosphere or a heat engine? → <em>B.2, B.4</em></li>
+            <li>How are electric and gravitational fields similar and different? → <em>D.1, D.2</em></li>
+            <li>How does the particle model explain electrical resistance? → <em>B.1 Thermal Energy Transfers (NOS)</em></li>
+        </ul>
+
+        <footer class="site-footer">The Vault · DP Physics · B.5 Current and Circuits · 2026</footer>
+
+    </div>
+</body>
+</html>

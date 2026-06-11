@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.4 Thermodynamics — DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .hl-banner { background: #f0ece4; border-radius: var(--radius); padding: var(--gap-md); font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); text-align: center; margin-bottom: var(--gap-lg); }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../../">Physics</a><span>·</span>
+            <a href="../../../">DP Physics</a><span>·</span>
+            <a href="../">Theme B</a><span>·</span>
+            B.4 Thermodynamics
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">Theme B · Particulate Nature of Matter · HL only · 8 hours</span>
+            <h1>B.4 Thermodynamics</h1>
+            <p class="subtitle">In what way is entropy fundamental to the evolution of the universe?</p>
+        </div>
+
+        <div class="hl-banner">Higher Level only — no Standard Level content in this topic</div>
+
+        <div class="article">
+            <p>The first law of thermodynamics is conservation of energy: Q = ΔU + W. Every engine, every refrigerator, every living cell obeys it. But it doesn't tell you which direction a process goes. That is the job of the second law, and of entropy.</p>
+
+            <p>Entropy S measures disorder — or more precisely, the number of microstates available to the system (S = k<sub>B</sub> ln Ω). The second law says entropy in an isolated system never decreases. This single asymmetry — the arrow of time — explains why ice never spontaneously forms in a warm room, why engines always waste some heat, and why the universe moves towards greater disorder. The Carnot cycle establishes the absolute maximum efficiency any heat engine can achieve: η = 1 − T<sub>c</sub>/T<sub>h</sub>, regardless of what working fluid or mechanism is used.</p>
+        </div>
+
+        <div class="question-box">
+            A heat engine operates between reservoirs at 500 K and 300 K. It absorbs 800 J of heat per cycle. What is the maximum work it can do per cycle, and how much heat must it reject? What process does the Carnot cycle use to achieve this maximum?
+        </div>
+
+        <h2>Key equations</h2>
+        <div class="eq-box">First law: Q = ΔU + W (Q into system; W done by system)</div>
+        <div class="eq-box">Work done by gas: W = PΔV</div>
+        <div class="eq-box">Entropy change: ΔS = ΔQ/T; S = k<sub>B</sub> ln Ω</div>
+        <div class="eq-box">Adiabatic process: PV<sup>5/3</sup> = constant (monatomic ideal gas)</div>
+        <div class="eq-box">Carnot efficiency: η<sub>Carnot</sub> = 1 − T<sub>c</sub>/T<sub>h</sub></div>
+
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>First law: Q = ΔU + W; a closed system can exchange energy as heat or work but not mass</li>
+            <li>Work done by/on a gas: W = PΔV; sign convention (work done by system is positive)</li>
+            <li>Four processes: isovolumetric (V const), isobaric (P const), isothermal (T const), adiabatic (no heat exchange)</li>
+            <li>Entropy S as a thermodynamic quantity related to disorder; ΔS = ΔQ/T; S = k<sub>B</sub> ln Ω</li>
+            <li>Second law: entropy of an isolated system always increases; real processes are irreversible</li>
+            <li>Entropy of a sub-system can decrease if the surroundings increase by at least as much</li>
+            <li>Cyclic gas processes in heat engines; efficiency = useful work / input energy</li>
+            <li>The Carnot cycle as the upper bound on efficiency; η<sub>Carnot</sub> = 1 − T<sub>c</sub>/T<sub>h</sub></li>
+        </ul>
+
+        <div class="rule--full"></div>
+
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>What are the consequences of the second law for the universe as a whole? → <em>E.5 Fusion and Stars</em></li>
+            <li>Why is there always an upper limit on efficiency? <em>(NOS)</em></li>
+            <li>How are efficiency considerations important in motors and generators? → <em>D.4 Induction</em></li>
+        </ul>
+
+        <footer class="site-footer">The Vault · DP Physics · B.4 Thermodynamics · 2026</footer>
+
+    </div>
+</body>
+</html>
