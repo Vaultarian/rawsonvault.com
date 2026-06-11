@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Glitch Illusion</title>
+  <style>
+    body { margin: 0; background: #cccccc; }
+    .home-btn {
+      position: fixed; top: 12px; left: 12px; z-index: 9999999;
+      font-family: 'Comic Sans MS', sans-serif; font-size: 1em;
+      padding: 8px 16px; background: #4edcff; color: #000;
+      border: none; border-radius: 10px; text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <a class="home-btn" href="../index.html">⬅ Back to museum</a>
+
+  <script>
+  (function() {
+      // 1. Create the overlay container
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '100vw';
+      container.style.height = '100vh';
+      container.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.justifyContent = 'center';
+      container.style.alignItems = 'center';
+      container.style.gap = '20px';
+      container.style.zIndex = '999999';
+      container.id = 'custom-death-spinner';
+
+      // 2. Inject CSS rules securely using sheet.insertRule
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet;
+
+      sheet.insertRule(`
+          .custom-spinner {
+              width: 100px;
+              height: 100px;
+              position: relative;
+              animation: spin 1s linear infinite;
+          }
+      `, 0);
+
+      sheet.insertRule(`
+          .custom-spinner::before {
+              content: '';
+              position: absolute;
+              top: 0; left: 0; right: 0; bottom: 0;
+              border-radius: 50%;
+              border: 12px solid transparent;
+              background: conic-gradient(from 0deg, #ffffff 0%, #000000 85%, #000000 100%) border-box;
+              -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+              -webkit-mask-composite: destination-out;
+              mask-composite: exclude;
+          }
+      `, 1);
+
+      sheet.insertRule(`
+          .custom-spinner::after {
+              content: '';
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              background-color: #000000;
+              border-radius: 50%;
+              top: 0; left: 50%;
+              transform: translateX(-50%);
+          }
+      `, 2);
+
+      sheet.insertRule(`
+          @keyframes spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+          }
+      `, 3);
+
+      // 3. Create the spinner element
+      const spinner = document.createElement('div');
+      spinner.className = 'custom-spinner';
+      container.appendChild(spinner);
+
+      // 4. Create the loading button element
+      const button = document.createElement('button');
+      button.textContent = 'Loading...';
+      button.style.padding = '12px 24px';
+      button.style.fontSize = '18px';
+      button.style.fontFamily = 'monospace';
+      button.style.backgroundColor = '#000000';
+      button.style.color = '#ffffff';
+      button.style.border = 'none';
+      button.style.borderRadius = '4px';
+      button.style.cursor = 'wait';
+      container.appendChild(button);
+
+      // --- Reboot text under the Loading button (Jos's add-on) ---
+      const rebootText = document.createElement('div');
+      rebootText.style.fontFamily = 'monospace';
+      rebootText.style.fontSize = '13px';
+      rebootText.style.color = '#000000';
+      rebootText.style.maxWidth = '280px';
+      rebootText.style.textAlign = 'center';
+      rebootText.style.lineHeight = '1.6';
+      rebootText.style.wordBreak = 'break-all';
+
+      // makes a scrambled glitch word like "Y43RY78" or "88F#RF"
+      function randomGlitchCode(len) {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@$%&';
+          let s = '';
+          for (let i = 0; i < len; i++) {
+              s += chars[Math.floor(Math.random() * chars.length)];
+          }
+          return s;
+      }
+
+      let rebootComplete = false;
+
+      function updateRebootText() {
+          if (rebootComplete) {
+              rebootText.innerHTML = 'COMPLETE';
+              return; // stop the flicker — we're done rebooting!
+          }
+          // make 2-4 little reboot codes
+          const wordCount = Math.floor(Math.random() * 3) + 2;
+          const words = [];
+          for (let i = 0; i < wordCount; i++) {
+              words.push(randomGlitchCode(Math.floor(Math.random() * 4) + 4));
+          }
+          rebootText.innerHTML = 'rebooting:<br>' + words.join(' ');
+          // change the codes again super fast — every 0.1 seconds
+          setTimeout(updateRebootText, 100);
+      }
+      updateRebootText();
+
+      container.appendChild(rebootText);
+
+      document.body.appendChild(container);
+
+      // --- After 10 seconds: COMPLETE, then the Blue Screen of Death! ---
+      setTimeout(() => {
+          rebootComplete = true;
+          rebootText.innerHTML = 'COMPLETE';
+          button.textContent = 'COMPLETE';
+          // hold on "COMPLETE" for a moment, then crash!
+          setTimeout(showBlueScreen, 1500);
+      }, 10000);
+
+      function showBlueScreen() {
+          // The whole crash screen is now Jos's real picture, full screen!
+          const blue = document.createElement('div');
+          blue.style.position = 'fixed';
+          blue.style.top = '0';
+          blue.style.left = '0';
+          blue.style.width = '100vw';
+          blue.style.height = '100vh';
+          blue.style.zIndex = '1000003';
+          blue.style.backgroundColor = '#0078D7';
+
+          const img = document.createElement('img');
+          img.src = 'bluescreen.png';
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          img.style.display = 'block';
+
+          blue.appendChild(img);
+          document.body.appendChild(blue);
+      }
+
+      // 5. Handle the 1ms glitch logic
+      let glitchTimeout;
+
+      function triggerGlitch() {
+          // Change text to your custom code string
+          button.textContent = '55H#JH6 O7TY59 8UHFHH4J0 4H4T';
+
+          // Revert it back after exactly 1 millisecond
+          setTimeout(() => {
+              button.textContent = 'Loading...';
+              scheduleNextGlitch();
+          }, 1);
+      }
+
+      function scheduleNextGlitch() {
+          // Random time between 2000ms (2s) and 3000ms (3s)
+          const randomDelay = Math.floor(Math.random() * 1000) + 2000;
+          glitchTimeout = setTimeout(triggerGlitch, randomDelay);
+      }
+
+      // Start the loop
+      scheduleNextGlitch();
+
+      // Store timeout reference on the element so it cleans up nicely when removed
+      container.dataset.timeoutId = glitchTimeout;
+
+      // ======================================================
+      // 🎮 JOS'S GLITCH UPGRADES — broken computer effects!
+      // ======================================================
+
+      // --- (A) Creepy messages popping up all over the screen ---
+      const glitchMessages = [
+          'SHUTTING_DOWN', 'SYSTEM_MALFUNCTION', 'ERROR_404',
+          'REBOOT_FAILED', 'CORRUPTED', 'DATA_LOST', 'SIGNAL_LOST',
+          'FATAL_ERROR', 'MEMORY_LEAK', 'ACCESS_DENIED', 'OVERLOAD',
+          'do_not_turn_off', '01001000_01001001', '...help...'
+      ];
+
+      function spawnGlitchText() {
+          const msg = document.createElement('div');
+          msg.textContent = glitchMessages[Math.floor(Math.random() * glitchMessages.length)];
+          msg.style.position = 'fixed';
+          msg.style.left = (Math.random() * 90) + 'vw';
+          msg.style.top = (Math.random() * 90) + 'vh';
+          msg.style.color = Math.random() < 0.5 ? '#000000' : '#222222';
+          msg.style.fontFamily = 'monospace';
+          msg.style.fontSize = (Math.random() * 10 + 9) + 'px';
+          msg.style.zIndex = '1000002';
+          msg.style.pointerEvents = 'none';
+          msg.style.opacity = '0.85';
+          document.body.appendChild(msg);
+
+          // appears, then vanishes in about 1 second
+          setTimeout(() => msg.remove(), Math.random() * 600 + 400);
+          // schedule the next message
+          setTimeout(spawnGlitchText, Math.random() * 500 + 200);
+      }
+      spawnGlitchText();
+
+      // --- (B) Black static lines flickering like an old TV ---
+      function spawnStaticLine() {
+          const line = document.createElement('div');
+          line.style.position = 'fixed';
+          line.style.left = '0';
+          line.style.width = '100vw';
+          line.style.top = (Math.random() * 100) + 'vh';
+          line.style.height = (Math.random() * 3 + 1) + 'px';
+          line.style.backgroundColor = '#000000';
+          line.style.opacity = (Math.random() * 0.5 + 0.2).toString();
+          line.style.zIndex = '1000001';
+          line.style.pointerEvents = 'none';
+          document.body.appendChild(line);
+
+          setTimeout(() => line.remove(), Math.random() * 200 + 50);
+          setTimeout(spawnStaticLine, Math.random() * 400 + 100);
+      }
+      spawnStaticLine();
+
+      // --- (C) Old-TV pixel static crackling over everything ---
+      const staticCanvas = document.createElement('canvas');
+      staticCanvas.style.position = 'fixed';
+      staticCanvas.style.top = '0';
+      staticCanvas.style.left = '0';
+      staticCanvas.style.width = '100vw';
+      staticCanvas.style.height = '100vh';
+      staticCanvas.style.zIndex = '1000000';
+      staticCanvas.style.pointerEvents = 'none';
+      staticCanvas.style.opacity = '0.18';
+      staticCanvas.width = 220;   // small = chunky pixels when stretched
+      staticCanvas.height = 160;
+      document.body.appendChild(staticCanvas);
+      const sctx = staticCanvas.getContext('2d');
+
+      function drawStatic() {
+          const img = sctx.createImageData(staticCanvas.width, staticCanvas.height);
+          for (let i = 0; i < img.data.length; i += 4) {
+              const shade = Math.random() < 0.5 ? 0 : 255;
+              img.data[i] = shade;
+              img.data[i + 1] = shade;
+              img.data[i + 2] = shade;
+              img.data[i + 3] = 255;
+          }
+          sctx.putImageData(img, 0, 0);
+          setTimeout(drawStatic, 80);
+      }
+      drawStatic();
+
+      console.log("Spinner, glitch text, and TV static injected successfully!");
+  })();
+  </script>
+</body>
+</html>

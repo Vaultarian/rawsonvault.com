@@ -43,6 +43,8 @@
         .snowman-col { display: flex; flex-direction: column; gap: 0.5rem; } .snowman-col-label { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #d9643a; margin-bottom: 0.3rem; }
         .pill.hard { background: #2a5f7a; } .pill.hard:hover { background: #1d4a5f; } .pill.instructions { background: #2a3d5a; grid-column: span 1; } .pill.instructions:hover { background: #1d2d45; }
         .footer { text-align: center; } .vault-link { font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: #3d9595; text-decoration: none; text-transform: uppercase; } .vault-link:hover { color: #2d7575; }
+        .museum-button { display: block; max-width: 480px; margin: 0 auto 2.5rem; text-align: center; background: linear-gradient(90deg, #d9643a, #3d9595); color: white; font-family: 'Fredoka One', cursive; font-size: 1.6rem; padding: 1.1rem 1.5rem; border-radius: 18px; text-decoration: none; letter-spacing: 0.04em; transition: transform 0.12s, box-shadow 0.12s; }
+        .museum-button:hover { transform: scale(1.03); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -66,6 +68,7 @@
                     <a href="snowman/level-1/">Level 1</a><a href="snowman/level-2/">Level 2</a><a href="snowman/level-3/">Level 3</a><a href="snowman/level-4/">Level 4</a><a href="snowman/level-5/">Level 5 (Hard!)</a>
                 </div>
             </div>
+            <a class="nav-tab" href="optical-illusions/" style="margin-left:auto;">👁️ Museum</a>
         </nav>
         <div class="main-grid" id="games">
             <div class="panel">
@@ -95,6 +98,7 @@
                 </div>
             </div>
         </div>
+        <a class="museum-button" href="optical-illusions/">👁️ MUSEUM 👁️</a>
     <script>
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {

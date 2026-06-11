@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jos's Optical Illusions</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+      background: #0d0d1a;
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      padding: 40px 20px 10px;
+    }
+    h1 {
+      font-size: 3em;
+      margin: 0;
+      background: linear-gradient(90deg, #ff4ec7, #4edcff, #ffe14e, #6bff4e);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    p.tag {
+      color: #aaa;
+      font-size: 1.2em;
+    }
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+    }
+    .card {
+      width: 220px;
+      height: 180px;
+      background: #1c1c33;
+      border-radius: 18px;
+      border: 3px solid #4edcff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1.3em;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 0 25px #4edcff;
+    }
+    .card .emoji { font-size: 3em; }
+    .new-card {
+      border: 3px dashed #6bff4e;
+      color: #6bff4e;
+    }
+    .new-card:hover { box-shadow: 0 0 25px #6bff4e; }
+    footer {
+      padding: 30px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Jos's Optical Illusions</h1>
+    <p class="tag">A museum of mind-bending tricks 👁️✨</p>
+    <p><a href="../" style="color:#4edcff; text-decoration:none; font-size:1.1em;">⬅ Back to Jos' Projects</a></p>
+  </header>
+
+  <div class="gallery" id="gallery">
+    <!-- Illusions get added here automatically from the list below -->
+  </div>
+
+  <footer>Made by Jos &amp; Dad 🚀</footer>
+
+  <script>
+    // 🎨 THE ILLUSION LIST
+    // To add a new illusion, add one line here like the examples.
+    // { title, emoji, file }
+    const ILLUSIONS = [
+      { title: "Loading Glitch", emoji: "🌀", file: "illusions/loading.html" },
+    ];
+
+    const gallery = document.getElementById('gallery');
+
+    // Build a card for each illusion
+    ILLUSIONS.forEach(ill => {
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = ill.file;
+      a.innerHTML = `<div class="emoji">${ill.emoji}</div><div>${ill.title}</div>`;
+      gallery.appendChild(a);
+    });
+
+    // The "make a new one" button — always last
+    const newCard = document.createElement('a');
+    newCard.className = 'card new-card';
+    newCard.href = 'make-new.html';
+    newCard.innerHTML = `<div class="emoji">➕</div><div>Make a New One</div>`;
+    gallery.appendChild(newCard);
+  </script>
+</body>
+</html>
