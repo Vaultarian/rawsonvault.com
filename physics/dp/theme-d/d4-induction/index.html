@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.4 Induction — DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .hl-banner { background: #f0ece4; border-radius: var(--radius); padding: var(--gap-md); font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); text-align: center; margin-bottom: var(--gap-lg); }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../../">Physics</a><span>·</span>
+            <a href="../../../">DP Physics</a><span>·</span>
+            <a href="../">Theme D</a><span>·</span>
+            D.4 Induction
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">Theme D · Fields · HL only · 6 hours</span>
+            <h1>D.4 Induction</h1>
+            <p class="subtitle">How is electrical energy generated from changing magnetic fields?</p>
+        </div>
+        <div class="hl-banner">Higher Level only — no Standard Level content in this topic</div>
+        <div class="article">
+            <p>Faraday's discovery in 1831 was revolutionary: a changing magnetic flux induces an EMF. The rate of change matters — a stationary magnetic field, however strong, induces nothing. But move a conductor, change the field, or rotate a coil, and an EMF appears. This is how every generator on Earth works: mechanical energy (from a turbine driven by steam, water, or wind) is converted to electrical energy through electromagnetic induction.</p>
+            <p>Lenz's law tells you the direction of the induced EMF: it always opposes the change that caused it. This is not an arbitrary rule — it is required by conservation of energy. If the induced current reinforced the change instead of opposing it, you would have a self-accelerating system, which violates the first law of thermodynamics. Lenz's law is energy conservation in disguise.</p>
+        </div>
+        <div class="question-box">
+            A rectangular coil of 200 turns, area 0.04 m², rotates in a uniform magnetic field of 0.3 T at 50 Hz. Derive an expression for the induced EMF as a function of time, and find the peak EMF. Sketch one full cycle.
+        </div>
+        <h2>Key equations</h2>
+        <div class="eq-box">Magnetic flux: Φ = BA cosθ</div>
+        <div class="eq-box">Faraday's law: ε = −N(ΔΦ/Δt)</div>
+        <div class="eq-box">EMF in moving conductor: ε = Bvl</div>
+        <div class="eq-box">Rotating coil: ε = NBAω sin(ωt) — peak EMF ε₀ = NBAω</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Magnetic flux Φ = BA cosθ; units: webers (Wb)</li>
+            <li>Faraday's law: induced EMF = −N × rate of change of flux (the minus sign → Lenz's law)</li>
+            <li>Lenz's law: induced EMF opposes the change in flux that caused it; a consequence of energy conservation</li>
+            <li>EMF in a straight conductor moving perpendicularly through a B-field: ε = Bvl</li>
+            <li>Sinusoidal EMF in a rotating coil: ε = NBAω sin(ωt)</li>
+            <li>Effect of changing rotation frequency on peak EMF and period</li>
+            <li>Examples: bar magnet oscillating near a coil; coil moved in/out of a field; rotating coil (generator)</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How are rate-of-change concepts similar in kinematics and induction? → <em>A.1, A.3</em></li>
+            <li>How are efficiency considerations important in generators and motors? → <em>B.4 Thermodynamics</em></li>
+            <li>How does angular velocity link rotational motion to induced EMF? → <em>A.4 Rigid Body Mechanics</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · DP Physics · D.4 Induction · 2026</footer>
+    </div>
+</body>
+</html>
