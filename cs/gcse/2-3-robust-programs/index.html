@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§2.3 Producing Robust Programs — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §2.3 Robust Programs
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 02 · §2.3 · Paper 2</span>
+            <h1>§2.3 Producing Robust Programs</h1>
+            <p class="subtitle">How do you design programs that handle unexpected inputs — and how do you verify they actually work?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Robust programs anticipate misuse. A user will enter text where a number was expected, leave fields blank, type a negative value for age, or try to log in with someone else's credentials. Defensive design builds in checks before these inputs can cause harm — input validation rejects data that doesn't meet the rules; authentication verifies the user is who they claim to be. These are programming decisions made at design time, not patches added later.</p>
+            <p>Testing verifies that a program actually does what it is supposed to. OCR's distinction between normal (valid), boundary (at the edge of valid), invalid (correct type but outside range), and erroneous (wrong type entirely) test data is a key discriminator in the exam. A test table shows input → expected output → actual output → pass/fail. Iterative testing happens throughout development; final/terminal testing happens at the end. The difference between a syntax error (the code doesn't run) and a logic error (the code runs but gives the wrong answer) maps directly to different types of testing tool.</p>
+        </div>
+        <div class="question-box">
+            A program accepts a student's exam score as an integer between 0 and 100. Design a test table with at least six test cases covering all four data types (normal, boundary, invalid, erroneous). For each: state the input, the expected output, and the type of test data.
+        </div>
+        <h2>Test data types — the four-way OCR distinction</h2>
+        <div class="eq-box">Normal: valid input within the accepted range (e.g. score = 65) — should be accepted</div>
+        <div class="eq-box">Boundary: at the edge of the accepted range (e.g. score = 0 or score = 100) — accepted; tests the limit</div>
+        <div class="eq-box">Invalid: correct type but outside the accepted range (e.g. score = −5 or score = 150) — should be rejected with error message</div>
+        <div class="eq-box">Erroneous: wrong data type entirely (e.g. score = "fifty") — should be rejected; program should not crash</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Defensive design: anticipate misuse and build in safeguards at design time</li>
+            <li>Authentication: verify user identity — username + password; two-factor; CAPTCHA</li>
+            <li>Input validation: check that inputs meet the required criteria (range, type, format, presence) before processing</li>
+            <li>Maintainability: writing code so others (or your future self) can understand and modify it</li>
+            <li>Maintainability techniques: meaningful variable names, consistent indentation, useful comments, use of sub-programs</li>
+            <li>Purpose of testing: confirm the program works correctly for all expected (and unexpected) inputs</li>
+            <li>Iterative testing: test as you build — find and fix errors before they compound</li>
+            <li>Final/terminal testing: test the completed program against all requirements</li>
+            <li>Syntax error: violates the rules of the language; program will not run; caught by the translator</li>
+            <li>Logic error: program runs but produces incorrect output; must be found through testing/trace tables</li>
+            <li>Normal test data: should be accepted and processed correctly</li>
+            <li>Boundary test data: at the limit (e.g. first and last valid value); reveals off-by-one errors</li>
+            <li>Invalid test data: correct type, wrong range; should be rejected with informative error message</li>
+            <li>Erroneous test data: wrong type; program must handle gracefully without crashing</li>
+            <li>Refining algorithms: after testing, modify pseudocode/code to fix errors and improve efficiency</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How does input validation prevent SQL injection? → <em>§1.4 Network Security</em></li>
+            <li>How do trace tables help you identify logic errors in algorithms? → <em>§2.1 Algorithms</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §2.3 Producing Robust Programs · 2026</footer>
+    </div>
+</body>
+</html>

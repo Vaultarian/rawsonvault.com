@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§1.1 Systems Architecture — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §1.1 Systems Architecture
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 01 · §1.1 · Paper 1</span>
+            <h1>§1.1 Systems Architecture</h1>
+            <p class="subtitle">What is the CPU, how does it execute instructions, and what makes one processor faster than another?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>The CPU is the brain of any computer — it is where instructions are fetched, decoded, and executed. Every action your program takes passes through the fetch–execute cycle: the Control Unit fetches an instruction from the address stored in the Program Counter, decodes it, and either performs arithmetic in the ALU or moves data between registers. The four named registers in OCR's spec (MAR, MDR, PC, Accumulator) each have one job, and the exam tests whether students know exactly what each one holds: an address or a value.</p>
+            <p>Performance is controlled by three main levers. Clock speed sets how many cycles per second the CPU can complete — a faster clock means more instructions per second, but also more heat and power consumption. More cores allow multiple tasks to run in parallel, but only if the workload can be split. Cache is very fast memory sitting between the CPU and RAM; a larger cache means fewer slow round-trips to main memory. These levers interact and have diminishing returns — doubling clock speed will not double performance if the bottleneck is cache size.</p>
+        </div>
+        <div class="question-box">
+            Explain the role of the MAR and MDR in the fetch stage of the fetch–execute cycle. (4 marks) — Then: a student claims that "a CPU with more cores is always faster." Evaluate this claim.
+        </div>
+        <h2>Key terms</h2>
+        <div class="eq-box">ALU (Arithmetic Logic Unit) — performs calculations and logical comparisons</div>
+        <div class="eq-box">CU (Control Unit) — directs the fetch–execute cycle; sends control signals</div>
+        <div class="eq-box">MAR (Memory Address Register) — holds the address to be read from/written to</div>
+        <div class="eq-box">MDR (Memory Data Register) — holds the data just fetched or about to be written</div>
+        <div class="eq-box">PC (Program Counter) — holds the address of the next instruction to fetch</div>
+        <div class="eq-box">Accumulator — holds intermediate results from ALU operations</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>The purpose of the CPU: to execute program instructions via the fetch–execute cycle</li>
+            <li>The four CPU components and what each does: ALU, CU, Cache, Registers</li>
+            <li>Von Neumann architecture: CPU and memory are separate; both instructions and data share the same bus</li>
+            <li>The four named registers: MAR (address), MDR (data), PC (next address), Accumulator (result)</li>
+            <li>Distinguishing a register that holds an address from one that holds data</li>
+            <li>Fetch–execute cycle — what happens at each stage (not byte-level register-passing detail)</li>
+            <li>Clock speed: cycles per second (GHz); higher → more instructions per second; also more heat</li>
+            <li>Number of cores: each core can run a different process; parallel workloads benefit most</li>
+            <li>Cache size: faster than RAM; larger cache → fewer slow memory accesses; expensive</li>
+            <li>Embedded systems: dedicated single-function computers; typically low power, often no display or OS</li>
+            <li>Examples of embedded systems: washing machine controller, traffic lights, pacemaker, car ABS</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>Where does the CPU store programs and data when they are loaded? → <em>§1.2 Memory and Storage</em></li>
+            <li>How does an OS manage the CPU and its resources? → <em>§1.5 Systems Software</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §1.1 Systems Architecture · 2026</footer>
+    </div>
+</body>
+</html>

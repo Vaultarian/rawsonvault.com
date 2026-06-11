@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§1.5 Systems Software — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §1.5 Systems Software
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 01 · §1.5 · Paper 1</span>
+            <h1>§1.5 Systems Software</h1>
+            <p class="subtitle">What does the operating system actually do — and what is utility software for?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Systems software is software that manages the computer's hardware and creates an environment where application software can run. The operating system is the central layer — without it, there is no user interface, no way to run programs, no file system, and no way to control peripherals. Every action you take on a computer (opening a file, connecting a printer, logging in) is handled by one of the OS's five core functions.</p>
+            <p>Utility software sits on top of the OS and handles specific housekeeping tasks the OS doesn't do itself — things like encrypting files, defragmenting a hard drive, or compressing data. The boundary between OS and utility is a key OCR discriminator: the exam rewards students who can distinguish the two and explain why utilities are a separate category rather than built into the OS core.</p>
+        </div>
+        <div class="question-box">
+            Describe the role of memory management in an operating system and explain how it allows multitasking. (4 marks) — Then: a student's hard drive is running slowly after months of use. Suggest a utility program they should run, explain what it does, and why it improves performance.
+        </div>
+        <h2>OS functions — one job each</h2>
+        <div class="eq-box">User interface — provides the interface between user and hardware (GUI, CLI)</div>
+        <div class="eq-box">Memory management — allocates RAM to applications; enables multitasking; manages virtual memory</div>
+        <div class="eq-box">Peripheral management — handles communication with devices via drivers</div>
+        <div class="eq-box">User management — accounts, login, access rights, security</div>
+        <div class="eq-box">File management — naming, organising, moving, saving, deleting files</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Systems software: manages hardware and provides a platform for applications</li>
+            <li>Operating system as the central systems software layer — without it, the computer cannot function</li>
+            <li>User interface: provides the way users interact (GUI with windows/icons, or CLI with typed commands)</li>
+            <li>Memory management: allocates RAM to programs; tracks which memory each process uses; enables multitasking by switching rapidly between applications; uses virtual memory when RAM is full</li>
+            <li>Peripheral management: coordinates communication between CPU and devices via device drivers; different drivers for different hardware</li>
+            <li>User management: creates and manages accounts; assigns access rights and permissions; enforces security (login credentials)</li>
+            <li>File management: organises files in a directory structure; handles naming, moving, copying, saving, deleting</li>
+            <li>Utility software: performs additional housekeeping tasks not covered by the OS core</li>
+            <li>Encryption utility: scrambles files so only authorised users with the key can read them</li>
+            <li>Defragmentation: reorganises fragmented data on a magnetic hard drive so related blocks are stored contiguously — speeds up access (not needed/appropriate for SSDs)</li>
+            <li>Data compression utility: reduces file sizes by encoding data more efficiently; useful for storage and transfer</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>What is RAM, and why is memory management needed? → <em>§1.2 Memory and Storage</em></li>
+            <li>How do access rights connect to security and user management? → <em>§1.4 Network Security</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §1.5 Systems Software · 2026</footer>
+    </div>
+</body>
+</html>

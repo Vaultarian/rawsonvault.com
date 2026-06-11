@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§2.2 Programming Fundamentals — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; font-family: monospace; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §2.2 Programming Fundamentals
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 02 · §2.2 · Paper 2</span>
+            <h1>§2.2 Programming Fundamentals</h1>
+            <p class="subtitle">What are the essential building blocks of a program — and how are data stored, manipulated, and structured?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Every program, regardless of language, is built from the same three constructs: sequence (instructions run in order), selection (if-else branches choose between paths), and iteration (loops repeat a block). Data is stored in variables (changeable) or constants (fixed), typed appropriately — integer, real, boolean, character, string — and manipulated using arithmetic, comparison, and boolean operators.</p>
+            <p>OCR's additional programming techniques extend into data structures and abstraction. Arrays (1D and 2D) group related data under one name. Records group related fields of different types into one entity. File handling (open, read, write, close) allows data to persist beyond a single program run. SQL provides a way to query structured data: SELECT FROM WHERE is the basic pattern. Functions return values; procedures do not — both reduce repetition and improve maintainability. Students at St Leonards write answers in Python; the OCR Exam Reference Language (ERL) is also accepted in the exam.</p>
+        </div>
+        <div class="question-box">
+            Write a Python function that takes a list of integers and returns the average. Separately, write a procedure that writes a student's name and score to a text file. What data type would you use for: a student's age; their grade (A–F); their average score (e.g. 73.4); whether they have submitted their work?
+        </div>
+        <h2>Core constructs (OCR ERL)</h2>
+        <div class="eq-box">IF condition THEN ... ELSEIF ... ELSE ... ENDIF</div>
+        <div class="eq-box">FOR i = 1 TO 10 ... NEXT i (count-controlled)</div>
+        <div class="eq-box">WHILE condition DO ... ENDWHILE (pre-condition)</div>
+        <div class="eq-box">FUNCTION name(params) RETURN value ENDFUNCTION</div>
+        <div class="eq-box">PROCEDURE name(params) ... ENDPROCEDURE</div>
+        <div class="eq-box">SELECT name FROM table WHERE condition (SQL)</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Variables vs constants: variables can change; constants cannot (e.g. PI = 3.14159)</li>
+            <li>Operators: arithmetic (+, −, ×, ÷, MOD, DIV, ^), comparison (==, !=, &lt;, &gt;, &lt;=, &gt;=), boolean (AND, OR, NOT)</li>
+            <li>Input and output: user enters data; program displays results</li>
+            <li>Assignment: store a value in a variable using ← (ERL) or = (Python)</li>
+            <li>Data types: Integer (whole number), Real (decimal), Boolean (True/False), Character (single char), String (text)</li>
+            <li>Casting: converting between data types (e.g. int("42"), str(42))</li>
+            <li>Sequence: default — execute each line in order</li>
+            <li>Selection: IF/ELSEIF/ELSE decisions; nested selection; CASE/SWITCH statements</li>
+            <li>Iteration: FOR count-controlled loops; WHILE/DO-WHILE condition-controlled loops; nesting</li>
+            <li>String manipulation: length, substring, position, upper/lower case, concatenation</li>
+            <li>File handling: open → read/write → close; reading line-by-line; writing new data</li>
+            <li>Records: group multiple fields of different types (e.g. student name + age + grade)</li>
+            <li>SQL: SELECT, FROM, WHERE to query data from a table; basic pattern only</li>
+            <li>Arrays: 1D (a list) and 2D (a grid); indexed from 0 (Python) or 1 (ERL) — know both</li>
+            <li>Sub-programs: functions (return a value) vs procedures (perform an action, no return value)</li>
+            <li>Random number generation: produce random integers or floats within a range</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How do you write and refine an algorithm before coding it? → <em>§2.1 Algorithms</em></li>
+            <li>How do you test code and handle errors defensively? → <em>§2.3 Producing Robust Programs</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §2.2 Programming Fundamentals · 2026</footer>
+    </div>
+</body>
+</html>

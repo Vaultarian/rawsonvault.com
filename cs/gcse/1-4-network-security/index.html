@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§1.4 Network Security — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §1.4 Network Security
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 01 · §1.4 · Paper 1</span>
+            <h1>§1.4 Network Security</h1>
+            <p class="subtitle">What are the threats to computer systems — and what layered defences counter each one?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Security is always an arms race: every attack has a defence, every defence has a bypass. The OCR spec frames §1.4 around this pairing — knowing each form of attack (how it works, what the attacker wants) and the corresponding prevention method. The most effective defences are layered: a firewall stops external intrusion, encryption protects data in transit, access levels limit what an authenticated user can reach, and anti-malware catches anything that slips through.</p>
+            <p>Humans are often the weakest link. Social engineering — tricking users into revealing passwords or clicking malicious links — bypasses technical defences entirely. This is why training and authentication controls matter as much as firewalls. SQL injection attacks target databases through poorly-validated inputs: an attacker enters SQL code into a form field, and if the input isn't sanitised, the database executes it as a real query, potentially exposing or deleting all the data.</p>
+        </div>
+        <div class="question-box">
+            A company suffers a data breach. Investigation reveals that an employee received an email claiming to be from IT support and provided their login credentials. (a) Name this type of attack and explain how it works. (b) Suggest three prevention methods the company should now implement, and explain what each one limits. (c) Explain what SQL injection is and how input validation could have prevented it.
+        </div>
+        <h2>Attack ↔ Defence pairing</h2>
+        <div class="eq-box">Malware (virus, ransomware, spyware) → anti-malware software; firewalls; user access levels</div>
+        <div class="eq-box">Social engineering / phishing → staff training; strong authentication; email filters</div>
+        <div class="eq-box">Brute force attack → strong passwords; account lockout; CAPTCHA; rate limiting</div>
+        <div class="eq-box">DoS (Denial of Service) → firewalls; rate limiting; traffic filtering</div>
+        <div class="eq-box">Data interception → encryption; HTTPS; secure connections</div>
+        <div class="eq-box">SQL injection → input validation; parameterised queries; access levels</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Malware: software designed to damage, disrupt, or gain unauthorised access; includes viruses, ransomware, spyware, trojans</li>
+            <li>Social engineering: exploiting people, not systems; phishing = fraudulent emails/messages to obtain credentials</li>
+            <li>Brute force: systematically trying all possible passwords or keys until one works</li>
+            <li>Denial of Service (DoS): flood a server with requests so it cannot serve legitimate users</li>
+            <li>Data interception and theft: capturing data as it travels across a network (e.g. unencrypted Wi-Fi)</li>
+            <li>SQL injection: malicious SQL entered into an input field is executed by the database; can expose, alter, or delete data</li>
+            <li>Penetration testing: authorised simulated attacks to identify vulnerabilities before real attackers do</li>
+            <li>Anti-malware: scans for and removes malicious software; must be kept up to date</li>
+            <li>Firewalls: monitor and filter incoming/outgoing traffic based on rules; block unauthorised access</li>
+            <li>User access levels: limit what each user can read, write, or delete; principle of least privilege</li>
+            <li>Passwords: strong (long, mixed characters); changed regularly; never shared</li>
+            <li>Encryption: scrambles data in transit so interceptors cannot read it</li>
+            <li>Physical security: locked server rooms, CCTV, secure devices — prevents physical access to hardware</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How does encryption work in the context of network protocols (HTTPS)? → <em>§1.3 Networks</em></li>
+            <li>How does input validation connect to defensive programming? → <em>§2.3 Producing Robust Programs</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §1.4 Network Security · 2026</footer>
+    </div>
+</body>
+</html>

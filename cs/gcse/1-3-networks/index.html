@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§1.3 Networks — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §1.3 Networks
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 01 · §1.3 · Paper 1</span>
+            <h1>§1.3 Computer Networks, Connections and Protocols</h1>
+            <p class="subtitle">How do computers communicate, and what rules govern data transfer across networks?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>A network is two or more computers connected to share resources and communicate. A LAN (Local Area Network) is confined to one building or site and uses hardware owned by the organisation; a WAN (Wide Area Network) spans large geographical distances and typically uses infrastructure owned by a third party (the Internet is the world's largest WAN). Networks can be arranged so that one central server provides services to client computers (client-server) or so that all computers share equal roles and resources directly (peer-to-peer).</p>
+            <p>Protocols are the rules that govern how data is packaged, addressed, and delivered. TCP/IP handles the overall routing of data across the Internet; HTTP and HTTPS govern web page transfer; FTP is for file transfers; SMTP/POP/IMAP handle email (send, retrieve-download, retrieve-leave-on-server). A DNS (Domain Name Server) converts human-readable URLs into IP addresses — without it you would need to remember a number like 142.250.185.68 instead of google.com. The concept of layers allows different parts of the protocol stack to be changed independently, like swapping one part of a machine without rebuilding the whole thing.</p>
+        </div>
+        <div class="question-box">
+            A small primary school wants to connect 20 computers, a printer, and a central file server. (a) Should they use a star or mesh topology? Justify your choice. (b) Name the hardware items needed to build this LAN. (c) A student types "https://school.ac.uk" in a browser. Describe the role of DNS in this process.
+        </div>
+        <h2>Key terms</h2>
+        <div class="eq-box">LAN — Local Area Network: confined to one site; typically fast, owned infrastructure</div>
+        <div class="eq-box">WAN — Wide Area Network: spans large distances; uses third-party infrastructure</div>
+        <div class="eq-box">DNS — Domain Name System: converts URL → IP address</div>
+        <div class="eq-box">Star topology — all devices connect to a central switch; single point of failure</div>
+        <div class="eq-box">Mesh topology — every device connects to every other; resilient but expensive cabling</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>LAN vs WAN: definition, examples, key differences</li>
+            <li>Factors affecting network performance: bandwidth, number of devices, interference (wireless), latency</li>
+            <li>Client-server: one server provides services; clients request them (centralised control, easy management)</li>
+            <li>Peer-to-peer: all computers equal; each can share resources (cheaper, but harder to manage)</li>
+            <li>LAN hardware: WAP (wireless access point), router (connects LAN to WAN), switch (connects devices within LAN), NIC (each device needs one), transmission media (cables or Wi-Fi)</li>
+            <li>Internet: a worldwide network of networks; web servers host pages; clients request them</li>
+            <li>DNS: multiple Domain Name Servers form the system; converts URL to IP address</li>
+            <li>Cloud: provision of storage, software, or processing over the internet; pros (accessible anywhere, scalable) and cons (needs internet, privacy/security concerns)</li>
+            <li>Star topology: central switch/hub; one device failing doesn't affect others; switch fails → all down</li>
+            <li>Mesh topology: every device connected; very resilient; expensive and complex to cable</li>
+            <li>Wired (Ethernet): fast, reliable, secure; less flexible</li>
+            <li>Wireless (Wi-Fi, Bluetooth): convenient, portable; slower, more interference, easier to intercept</li>
+            <li>IP addressing: IPv4 (4 × 8-bit numbers, e.g. 192.168.1.1); IPv6 (8 × 16-bit hex groups, for more devices)</li>
+            <li>MAC address: unique hardware address assigned to a NIC; 6 pairs of hex digits; used within a LAN</li>
+            <li>Encryption: scrambles data so only intended recipient can read it; secures wireless connections</li>
+            <li>Protocols: TCP/IP, HTTP, HTTPS, FTP, POP, IMAP, SMTP — know the purpose and key feature of each</li>
+            <li>Layering: protocol stack divided into layers; each layer handles one aspect; can be changed independently</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>What threats exist to data transmitted across a network? → <em>§1.4 Network Security</em></li>
+            <li>How do HTTPS and encryption connect to security principles? → <em>§1.4 Network Security</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §1.3 Networks · 2026</footer>
+    </div>
+</body>
+</html>

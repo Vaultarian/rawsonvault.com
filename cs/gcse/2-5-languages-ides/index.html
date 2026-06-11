@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§2.5 Programming Languages and IDEs — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §2.5 Languages and IDEs
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 02 · §2.5 · Paper 2</span>
+            <h1>§2.5 Programming Languages and IDEs</h1>
+            <p class="subtitle">Why are there different levels of programming language — and what tools does a programmer use to write, test, and run code?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Not all programming languages are the same level of abstraction. High-level languages (Python, Java, C#) look almost like English and are far away from the hardware — the programmer works in human-friendly concepts and leaves translation to the computer. Low-level languages (machine code, assembly) are close to the hardware — instructions map almost directly to what the CPU does, giving the programmer fine control at the cost of readability and portability. OCR's spec covers the contrast between these two levels and the translators that bridge them.</p>
+            <p>A compiler translates an entire high-level program into machine code before it runs; errors are reported all at once, and the compiled program runs independently. An interpreter translates and runs line by line; errors are reported as they are encountered, but the interpreter must be present to run the program. Note: OCR does not require knowledge of assemblers — that is an AQA requirement and should not appear in OCR exam answers. The IDE (Integrated Development Environment) is the programmer's workplace: an editor, error diagnostics, a run-time environment, and a built-in translator all in one.</p>
+        </div>
+        <div class="question-box">
+            A student is writing a Python program in Thonny IDE. (a) Name two tools the IDE provides that help the student find and fix errors. (b) Compare a compiler and an interpreter: give one advantage of each. (c) When porting code to a different computer, which language type is easier to transfer — high-level or low-level? Explain why.
+        </div>
+        <h2>Key comparisons</h2>
+        <div class="eq-box">High-level: readable, portable, closer to human language; Python, Java — translated by compiler or interpreter</div>
+        <div class="eq-box">Low-level: fast, close to hardware, processor-specific; machine code (binary) or assembly (mnemonic)</div>
+        <div class="eq-box">Compiler: translates whole program at once → .exe; fast to run; errors found all at once</div>
+        <div class="eq-box">Interpreter: translates line by line at runtime; slow; errors found as encountered; no separate compiled file</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>High-level languages: human-readable; portable across different hardware; abstracted from the machine</li>
+            <li>Low-level languages: processor-specific; very fast and efficient; difficult to read and write</li>
+            <li>Machine code: binary instructions (0s and 1s); directly executed by the CPU</li>
+            <li>Assembly language: uses mnemonics (ADD, MOV, etc.) instead of binary; still very close to hardware</li>
+            <li>Translator: converts source code into a form the computer can execute</li>
+            <li>Compiler: translates entire source code into machine code before execution; resulting program runs without the compiler; reports all errors at end of compilation</li>
+            <li>Interpreter: translates and executes one line at a time; reports errors immediately on that line; slower execution; no standalone output file</li>
+            <li>Assembler: translates assembly language to machine code — NOT required by OCR J277</li>
+            <li>IDE (Integrated Development Environment): software environment combining tools for coding</li>
+            <li>IDE editor: where code is written; syntax highlighting, auto-indentation, bracket matching</li>
+            <li>IDE error diagnostics: highlights syntax errors; may give run-time error messages</li>
+            <li>IDE run-time environment: allows code to be executed within the IDE for testing</li>
+            <li>IDE translator: built-in compiler or interpreter — students use Python interpreter in Thonny</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How does the CPU actually execute machine code instructions? → <em>§1.1 Systems Architecture (fetch–execute cycle)</em></li>
+            <li>How do compiler errors relate to syntax vs logic errors? → <em>§2.3 Producing Robust Programs</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §2.5 Languages and IDEs · 2026</footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§2.1 Algorithms — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §2.1 Algorithms
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 02 · §2.1 · Paper 2</span>
+            <h1>§2.1 Algorithms</h1>
+            <p class="subtitle">How do we break problems down into steps, represent them formally, and search or sort data efficiently?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Computational thinking is the systematic way of approaching problems so that a computer can solve them. Decomposition breaks a large problem into smaller, more manageable sub-problems. Abstraction strips away irrelevant detail, leaving only what matters for the solution. Algorithmic thinking constructs a clear, step-by-step solution. These three principles appear at every level of computing — from writing a simple function to designing a database system.</p>
+            <p>Search and sort algorithms are the canonical examples. Binary search is dramatically faster than linear search for large sorted datasets — it halves the search space each step, giving O(log n) behaviour versus O(n) for linear search. Bubble sort is simple but slow (O(n²)); merge sort divides and conquers for O(n log n); insertion sort works well for nearly-sorted data. OCR is the only GCSE board to require all three sort algorithms, and expects students to apply and trace them, not memorise code.</p>
+        </div>
+        <div class="question-box">
+            A sorted list contains [3, 7, 12, 19, 25, 31, 44, 58]. Use binary search to find the value 25, showing each step. How many comparisons are needed? Compare this with linear search for the same value.
+        </div>
+        <h2>Key algorithm facts</h2>
+        <div class="eq-box">Linear search: check each item in order; works on unsorted lists; up to n comparisons</div>
+        <div class="eq-box">Binary search: halve the search space each step; requires sorted list; up to log₂(n) comparisons</div>
+        <div class="eq-box">Bubble sort: repeatedly swap adjacent items if out of order; simple but O(n²)</div>
+        <div class="eq-box">Merge sort: split in half, sort each half, merge; O(n log n); requires more memory</div>
+        <div class="eq-box">Insertion sort: build sorted list one item at a time; efficient for nearly-sorted data</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Decomposition: breaking a problem into smaller sub-problems that can be solved independently</li>
+            <li>Abstraction: removing unnecessary detail so the problem can be represented more simply</li>
+            <li>Algorithmic thinking: writing a precise sequence of steps that solves the problem</li>
+            <li>Identify inputs, processes, and outputs for a problem</li>
+            <li>Structure diagrams: show the decomposition of a system as a hierarchy</li>
+            <li>Pseudocode: language-independent representation of an algorithm; used in OCR exam</li>
+            <li>Flowcharts: six standard OCR symbols (oval=start/end, rectangle=process, diamond=decision, parallelogram=input/output, rounded rectangle=subroutine, arrow=flow)</li>
+            <li>Trace tables: track variable values step by step through an algorithm — essential for debugging</li>
+            <li>Common errors: syntax errors (breaks the rules of the language) and logic errors (runs but gives wrong output)</li>
+            <li>Linear search: simple, works on unsorted data; check each element until found or end reached</li>
+            <li>Binary search: fast for sorted lists; find midpoint, compare, discard half the list, repeat</li>
+            <li>Bubble sort: repeated passes; swap adjacent pairs if out of order; terminates early if no swaps</li>
+            <li>Merge sort: recursively split to single elements, then merge in order; consistently O(n log n)</li>
+            <li>Insertion sort: take each element and insert it into its correct position in a growing sorted sub-list</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How do you implement these algorithms in Python/ERL code? → <em>§2.2 Programming Fundamentals</em></li>
+            <li>How does testing ensure an algorithm produces the correct output? → <em>§2.3 Producing Robust Programs</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §2.1 Algorithms · 2026</footer>
+    </div>
+</body>
+</html>

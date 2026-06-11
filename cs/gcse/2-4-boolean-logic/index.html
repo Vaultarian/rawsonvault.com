@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>§2.4 Boolean Logic — OCR GCSE CS — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; font-family: monospace; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../">GCSE CS</a><span>·</span>
+            §2.4 Boolean Logic
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · Component 02 · §2.4 · Paper 2</span>
+            <h1>§2.4 Boolean Logic</h1>
+            <p class="subtitle">How do AND, OR, and NOT gates process binary inputs — and how do you trace a logic circuit through a truth table?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Boolean logic is the foundation of all digital electronics. Every decision a computer makes — whether an IF condition is true, whether a circuit should output a 1 — reduces to the three fundamental gates: AND (outputs 1 only when both inputs are 1), OR (outputs 1 when at least one input is 1), and NOT (inverts the input). These three gates can be combined into any logic circuit, and any logic circuit can be described by a truth table.</p>
+            <p>OCR requires AND, OR, and NOT only — XOR is not in the spec, which is a key contrast with AQA. Students must draw and read logic diagrams using the standard gate symbols, construct truth tables for simple and compound expressions (multiple gates in sequence or combination), and apply logic to solve a described real-world problem. The connection to programming is direct: every IF condition in code is a Boolean expression being evaluated by the CPU's logic gates.</p>
+        </div>
+        <div class="question-box">
+            A circuit has inputs A, B, and C. The output X = (A AND B) OR (NOT C). (a) Complete the full truth table (8 rows). (b) For how many input combinations is X = 1? (c) A security door opens if a valid key card is used AND the alarm is not triggered. Write this as a Boolean expression.
+        </div>
+        <h2>Truth table templates</h2>
+        <div class="eq-box">AND: A=0,B=0→0 | A=0,B=1→0 | A=1,B=0→0 | A=1,B=1→1</div>
+        <div class="eq-box">OR:  A=0,B=0→0 | A=0,B=1→1 | A=1,B=0→1 | A=1,B=1→1</div>
+        <div class="eq-box">NOT: A=0→1 | A=1→0</div>
+        <div class="eq-box">NAND = NOT(A AND B); NOR = NOT(A OR B) — can appear in diagrams</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>AND gate: output is 1 ONLY when all inputs are 1</li>
+            <li>OR gate: output is 1 when at least one input is 1</li>
+            <li>NOT gate: output is the inverse of the input (1 becomes 0, 0 becomes 1)</li>
+            <li>Logic diagrams: standard gate symbols; reading inputs to outputs through a circuit</li>
+            <li>Truth table: lists every possible combination of inputs and the corresponding output(s)</li>
+            <li>For n inputs: truth table has 2ⁿ rows (2 inputs → 4 rows, 3 inputs → 8 rows)</li>
+            <li>Combining gates: trace from inputs through each gate in sequence, building up intermediate columns</li>
+            <li>Applying Boolean operators to solve real problems (e.g. access control, sensor logic)</li>
+            <li>Note: XOR is NOT required by OCR J277 — do not include it in exam answers unless explicitly shown in a question diagram</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>How do AND/OR/NOT connect to the boolean operators in programming? → <em>§2.2 Programming Fundamentals</em></li>
+            <li>How do logic gates relate to CPU operations? → <em>§1.1 Systems Architecture (ALU)</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · OCR GCSE CS · §2.4 Boolean Logic · 2026</footer>
+    </div>
+</body>
+</html>
