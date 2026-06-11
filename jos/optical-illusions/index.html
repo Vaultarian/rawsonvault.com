@@ -52,7 +52,7 @@
     }
     .card:hover {
       transform: scale(1.06) rotate(-1deg);
-      box-shadow: 0 0 25px #4edcff;
+      box-shadow: 0 0 25px var(--glow, #4edcff);
     }
     .card .emoji { font-size: 3em; }
     .new-card {
@@ -89,13 +89,36 @@
 
     const gallery = document.getElementById('gallery');
 
+    // pick a bright random colour for each box
+    function randomColor() {
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 90%, 62%)`;
+    }
+
     // Build a card for each illusion
     ILLUSIONS.forEach(ill => {
       const a = document.createElement('a');
       a.className = 'card';
       a.href = ill.file;
-      a.innerHTML = `<div class="emoji">${ill.emoji}</div><div>${ill.title}</div>`;
+
+      // give this box its own random colour
+      const color = randomColor();
+      a.style.borderColor = color;
+      a.style.setProperty('--glow', color);
+
+      a.innerHTML = `<div class="emoji">${ill.emoji}</div><div class="title">${ill.title}</div>`;
       gallery.appendChild(a);
+
+      // read the real name from inside the illusion's <title> tag
+      fetch(ill.file)
+        .then(r => r.text())
+        .then(html => {
+          const match = html.match(/<title>(.*?)<\/title>/i);
+          if (match && match[1]) {
+            a.querySelector('.title').textContent = match[1];
+          }
+        })
+        .catch(() => { /* opening as a plain file can't read other files — keep the backup name */ });
     });
 
     // The "make a new one" button — always last

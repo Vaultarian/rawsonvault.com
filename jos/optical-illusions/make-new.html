@@ -7,22 +7,90 @@
   <style>
     body {
       margin: 0; font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
-      background: #0d0d1a; color: #fff; text-align: center; padding: 40px;
+      background: #0d0d1a; color: #fff; text-align: center; padding: 30px 20px 60px;
     }
     h1 { color: #6bff4e; }
-    .steps { max-width: 600px; margin: 0 auto; text-align: left; font-size: 1.2em; line-height: 1.8; }
-    a.back { color: #4edcff; font-size: 1.2em; }
+    .hint { color: #aaa; font-size: 1em; max-width: 600px; margin: 0 auto 18px; }
+    .editor { max-width: 700px; margin: 0 auto; text-align: left; }
+    textarea {
+      width: 100%; min-height: 160px; box-sizing: border-box;
+      background: #1c1c33; color: #6bff4e; border: 3px solid #4edcff;
+      border-radius: 14px; padding: 14px; font-family: monospace;
+      font-size: 14px; line-height: 1.5; resize: vertical; /* drag the corner to make it bigger! */
+    }
+    .buttons { margin: 14px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      font-family: 'Comic Sans MS', sans-serif; font-size: 1.1em;
+      padding: 10px 20px; border: none; border-radius: 12px; cursor: pointer;
+    }
+    .run { background: #6bff4e; color: #000; }
+    .clear { background: #ff4ec7; color: #000; }
+    .saved { color: #6bff4e; font-size: 0.9em; height: 1.2em; }
+    iframe {
+      width: 100%; height: 360px; border: 3px solid #ffe14e;
+      border-radius: 14px; background: #fff; margin-top: 10px;
+    }
+    a.back { color: #4edcff; font-size: 1.2em; display: inline-block; margin-top: 25px; }
   </style>
 </head>
 <body>
   <h1>➕ Make a New Illusion</h1>
-  <div class="steps">
-    <p>Ready to add a new one? Here's how, with Dad or Carl:</p>
-    <p>1. 🧠 Get the illusion code from Gemini (copy it).</p>
-    <p>2. 💾 Save it as a file in the <b>illusions</b> folder.</p>
-    <p>3. 📝 Add one line to the list on the home page.</p>
-    <p>4. 🎉 Refresh — your new illusion appears!</p>
+  <p class="hint">Paste or write your JavaScript illusion here, then press <b>Run it!</b> to test it.
+  Your code saves all by itself, so it's still here when you come back! 💾</p>
+
+  <div class="editor">
+    <textarea id="code" placeholder="// Paste your illusion code from Gemini here...
+// Then press Run it! to see it work!"></textarea>
+
+    <div class="buttons">
+      <button class="run" onclick="runCode()">▶ Run it!</button>
+      <button class="clear" onclick="clearCode()">🗑️ Clear</button>
+    </div>
+    <div class="saved" id="savedMsg"></div>
+
+    <iframe id="preview" title="Illusion preview"></iframe>
   </div>
-  <p><a class="back" href="index.html">⬅ Back to the museum</a></p>
+
+  <a class="back" href="index.html">⬅ Back to the museum</a>
+
+  <script>
+    const codeBox = document.getElementById('code');
+    const savedMsg = document.getElementById('savedMsg');
+    const SAVE_KEY = 'jos-illusion-code';
+
+    // 1. When the page opens, load any code we saved before
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) codeBox.value = saved;
+
+    // 2. Every time Jos types, save it so it never gets lost
+    codeBox.addEventListener('input', () => {
+      localStorage.setItem(SAVE_KEY, codeBox.value);
+      savedMsg.textContent = '💾 Saved!';
+      clearTimeout(window._savedTimer);
+      window._savedTimer = setTimeout(() => savedMsg.textContent = '', 1200);
+    });
+
+    // 3. Run the code inside the preview box (safe, isolated)
+    function runCode() {
+      const code = codeBox.value;
+      const frame = document.getElementById('preview');
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><' +
+        'script>try{' + code + '}catch(err){document.body.innerHTML=' +
+        '"<pre style=\'color:red;font-family:monospace;padding:10px\'>Oops! "+err+"</pre>";}<' +
+        '/script></body></html>');
+      doc.close();
+    }
+
+    // 4. Clear button — empties the box and the saved code
+    function clearCode() {
+      if (confirm('Clear your code? This cannot be undone!')) {
+        codeBox.value = '';
+        localStorage.removeItem(SAVE_KEY);
+        runCode();
+      }
+    }
+  </script>
 </body>
 </html>
