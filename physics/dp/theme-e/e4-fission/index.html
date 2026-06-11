@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E.4 Fission — DP Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../../">The Vault</a><span>·</span>
+            <a href="../../../../">Physics</a><span>·</span>
+            <a href="../../../">DP Physics</a><span>·</span>
+            <a href="../">Theme E</a><span>·</span>
+            E.4 Fission
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">Theme E · Nuclear and Quantum Physics · SL + HL · 4 hours</span>
+            <h1>E.4 Fission</h1>
+            <p class="subtitle">How does splitting a heavy nucleus release so much energy, and how is that energy controlled?</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>Nuclear fission releases energy because the products are closer to the peak of the binding energy per nucleon curve (near Fe-56) than the original heavy nucleus. When uranium-235 absorbs a slow neutron, it becomes unstable and splits into two medium-mass daughter nuclei plus 2–3 fast neutrons — each of which can trigger further fissions. This chain reaction can be explosive (nuclear weapon) or controlled (nuclear reactor), depending entirely on whether the multiplication factor is kept at exactly one.</p>
+            <p>A nuclear reactor is fundamentally a heat exchanger with a fission chain reaction as its source. Control rods (boron or cadmium) absorb neutrons and are lowered to reduce reaction rate; a moderator (water or graphite) slows fast neutrons so they are more likely to be absorbed by U-235 (thermal neutrons are far more effective at inducing fission than fast ones); coolant carries heat away to drive steam turbines. The design has to ensure negative feedback — if temperature rises, the reaction rate should decrease, not accelerate.</p>
+        </div>
+        <div class="question-box">
+            A fission reaction produces: ²³⁵₉₂U + ¹₀n → ⁹⁰₃₈Sr + ¹⁴⁴₅₄Xe + 2¹₀n. Using the binding energy per nucleon values (U-235: 7.59 MeV; Sr-90: 8.70 MeV; Xe-144: 8.39 MeV), estimate the energy released per fission in MeV. Why does fission release energy but not combine fragments of iron?
+        </div>
+        <h2>Key equations and facts</h2>
+        <div class="eq-box">Binding energy released: ΔE = (B.E. products − B.E. reactants) [per nucleon × A]</div>
+        <div class="eq-box">Mass-energy: E = Δmc² (Δm from mass defect; 1 u = 931.5 MeV/c²)</div>
+        <div class="eq-box">Chain reaction: multiplication factor k = (neutrons in generation n+1) / (neutrons in generation n)</div>
+        <h2>What students must understand</h2>
+        <ul class="understanding-list">
+            <li>Why heavy nuclei release energy when split: products have higher B.E. per nucleon (closer to Fe-56)</li>
+            <li>Fission equation: ²³⁵U + n → lighter nuclei + 2–3 neutrons + energy</li>
+            <li>Chain reaction: each fission releases neutrons that can trigger further fissions</li>
+            <li>Critical mass and multiplication factor k; subcritical (k &lt; 1), critical (k = 1), supercritical (k &gt; 1)</li>
+            <li>Role of moderator: slows fast neutrons to thermal speeds, increasing fission probability in U-235</li>
+            <li>Role of control rods: absorb neutrons, regulate k; insertion lowers reaction rate</li>
+            <li>Coolant: removes heat from the core; carries energy to steam turbines</li>
+            <li>Reactor safety: negative temperature coefficient required; what happens if coolant fails</li>
+            <li>Radioactive waste: long half-life products (e.g. Cs-137 ≈ 30yr, Pu-239 ≈ 24,000yr) require long-term storage</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Linking questions</h2>
+        <ul class="linking">
+            <li>Why is fission energy so much greater per kilogram of fuel than chemical combustion? → <em>E = mc² (E.3)</em></li>
+            <li>How does the binding energy curve connect fission and fusion as energy sources? → <em>E.3, E.5</em></li>
+        </ul>
+        <footer class="site-footer">The Vault · DP Physics · E.4 Fission · 2026</footer>
+    </div>
+</body>
+</html>
