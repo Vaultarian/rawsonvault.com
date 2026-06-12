@@ -429,6 +429,35 @@ a:hover { color: var(--bronze-dark); }
   font-family: var(--font-display);
 }
 
+/* ── Textbook diagram figures (topic pages) · added 2026-06-12 ── */
+.diagram-figure { margin: 0 0 var(--gap-lg); }
+.diagram-figure img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  padding: var(--gap-sm);
+}
+.diagram-figure figcaption {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 300;
+  color: var(--gray-dark);
+  line-height: 1.45;
+  text-align: center;
+  padding: 6px 8px 0;
+}
+.diagram-credit {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--gray-mid);
+  margin: var(--gap-sm) 0 0;
+}
+
 /* ── Video Support grids (topic pages) ───────────────────── */
 .video-source-label {
   font-family: var(--font-display);
