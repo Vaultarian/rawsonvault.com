@@ -79,6 +79,49 @@
             padding: var(--gap-md);
             margin: var(--gap-lg) 0;
         }
+        .documents {
+            background: #fdf9f4;
+            border: 1px solid #f0ece4;
+            border-radius: var(--radius);
+            padding: var(--gap-md) var(--gap-lg);
+            margin: 0 0 var(--gap-lg);
+        }
+        .documents h2 {
+            font-family: var(--font-display);
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--bronze-dark);
+            margin: 0 0 var(--gap-xs);
+        }
+        .doc-list { list-style: none; margin: 0; padding: 0; }
+        .doc-list li { border-bottom: 1px solid #f0ece4; }
+        .doc-list li:last-child { border-bottom: none; }
+        .doc-list a {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.55rem 0;
+            text-decoration: none;
+            color: var(--ink-black);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            transition: color 0.15s ease;
+        }
+        .doc-list a:hover { color: var(--bronze-dark); }
+        .doc-icon { width: 22px; height: 22px; object-fit: contain; flex: none; }
+        .doc-list .doc-meta {
+            margin-left: auto;
+            font-family: var(--font-display);
+            font-size: 0.55rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--gray-mid, #707070);
+            border: 1px solid var(--bronze-light);
+            border-radius: var(--radius);
+            padding: 1px 7px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -102,6 +145,40 @@
         </div>
 
         <div class="rule--full"></div>
+
+        <div class="documents">
+            <h2>Documents</h2>
+            <ul class="doc-list">
+                <li>
+                    <a href="https://docs.google.com/document/d/1PSKqo3ozx7_SJZ6IK88xU9pIefcNVD9PQyJ2wR544oM/edit?usp=sharing" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/google-docs.svg" alt="">
+                        <span>S4E1 &mdash; Post-Truth Era</span>
+                        <span class="doc-meta">Google Doc</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://docs.google.com/document/d/1BrX53AHJXJiUNnSr2h4HcmYofXX36eEwOG2NSzLm87E/edit?usp=sharing" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/google-docs.svg" alt="">
+                        <span>S4E1 &mdash; Harkness Document</span>
+                        <span class="doc-meta">Google Doc</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="s4e1-sample-session.pdf" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/pdf.svg" alt="">
+                        <span>Sample chatbot session (anonymous, verbatim)</span>
+                        <span class="doc-meta">PDF</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://s4e2-post-truth-era.on.chipp.ai" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/chipp.png" alt="">
+                        <span>Try the Post-Truth chatbot</span>
+                        <span class="doc-meta">Live bot</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
 
         <div class="article">
             <p>For most of the last century, a photograph or a video was treated as close to proof. Recordings could be faked, but faking them was slow, costly, skilled work, and a careful eye could usually catch it. Because faking was hard, trusting was reasonable. Generative AI has broken that arrangement. Convincing fake video, cloned voices, and invented photographs are now cheap, fast, and difficult to detect. The obvious danger is that people will be fooled by a fake. The more interesting danger is quieter, and it is what this session is about.</p>
