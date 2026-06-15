@@ -1,6 +1,7 @@
 # Vault Möbius Logo — Provenance & Canonical Source
 
-*Established 2026-06-09. This file is the source of truth for which logo file is authoritative and why.*
+*Established 2026-06-09. Updated 2026-06-15 (Martha finish + canon swap). This file is
+the source of truth for which logo file is authoritative and why.*
 
 ## The one rule
 
@@ -10,46 +11,68 @@ Do not reference the Thecus NAS or any other copy — those are not anchored sto
 
 | File | Role |
 |---|---|
-| `vault-icon.png` (1000×724) | **Canonical raster.** What LaTeX, the website, and letters use. |
-| `vault-icon.svg` | **Vector master** — infinitely scalable, for large-format / print. See caveat below. |
+| `vault-icon.png` (1000×924) | **Canonical raster.** What LaTeX, the website, and letters use. Sparkle-free bronze Möbius, edge stroke + drop shadow. |
+| `vault-icon.svg` (924×854) | **Vector master** — true smooth-gradient vector, infinitely scalable. Martha's Illustrator finish. |
 | `~/assets/vault-logo.png` | Symlink → `vault-icon.png`. The path LaTeX templates include. |
-| `_masters/vault-icon-master.psd` | **True design source** of the bronze mark (bronze + sparkle, 1000×724). |
-| `_masters/vault-icon-master.tif` | Flattened high-bit master. |
-| `_masters/vault-icon-1000.png` | Archival copy of the 2011 export (identical MD5 to `vault-icon.png`). |
+| `_masters/vault-icon-martha-illustrator-2026-06-15.svg` | **Current true vector source** — Martha's Illustrator file (thickened creases, edge stroke, shadow). |
+| `_masters/vault-icon-inhouse-vector-2026-06-13.svg` | Alfred's in-house vectorisation (smooth gradient, pre-Martha finish). |
+| `_masters/The Vault_no_shine.psd` / `.png` | Martha's sparkle-removed lockup (1000×292). |
+| `_masters/vault-ring-noshine.psd` / `.png` | Martha's sparkle-removed ring (the vectorisation input). |
+| `_masters/vault-icon-master.psd` | The 2011 bronze+sparkle raster — source of the *previous* mark. Superseded. |
+| `_masters/vault-icon-master.tif` | Flattened high-bit master of the 2011 mark. |
+| `_masters/vault-icon-pre-martha-2026-06-15.png` | The previous canonical raster (bronze + sparkle), archived at the swap. |
+| `_masters/vault-icon-potrace-2026-06-09.svg` | The retired banded-potrace SVG (first vector attempt). Superseded by the smooth vector. |
 | `_masters/vault-icon-ORIGINAL-2010.eps` | **Obsolete ancestor — do not use.** See below. |
 
-## The lineage (verified 2026-06-09)
+## The lineage (current as of 2026-06-15)
 
 ```
-EPS (2010, Adobe Illustrator, CMYK/Pantone)   rose-brown, NO sparkle   ──► obsolete draft
+EPS (2010, Adobe Illustrator, CMYK/Pantone)    rose-brown, NO sparkle    ──► obsolete draft
         │  recoloured to bronze + sparkle added, in Photoshop
         ▼
-PSD (bronze + sparkle, raster 1000×724)        ── TRUE SOURCE of the current mark
-        │  flatten / export
+PSD (bronze + sparkle, raster 1000×724)         ── source of the PREVIOUS mark (2011–2026)
+        │  Martha removes the sparkle (Photoshop, 2026-06-12)
         ▼
-vault-icon.png (1000×724)                      ── canonical; everything uses this
-        │  layered potrace re-interpretation (2026-06-09)
+no-shine PSD/PNG (sparkle-free bronze ring)     ── the vectorisation input
+        │  Alfred vectorises in-house (vault-svg-gradient pipeline, smooth gradient, 2026-06-13)
         ▼
-vault-icon.svg                                 ── scalable vector master (banded gradient)
+in-house vector SVG                             ── true smooth-gradient vector, no banding
+        │  Martha finishes in Illustrator: thickened creases + edge stroke + drop shadow (2026-06-15)
+        ▼
+vault-icon.svg (924×854)                        ── canonical vector master
+        │  rsvg-convert -w 1000 (transparent)
+        ▼
+vault-icon.png (1000×924)                       ── canonical raster; everything uses this
 ```
 
-**Why the EPS is not the source.** It is the *earlier* artwork: it renders dusty
-rose-brown `srgb(68%,55%,55%)` — not brand bronze `(190,130,68)` — and lacks the
-star-sparkle. The bronze mark was rebuilt later in Photoshop. The EPS is kept only
-as historical record. Promoting it would regress the brand colour and lose the sparkle.
+**Why the EPS is not the source.** It is the *earliest* artwork: dusty rose-brown,
+no sparkle. Kept only as historical record.
 
-**SVG caveat.** `vault-icon.svg` is a faithful *re-interpretation*, not a pixel copy.
-potrace is monochrome, so the continuous gradient is approximated as ~7 bronze colour
-bands. Use it where scale matters (big print). For exact-match raster use, prefer the PNG.
-Rebuild with `~/AlfredOS/content-creator/build_vault_svg.py`.
+**Why the 2011 PSD is no longer canonical.** It carries the star-sparkle, which the
+brand has moved away from. Martha removed the sparkle (2026-06-12); the mark was then
+rebuilt as a true vector and hand-finished. The PSD is retained as the source of the
+previous (sparkle) era.
 
-## Where the mark is referenced (as of 2026-06-09)
+**The current mark is a real vector** (not the old banded potrace approximation). The
+gradient is continuous, and the Illustrator finish adds a thin edge stroke and a baked-in
+drop shadow. Note the shadow is *part of the mark*: on light backgrounds it reads as a
+soft lift; at favicon sizes (≤32px) it adds weight and the Möbius twist muddies — expected,
+and a known trade-off accepted 2026-06-15.
 
-All already resolve to the canonical file — no repointing needed:
+**To rebuild / re-export.** The vector truth is now the Illustrator file in
+`_masters/vault-icon-martha-illustrator-2026-06-15.svg`. Re-export the SVG from there,
+or re-render the raster with `rsvg-convert -w 1000 vault-icon.svg -o vault-icon.png`.
+The in-house pipeline (`~/AlfredOS/content-creator/vault-svg-gradient/`) generates the
+pre-finish vector if the gradient ever needs regenerating from the ring.
+
+## Where the mark is referenced
+
+All resolve to the canonical file — no repointing needed:
 
 - `~/vault/_Templates/Formal Letter Template.md` → `~/assets/vault-logo.png`
 - `~/vault/01-Teaching/LaTeX/shared/cs-gcse-extension.tex` → `/home/alex/assets/vault-logo.png`
 - `~/rawsonvault/ai/staff/index.html` → `../../images/brand/vault-icon.png`
+- Mrs. L favicon / PWA icons → `~/AlfredOS/mrs_landingham/web/static/` (regenerated from this mark 2026-06-15)
 
 ## Brand bronze palette
 
