@@ -1,6 +1,7 @@
 # Vault Möbius Logo — Provenance & Canonical Source
 
-*Established 2026-06-09. Updated 2026-06-15 (Martha finish + canon swap). This file is
+*Established 2026-06-09. Updated 2026-06-15 (Martha finish + canon swap), and 2026-06-18
+(reference list completed, symlink fan-out, original-pack de-dup). This file is
 the source of truth for which logo file is authoritative and why.*
 
 ## The one rule
@@ -9,11 +10,17 @@ the source of truth for which logo file is authoritative and why.*
 renders the mark points here (directly, or via the `~/assets/vault-logo.png` symlink).
 Do not reference the Thecus NAS or any other copy — those are not anchored storage.
 
+For convenience, `vault-logo.png` is symlinked from five places, every one pointing at
+this canonical file: `~/assets/`, `~/Pictures/`, `~/Desktop/`, `~/vault/_Assets/Images/`,
+and `~/` (home root). Because they are symlinks rather than copies, they track every
+future regeneration of `vault-icon.png` automatically, so there is no risk of a stale
+duplicate drifting out of sync (fan-out added 2026-06-18).
+
 | File | Role |
 |---|---|
 | `vault-icon.png` (1000×924) | **Canonical raster.** What LaTeX, the website, and letters use. Sparkle-free bronze Möbius, edge stroke + drop shadow. |
 | `vault-icon.svg` (924×854) | **Vector master** — true smooth-gradient vector, infinitely scalable. Martha's Illustrator finish. |
-| `~/assets/vault-logo.png` | Symlink → `vault-icon.png`. The path LaTeX templates include. |
+| `~/assets/vault-logo.png` | Symlink → `vault-icon.png`. The path LaTeX templates include. One of five `vault-logo.png` symlinks (see "The one rule"). |
 | `_masters/vault-icon-martha-illustrator-2026-06-15.svg` | **Current true vector source** — Martha's Illustrator file (thickened creases, edge stroke, shadow). |
 | `_masters/vault-icon-inhouse-vector-2026-06-13.svg` | Alfred's in-house vectorisation (smooth gradient, pre-Martha finish). |
 | `_masters/The Vault_no_shine.psd` / `.png` | Martha's sparkle-removed lockup (1000×292). |
@@ -65,14 +72,28 @@ or re-render the raster with `rsvg-convert -w 1000 vault-icon.svg -o vault-icon.
 The in-house pipeline (`~/AlfredOS/content-creator/vault-svg-gradient/`) generates the
 pre-finish vector if the gradient ever needs regenerating from the ring.
 
+**The original design pack.** The `TheVaultD29aR04aP01ZL.*` original pack (29 files, the
+complete superset) now lives in a single historical archive at
+`~/vault/04-Resources/brand/rawsonvault/logos/`. It had been triplicated; the two
+byte-identical copies under `~/Pictures/` were deleted 2026-06-18, along with strays — the
+`~/Downloads/mobius.png`/`.psd` pair (md5-identical to `_masters/vault-ring-noshine.*`) and
+a regenerable build output (`the-vault-logo.png`). One archive, no duplicates.
+
 ## Where the mark is referenced
 
-All resolve to the canonical file — no repointing needed:
+This list must stay complete: every place that renders the mark belongs here, or the
+next canon swap leaves stragglers on the old artwork. That is exactly what happened — two
+references below were missing from this list and were still pointing at the pre-canon
+icon until 2026-06-18, when they were repointed to canon. Treat the list as load-bearing.
+
+All now resolve to the canonical file:
 
 - `~/vault/_Templates/Formal Letter Template.md` → `~/assets/vault-logo.png`
 - `~/vault/01-Teaching/LaTeX/shared/cs-gcse-extension.tex` → `/home/alex/assets/vault-logo.png`
 - `~/rawsonvault/ai/staff/index.html` → `../../images/brand/vault-icon.png`
 - Mrs. L favicon / PWA icons → `~/AlfredOS/mrs_landingham/web/static/` (regenerated from this mark 2026-06-15)
+- `~/AlfredOS/agents/scribe/weekly_grid.py` → `~/assets/vault-logo.png` (Scribe's weekly-calendar `LOGO_PATH`). Repointed 2026-06-18 from the old `~/vault/04-Resources/brand/rawsonvault/logos/icon only/TheVaultD29aR04aP01ZL_icon.png`; that stale path is why the weekly calendar PDFs were still stamping the pre-canon mark.
+- AI Club S4E2 lesson ("Set the icon" deploy step) → `~/rawsonvault/images/brand/vault-icon.png`. Repointed 2026-06-18 from the old `~/Pictures/vault_logos/icon only/vault_icon_transparent.png`.
 
 ## Brand bronze palette
 
