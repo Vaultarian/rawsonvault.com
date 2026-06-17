@@ -9,101 +9,174 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../../vault.css">
     <style>
-        .article p { margin-bottom: var(--gap-md); }
-        .article p:first-of-type::first-letter {
-            font-family: var(--font-display);
-            font-size: 3rem;
-            float: left;
-            line-height: 0.8;
-            padding: 0.1em 0.12em 0 0;
-            color: var(--bronze-core);
-        }
-        .question-box {
-            border-left: 3px solid var(--bronze-core);
-            background: #fdf9f4;
-            padding: var(--gap-md) var(--gap-lg);
-            margin: var(--gap-lg) 0;
-            font-family: var(--font-heading);
-            font-style: italic;
-            font-size: 1.1rem;
-            color: var(--ink-black);
-        }
-        .vocab { margin: var(--gap-lg) 0; }
-        .vocab dt {
-            font-family: var(--font-display);
-            font-size: 0.8rem;
-            letter-spacing: 0.08em;
-            color: var(--ink-black);
-            margin-top: var(--gap-sm);
-        }
-        .vocab dd {
-            font-family: var(--font-body);
-            font-size: 0.92rem;
-            color: var(--gray-dark);
-            margin: 0 0 var(--gap-xs) 0;
-            line-height: 1.6;
-        }
+        /* ---- Top bar: breadcrumb + corner logo ---- */
+        .page-top { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom: var(--gap-md); }
+        .corner-logo { width:56px; height:auto; flex:none; margin-top:-2px; }
+        .section-header h1 .ep-big { display:block; font-family: var(--font-display); font-size:1.5em; color: var(--bronze-core); letter-spacing:0.04em; line-height:1; margin-bottom:0.12em; }
+        @media (max-width:640px) { .corner-logo { width:44px; } }
+        /* ---- Hero split ---- */
+        .hero-split { display:flex; border-radius: var(--radius); overflow:hidden; margin-bottom: var(--gap-lg); box-shadow: 0 2px 14px rgba(26,16,8,0.12); }
+        .hero-half { flex:1; padding: 1.3rem 1.5rem; color:#fff; }
+        .hero-half.red { background:#b0341d; }
+        .hero-half.blue { background:#1d4e89; text-align:right; }
+        .hero-half .team { font-family: var(--font-display); font-size:0.82rem; letter-spacing:0.14em; }
+        .hero-half .who { font-family: var(--font-body); font-style:italic; font-size:0.95rem; opacity:0.93; margin-top:3px; display:block; }
+        .hero-vs { display:flex; align-items:center; justify-content:center; background:#2b2018; color:#e7b876; font-family: var(--font-display); font-size:0.85rem; letter-spacing:0.1em; padding:0 0.9rem; }
+        /* ---- Comeback callout ---- */
+        .callout { background:#5f4730; color:#fdf9f2; border-radius: var(--radius); padding:1.2rem 1.4rem; margin: var(--gap-lg) 0; }
+        .callout h2 { font-family: var(--font-display); color:#f4cd92; font-size:1.05rem; margin:0 0 0.6rem; }
+        .callout p { margin:0 0 0.6rem; line-height:1.6; }
+        .callout .say { background:#735840; border-left:3px solid #f4cd92; padding:0.7rem 0.9rem; border-radius: var(--radius); font-style:italic; margin:0; color:#fefcf8; }
+        /* ---- Core question ---- */
+        .question-box { border-left:3px solid var(--bronze-core); background:#fdf9f4; padding: var(--gap-md) var(--gap-lg); margin: var(--gap-lg) 0; font-family: var(--font-heading); font-style:italic; font-size:1.12rem; color: var(--ink-black); }
+        /* ---- Listen first (preserved from the original S4E2 page) ---- */
+        .listen { margin: var(--gap-lg) 0; }
+        .listen-intro { font-family: var(--font-body); font-size:0.95rem; color: var(--gray-dark); line-height:1.65; margin:0 0 var(--gap-md); }
+        .listen .video-cell { max-width:560px; }
+        /* ---- Mechanism explainer ---- */
+        .mech { background:#fdf9f4; border:1px solid #ece4d8; border-radius: var(--radius); padding:1.2rem 1.4rem; margin: var(--gap-lg) 0; }
+        .mech h2 { font-family: var(--font-heading); font-size:1.2rem; margin:0 0 var(--gap-md); }
+        .mech-step { display:flex; gap:0.8rem; align-items:flex-start; margin:0 0 0.7rem; }
+        .mech-num { flex:none; width:26px; height:26px; border-radius:50%; background: var(--bronze-core); color:#fff; font-family: var(--font-display); font-size:0.8rem; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+        .mech-step p { margin:0; line-height:1.5; }
+        .mech-arrow { margin: var(--gap-md) 0 0.5rem; padding:0.75rem 0.9rem; background:#2b2018; color:#f3ead9; border-radius: var(--radius); text-align:center; line-height:1.7; }
+        .mech-arrow b { color:#e7b876; }
+        .mech-water { padding:0.75rem 0.9rem; background:#eaf1f7; border:1px solid #cfe0ee; border-radius: var(--radius); line-height:1.55; margin:0; }
+        .mech-water b { color:#1d4e89; }
+        /* ---- Arena / databoxes ---- */
+        .topic { margin: var(--gap-xl) 0 var(--gap-lg); }
+        .topic-eyebrow { font-family: var(--font-display); font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color: var(--bronze-dark); }
+        .topic > h2 { font-family: var(--font-heading); font-size:1.3rem; color: var(--ink-black); margin:3px 0 var(--gap-md); }
+        .arena { display:flex; gap: var(--gap-md); align-items:flex-start; }
+        .team-col { flex:1; background:#fdf9f4; border:1px solid #ece4d8; border-radius: var(--radius); overflow:hidden; padding-bottom:0.5rem; }
+        .team-col-head { color:#fff; padding:0.6rem 1rem; font-family: var(--font-display); font-size:0.74rem; letter-spacing:0.05em; }
+        .team-col-head small { display:block; font-family: var(--font-body); font-weight:normal; letter-spacing:0; font-size:0.74rem; opacity:0.92; margin-top:2px; }
+        .team-col-head.red { background:#b0341d; }
+        .team-col-head.blue { background:#1d4e89; }
+        .punch { margin: var(--gap-sm) 0.9rem; padding:0.8rem 0.95rem; background:#fff; border:1px solid #efe7d9; border-radius: var(--radius); border-top:3px solid; }
+        .punch.red { border-top-color:#b0341d; }
+        .punch.blue { border-top-color:#1d4e89; }
+        .stump { font-family: var(--font-heading); font-style:italic; font-size:1.02rem; line-height:1.35; margin:0 0 0.5rem; color: var(--ink-black); }
+        .stat { font-size:0.92rem; line-height:1.5; margin:0 0 0.55rem; padding-left:0.7rem; border-left:3px solid var(--bronze-light); color:#3a2c1a; }
+        .stat .cite { font-style:italic; color: var(--gray-silver); font-size:0.8rem; }
+        .why-lbl { font-family: var(--font-display); font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color: var(--bronze-dark); display:block; margin-bottom:2px; }
+        .why { font-size:0.9rem; line-height:1.55; color: var(--gray-dark); margin:0; }
+        /* ---- Notes (shared figure / it depends) ---- */
+        .note-shared { margin: var(--gap-md) 0 0; padding:0.9rem 1.1rem; background:#f6efe4; border:1px dashed var(--bronze-light); border-radius: var(--radius); line-height:1.6; }
+        .note-shared b, .note-where b { font-family: var(--font-display); font-size:0.6rem; letter-spacing:0.13em; text-transform:uppercase; display:block; margin-bottom:4px; }
+        .note-shared b { color: var(--bronze-dark); }
+        .note-where { margin: var(--gap-md) 0 0; padding:0.9rem 1.1rem; background:#eaf1f7; border:1px solid #cfe0ee; border-radius: var(--radius); line-height:1.6; }
+        .note-where b { color:#1d4e89; }
+        /* ---- Stretch ---- */
+        .stretch { background:#faf6ef; border:1px solid #ece4d8; border-radius: var(--radius); padding:1rem 1.2rem; margin: var(--gap-md) 0 0; }
+        .stretch h3 { font-family: var(--font-display); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--bronze-dark); margin:0 0 0.5rem; }
+        .stretch p { margin:0 0 0.5rem; line-height:1.55; font-size:0.92rem; }
+        .stretch p:last-child { margin-bottom:0; }
+        /* ---- Head to head ---- */
+        .h2h { border:1px solid #e7ddcd; border-radius: var(--radius); overflow:hidden; margin: var(--gap-md) 0; }
+        .h2h-top, .h2h-row { display:grid; grid-template-columns:1fr 130px 1fr; }
+        .h2h-top .h { color:#fff; padding:0.55rem 1rem; font-family: var(--font-display); font-size:0.72rem; }
+        .h2h-top .red { background:#b0341d; }
+        .h2h-top .blue { background:#1d4e89; text-align:right; }
+        .h2h-top .mid { background:#efe7d9; }
+        .h2h-row { border-top:1px solid #ece4d8; }
+        .h2h-row .c { padding:0.65rem 1rem; font-size:0.9rem; line-height:1.45; }
+        .h2h-row .c.blue { text-align:right; }
+        .h2h-row .q { align-self:center; text-align:center; font-family: var(--font-display); font-size:0.56rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--bronze-dark); background:#f6efe4; padding:0.5rem 0.3rem; }
+        /* ---- Documents (from S4E1) ---- */
+        .documents { background:#fdf9f4; border:1px solid #f0ece4; border-radius: var(--radius); padding: var(--gap-md) var(--gap-lg); margin: var(--gap-lg) 0; }
+        .documents h2 { font-family: var(--font-display); font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase; color: var(--bronze-dark); margin:0 0 var(--gap-xs); }
+        .doc-list { list-style:none; margin:0; padding:0; }
+        .doc-list li { border-bottom:1px solid #f0ece4; }
+        .doc-list li:last-child { border-bottom:none; }
+        .doc-list a { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0; text-decoration:none; color: var(--ink-black); font-family: var(--font-body); font-size:0.95rem; transition: color 0.15s ease; }
+        .doc-list a:hover { color: var(--bronze-dark); }
+        .doc-icon { width:22px; height:22px; object-fit:contain; flex:none; }
+        .doc-list .doc-meta { margin-left:auto; font-family: var(--font-display); font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color: var(--gray-mid); border:1px solid var(--bronze-light); border-radius: var(--radius); padding:1px 7px; white-space:nowrap; }
+        /* ---- Sources / vocab (from S4E1) ---- */
         .sources h3 { margin: var(--gap-md) 0 var(--gap-xs); }
-        .sources ul { list-style: none; }
-        .sources li {
-            padding: var(--gap-xs) 0;
-            border-bottom: 1px solid #f0ece4;
-            font-size: 0.9rem;
+        .sources ul { list-style:none; }
+        .sources li { padding: var(--gap-xs) 0; border-bottom:1px solid #f0ece4; font-size:0.9rem; }
+        .sources .tag { font-family: var(--font-display); font-size:0.55rem; letter-spacing:0.18em; text-transform:uppercase; color: var(--bronze-dark); border:1px solid var(--bronze-light); border-radius: var(--radius); padding:1px 6px; margin-right:6px; }
+        .trust-note { font-family: var(--font-body); font-style:italic; font-size:0.88rem; color: var(--gray-dark); background:#faf6ef; border-radius: var(--radius); padding: var(--gap-md); margin: var(--gap-lg) 0; }
+        .vocab { margin: var(--gap-lg) 0; }
+        .vocab dt { font-family: var(--font-display); font-size:0.8rem; letter-spacing:0.08em; color: var(--ink-black); margin-top: var(--gap-sm); }
+        .vocab dd { font-family: var(--font-body); font-size:0.92rem; color: var(--gray-dark); margin:0 0 var(--gap-xs) 0; line-height:1.6; }
+        @media (max-width:640px) {
+            .hero-split { flex-direction:column; }
+            .hero-half.blue { text-align:left; }
+            .arena { flex-direction:column; }
+            .h2h-top, .h2h-row { grid-template-columns:1fr; }
+            .h2h-top .blue, .h2h-row .c.blue { text-align:left; }
+            .h2h-top .mid { display:none; }
+            .h2h-row .q { text-align:left; }
         }
-        .sources .tag {
-            font-family: var(--font-display);
-            font-size: 0.55rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--bronze-dark);
-            border: 1px solid var(--bronze-light);
-            border-radius: var(--radius);
-            padding: 1px 6px;
-            margin-right: 6px;
-        }
-        .trust-note {
-            font-family: var(--font-body);
-            font-style: italic;
-            font-size: 0.88rem;
-            color: var(--gray-dark);
-            background: #faf6ef;
-            border-radius: var(--radius);
-            padding: var(--gap-md);
-            margin: var(--gap-lg) 0;
-        }
-        .listen { margin: 0 0 var(--gap-lg); }
-        .listen-intro {
-            font-family: var(--font-body);
-            font-size: 0.92rem;
-            color: var(--gray-dark);
-            line-height: 1.6;
-            margin: 0 0 var(--gap-sm);
-        }
-        .listen .video-cell { max-width: 560px; }
     </style>
 </head>
 <body>
     <div class="container">
 
-        <nav class="breadcrumb">
-            <a href="../../../../">The Vault</a><span>·</span>
-            <a href="../../../">AI</a><span>·</span>
-            <a href="../../">Students</a><span>·</span>
-            <a href="../">Season 4</a><span>·</span>
-            The Environmentalist Debate
-        </nav>
+        <div class="page-top">
+            <nav class="breadcrumb">
+                <a href="../../../../">The Vault</a><span>·</span>
+                <a href="../../../">AI</a><span>·</span>
+                <a href="../../">Students</a><span>·</span>
+                <a href="../">Season 4</a><span>·</span>
+                The Environmentalist Debate
+            </nav>
+            <a href="../../../../" aria-label="The Vault — home"><img class="corner-logo" src="../../../../images/brand/vault-icon.svg" alt="The Vault"></a>
+        </div>
+
+        <div class="hero-split">
+            <div class="hero-half red">
+                <span class="team">RED TEAM</span>
+                <span class="who">The Economists — "we'll invent our way out"</span>
+            </div>
+            <div class="hero-vs">VS</div>
+            <div class="hero-half blue">
+                <span class="team">BLUE TEAM</span>
+                <span class="who">The Environmentalists — "the Earth isn't endless"</span>
+            </div>
+        </div>
 
         <div class="section-header">
             <span class="eyebrow">Season 4 · Truth &amp; Trust · Episode 2</span>
-            <h1>The Environmentalist Debate</h1>
-            <p class="subtitle">The economist, the environmentalist, and the carbon cost of AI</p>
+            <h1><span class="ep-big">S4E2</span> The Environmentalist Debate</h1>
+            <p class="subtitle">AI, the planet, and how to argue both sides</p>
         </div>
 
         <div class="rule--full"></div>
 
+        <div class="callout">
+            <h2>"AI's killing the planet — why are you even in AI Club?"</h2>
+            <p>Someone will say this to you. The honest answer is that it's complicated, and clever people don't agree. Both sides have real facts. Here they are, so you can think for yourself and explain it to anyone who asks.</p>
+            <p class="say">You could say: "AI does use a lot of power and water, and that's a real problem. But it's also helping invent cleaner energy. The question is whether the help is bigger than the harm — and that's exactly what we argue about in AI Club."</p>
+        </div>
+
+        <div class="question-box">
+            AI uses a lot of energy and water. Is it worth the cost to the planet?
+        </div>
+
+        <div class="mech">
+            <h2>First — what actually happens when you use AI?</h2>
+            <div class="mech-step"><div class="mech-num">1</div><p>Your message leaves your screen and zooms off to a <strong>giant building full of computers</strong>, called a <strong>data centre</strong>. There are thousands of them around the world.</p></div>
+            <div class="mech-step"><div class="mech-num">2</div><p>Those computers do a <strong>huge amount of work</strong> to answer you. That uses <strong>electricity</strong> — far more than your phone or laptop uses by itself.</p></div>
+            <div class="mech-step"><div class="mech-num">3</div><p>Most of the world's electricity is still made by <strong>burning gas and coal</strong>. Burning them puts <strong>carbon dioxide (CO₂)</strong> into the air.</p></div>
+            <div class="mech-step"><div class="mech-num">4</div><p>CO₂ is invisible, but it works like a <strong>blanket around the Earth</strong>, trapping heat. More CO₂ means a <strong>hotter planet</strong>. That's what people mean by climate change.</p></div>
+            <div class="mech-arrow">your message → <b>big computers</b> → electricity → <b>burning fuel</b> → carbon dioxide → <b>hotter planet</b></div>
+            <p class="mech-water"><b>And there's a second cost: water.</b> The computers get so hot they would break, so data centres pour <strong>clean, fresh water</strong> through them to cool them down. In hot, dry places, that can mean using drinking water to cool computers.</p>
+        </div>
+
+        <h2>Red team, blue team — and what "red-teaming" is</h2>
+        <div class="article">
+            <p>Today is not about winning, and it is not about picking the answer you already believe. You will be given a side in secret — <strong>RED, the economists</strong>, or <strong>BLUE, the environmentalists</strong> — and your job is to argue that side as well as you possibly can. You might be put on the side you don't agree with. That is the whole point.</p>
+            <p>This is called <strong>red-teaming</strong>: you argue a position properly, from the inside, so you really understand it and can see where it is strong and where it is weak. It is one of the best ways to think clearly about a hard question, because it stops you from only ever hearing your own side. When the debate is over, we drop the teams, and you say what <em>you</em> actually think.</p>
+            <p>Below is your kit. Every team has its best lines, the numbers behind them, and — just as important — <strong>why</strong> each number matters. A number on its own is not an argument. "1.5%" means nothing until someone tells you what it does.</p>
+        </div>
+
         <div class="listen">
-            <h2>Listen first</h2>
-            <p class="listen-intro">Before you read, here is a short discussion of E.O. Wilson's essay <em>The Bottleneck</em>, the idea at the heart of today's session. Listen for the two voices Wilson describes: the economist and the environmentalist. One word of warning that fits this whole season: <strong>this podcast was generated by an AI</strong> (NotebookLM) from Wilson's essay. It is a useful way in, not a source. Treat what it says as a claim to check, and verify anything that matters against Wilson's own words in the sources below.</p>
+            <h2>Listen first — the big idea under both sides</h2>
+            <p class="listen-intro">Both teams are really arguing about one old idea. In 2002 the scientist E.O. Wilson said every argument about the planet has two voices: the economist and the environmentalist. Here is a short discussion of his essay <em>The Bottleneck</em> as a way in. One warning that fits this whole club: <strong>this podcast was made by an AI</strong> (NotebookLM) from Wilson's essay. It is a way in, not a source. Treat what it says as a claim to check, and verify anything that matters against Wilson's own words in the sources below.</p>
             <figure class="video-cell">
                 <iframe
                     src="https://www.youtube-nocookie.com/embed/mQJJvHEBYxw"
@@ -116,62 +189,249 @@
             </figure>
         </div>
 
-        <div class="rule--full"></div>
-
-        <div class="article">
-            <p>Every time you open a chat with an AI, a machine in a data centre somewhere does the work, and that machine runs on electricity. The electricity has to come from somewhere, and a lot of the world's power still burns fossil fuels. So your message has a cost, even though you never see it. The question for today is what, if anything, you should do about that.</p>
-
-            <p>The cost is real and it is growing. The International Energy Agency reports that a typical AI data centre uses about as much electricity in a year as 100,000 homes, and the largest ones now being built will use twenty times that. Added together, the world's data centres used around 415 terawatt-hours of electricity in 2024, roughly 1.5% of all the electricity on Earth, and that figure is set to more than double by 2030. None of this is visible when you press send.</p>
-
-            <p>There is a serious case on the other side. A 2025 study led by the economist Nicholas Stern argues that AI could <em>cut</em> global emissions by up to 5.4 billion tonnes of CO₂ a year by 2035, across power, food and transport, which would be more than the data centres add. AI has already helped predict the shape of 200 million proteins, find new materials for batteries and solar panels, and make wind farms more valuable by forecasting the wind. Its defenders say the smart thing is not to use less AI, but to use it to fix the very problem it adds to.</p>
-
-            <p>This is an old argument in new clothes. In 2002 the biologist E.O. Wilson described two voices that show up in every environmental debate. The <strong>economist</strong> says human ingenuity and technology will pull us through, that growth and innovation outrun the damage. The <strong>environmentalist</strong> says the planet is finite, we are already taking more than it can give, and no clever fix changes that arithmetic. Listen for those two voices today. "AI will solve climate change" is the economist talking. "Demand is growing faster than clean power can keep up" is the environmentalist.</p>
-
-            <p>Wilson added one more idea worth holding onto. He thought our brains were shaped in the deep past to notice immediate, nearby threats and to ignore costs that are distant or spread thin, what he called our <strong>"Palaeolithic heritage."</strong> AI's carbon cost is exactly that kind of cost: invisible, far away, shared between millions of people. That may be the real reason guilt does not arrive on its own when you open a chat window.</p>
-
-            <p>So here is the knot for your circle. Even if AI's overall effect on the planet turns out to be positive, does that settle whether <em>your</em> use of it is fine? Is this your responsibility at all, or does it sit with the companies building the data centres and the governments deciding where the power comes from? At what point, if any, does a personal habit become something you answer for?</p>
+        <!-- TOPIC 1 -->
+        <div class="topic">
+            <span class="topic-eyebrow">Topic 1 · Power &amp; carbon</span>
+            <h2>How much electricity does AI really use?</h2>
+            <div class="arena">
+                <div class="team-col">
+                    <div class="team-col-head red">RED · The Economists</div>
+                    <div class="punch red">
+                        <p class="stump">AI uses only a tiny slice of the world's power.</p>
+                        <p class="stat">All the world's data centres together use about <strong>1 to 2 units of electricity out of every 100</strong> — and they get more efficient every year. <span class="cite">IEA, 2025</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">That's a small amount for something this useful. Each year, AI learns to do more with less power.</p>
+                    </div>
+                </div>
+                <div class="team-col">
+                    <div class="team-col-head blue">BLUE · The Environmentalists</div>
+                    <div class="punch blue">
+                        <p class="stump">One AI building can eat the power of a whole town.</p>
+                        <p class="stat">One big AI data centre uses as much electricity in a year as <strong>100,000 homes</strong>. The biggest new ones, <strong>20 times</strong> that. <span class="cite">IEA, 2025</span></p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">That's a small city's worth of power, day and night, for <strong>one</strong> building. Most of it comes from burning gas, which makes CO₂ — the gas heating the planet. And there are <strong>thousands</strong> of these buildings.</p>
+                    </div>
+                    <div class="punch blue">
+                        <p class="stump">"Only a tiny bit" — but it's growing really fast.</p>
+                        <p class="stat">That <strong>1 to 2 units out of every 100</strong> is set to <strong>more than double by 2030</strong>. <span class="cite">IEA, 2025</span></p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">The problem isn't how much it uses today, it's how fast it's growing. At the same time, we're trying to move cars and heating onto electricity too. There's only so much clean power, and AI is grabbing more of it.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="note-shared">
+                <b>One number, two stories</b>
+                See "1 to 2 out of every 100" on <em>both</em> sides? RED says "that's tiny, and getting better." BLUE says "that's small now, but it's doubling fast." Same fact, two stories. When someone throws a single number at you, the smart move is to ask which story they're telling.
+            </div>
         </div>
 
-        <div class="question-box">
-            Should we feel guilty about using AI, given its carbon cost?
+        <!-- TOPIC 2 -->
+        <div class="topic">
+            <span class="topic-eyebrow">Topic 2 · Can AI actually help?</span>
+            <h2>Could AI save more than it costs?</h2>
+            <div class="arena">
+                <div class="team-col">
+                    <div class="team-col-head red">RED · The Economists</div>
+                    <div class="punch red">
+                        <p class="stump">Don't use less AI. Use it to fix the problem.</p>
+                        <p class="stat">Scientists say AI could stop up to <strong>5.4 billion tonnes</strong> of carbon pollution every year by 2035, by helping power, farming and transport work better. <span class="cite">Stern et al., 2025</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">That could be more pollution saved than all the data centres add. Those three areas are nearly half of the world's pollution.</p>
+                    </div>
+                    <div class="punch red">
+                        <p class="stump">AI is already helping — this isn't just a promise.</p>
+                        <p class="stat">AI worked out the shape of <strong>200 million</strong> tiny proteins, helped find better batteries and solar panels, and made wind farms about <strong>20% more useful</strong>. <span class="cite">DeepMind</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">These already happened. Each one helps us make cleaner energy or waste less — small wins that add up.</p>
+                    </div>
+                </div>
+                <div class="team-col">
+                    <div class="team-col-head blue">BLUE · The Environmentalists</div>
+                    <div class="punch blue">
+                        <p class="stump">"Could" is not "did".</p>
+                        <p class="stat">The 5.4 billion tonnes is a <strong>guess about the year 2035</strong> — and only if the world actually uses AI that way.</p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">The pollution AI makes is happening <strong>now</strong>. The savings are a maybe, years away, and only if everything goes right.</p>
+                    </div>
+                    <div class="punch blue">
+                        <p class="stump">Make it cheaper, and we just use more.</p>
+                        <p class="stat">When something gets easier or cheaper, people usually do <strong>far more</strong> of it, not less. (This is called the <strong>rebound effect</strong>.)</p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">So the savings can get eaten up by everyone simply using AI much more than before.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <h2>Key vocabulary</h2>
-        <dl class="vocab">
-            <dt>Ecological footprint</dt>
-            <dd>The amount of land and sea each person uses up, in bits and pieces from around the world, for food, water, energy, transport, and absorbing waste. Your AI use adds a hidden share to yours.</dd>
-            <dt>The economist vs the environmentalist (Wilson)</dt>
-            <dd>Wilson's two voices: the economist trusts ingenuity and growth to outrun the damage, the environmentalist warns the planet is finite and we already take too much.</dd>
-            <dt>Palaeolithic heritage / Palaeolithic brain</dt>
-            <dd>Wilson's idea that our minds evolved to react to immediate, nearby dangers and to ignore costs that are far away or spread thin, like AI's carbon cost.</dd>
-            <dt>The bottleneck</dt>
-            <dd>Wilson's name for the dangerous stretch of this century, when human demand presses hardest on a finite planet and we have to get through without wrecking it.</dd>
-            <dt>The rebound effect (Jevons paradox)</dt>
-            <dd>When something becomes cheaper or more efficient, people often do more of it, not less, so efficiency savings can be swallowed by rising demand.</dd>
-            <dt>Net-zero</dt>
-            <dd>The point at which the greenhouse gases you add are balanced by the gases you take away, so your overall contribution to warming is zero.</dd>
-        </dl>
+        <!-- TOPIC 3 -->
+        <div class="topic">
+            <span class="topic-eyebrow">Topic 3 · Water</span>
+            <h2>Is AI really drinking the world's water?</h2>
+            <div class="arena">
+                <div class="team-col">
+                    <div class="team-col-head red">RED · The Economists</div>
+                    <div class="punch red">
+                        <p class="stump">Across a whole country, it's a drop in the bucket.</p>
+                        <p class="stat">All the data centres in the USA use about <strong>1.7 billion litres of water a day</strong> — out of more than <strong>1,200 billion</strong> the country uses. About <strong>1 part in 1,000</strong>. <span class="cite">Mytton, 2021</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">Farms and factories use far, far more. Blaming AI's water can miss the much bigger users right next door.</p>
+                    </div>
+                    <div class="punch red">
+                        <p class="stump">So build them where the water is — like Scotland.</p>
+                        <p class="stat">Newer cooling uses <strong>far less water, or air instead</strong>, and a centre in a <strong>wet, cool</strong> place barely touches the supply.</p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">The problem isn't AI, it's putting it in a desert. Build it somewhere cold and rainy and the water worry mostly disappears — which is why Scotland and the Nordics want them.</p>
+                    </div>
+                </div>
+                <div class="team-col">
+                    <div class="team-col-head blue">BLUE · The Environmentalists</div>
+                    <div class="punch blue">
+                        <p class="stump">AI is thirsty — and it drinks the clean stuff.</p>
+                        <p class="stat">An AI uses about <strong>a 500 ml bottle of water</strong> for every 10 to 50 questions you ask. Training one big AI used about <strong>700,000 litres</strong> of fresh water. <span class="cite">Li et al., 2025</span></p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">The water cools the hot computers, then floats away as steam. It's usually the <strong>same clean water we drink</strong>.</p>
+                    </div>
+                    <div class="punch blue">
+                        <p class="stump">They build them in exactly the wrong places.</p>
+                        <p class="stat">About <strong>2 out of every 3</strong> data centres built since 2022 are in places <strong>already short of water</strong> — Arizona, Texas, Spain, Chile. <span class="cite">Bloomberg, 2025</span></p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">There, the data centre fights <strong>farms and families</strong> for water that's running out. Google had to <strong>stop</strong> a data centre in Chile because the city couldn't spare the water.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="note-where">
+                <b>The smart move — "it depends where"</b>
+                When someone says "AI wastes water," the clever reply isn't "no it doesn't" or "yes it's terrible." It's <em>"it depends where."</em> In wet Scotland? It barely matters. In an Arizona desert? A real problem — and that's where they keep building them. Knowing the difference is what makes you sound like you've actually thought about it.
+            </div>
+        </div>
 
-        <div class="rule--full"></div>
+        <!-- TOPIC 4 -->
+        <div class="topic">
+            <span class="topic-eyebrow">Topic 4 · The big idea</span>
+            <h2>The Bottleneck — two voices in every argument</h2>
+            <div class="article">
+                <p>You heard these two voices in the podcast above. The <strong>economist</strong> trusts clever ideas and new technology to get us through. The <strong>environmentalist</strong> says the Earth is finite and we are already taking more than it can give. Listen for them in the whole debate — "AI will solve climate change" is the economist talking, and "demand is growing faster than clean power" is the environmentalist.</p>
+            </div>
+            <div class="arena">
+                <div class="team-col">
+                    <div class="team-col-head red">RED · The Economists</div>
+                    <div class="punch red">
+                        <p class="stump">Humans always find a way.</p>
+                        <p class="stat">Every big problem we've faced, we've eventually <strong>invented our way past it</strong>.</p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">It's the bet behind the whole RED case: science and technology will see us through the "bottleneck", as Wilson called it.</p>
+                    </div>
+                </div>
+                <div class="team-col">
+                    <div class="team-col-head blue">BLUE · The Environmentalists</div>
+                    <div class="punch blue">
+                        <p class="stump">You can't outsmart a full planet.</p>
+                        <p class="stat">To give everyone on Earth an American lifestyle would take <strong>four more Earths</strong>. <span class="cite">Wilson, 2002</span></p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">Being clever doesn't change the simple maths. The planet only has so much, and we're already asking for more than it has.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stretch">
+                <h3>Stretch — two harder ideas for the strongest debaters</h3>
+                <p><strong>Our "caveman" brain.</strong> Wilson thought our minds were built long ago to notice danger right in front of us, and to ignore costs that are far away and shared between lots of people. AI's cost is exactly that kind — invisible and far off. That may be the real reason it never feels urgent.</p>
+                <p><strong>Getting through the bottleneck.</strong> Wilson imagined humanity squeezing through a tight "bottleneck" into a future that lives within the planet's means. Is AI a tool that helps us get through — or just another way of borrowing from the future to pay for today?</p>
+            </div>
+        </div>
 
+        <!-- HEAD TO HEAD -->
+        <h2>The whole debate, at a glance</h2>
+        <div class="h2h">
+            <div class="h2h-top">
+                <div class="h red">RED · Economists</div>
+                <div class="h mid">AT A GLANCE</div>
+                <div class="h blue">Environmentalists · BLUE</div>
+            </div>
+            <div class="h2h-row">
+                <div class="c">Use AI to fix the problem it adds to.</div>
+                <div class="q">The core claim</div>
+                <div class="c blue">Demand is growing faster than clean power.</div>
+            </div>
+            <div class="h2h-row">
+                <div class="c">5.4 billion tonnes of pollution saved by 2035.</div>
+                <div class="q">Best evidence</div>
+                <div class="c blue">100,000 homes per centre; clean water in dry places.</div>
+            </div>
+            <div class="h2h-row">
+                <div class="c">The rebound effect could eat the savings.</div>
+                <div class="q">Weak spot</div>
+                <div class="c blue">Across a country, it's a tiny slice.</div>
+            </div>
+        </div>
+
+        <!-- DOCUMENTS -->
+        <div class="documents">
+            <h2>For the session</h2>
+            <ul class="doc-list">
+                <li>
+                    <a href="https://s4e2-the-environmentalist-debate.on.chipp.ai" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/chipp.png" alt="">
+                        <span>Your debate coach — build your side, then face the other team</span>
+                        <span class="doc-meta">Live bot</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- SOURCES -->
         <div class="sources">
-            <h2>Where these ideas come from</h2>
-            <p class="trust-note">Every link below was checked against the real source before it went here. AI tools (this club's bots, and the podcast above, included) can invent convincing-looking citations and claims. Click-check anything before you rely on it — "I verified the source myself" is exactly the habit this session is about.</p>
+            <h2>Where these facts come from</h2>
+            <p class="trust-note">Every figure on this page was checked against the real source before it went here. AI tools (this club's bots, and the podcast above, included) can invent convincing-looking facts and citations. Click-check anything before you rely on it — "I verified the source myself" is exactly the habit this club is about.</p>
 
-            <h3>Start here</h3>
+            <h3>Carbon &amp; energy</h3>
             <ul>
-                <li><span class="tag">Spine</span>Wilson, E.O. (2002). <em>The Bottleneck.</em> <em>Scientific American</em>, February 2002 (excerpt from <em>The Future of Life</em>). The economist-versus-environmentalist frame and the "Palaeolithic heritage" idea at the heart of this session. No clean stable public link, read the excerpt in the project pack.</li>
-                <li><span class="tag">Cost</span><a href="https://www.iea.org/reports/energy-and-ai" target="_blank" rel="noopener">IEA (2025). Energy and AI.</a> Source of the 100,000-homes / 20× figure, and the 415 TWh ≈ 1.5% of world electricity, doubling by 2030. See the <a href="https://www.iea.org/reports/energy-and-ai/executive-summary" target="_blank" rel="noopener">executive summary</a>.</li>
-                <li><span class="tag">Counter</span><a href="https://www.nature.com/articles/s44168-025-00252-3" target="_blank" rel="noopener">Stern, Romani, Pierfederici et al. (2025). Green and Intelligent.</a> <em>npj Climate Action</em>. The case that AI could cut up to 5.4 Gt CO₂e a year by 2035, across power, food and transport.</li>
+                <li><span class="tag">Core</span><a href="https://www.iea.org/reports/energy-and-ai" target="_blank" rel="noopener">IEA (2025). Energy and AI.</a> The 100,000-homes comparison, the ~1.5%-of-world-electricity figure, and the 2030 projection. See the <a href="https://www.iea.org/reports/energy-and-ai/executive-summary" target="_blank" rel="noopener">executive summary</a>.</li>
+                <li><span class="tag">Counter</span><a href="https://www.nature.com/articles/s44168-025-00252-3" target="_blank" rel="noopener">Stern, Romani, Pierfederici et al. (2025). Green and Intelligent.</a> <em>npj Climate Action</em>. Where the "5.4 billion tonnes saved" figure comes from.</li>
+            </ul>
+
+            <h3>Water</h3>
+            <ul>
+                <li><span class="tag">Core</span><a href="https://cacm.acm.org/sustainability-and-computing/making-ai-less-thirsty/" target="_blank" rel="noopener">Li, Yang, Islam &amp; Ren (2025). Making AI Less "Thirsty".</a> <em>Communications of the ACM</em>. The 500 ml bottle and the 700,000 litres of training water.</li>
+                <li><span class="tag">Journal</span><a href="https://www.nature.com/articles/s41545-021-00101-w" target="_blank" rel="noopener">Mytton, D. (2021). Data centre water consumption.</a> <em>npj Clean Water</em> 4, 11. The "1 in 1,000" national figure.</li>
+                <li><span class="tag">Where</span><a href="https://www.bloomberg.com/graphics/2025-ai-impacts-data-centers-water-data/" target="_blank" rel="noopener">Bloomberg (2025). The AI Boom Is Draining Water From the Areas That Need It Most.</a> Why two-thirds of new data centres sit in water-stressed places.</li>
+            </ul>
+
+            <h3>The big idea</h3>
+            <ul>
+                <li><span class="tag">Frame</span>Wilson, E.O. (2002). <a href="https://drive.google.com/file/d/1iH2_8uPljXBy8XFM_tAHDfx2O_KaF2CV/view?usp=sharing" target="_blank" rel="noopener">The Bottleneck</a>, <em>Scientific American</em> (from <em>The Future of Life</em>). The economist-versus-environmentalist voices, the "four more Earths" idea, and our "caveman" brain.</li>
             </ul>
 
             <h3>Go deeper</h3>
             <ul>
                 <li><span class="tag">Explainer</span><a href="https://www.climatechangenews.com/2026/03/03/explainer-will-ai-data-centres-make-or-break-the-energy-transition/" target="_blank" rel="noopener">Climate Change News (2026). Will AI data centres make or break the energy transition?</a> Plain-language background on both sides.</li>
                 <li><span class="tag">Data</span><a href="https://www.pewresearch.org/short-reads/2025/10/24/what-we-know-about-energy-use-at-us-data-centers-amid-the-ai-boom/" target="_blank" rel="noopener">Pew Research (2025). What we know about energy use at US data centers.</a> What is actually measured, and what is not.</li>
-                <li><span class="tag">Optimist</span><a href="https://deepmind.google/blog/using-ai-to-fight-climate-change/" target="_blank" rel="noopener">Google DeepMind. Using AI to fight climate change.</a> The defender's own examples, AlphaFold, new materials, better wind forecasts. Read it as claims, not settled fact.</li>
+                <li><span class="tag">Optimist</span><a href="https://deepmind.google/blog/using-ai-to-fight-climate-change/" target="_blank" rel="noopener">Google DeepMind. Using AI to fight climate change.</a> The defender's own examples — read them as claims, not settled fact.</li>
             </ul>
         </div>
+
+        <div class="rule--full"></div>
+
+        <h2>Key words</h2>
+        <dl class="vocab">
+            <dt>Data centre</dt>
+            <dd>A giant building full of computers that does the work when you use AI or the internet.</dd>
+            <dt>Carbon dioxide (CO₂)</dt>
+            <dd>An invisible gas made by burning fuel. It traps heat and warms the planet.</dd>
+            <dt>Climate change</dt>
+            <dd>The planet slowly heating up because there is more CO₂ in the air.</dd>
+            <dt>Water stress</dt>
+            <dd>When a place doesn't have enough fresh water for everyone who needs it.</dd>
+            <dt>Economist (in this debate)</dt>
+            <dd>The voice that trusts clever ideas and technology to fix problems as we go.</dd>
+            <dt>Environmentalist (in this debate)</dt>
+            <dd>The voice that says the Earth is finite and we must not take more than it can give.</dd>
+            <dt>The bottleneck (Wilson)</dt>
+            <dd>Wilson's name for this century's tight squeeze, when human demand presses hardest on a finite planet and we have to get through without wrecking it.</dd>
+            <dt>Red-teaming</dt>
+            <dd>Arguing a side as well as you can — even one you don't believe — to really understand it.</dd>
+            <dt>Rebound effect</dt>
+            <dd>When something becomes cheaper or easier, people use much more of it, which can cancel out the saving.</dd>
+        </dl>
 
         <footer class="site-footer">Perth AI Club · Season 4 · 2026</footer>
 

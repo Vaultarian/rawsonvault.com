@@ -19,11 +19,20 @@ and reports to Alex before touching anything.
 
 ## Branch discipline
 
-- Build on **`subject-pages`**. `main` is production.
+- Work on **`subject-pages`**; `main` is what GitHub Pages serves. Tim publishes by pushing
+  the current `subject-pages` HEAD to `main` (`HEAD:main`, fast-forward only).
 - Commit in **small, reviewable batches** — one logical change per commit, descriptive
   single-line message (see `git log` for the house style).
-- **Never `git push`.** Alex reviews the branch and pushes himself. No exceptions,
-  including "just this once" and "it's only a typo."
+- **Tim pushes autonomously** (canon change, 2026-06-17). The volume of curriculum updates
+  makes a manual pre-push review by Alex impractical, so the human eyeball is no longer the
+  gate. In its place, **every push is gated by `name_audit.py`** (the automated student-data
+  blocker — see the privacy gate below) plus the whitelist-build discipline. A failed audit
+  aborts before any commit or push, no exceptions.
+- The push only ever **fast-forwards** `main` from `subject-pages`. If another writer has
+  diverged `main`, Tim stops and reports rather than forcing — he never force-pushes.
+- `name_audit.py` catches the *structured* danger patterns (named template copies, graded
+  work, LMS submission artefacts). It **cannot** catch a student name typed into clean prose,
+  so the whitelist-build discipline below remains the **primary** protection, not this gate.
 
 ## The privacy gate (non-negotiable)
 
