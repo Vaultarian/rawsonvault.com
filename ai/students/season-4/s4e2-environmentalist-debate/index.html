@@ -118,6 +118,14 @@
         .doc-list .doc-meta { margin-left:auto; font-family: var(--font-display); font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color: var(--gray-mid); border:1px solid var(--bronze-light); border-radius: var(--radius); padding:1px 7px; white-space:nowrap; }
         .doc-list li.doc-soon { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0; font-family: var(--font-body); font-size:0.95rem; color: var(--gray-silver); }
         .doc-list li.doc-soon .doc-icon { opacity:0.5; }
+        /* dual-format handout rows: label left, Word + Google Docs buttons right */
+        .doc-list li.doc-dual { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0; font-family: var(--font-body); font-size:0.95rem; color: var(--ink-black); }
+        .doc-dual .doc-label { flex:1 1 auto; }
+        .doc-dual .doc-actions { display:flex; gap:0.45rem; flex:none; }
+        .doc-dual .fmt-btn { display:inline-flex; align-items:center; gap:0.35rem; padding:0.3rem 0.62rem; border:1px solid var(--bronze-light); border-radius: var(--radius); background:#fff; text-decoration:none; color: var(--gray-dark); font-family: var(--font-display); font-size:0.62rem; letter-spacing:0.09em; text-transform:uppercase; white-space:nowrap; transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
+        .doc-dual .fmt-btn:hover { border-color: var(--bronze-core); color: var(--bronze-dark); box-shadow:0 1px 5px rgba(26,16,8,0.12); }
+        .doc-dual .fmt-btn img { width:16px; height:16px; object-fit:contain; flex:none; }
+        @media (max-width:640px){ .doc-dual .fmt-btn span { display:none; } .doc-dual .fmt-btn { padding:0.32rem 0.46rem; } }
         /* ---- Sources / vocab (from S4E1) ---- */
         .sources h3 { margin: var(--gap-md) 0 var(--gap-xs); }
         .sources ul { list-style:none; }
@@ -189,19 +197,27 @@
                         <span class="doc-meta">Chipp</span>
                     </a>
                 </li>
-                <li>
-                    <a href="s4e2-debate-lesson.docx" target="_blank" rel="noopener">
-                        <img class="doc-icon" src="../../../../images/third-party/microsoft-word.svg" alt="">
-                        <span>The Environmentalist Debate lesson</span>
-                        <span class="doc-meta">DOCX</span>
-                    </a>
+                <li class="doc-dual">
+                    <span class="doc-label">The Environmentalist Debate lesson</span>
+                    <span class="doc-actions">
+                        <a class="fmt-btn" href="s4e2-debate-lesson.docx" target="_blank" rel="noopener" title="Download the Word version">
+                            <img src="../../../../images/third-party/microsoft-word.svg" alt=""><span>Word</span>
+                        </a>
+                        <a class="fmt-btn" href="https://docs.google.com/document/d/1Ehddx_YAeUTkIw1sceW3ac8kMnahQzSMpltrqyHh5MY/edit?usp=sharing" target="_blank" rel="noopener" title="Open in Google Docs">
+                            <img src="../../../../images/third-party/google-docs.svg" alt=""><span>Docs</span>
+                        </a>
+                    </span>
                 </li>
-                <li>
-                    <a href="s4e2-harkness-document.docx" target="_blank" rel="noopener">
-                        <img class="doc-icon" src="../../../../images/third-party/microsoft-word.svg" alt="">
-                        <span>Harkness discussion document</span>
-                        <span class="doc-meta">DOCX</span>
-                    </a>
+                <li class="doc-dual">
+                    <span class="doc-label">Harkness discussion document</span>
+                    <span class="doc-actions">
+                        <a class="fmt-btn" href="s4e2-harkness-document.docx" target="_blank" rel="noopener" title="Download the Word version">
+                            <img src="../../../../images/third-party/microsoft-word.svg" alt=""><span>Word</span>
+                        </a>
+                        <a class="fmt-btn" href="https://docs.google.com/document/d/1YUCUgJ6pRYhHX1L9_Z4XP4BYDRZVrHTkygL48M38ot8/edit?usp=sharing" target="_blank" rel="noopener" title="Open in Google Docs">
+                            <img src="../../../../images/third-party/google-docs.svg" alt=""><span>Docs</span>
+                        </a>
+                    </span>
                 </li>
             </ul>
         </div>
