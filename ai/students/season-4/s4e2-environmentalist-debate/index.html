@@ -25,8 +25,16 @@
         /* ---- Comeback callout ---- */
         .callout { background:#5f4730; color:#fdf9f2; border-radius: var(--radius); padding:1.2rem 1.4rem; margin: var(--gap-lg) 0; }
         .callout h2 { font-family: var(--font-display); color:#f4cd92; font-size:1.05rem; margin:0 0 0.6rem; }
-        .callout p { margin:0 0 0.6rem; line-height:1.6; }
+        .callout p { margin:0 0 0.6rem; line-height:1.6; color:#fdf9f2; }
         .callout .say { background:#735840; border-left:3px solid #f4cd92; padding:0.7rem 0.9rem; border-radius: var(--radius); font-style:italic; margin:0; color:#fefcf8; }
+        .callout .wilson-two { display:flex; gap:1rem; margin-top:0.6rem; }
+        .callout .wilson-side { flex:1; background:rgba(255,255,255,0.06); border-radius: var(--radius); overflow:hidden; }
+        .callout .wilson-head { display:block; color:#fff; font-family: var(--font-display); font-size:0.85rem; letter-spacing:0.07em; text-transform:uppercase; font-weight:600; padding:0.5rem 0.85rem; }
+        .callout .wilson-head.red { background:#b0341d; }
+        .callout .wilson-head.blue { background:#1d4e89; }
+        .callout .wilson-head small { font-family: var(--font-body); text-transform:none; letter-spacing:0; font-weight:normal; opacity:0.9; font-size:0.8rem; }
+        .callout .wilson-side p { margin:0; padding:0.7rem 0.85rem; color:#fdf9f2; line-height:1.55; font-size:0.92rem; }
+        @media (max-width:640px){ .callout .wilson-two { flex-direction:column; gap:0.8rem; } }
         /* ---- Core question ---- */
         .question-box { border-left:3px solid var(--bronze-core); background:#fdf9f4; padding: var(--gap-md) var(--gap-lg); margin: var(--gap-lg) 0; font-family: var(--font-heading); font-style:italic; font-size:1.12rem; color: var(--ink-black); }
         /* ---- Listen first (preserved from the original S4E2 page) ---- */
@@ -67,6 +75,19 @@
         .note-shared b { color: var(--bronze-dark); }
         .note-where { margin: var(--gap-md) 0 0; padding:0.9rem 1.1rem; background:#eaf1f7; border:1px solid #cfe0ee; border-radius: var(--radius); line-height:1.6; }
         .note-where b { color:#1d4e89; }
+        /* ---- "If data centres were a country" ranking bar ---- */
+        .dc-rank { background:#fdf9f4; border:1px solid #ece4d8; border-radius: var(--radius); padding:1.1rem 1.3rem; margin: var(--gap-lg) 0; }
+        .dc-rank h3 { font-family: var(--font-heading); font-size:1.15rem; margin:0 0 0.2rem; color: var(--ink-black); }
+        .dc-rank-sub { font-size:0.85rem; color: var(--gray-dark); margin:0 0 0.9rem; }
+        .dc-bar-row { display:flex; align-items:center; gap:0.6rem; margin:0 0 0.4rem; }
+        .dc-name { flex:0 0 118px; font-size:0.85rem; color: var(--ink-black); text-align:right; }
+        .dc-track { flex:1; background:#efe7d9; border-radius:3px; height:18px; }
+        .dc-fill { display:block; height:100%; background: var(--bronze-core); border-radius:3px; min-width:3px; }
+        .dc-fill-ai { background:#b0341d; }
+        .dc-val { flex:0 0 54px; font-size:0.8rem; color: var(--gray-dark); }
+        .dc-highlight .dc-name { font-weight:700; color:#b0341d; }
+        .dc-rank-note { font-size:0.88rem; color: var(--gray-dark); line-height:1.55; margin:0.8rem 0 0; }
+        @media (max-width:640px){ .dc-name{flex-basis:88px; font-size:0.78rem;} .dc-val{flex-basis:42px;} }
         /* ---- Stretch ---- */
         .stretch { background:#faf6ef; border:1px solid #ece4d8; border-radius: var(--radius); padding:1rem 1.2rem; margin: var(--gap-md) 0 0; }
         .stretch h3 { font-family: var(--font-display); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--bronze-dark); margin:0 0 0.5rem; }
@@ -93,6 +114,8 @@
         .doc-list a:hover { color: var(--bronze-dark); }
         .doc-icon { width:22px; height:22px; object-fit:contain; flex:none; }
         .doc-list .doc-meta { margin-left:auto; font-family: var(--font-display); font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color: var(--gray-mid); border:1px solid var(--bronze-light); border-radius: var(--radius); padding:1px 7px; white-space:nowrap; }
+        .doc-list li.doc-soon { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0; font-family: var(--font-body); font-size:0.95rem; color: var(--gray-silver); }
+        .doc-list li.doc-soon .doc-icon { opacity:0.5; }
         /* ---- Sources / vocab (from S4E1) ---- */
         .sources h3 { margin: var(--gap-md) 0 var(--gap-xs); }
         .sources ul { list-style:none; }
@@ -147,10 +170,44 @@
 
         <div class="rule--full"></div>
 
+        <div class="documents">
+            <h2>Core reading &amp; links</h2>
+            <ul class="doc-list">
+                <li>
+                    <a href="https://drive.google.com/file/d/1iH2_8uPljXBy8XFM_tAHDfx2O_KaF2CV/view?usp=sharing" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/pdf.svg" alt="">
+                        <span><strong>Core reading:</strong> The Bottleneck, by E.O. Wilson</span>
+                        <span class="doc-meta">PDF</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://s4e2-the-environmentalist-debate.on.chipp.ai" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/chipp.png" alt="">
+                        <span>Your debate coach (argue your side, then face the other team)</span>
+                        <span class="doc-meta">Live bot</span>
+                    </a>
+                </li>
+                <li class="doc-soon">
+                    <img class="doc-icon" src="../../../../images/third-party/google-docs.svg" alt="">
+                    <span>Class handouts</span>
+                    <span class="doc-meta">coming soon</span>
+                </li>
+            </ul>
+        </div>
+
         <div class="callout">
-            <h2>"AI's killing the planet — why are you even in AI Club?"</h2>
-            <p>Someone will say this to you. The honest answer is that it's complicated, and clever people don't agree. Both sides have real facts. Here they are, so you can think for yourself and explain it to anyone who asks.</p>
-            <p class="say">You could say: "AI does use a lot of power and water, and that's a real problem. But it's also helping invent cleaner energy. The question is whether the help is bigger than the harm — and that's exactly what we argue about in AI Club."</p>
+            <h2>The big idea: E.O. Wilson's two voices</h2>
+            <p>In his essay <em>The Bottleneck</em> (the core reading above), E.O. Wilson says there are two types of people, two viewpoints, on how the whole "climate change" story will play out. Today's whole debate is really these two voices arguing. Read the essay, and listen for which voice each team is using.</p>
+            <div class="wilson-two">
+                <div class="wilson-side">
+                    <span class="wilson-head red">Red Team <small>— The Economists</small></span>
+                    <p>Human nature is to design, to grow, to invent, to keep building machines, and essentially to keep polluting and carry on as "business as usual." Eventually those same inventions will find ways to balance the pollution and the food shortages, and human innovation will be our solution. Humans don't need to change: if we are digging a hole for ourselves, we will simply design a better ladder to climb out.</p>
+                </div>
+                <div class="wilson-side">
+                    <span class="wilson-head blue">Blue Team <small>— The Environmentalists</small></span>
+                    <p>Humans must realise the Earth is, in fact, a finite source of energy, space and water, and as our population keeps soaring we must adapt and change to the reality of Earth's resources, or we will perish. No amount of engineering or ingenuity can supersede human growth, greed, and the general path towards an unsustainable future. Only by listening to the data from environmental scientists, and making societal changes on a global scale, can we begin to tilt things back towards a sustainable future.</p>
+                </div>
+            </div>
         </div>
 
         <div class="question-box">
@@ -202,6 +259,12 @@
                         <span class="why-lbl">Why this counts</span>
                         <p class="why">That's a small amount for something this useful. Each year, AI learns to do more with less power.</p>
                     </div>
+                    <div class="punch red">
+                        <p class="stump">Worried about carbon? Talk to the cows first.</p>
+                        <p class="stat">Farming animals makes about <strong>14.5% of all the world's greenhouse gases</strong> — data centres make under 1%. And cows burp <strong>methane</strong>, a gas about <strong>28 times</strong> worse than CO₂. <span class="cite">FAO</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">If you really want to cut warming, AI is a tiny target next to a much bigger one.</p>
+                    </div>
                 </div>
                 <div class="team-col">
                     <div class="team-col-head blue">BLUE · The Environmentalists</div>
@@ -217,12 +280,32 @@
                         <span class="why-lbl">Why this bites</span>
                         <p class="why">The problem isn't how much it uses today, it's how fast it's growing. At the same time, we're trying to move cars and heating onto electricity too. There's only so much clean power, and AI is grabbing more of it.</p>
                     </div>
+                    <div class="punch blue">
+                        <p class="stump">These data centres pollute like a whole country.</p>
+                        <p class="stat">All the world's data centres give off about <strong>180 million tonnes of CO₂ a year</strong> (2024) — about as much as a whole country. Just the new gas-powered AI ones could soon out-pollute a country like <strong>Morocco</strong>. <span class="cite">Carbon Brief, 2024</span></p>
+                        <span class="why-lbl">Why this bites</span>
+                        <p class="why">That's a country's worth of warming added on top of everyone else's, and it climbs every year.</p>
+                    </div>
                 </div>
             </div>
             <div class="note-shared">
                 <b>One number, two stories</b>
                 See "1 to 2 out of every 100" on <em>both</em> sides? RED says "that's tiny, and getting better." BLUE says "that's small now, but it's doubling fast." Same fact, two stories. When someone throws a single number at you, the smart move is to ask which story they're telling.
             </div>
+        </div>
+
+        <!-- BIG PICTURE: data centres as a country -->
+        <div class="dc-rank">
+            <h3>If the world's data centres were a country…</h3>
+            <p class="dc-rank-sub">The biggest CO₂ emitters, in millions of tonnes a year (2023). The longer the bar, the more it pollutes.</p>
+            <div class="dc-bar-row"><span class="dc-name">China</span><span class="dc-track"><span class="dc-fill" style="width:100%"></span></span><span class="dc-val">13,300</span></div>
+            <div class="dc-bar-row"><span class="dc-name">USA</span><span class="dc-track"><span class="dc-fill" style="width:35%"></span></span><span class="dc-val">4,700</span></div>
+            <div class="dc-bar-row"><span class="dc-name">India</span><span class="dc-track"><span class="dc-fill" style="width:23%"></span></span><span class="dc-val">3,000</span></div>
+            <div class="dc-bar-row"><span class="dc-name">Russia</span><span class="dc-track"><span class="dc-fill" style="width:16%"></span></span><span class="dc-val">2,100</span></div>
+            <div class="dc-bar-row"><span class="dc-name">Japan</span><span class="dc-track"><span class="dc-fill" style="width:7%"></span></span><span class="dc-val">945</span></div>
+            <div class="dc-bar-row"><span class="dc-name">Germany</span><span class="dc-track"><span class="dc-fill" style="width:4.4%"></span></span><span class="dc-val">580</span></div>
+            <div class="dc-bar-row dc-highlight"><span class="dc-name">🖥️ Data centres</span><span class="dc-track"><span class="dc-fill dc-fill-ai" style="width:1.4%"></span></span><span class="dc-val">~180</span></div>
+            <p class="dc-rank-note">About 25 more countries fit between Germany and here, so the world's data centres would rank roughly <strong>30th out of ~195 countries</strong> — bigger than more than 160 countries on their own, but about <strong>70 times smaller than China</strong>. A small slice of a giant number.</p>
         </div>
 
         <!-- TOPIC 2 -->
@@ -282,6 +365,18 @@
                         <span class="why-lbl">Why this counts</span>
                         <p class="why">The problem isn't AI, it's putting it in a desert. Build it somewhere cold and rainy and the water worry mostly disappears — which is why Scotland and the Nordics want them.</p>
                     </div>
+                    <div class="punch red">
+                        <p class="stump">Put the data centres in space — then no water at all.</p>
+                        <p class="stat">Companies like <strong>Starcloud</strong> and <strong>Google</strong> are already testing AI computers in orbit. In space, solar panels make up to <strong>8 times</strong> more power, and the heat just radiates away into the cold of space, so <strong>no water</strong> is needed to cool them. <span class="cite">Scientific American, 2025</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">It could remove the water problem completely. The catch: it takes huge amounts of energy and rocket fuel to launch them up there.</p>
+                    </div>
+                    <div class="punch red">
+                        <p class="stump">One burger out-drinks a whole year of your AI.</p>
+                        <p class="stat">Making <strong>1 kg of beef</strong> uses about <strong>15,000 litres of water</strong> — around 100 bathtubs. That's far more than a whole year of your AI questions. <span class="cite">Water Footprint Network</span></p>
+                        <span class="why-lbl">Why this counts</span>
+                        <p class="why">If water is the worry, beef is a much bigger straw in the cup than AI.</p>
+                    </div>
                 </div>
                 <div class="team-col">
                     <div class="team-col-head blue">BLUE · The Environmentalists</div>
@@ -302,6 +397,10 @@
             <div class="note-where">
                 <b>The smart move — "it depends where"</b>
                 When someone says "AI wastes water," the clever reply isn't "no it doesn't" or "yes it's terrible." It's <em>"it depends where."</em> In wet Scotland? It barely matters. In an Arizona desert? A real problem — and that's where they keep building them. Knowing the difference is what makes you sound like you've actually thought about it.
+            </div>
+            <div class="note-shared">
+                <b>Watch for the dodge — "someone else is worse"</b>
+                RED loves to point at cows, or promise data centres in space. Both are true and worth knowing: cattle really are worse, and orbit really would skip the water. But "someone else is worse" doesn't make AI's own footprint zero, and those space centres are years away and ride up on fuel-burning rockets. The honest question isn't "is AI the worst?" It's "is AI's cost worth it?" Two things can both be problems at once.
             </div>
         </div>
 
@@ -339,6 +438,12 @@
             </div>
         </div>
 
+        <div class="callout">
+            <h2>"AI's killing the planet — why are you even in AI Club?"</h2>
+            <p>Someone will say this to you. The honest answer is that it's complicated, and clever people don't agree. Both sides have real facts — and now you have them, so you can think for yourself and explain it to anyone who asks.</p>
+            <p class="say">You could say: "AI does use a lot of power and water, and that's a real problem. But it's also helping invent cleaner energy. The question is whether the help is bigger than the harm — and that's exactly what we argue about in AI Club."</p>
+        </div>
+
         <!-- HEAD TO HEAD -->
         <h2>The whole debate, at a glance</h2>
         <div class="h2h">
@@ -364,19 +469,7 @@
             </div>
         </div>
 
-        <!-- DOCUMENTS -->
-        <div class="documents">
-            <h2>For the session</h2>
-            <ul class="doc-list">
-                <li>
-                    <a href="https://s4e2-the-environmentalist-debate.on.chipp.ai" target="_blank" rel="noopener">
-                        <img class="doc-icon" src="../../../../images/third-party/chipp.png" alt="">
-                        <span>Your debate coach — build your side, then face the other team</span>
-                        <span class="doc-meta">Live bot</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!-- (session links live in "Core reading & links" at the top) -->
 
         <!-- SOURCES -->
         <div class="sources">
