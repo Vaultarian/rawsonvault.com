@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .criteria-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
+        .criteria-list li { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); padding: 0.5rem 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .criteria-list strong { color: var(--ink-black); font-weight: 700; }
+        .year-label { font-family: 'Cinzel', Georgia, serif; font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--bronze-core); margin: var(--gap-lg) 0 var(--gap-sm); }
+        .status-flag { display: inline-block; font-family: 'Cinzel', Georgia, serif; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); border: 1px solid var(--bronze-light); border-radius: 3px; padding: 0.15rem 0.5rem; margin-left: 0.5rem; vertical-align: middle; }
+        .unit-block { margin: var(--gap-md) 0 var(--gap-lg); }
+        .unit-block h3 { font-family: 'Merriweather', Georgia, serif; font-size: 1.05rem; color: var(--ink-black); margin-bottom: var(--gap-xs); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../">The Vault</a><span>·</span>
+            <a href="../">MYP</a><span>·</span>
+            Design
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">IB MYP · Design · Years 8–9</span>
+            <h1>MYP Design</h1>
+            <p class="subtitle">The computer science strand at St Leonards — robotics, programming, and computational thinking, taught through the design cycle</p>
+        </div>
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <p>At St Leonards, MYP Design in Years 8 and 9 is the computing strand that feeds into GCSE Computer Science (OCR J277) in Years 10 and 11. The timetable labels it Design; the content is computer science — robotics and control, programming, animation and computational thinking. Each year is anchored by one well-developed main unit and rounded out with shorter strands. Lessons run for roughly 52 minutes a week.</p>
+            <p>Design is assessed against four criteria, each marked out of 8, that follow the MYP design cycle: investigating a problem, developing ideas, creating the solution, and evaluating it.</p>
+        </div>
+
+        <h2>The four MYP Design criteria</h2>
+        <ul class="criteria-list">
+            <li><strong>A — Inquiring and analysing.</strong> Investigating the problem, researching existing solutions, and writing a clear design brief.</li>
+            <li><strong>B — Developing ideas.</strong> Writing a design specification, generating and presenting feasible ideas, and planning how to make them.</li>
+            <li><strong>C — Creating the solution.</strong> Following a plan to build the product or program, and documenting changes along the way.</li>
+            <li><strong>D — Evaluating.</strong> Testing the solution against the specification, evaluating its success, and suggesting improvements.</li>
+        </ul>
+
+        <div class="rule--full"></div>
+
+        <p class="year-label">Year 8 — Robotics &amp; Control</p>
+        <div class="unit-block">
+            <h3>Robotics &amp; control <span class="status-flag">Main unit</span></h3>
+            <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">The developed Year 8 unit. Students program TPBot robot cars driven by the BBC micro:bit, using MakeCode blocks and MicroPython, to complete a series of control challenges. It runs as a full design-cycle project: inquire into a control problem, design a solution, build and program the robot, then test and evaluate it against the brief. The kit lives in the school's computing room.</p>
+        </div>
+        <div class="unit-block">
+            <h3>Computational thinking <span class="status-flag">In development</span></h3>
+            <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">A shorter strand alongside the robotics unit, drawing on Bebras-style computing challenges to build problem-decomposition and algorithmic reasoning away from a screen. An area being grown as the course is made Alex's own.</p>
+        </div>
+        <div class="unit-block">
+            <h3>AI &amp; typing <span class="status-flag">In development</span></h3>
+            <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">A short closing strand on AI awareness and touch-typing, sitting at the end of the year. Content and length are being settled.</p>
+        </div>
+
+        <p class="year-label">Year 9 — Animations &amp; Games</p>
+        <div class="unit-block">
+            <h3>Interactive animations &amp; games <span class="status-flag">Main unit</span></h3>
+            <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">The developed Year 9 unit and the year's heaviest coding load. Students design, build and evaluate an interactive animation or game in Python using Pygame Zero, run in the Thonny or Raspberry Pi code editor. It is a clean full design-cycle task: inquire into the genre and audience, specify and design the game, build it, then playtest and evaluate against the specification.</p>
+        </div>
+        <div class="unit-block">
+            <h3>CS taster <span class="status-flag">In development</span></h3>
+            <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">A deliberate widening of the lens beyond coding, designed to show students what computer science is and to bridge towards the GCSE J277 choice. Computational thinking and real-world CS live here, alongside more Bebras-style challenges.</p>
+        </div>
+        <div class="unit-block">
+            <h3>AI &amp; typing <span class="status-flag">In development</span></h3>
+            <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">The same closing AI-awareness and touch-typing strand as in Year 8, with content and length still being decided.</p>
+        </div>
+
+        <div class="rule--full"></div>
+        <div class="article">
+            <p><em>The two main units, Robotics &amp; Control and Animations &amp; Games, are mature and inherited intact from the previous teacher. The shorter strands are being built out, and St Leonards' task-specific criteria and weighting are confirmed with the department before first assessment.</em></p>
+        </div>
+
+        <footer class="site-footer">The Vault · MYP Design · 2026</footer>
+    </div>
+</body>
+</html>
