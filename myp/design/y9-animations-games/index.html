@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year 9 Animations &amp; Games — MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../vault.css">
+    <style>
+        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
+        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
+        .criteria-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
+        .criteria-list li { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); padding: 0.5rem 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .criteria-list strong { color: var(--ink-black); font-weight: 700; }
+        .inquiry-box { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; line-height: 1.6; }
+        .unit-list { list-style: none; counter-reset: unit; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
+        .unit-list li { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.6; padding: 0.7rem 0 0.7rem 3rem; border-bottom: 1px solid #f0ece4; position: relative; }
+        .unit-list li::before { counter-increment: unit; content: counter(unit, upper-alpha); position: absolute; left: 0; top: 0.6rem; font-family: 'Cinzel', Georgia, serif; font-size: 1.1rem; color: var(--bronze-core); letter-spacing: 0.05em; }
+        .unit-list strong { color: var(--ink-black); font-weight: 700; }
+        .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../">The Vault</a><span>·</span>
+            <a href="../../">MYP</a><span>·</span>
+            <a href="../">Design</a><span>·</span>
+            Year 9 Animations &amp; Games
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">MYP Design · Year 9 · Main unit</span>
+            <h1>Interactive Animations &amp; Games</h1>
+            <p class="subtitle">Designing and coding interactive animations and games in Game Lab, taught through the full design cycle</p>
+        </div>
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <p>Year 9 Design moves from physical robots to the screen. Students learn to program interactive animations and games in <strong>Game Lab</strong>, the browser-based coding environment from code.org. Game Lab starts with drag-and-drop blocks and shows the matching JavaScript alongside, so students can move from blocks to text at their own pace. Over the year they build from drawing simple shapes to animating sprites, responding to keyboard and mouse input, and finally designing an original interactive card or game of their own. Lessons run for about 52 minutes a week.</p>
+            <p>The unit follows the code.org "Interactive Animations and Games" course. The first six weeks or so build coding skills one idea at a time, while a parallel strand runs the design-cycle summatives: studying what makes a good game, writing a design brief, planning and building an interactive card, then evaluating it. Robert MacGregor's pattern was roughly two periods a week on Game Lab skills and one on the summative project, so the coding and the design thinking grow together rather than one after the other.</p>
+        </div>
+
+        <div class="inquiry-box">
+            <strong>The shape of the year:</strong> learn to code in Game Lab (shapes, sprites, the draw loop, conditionals, user input), study what makes a good game and write a design brief, then design, build, and evaluate an interactive card or game through the MYP design cycle. The year closes with a short run of lessons that introduce computer science and AI, partly to help students decide whether to take CS at GCSE.
+        </div>
+
+        <h2>The summative project — an interactive card, built through the design cycle</h2>
+        <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">The spine of the year is one design project that runs across all four MYP Design criteria. Most students build an interactive greetings card in Game Lab; stronger coders can extend the same brief into a small game.</p>
+        <ol class="unit-list">
+            <li><strong>Inquiring and analysing.</strong> Students decide what makes a good game, reviewing classic and Scratch-hosted games against criteria they choose — challenge level, graphics, sound, fun factor, usability, and the rest. They then write a short design brief: who the card or game is for, the target audience and its interests, the style or genre, and a one-line summary of the idea.</li>
+            <li><strong>Developing ideas.</strong> Working from the brief, students write a design specification (the occasion, the recipient, the elements the card must contain, including its interactive parts) and then sketch and annotate several possible designs, explaining why they chose the one they will build.</li>
+            <li><strong>Creating the solution.</strong> Students plan the card in detail using the C1 planning task, then build it in Game Lab (Lesson 18 of the code.org unit). The plan sets a real coding target: at least three sprites with updating properties, two conditionals that respond to user input, one conditional triggered by a variable or sprite property, and some text. They are graded on how attractive, how functional, and how technically complex the result is.</li>
+            <li><strong>Evaluating.</strong> Students write a test plan listing each action, its expected effect, and whether it works; gather constructive feedback from three classmates; note what is strong about their card; and discuss how they would improve it.</li>
+        </ol>
+        <div class="credit-note">
+            Use of AI is restricted within the summative: where a section asks for the student's own design thinking (for example the specification), generated text scores zero. The unit makes the line explicit so students treat AI as a tool, not a substitute.
+        </div>
+
+        <div class="rule--full"></div>
+
+        <h2>What students learn</h2>
+        <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">Each Game Lab lesson introduces one idea, which then becomes available for the summative project. The concepts accumulate roughly in this order:</p>
+        <ul class="understanding-list">
+            <li>Drawing in Game Lab — shapes, parameters, fill, stroke, and the coordinate system</li>
+            <li>Variables and random numbers to store and vary information</li>
+            <li>Sprites and their properties — creating sprites, changing position, scale, and appearance</li>
+            <li>Text and captioned scenes drawn on screen</li>
+            <li>The draw loop — the idea that the screen redraws many times a second, which makes animation possible</li>
+            <li>Sprite movement and animated scenes, including the counter pattern for steady movement</li>
+            <li>Conditionals — using <em>if</em> and <em>if…else</em> to make the program respond and decide</li>
+            <li>Keyboard and mouse input, so the animation reacts to the user</li>
+            <li>Showing and hiding sprites, and changing the background in response to a click or key press</li>
+            <li>For students extending into games — groups, collisions, edges, and velocity</li>
+        </ul>
+
+        <div class="rule--full"></div>
+
+        <h2>How it is assessed</h2>
+        <ul class="criteria-list">
+            <li><strong>A — Inquiring and analysing.</strong> Reviewing existing games against chosen criteria and writing a design brief that draws on that research.</li>
+            <li><strong>B — Developing ideas.</strong> Writing a design specification and presenting and justifying several annotated design ideas.</li>
+            <li><strong>C — Creating the solution.</strong> Planning and building the interactive card in Game Lab, documented through the C1 planning task and graded on attractiveness, functionality, and technical complexity.</li>
+            <li><strong>D — Evaluating.</strong> Testing the card against a written test plan, gathering peer feedback, and proposing improvements.</li>
+        </ul>
+        <div class="article">
+            <p>The handover assessment splits the project into four summatives that map directly onto the criteria: Part A (inquiring and analysing), Part B (developing ideas), Part C (creating the card), and Part D (evaluating). St Leonards' task-specific criteria and weighting are confirmed with the department before first assessment.</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <h2>The closing strand — introducing computer science and AI</h2>
+        <div class="article">
+            <p>The year ends with a short six-lesson run that steps back from the project to widen the lens. Part of its purpose is recruitment: Robert MacGregor built it to help Year 9 students decide whether to take Computer Science at GCSE, so the lessons are pitched to show what the subject is really about.</p>
+            <p>Three lessons look at how AI influences people and how to think critically about it, using the trails.scot "How AI Influences You" materials. Three more cover essential computer science ideas, computational thinking (decomposition and abstraction), what the parts of a computer actually do, and how computers store data in binary, alongside a preview of the GCSE topics: programming, algorithms, systems architecture, networks, security, ethics, and Boolean logic. A separate lesson on AI and coding has students use a tool like Gemini to generate and adapt Game Lab code, with the framing that AI supercharges a human in the driving seat but never replaces the skill of learning to code. Touch-typing practice through Typing Club runs alongside as homework.</p>
+            <p>Web design featured as the previous Year 9 unit and can still roll on here as an optional extension once the main project is finished, but the current main unit is interactive animations and games.</p>
+        </div>
+
+        <div class="credit-note">
+            Built on code.org's <em>Interactive Animations and Games</em> course, used in the free Game Lab environment. Game review activities draw on community projects hosted on Scratch (MIT). The closing AI lessons use the trails.scot "How AI Influences You" resource. Unit content is described and adapted here, not republished; the original teaching resources remain the work of their authors.
+        </div>
+
+        <footer class="site-footer">The Vault · MYP Design · Year 9 Animations &amp; Games · 2026</footer>
+    </div>
+</body>
+</html>
