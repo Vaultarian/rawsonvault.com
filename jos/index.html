@@ -45,13 +45,20 @@
         .footer { text-align: center; } .vault-link { font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: #3d9595; text-decoration: none; text-transform: uppercase; } .vault-link:hover { color: #2d7575; }
         .museum-button { display: block; max-width: 480px; margin: 0 auto 2.5rem; text-align: center; background: linear-gradient(90deg, #d9643a, #3d9595); color: white; font-family: 'Fredoka One', cursive; font-size: 1.6rem; padding: 1.1rem 1.5rem; border-radius: 18px; text-decoration: none; letter-spacing: 0.04em; transition: transform 0.12s, box-shadow 0.12s; }
         .museum-button:hover { transform: scale(1.03); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .big-nav { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; }
+        .big-nav-btn { font-family: 'Fredoka One', cursive; font-size: 1.5rem; padding: 0.75rem 2.5rem; border-radius: 50px; text-decoration: none; color: white; background: #3d9595; transition: background 0.15s, transform 0.1s; letter-spacing: 0.04em; }
+        .big-nav-btn:hover { background: #d9643a; transform: scale(1.05); }
     </style>
 </head>
 <body>
     <div id="canvasContainer"><canvas id="loaderCanvas"></canvas><div id="loadingText">0%</div></div>
     <div class="container">
         <h1 class="site-title">Jos' Projects</h1>
-        <div class="welcome-box">Welcome to Jos' Projects — a fun home page for all the games I made with Claude.ai and ChatGPT (try them!)</div>
+        <div class="welcome-box">Welcome to Jos' Projects — a fun home page for all the games and tools I made with Claude.ai and ChatGPT (try them!)</div>
+        <div class="big-nav">
+            <a class="big-nav-btn" href="#games">🎮 Games</a>
+            <a class="big-nav-btn" href="#tools">🛠️ Tools</a>
+        </div>
         <nav class="nav-tabs">
             <span class="nav-tab active">Home</span><a class="nav-tab" href="how-i-did-it/">How I Did It</a>
             <div class="nav-item">
@@ -70,7 +77,7 @@
             </div>
             <a class="nav-tab" href="optical-illusions/" style="margin-left:auto;">👁️ Museum</a>
         </nav>
-        <div class="main-grid" id="games">
+        <div class="main-grid" id="games" style="scroll-margin-top:1rem;">
             <div class="panel">
                 <p class="panel-heading">These are my projects I made with Claude. Some fun games I made!</p>
                 <div class="pill-grid">
@@ -96,6 +103,12 @@
                         <a class="pill" href="snowman/level-1/">Level 1</a><a class="pill" href="snowman/level-2/">Level 2</a><a class="pill" href="snowman/level-3/">Level 3</a><a class="pill" href="snowman/level-4/">Level 4</a><a class="pill hard" href="snowman/level-5/">Level 5 (Hard!)</a>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div id="tools" style="margin-bottom:1.5rem;">
+            <p class="panel-heading" style="text-align:center; margin-bottom:1rem;">🛠️ Tools I made</p>
+            <div style="display:flex; gap:0.6rem; flex-wrap:wrap; justify-content:center;">
+                <a class="pill" href="timer/">⏱️ Timer & Stopwatch</a>
             </div>
         </div>
         <a class="museum-button" href="optical-illusions/">👁️ MUSEUM 👁️</a>
