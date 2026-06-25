@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flip a Coin — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      background: linear-gradient(135deg, #1a1a3e, #2d1b4e);
+      transition: background 1s ease;
+      overflow: hidden;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .back-link {
+      position: fixed; top: 20px; left: 20px;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44; text-decoration: none; font-size: 1rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #fff; }
+
+    h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3rem; color: white;
+      letter-spacing: 4px;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    /* ---- COIN ---- */
+    .coin-scene {
+      perspective: 900px;
+      width: 220px; height: 220px;
+    }
+
+    .coin {
+      width: 220px; height: 220px;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .coin-face {
+      position: absolute;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      backface-visibility: hidden;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow:
+        inset 0 -10px 24px rgba(0,0,0,0.35),
+        inset 0 10px 20px rgba(255,220,100,0.3),
+        0 12px 50px rgba(0,0,0,0.5);
+    }
+
+    .coin-heads {
+      background: url('heads.jpg') center/cover no-repeat;
+      border: 6px solid #a0522d;
+      box-shadow:
+        inset 0 0 30px rgba(0,0,0,0.25),
+        0 12px 50px rgba(0,0,0,0.5);
+    }
+
+    .coin-tails {
+      background: url('tails.jpg') center/cover no-repeat;
+      border: 6px solid #a0522d;
+      transform: rotateY(180deg);
+      box-shadow:
+        inset 0 0 30px rgba(0,0,0,0.25),
+        0 12px 50px rgba(0,0,0,0.5);
+    }
+
+    .coin-inner { display: none; }
+
+    /* ---- RESULT ---- */
+    .result {
+      font-family: 'Fredoka One', cursive;
+      font-size: 4.5rem;
+      color: white;
+      letter-spacing: 6px;
+      min-height: 5rem;
+      text-align: center;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: scale(0.4) translateY(20px);
+      transition: opacity 0.5s cubic-bezier(0.34,1.56,0.64,1),
+                  transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .result.show {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* ---- BUTTON ---- */
+    .flip-btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem;
+      padding: 18px 72px;
+      border-radius: 50px;
+      border: none; cursor: pointer;
+      background: white; color: #1a1a3e;
+      letter-spacing: 2px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    }
+    .flip-btn:hover:not(:disabled) { transform: scale(1.06); box-shadow: 0 14px 40px rgba(0,0,0,0.35); }
+    .flip-btn:active:not(:disabled) { transform: scale(0.95); }
+    .flip-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ---- CONFETTI CANVAS ---- */
+    #confetti-canvas {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+  <a class="back-link" href="../">← Back</a>
+
+  <h1>🪙 FLIP A COIN</h1>
+
+  <div class="coin-scene">
+    <div class="coin" id="coin">
+      <div class="coin-face coin-heads"></div>
+      <div class="coin-face coin-tails"></div>
+    </div>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <button class="flip-btn" id="flip-btn" onclick="flipCoin()">FLIP</button>
+
+<script>
+  const BG_COLORS = [
+    'linear-gradient(135deg, #667eea, #764ba2)',
+    'linear-gradient(135deg, #f093fb, #f5576c)',
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #fa709a, #fee140)',
+    'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+    'linear-gradient(135deg, #fd7443, #fcb69f)',
+    'linear-gradient(135deg, #30cfd0, #330867)',
+    'linear-gradient(135deg, #f7971e, #ffd200)',
+    'linear-gradient(135deg, #56ab2f, #a8e063)',
+  ];
+
+  let bgIndex = 0;
+  let totalRotation = 0;
+  let isFlipping = false;
+
+  function flipCoin() {
+    if (isFlipping) return;
+    isFlipping = true;
+
+    const coin    = document.getElementById('coin');
+    const result  = document.getElementById('result');
+    const btn     = document.getElementById('flip-btn');
+
+    // Hide result
+    result.classList.remove('show');
+    btn.disabled = true;
+
+    const isHeads = Math.random() < 0.5;
+
+    // 7 full spins + land face
+    const spins = 7;
+    totalRotation += spins * 360 + (isHeads ? 0 : 180);
+
+    coin.style.transition = 'transform 2.2s cubic-bezier(0.33, 0.66, 0.4, 1)';
+    coin.style.transform  = `rotateY(${totalRotation}deg)`;
+
+    setTimeout(() => {
+      // Show result with bounce
+      result.textContent = isHeads ? '🟡  HEADS!' : '🟤  TAILS!';
+      result.classList.add('show');
+
+      // Change background
+      bgIndex = (bgIndex + 1) % BG_COLORS.length;
+      document.body.style.background = BG_COLORS[bgIndex];
+
+      launchConfetti();
+      playApplause();
+
+      btn.textContent = 'FLIP AGAIN';
+      btn.disabled = false;
+      isFlipping = false;
+    }, 2300);
+  }
+
+  /* ---- CONFETTI ---- */
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff',
+                   '#ff9a3c','#00d4ff','#ff4dd8','#aaff00','#ff007f'];
+
+  let pieces = [];
+
+  function launchConfetti() {
+    pieces = [];
+    for (let i = 0; i < 180; i++) {
+      pieces.push({
+        x:  Math.random() * canvas.width,
+        y:  -10 - Math.random() * 300,
+        w:  8  + Math.random() * 12,
+        h:  5  + Math.random() * 7,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        rot:   Math.random() * Math.PI * 2,
+        rspd:  (Math.random() - 0.5) * 0.18,
+        vx:    (Math.random() - 0.5) * 5,
+        vy:    2 + Math.random() * 4,
+        alpha: 1,
+      });
+    }
+    requestAnimationFrame(drawConfetti);
+  }
+
+  function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    for (const p of pieces) {
+      p.x   += p.vx;
+      p.y   += p.vy;
+      p.vy  += 0.07;
+      p.rot += p.rspd;
+      if (p.y > canvas.height - 60) p.alpha = Math.max(0, p.alpha - 0.025);
+      if (p.alpha > 0) alive = true;
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (alive) requestAnimationFrame(drawConfetti);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  /* ---- APPLAUSE ---- */
+  function playApplause() {
+    try {
+      const ac = new AudioContext();
+      for (let i = 0; i < 14; i++) {
+        setTimeout(() => {
+          const dur = 0.35 + Math.random() * 0.5;
+          const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+          const d   = buf.getChannelData(0);
+          for (let j = 0; j < d.length; j++) d[j] = Math.random() * 2 - 1;
+
+          const src    = ac.createBufferSource();
+          src.buffer   = buf;
+
+          const filt       = ac.createBiquadFilter();
+          filt.type        = 'bandpass';
+          filt.frequency.value = 700 + Math.random() * 1800;
+          filt.Q.value     = 0.4;
+
+          const gain = ac.createGain();
+          gain.gain.setValueAtTime(0, ac.currentTime);
+          gain.gain.linearRampToValueAtTime(0.22, ac.currentTime + 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+
+          src.connect(filt); filt.connect(gain); gain.connect(ac.destination);
+          src.start();
+        }, i * 70);
+      }
+    } catch(e) {}
+  }
+</script>
+</body>
+</html>
