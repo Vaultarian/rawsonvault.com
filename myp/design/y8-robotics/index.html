@@ -3,23 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Year 8 Robotics — MYP Design — The Vault</title>
+    <title>Robotics &amp; Control — MYP Design — The Vault</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../vault.css">
     <style>
-        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
-        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
-        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
-        .criteria-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
-        .criteria-list li { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); padding: 0.5rem 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
-        .criteria-list strong { color: var(--ink-black); font-weight: 700; }
-        .inquiry-box { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; line-height: 1.6; }
-        .unit-list { list-style: none; counter-reset: unit; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
-        .unit-list li { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.6; padding: 0.7rem 0 0.7rem 3rem; border-bottom: 1px solid #f0ece4; position: relative; }
-        .unit-list li::before { counter-increment: unit; content: counter(unit, decimal-leading-zero); position: absolute; left: 0; top: 0.65rem; font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--bronze-core); letter-spacing: 0.05em; }
-        .unit-list strong { color: var(--ink-black); font-weight: 700; }
+        .summary { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-lg); }
+        .criteria-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .criteria-table td { padding: 0.65rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .crit-badge { display: inline-block; min-width: 1.35rem; text-align: center; font-weight: 700; font-size: 0.78rem; color: #fff; background: var(--bronze-light); border-radius: 3px; padding: 0.1rem 0.34rem; margin-right: 0.25rem; }
+        .a-name { color: var(--ink-black); font-weight: 700; font-size: 0.96rem; width: 46%; }
+        .a-crit { color: var(--gray-dark); font-size: 0.88rem; }
+        .calendar-stub { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); border: 1px dashed var(--bronze-light); border-radius: 4px; padding: var(--gap-md); text-align: center; margin: var(--gap-xs) 0 var(--gap-lg); background: #fdfbf7; }
+        .lesson-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .lesson-table td { padding: 0.7rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .lesson-table tr:hover td { background: #fdf9f4; }
+        .lesson-table .ln { width: 3.2rem; color: var(--bronze-light); font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+        .lesson-table .lt { color: var(--ink-black); font-size: 0.98rem; }
+        .lesson-table .lt span { display: block; color: var(--gray-dark); font-size: 0.84rem; line-height: 1.5; margin-top: 0.15rem; }
+        .lesson-table .ld { width: 8.5rem; text-align: right; white-space: nowrap; }
+        .ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-left: 0.4rem; border-radius: 6px; text-decoration: none; transition: transform 0.15s, opacity 0.15s; }
+        .ico img { width: 26px; height: 26px; object-fit: contain; display: block; }
+        .ico:hover { transform: translateY(-1px) scale(1.06); }
+        .ico--none { cursor: default; }
+        .ico--none img { filter: grayscale(1); opacity: 0.22; }
+        .ico--none:hover { transform: none; }
+        @media (max-width: 640px) {
+            .lesson-table .ld { width: auto; }
+            .ico { margin: 0.1rem 0 0.1rem 0.25rem; }
+        }
+        .unit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); line-height: 1.6; margin: calc(-1 * var(--gap-sm)) 0 var(--gap-lg); }
+        .unit-note a { color: var(--bronze-light); }
         .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; line-height: 1.6; }
     </style>
 </head>
@@ -29,65 +44,54 @@
             <a href="../../../">The Vault</a><span>·</span>
             <a href="../../">MYP</a><span>·</span>
             <a href="../">Design</a><span>·</span>
-            Year 8 Robotics
+            Robotics &amp; Control
         </nav>
         <div class="section-header">
             <span class="eyebrow">MYP Design · Year 8 · Main unit</span>
             <h1>Robotics &amp; Control</h1>
-            <p class="subtitle">Physical computing with the BBC micro:bit and TPBot robots, taught through the full design cycle</p>
         </div>
         <div class="rule--full"></div>
 
-        <div class="article">
-            <p>Year 8 Design is one sustained course: students learn to program the BBC micro:bit, then put that programming to work driving TPBot robot cars to solve real control challenges. The micro:bit is a small programmable circuit board with a grid of LEDs, two buttons, a radio, and a set of sensors, programmed in the block-based MakeCode environment. Over the year students move from lighting a single LED to building a robot that follows a line, responds to radio control, and completes a task they have designed themselves.</p>
-            <p>The course is built as a thirteen-unit progression. Each unit introduces one computing idea through an unplugged activity, a guided coding activity, and an open project where students design and build something of their own. The robotics challenges, making a robot follow a line, drive a set path, or pick up an object, draw on the programming concepts as they are learned. Lessons run for about 52 minutes a week, and the kit lives in room BY3.</p>
-        </div>
+        <h2>Summary</h2>
+        <p class="summary">Year 8 Design is one sustained course in physical computing. Students learn to program the BBC micro:bit — its LED grid, buttons, sensors and radio — then put that programming to work driving TPBot robot cars through escalating control challenges, closing with a robot they design, build and evaluate against a brief of their own.</p>
 
-        <div class="inquiry-box">
-            <strong>The shape of the year:</strong> learn to code the micro:bit (react to surroundings, take inputs, control a robot and servos), study how robots are used in real life, then design and build a robot that solves a chosen task. The course closes with a short web-design strand in which students build a stylish webpage on a topic of their choice.
-        </div>
+        <h2>Assessments</h2>
+        <table class="criteria-table">
+            <tr><td class="a-name">Robots in the Real World</td><td class="a-crit"><span class="crit-badge">A</span><span class="crit-badge">D</span> Inquiring &amp; analysing · Evaluating</td></tr>
+            <tr><td class="a-name">Design a Robot for a Task</td><td class="a-crit"><span class="crit-badge">B</span><span class="crit-badge">C</span> Developing ideas · Creating the solution</td></tr>
+        </table>
 
-        <h2>The thirteen-unit progression</h2>
-        <p style="font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65;">Each unit builds on the last, so the concepts accumulate towards the final independent project.</p>
-        <ol class="unit-list">
-            <li><strong>Making.</strong> First contact with the micro:bit and the MakeCode environment: importing a program and downloading it to the board. Students interview a partner about an imaginary pet, then design and build a "micro:pet" housing that fits the board and battery, an introduction to design thinking and prototyping.</li>
-            <li><strong>Algorithms.</strong> The four parts of a computer and the idea of input and output. Through unplugged work on algorithms and functions, then pseudocode, events, and event handlers, students program the micro:bit to make faces and build a fidget cube that responds to different inputs.</li>
-            <li><strong>Variables.</strong> Using variables to store and change information, with meaningful names and basic arithmetic. Students code a scorekeeper that uses the buttons for input and the LED screen for output, then build an object that counts score, steps, or turns.</li>
-            <li><strong>Conditionals.</strong> Decision-making with the <em>if…then</em> and <em>if…then…else</em> logic blocks. Students act out conditionals unplugged, code Rock Paper Scissors, then design and build their own micro:bit board game.</li>
-            <li><strong>Iteration.</strong> Making things repeat with the <em>repeat</em>, <em>while</em>, and <em>for</em> loop blocks, alongside sprite and music blocks. Students build a project that uses sound, display, and motion, often driving a micro-servo for the first time.</li>
-            <li><strong>Mini Project.</strong> A consolidation unit. Students plan, track, and showcase a short independent project that demonstrates one concept from the year so far, with a rubric that rewards the problem-solving process as much as the finished result.</li>
-            <li><strong>Coordinates.</strong> The 5×5 LED grid as a coordinate system, with the origin at the top left. Students play a Battleship variant unplugged, plot and animate individual LEDs by their x and y values, then make a screensaver or game.</li>
-            <li><strong>Booleans.</strong> The Boolean data type and Boolean operators to control program flow and track state. Students write pseudocode to simulate two coins tossed at once, code a double coin flipper, then build a project that uses Booleans throughout.</li>
-            <li><strong>Binary.</strong> Bits, bytes, and the base-2 number system. Using a "binary vending machine," students convert between decimal and binary, code a binary calculator, then build a working cardboard binary counter that displays decimal values.</li>
-            <li><strong>Radio.</strong> Using the micro:bit's radio to send and receive data between two boards. After a Hotter/Colder call-and-response game, students work in pairs to design a program that communicates number and string data, the foundation for radio-controlling a robot.</li>
-            <li><strong>Arrays.</strong> Storing lists of related values and retrieving them by index, plus the bubble, selection, and insertion sorting strategies. Students code a charades game and random LED constellations, then build a musical instrument that stores note sequences in arrays.</li>
-            <li><strong>Accelerometer.</strong> Sensing position and movement through space along the x, y, and z axes. Students build a program that reminds them to stand up, then design a "multi-tool" that combines the accelerometer with other sensors to solve a problem.</li>
-            <li><strong>Final Project.</strong> An extended independent project, an expansion of the Mini Project framework. Students create an original solution that combines something they already know, something they researched, and something drawn from a cited source, and document their process throughout with an emphasis on metacognition.</li>
-        </ol>
+        <h2>Calendar</h2>
+        <div class="calendar-stub">Unit calendar — coming soon.</div>
 
         <div class="rule--full"></div>
 
-        <h2>The robots</h2>
-        <div class="article">
-            <p>The programming concepts above are applied to TPBot robot cars driven by the micro:bit. The robotics challenges escalate across the year and let students choose their own level of ambition: a line-following robot that clears paper off a track, a radio-controlled robot that picks up a pen, a combat robot reusing earlier remote-control code, and EDU kits for robots that drive a precise path from a chosen start point. Each challenge is framed as a design task, inquire into the problem, specify and design the robot, build and program it, then test and evaluate against the brief.</p>
-        </div>
+        <!-- UNITS:START -->
+        <h2>Units</h2>
+        <table class="lesson-table">
+            <tr><td class="ln">01</td><td class="lt">Making<span>First contact with the micro:bit and MakeCode; design and build a micro:pet housing.</span></td><td class="ld"><a class="ico" href="01-making-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="01-making-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/J9aRFvBB7T4" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">02</td><td class="lt">Algorithms<span>Inputs, outputs and event handlers; program faces and a fidget cube.</span></td><td class="ld"><a class="ico" href="02-algorithms-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="02-algorithms-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/xfQ8f9rpNXo" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">03</td><td class="lt">Variables<span>Storing and changing information; code a scorekeeper and build a counting object.</span></td><td class="ld"><a class="ico" href="03-variables-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="03-variables-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/bndvYqROWBI" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">04</td><td class="lt">Conditionals<span>Decision-making with if…then…else; code Rock Paper Scissors, then a board game.</span></td><td class="ld"><a class="ico" href="04-conditionals-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="04-conditionals-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/pQsk4u5oYGU" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">05</td><td class="lt">Iteration<span>Repeat, while and for loops with sound and motion; first micro-servo build.</span></td><td class="ld"><a class="ico" href="05-iteration-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="05-iteration-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/MsidOfiVvyU" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">06</td><td class="lt">Mini Project<span>Consolidation: plan, track and showcase a short independent project.</span></td><td class="ld"><a class="ico" href="06-mini-project-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="06-mini-project-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/s3bN64D_p3Q" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">07</td><td class="lt">Coordinates<span>The 5×5 LED grid as a coordinate system; plot, animate, then make a game.</span></td><td class="ld"><a class="ico" href="07-coordinates-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="07-coordinates-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/FIofhOP8Ftk" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">08</td><td class="lt">Booleans<span>Boolean data and operators to control flow and track state; code a double coin flipper.</span></td><td class="ld"><a class="ico" href="08-booleans-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="08-booleans-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/omi1r8rggpE" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">09</td><td class="lt">Binary<span>Bits, bytes and base-2; build a working cardboard binary counter.</span></td><td class="ld"><a class="ico" href="09-binary-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="09-binary-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/nVUW_yYoTdU" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">10</td><td class="lt">Radio<span>Sending data between boards — the foundation for radio-controlling a robot.</span></td><td class="ld"><a class="ico" href="10-radio-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="10-radio-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/ugLWoNIoGAo" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">11</td><td class="lt">Arrays<span>Lists, indexing and sorting strategies; build an instrument that stores note sequences.</span></td><td class="ld"><a class="ico" href="11-arrays-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="11-arrays-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/B1b4IDrk2mM" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">12</td><td class="lt">Accelerometer<span>Sensing movement along x, y and z; design a multi-tool that solves a problem.</span></td><td class="ld"><a class="ico" href="12-accelerometer-student-workbook.pdf" title="Student workbook (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook, PDF"></a><a class="ico" href="12-accelerometer-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/fuqhcE6gXgI" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+            <tr><td class="ln">13</td><td class="lt">Final Project<span>An extended independent build, documented throughout with a focus on metacognition.</span></td><td class="ld"><span class="ico ico--none" title="Student workbook — not yet available"><img src="../../../images/third-party/pdf-solid.svg" alt="Student workbook not available"></span><a class="ico" href="13-final-project-slides.pdf" title="Classroom slides (PDF)"><img src="../../../images/third-party/microsoft-powerpoint.svg" alt="Classroom slides, PDF"></a><a class="ico" href="https://youtu.be/4A-npiseXG4" target="_blank" rel="noopener" title="Quick-start video (YouTube)"><img src="../../../images/third-party/youtube.svg" alt="Quick-start video, YouTube"></a></td></tr>
+        </table>
+        <!-- UNITS:END -->
 
-        <h2>How it is assessed</h2>
-        <ul class="criteria-list">
-            <li><strong>A — Inquiring and analysing.</strong> Investigating how robots are used at school and in real life, and analysing what a good control solution needs to do.</li>
-            <li><strong>B — Developing ideas.</strong> Designing a robot to solve a set task: writing a specification and planning the build and the code.</li>
-            <li><strong>C — Creating the solution.</strong> Building and programming the robot, documenting changes as the design is refined.</li>
-            <li><strong>D — Evaluating.</strong> Testing the robot against the brief, judging how well it performed, and proposing improvements.</li>
-        </ul>
-        <div class="article">
-            <p>The year carries two summative strands flagged in the handover: an A–D assessment built around investigating, analysing, and evaluating robots used at school, and a B–C assessment built around designing a robot to solve a task.</p>
-        </div>
+        <p class="unit-note">Unit 13's student workbook is not yet available — the source file is corrupt. The slides, the video, and the <a href="https://makecode.microbit.org/courses/csintro/finalproject" target="_blank" rel="noopener">online Final Project lesson</a> cover the same ground.</p>
 
         <div class="credit-note">
-            Curriculum built on the BBC micro:bit Educational Foundation's micro:bit teaching materials. Unit content is described and adapted here, not republished; the original educator and student resources remain the work of the Foundation.
+            Student workbooks and classroom presentations are from <em>Intro to Computer Science with MakeCode for micro:bit</em> by Douglas Kiang and Mary Kiang, published by Microsoft MakeCode; the quick-start videos are theirs too, linked to <a href="https://www.youtube.com/@MSMakeCode" target="_blank" rel="noopener">Microsoft MakeCode</a> on YouTube. Reproduced here for classroom use, with thanks to the authors. The full course, including its online lesson pages, is at <a href="https://makecode.microbit.org/courses/csintro" target="_blank" rel="noopener">makecode.microbit.org</a>.
         </div>
 
-        <footer class="site-footer">The Vault · MYP Design · Year 8 Robotics · 2026</footer>
+        <footer class="site-footer">The Vault · MYP Design · Robotics &amp; Control · 2026</footer>
     </div>
 </body>
 </html>
