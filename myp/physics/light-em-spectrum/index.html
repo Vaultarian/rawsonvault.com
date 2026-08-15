@@ -9,12 +9,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../vault.css">
     <style>
-        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
-        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
-        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
-        .inquiry-box { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; line-height: 1.6; }
-        .meta-line { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); margin: var(--gap-xs) 0; }
-        .meta-line strong { color: var(--ink-black); }
+        .summary { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-lg); }
+        .criteria-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .criteria-table td { padding: 0.65rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .crit-badge { display: inline-block; min-width: 1.35rem; text-align: center; font-weight: 700; font-size: 0.78rem; color: #fff; background: var(--bronze-light); border-radius: 3px; padding: 0.1rem 0.34rem; margin-right: 0.25rem; }
+        .a-name { color: var(--ink-black); font-weight: 700; font-size: 0.96rem; width: 46%; }
+        .a-crit { color: var(--gray-dark); font-size: 0.88rem; }
+        .calendar-stub { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); border: 1px dashed var(--bronze-light); border-radius: 4px; padding: var(--gap-md); text-align: center; margin: var(--gap-xs) 0 var(--gap-lg); background: #fdfbf7; }
+        .lesson-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .lesson-table td { padding: 0.7rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .lesson-table tr:hover td { background: #fdf9f4; }
+        .lesson-table .ln { width: 3.2rem; color: var(--bronze-light); font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+        .lesson-table .lt { color: var(--ink-black); font-size: 0.98rem; }
+        .lesson-table .ld { width: 6rem; text-align: right; white-space: nowrap; }
+        .lesson-table .ld a { font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--bronze-light); text-decoration: none; border: 1px solid var(--bronze-light); border-radius: 3px; padding: 0.18rem 0.6rem; }
+        .lesson-table .ld a:hover { background: var(--bronze-light); color: #fff; }
     </style>
 </head>
 <body>
@@ -28,46 +37,40 @@
         <div class="section-header">
             <span class="eyebrow">MYP Physics · Year 8 · Unit 1</span>
             <h1>Light &amp; the EM Spectrum</h1>
-            <p class="subtitle">How we interact with electromagnetic waves affects our perception of the world around us</p>
         </div>
         <div class="rule--full"></div>
 
-        <div class="article">
-            <p>This Year 8 unit takes students from the everyday behaviour of light to the full electromagnetic spectrum. It begins with sources and reflectors, the evidence that light travels in straight lines, and the law of reflection, then moves through shadows and eclipses, refraction, colour, and finally the seven families of electromagnetic radiation and what each is used for. The unifying idea is perception: light is a wave we happen to be able to see, and the way it interacts with our eyes and the world shapes what we experience.</p>
-            <p>The unit's key concept is <em>change</em>, with related concepts of perception, energy and interaction, set in the global context of scientific and technical innovation. The physics is rich in demonstration and diagram work — ray boxes, prisms, colour mixing, and worked refraction diagrams — and connects directly to technology students already meet, from microwave ovens to X-ray imaging.</p>
-        </div>
+        <h2>Summary</h2>
+        <p class="summary">This Year 8 unit follows light from the everyday to the invisible. Students investigate sources, reflection, refraction and lenses, model light as rays, then travel out across the electromagnetic spectrum — radio to gamma — exploring how unseen waves shape communication, medicine, and what we are able to perceive.</p>
 
-        <div class="inquiry-box">
-            <strong>Statement of inquiry:</strong> How we interact with electromagnetic waves affects our perception of the world around us.
-            <br><br>
-            <strong>Inquiry questions include:</strong> What is light and how does it behave? How does the behaviour of light and our own physiology affect what we perceive? Can we believe our own eyes? Do all creatures perceive the electromagnetic spectrum in the same way?
-        </div>
+        <h2>Assessments</h2>
+        <table class="criteria-table">
+            <tr><td class="a-name">Reflection &amp; Refraction Investigation</td><td class="a-crit"><span class="crit-badge">B</span><span class="crit-badge">C</span> Inquiring &amp; designing · Processing &amp; evaluating</td></tr>
+            <tr><td class="a-name">End-of-Unit Test</td><td class="a-crit"><span class="crit-badge">A</span> Knowing &amp; understanding</td></tr>
+            <tr><td class="a-name">EM &amp; Society Discussion</td><td class="a-crit"><span class="crit-badge">D</span> Reflecting on the impacts of science</td></tr>
+        </table>
 
-        <h2>What students learn</h2>
-        <ul class="understanding-list">
-            <li>Identifying sources of light and reflectors, and the evidence that light travels in straight lines (shadows, laser and ray-box beams, crepuscular rays)</li>
-            <li>Stating and applying the law of reflection (angle of incidence equals angle of reflection)</li>
-            <li>The terms umbra, penumbra and antumbra, and explaining why solar and lunar eclipses occur — partial, total and annular</li>
-            <li>Refraction as the bending of light when its speed changes, and predicting which way light bends entering or leaving a glass block</li>
-            <li>The seven colours of the visible spectrum, additive colour mixing, and why there are three primary colours of light</li>
-            <li>Predicting the colour of an object under different coloured light through subtractive colour mixing</li>
-            <li>Fluorescence and phosphorescence, with real uses such as security markings, forensics and optical brighteners</li>
-            <li>The seven regions of the electromagnetic spectrum in order of energy — radio, microwave, infrared, visible, ultraviolet, X-ray, gamma</li>
-            <li>Infrared emission and absorption, uses of each region, and why X-rays, gamma rays and some UV are ionising and therefore harmful</li>
-        </ul>
+        <h2>Calendar</h2>
+        <div class="calendar-stub">Unit calendar — coming soon.</div>
 
-        <h2>Activities &amp; investigations</h2>
-        <ul class="understanding-list">
-            <li>A law-of-reflection practical using ray boxes and protractors to test the rule for themselves</li>
-            <li>A refraction experiment investigating how light bends through glass and perspex blocks</li>
-            <li>Colour-mixing and coloured-object work, predicting and then checking appearances under filtered light</li>
-            <li>An eclipse handout and Sun–Earth–Moon modelling to reason about shadow geometry</li>
-        </ul>
+        <div class="rule--full"></div>
 
-        <h2>How it is assessed</h2>
-        <div class="article">
-            <p>The unit draws on all four MYP Sciences criteria. The handover assessment focused on criteria B and C through a reflection and refraction investigation, where students plan, carry out and evaluate an experiment, alongside criterion A knowledge testing across the topic checklist.</p>
-        </div>
+        <!-- LESSONS:START -->
+        <h2>Lessons</h2>
+        <table class="lesson-table">
+            <tr><td class="ln">1.1</td><td class="lt">Light Sources &amp; Reflectors</td><td class="ld"><a href="1.1-light-sources-reflectors.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.2</td><td class="lt">The Law of Reflection</td><td class="ld"><a href="1.2-the-law-of-reflection.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.3</td><td class="lt">Refraction</td><td class="ld"><a href="1.3-refraction.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.4</td><td class="lt">Lenses &amp; Image Formation</td><td class="ld"><a href="1.4-lenses-and-image-formation.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.5</td><td class="lt">Shadows &amp; Eclipses</td><td class="ld"><a href="1.5-shadows-and-eclipses.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.6</td><td class="lt">The Electromagnetic Spectrum</td><td class="ld"><a href="1.6-the-em-spectrum.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.7</td><td class="lt">Infrared</td><td class="ld"><a href="1.7-infrared.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.8</td><td class="lt">Radio &amp; Microwaves</td><td class="ld"><a href="1.8-radio-and-microwaves.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.9</td><td class="lt">X-rays &amp; Gamma Rays</td><td class="ld"><a href="1.9-xrays-and-gamma-rays.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.10</td><td class="lt">Colour</td><td class="ld"><a href="1.10-colour.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.11</td><td class="lt">Fluorescence &amp; Phosphorescence</td><td class="ld"><a href="1.11-fluorescence-and-phosphorescence.pdf">PDF</a></td></tr>
+        </table>
+        <!-- LESSONS:END -->
 
         <footer class="site-footer">The Vault · MYP Physics · Light &amp; the EM Spectrum · 2026</footer>
     </div>
