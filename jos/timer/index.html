@@ -164,9 +164,20 @@
       left: 0;
     }
 
-    .floater.up   { animation: floatUp   0.65s ease-out forwards; }
-    .floater.down { animation: floatDown 0.65s ease-out forwards; }
-    .floater.fast { animation-duration: 0.2s; font-size: 5rem; }
+    .floater.up   { animation: floatUp   0.4s ease-out forwards; }
+    .floater.down { animation: floatDown 0.4s ease-out forwards; }
+    .floater.fast { animation-duration: 0.15s; font-size: 5rem; }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(50px) scale(0.5); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-50px) scale(0.5); }
+      to   { opacity: 1; transform: translateY(0)     scale(1); }
+    }
+    .slide-up   { animation: slideInUp   0.25s ease-out forwards; }
+    .slide-down { animation: slideInDown 0.25s ease-out forwards; }
 
     @keyframes floatUp {
       0%   { opacity: 0.7; transform: translateY(0) scale(1); }
@@ -387,11 +398,17 @@
       spawnFloater('mm-wrap', pad(prev_sw_mm), 'up', '#f72585');
     }
 
+    const csChanged = prev_sw_cs >= 0 && cs !== prev_sw_cs;
+    const ssChanged = prev_sw_ss >= 0 && ss !== prev_sw_ss;
+    const mmChanged = prev_sw_mm >= 0 && mm !== prev_sw_mm;
     prev_sw_mm = mm; prev_sw_ss = ss; prev_sw_cs = cs;
 
     document.getElementById('mm-val').textContent = pad(mm);
     document.getElementById('ss-val').textContent = pad(ss);
     document.getElementById('cs-val').textContent = String(cs);
+    if (csChanged) triggerSlide('cs-val', 'up');
+    if (ssChanged) triggerSlide('ss-val', 'up');
+    if (mmChanged) triggerSlide('mm-val', 'up');
   }
 
   function tickTM() {
@@ -409,12 +426,23 @@
       spawnFloater('mm-wrap', pad(prev_tm_mm), 'down', '#f72585');
     }
 
+    const tmSsChanged = prev_tm_ss >= 0 && ss !== prev_tm_ss;
+    const tmMmChanged = prev_tm_mm >= 0 && mm !== prev_tm_mm;
     prev_tm_mm = mm; prev_tm_ss = ss;
 
     document.getElementById('mm-val').textContent = pad(mm);
     document.getElementById('ss-val').textContent = pad(ss);
+    if (tmSsChanged) triggerSlide('ss-val', 'down');
+    if (tmMmChanged) triggerSlide('mm-val', 'down');
 
     if (tmRemaining === 0) { stop(); triggerDone(); }
+  }
+
+  function triggerSlide(elemId, dir) {
+    const el = document.getElementById(elemId);
+    el.classList.remove('slide-up', 'slide-down');
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add(dir === 'up' ? 'slide-up' : 'slide-down');
   }
 
   function spawnFloater(wrapId, text, dir, color, fast = false) {
