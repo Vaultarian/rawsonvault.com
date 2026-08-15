@@ -51,8 +51,19 @@ the first publish run (see `_build/publish-safety-log.md`):
   excluded and why. `_build/` stays in `.gitignore`; the log and injectors never ship.
 - Teaching documents are published as files (PDF preferred, DOCX accepted); **no large
   binaries** — no video files, no archives, images optimised before commit.
-- Third-party teaching material ships only under licence and carries a credit line
-  (e.g. PG Online textbook diagrams: school site licence).
+- Third-party teaching material ships only when **one** of the two grounds below holds, and
+  always carries a credit line naming the authors and the publisher:
+  - **Licensed** — a school or site licence covers the redistribution
+    (e.g. PG Online textbook diagrams: school site licence).
+  - **Published free for classroom use** — the rights holder distributes it publicly, at no
+    cost and behind no sign-in, for teachers to use and share (e.g. Microsoft MakeCode's
+    *Intro to Computer Science* student workbooks and classroom slides). The credit must
+    name the authors and link to the original source, and anything the rights holder asks
+    to be taken down comes down on request, without argument.
+- **Never ships, on either ground**: paywalled or subscription material, exam-board secure
+  content, anything retrieved from behind a login, and anything whose provenance cannot be
+  stated on the page. Audience size is not a defence — "hardly anyone will see it" carries
+  no weight here. When the ground is unclear, link to the source instead of hosting a copy.
 
 ## Verification discipline
 
