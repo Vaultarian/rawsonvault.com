@@ -9,10 +9,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../vault.css">
     <style>
-        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); padding: 0; }
-        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
-        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
-        .inquiry-box { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; line-height: 1.6; }
+        .summary { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-lg); }
+        .criteria-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .criteria-table td { padding: 0.65rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .crit-badge { display: inline-block; min-width: 1.35rem; text-align: center; font-weight: 700; font-size: 0.78rem; color: #fff; background: var(--bronze-light); border-radius: 3px; padding: 0.1rem 0.34rem; margin-right: 0.25rem; }
+        .a-name { color: var(--ink-black); font-weight: 700; font-size: 0.96rem; width: 46%; }
+        .a-crit { color: var(--gray-dark); font-size: 0.88rem; }
+        .calendar-stub { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); border: 1px dashed var(--bronze-light); border-radius: 4px; padding: var(--gap-md); text-align: center; margin: var(--gap-xs) 0 var(--gap-lg); background: #fdfbf7; }
+        .lesson-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .lesson-table td { padding: 0.7rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .lesson-table tr:hover td { background: #fdf9f4; }
+        .lesson-table .ln { width: 3.2rem; color: var(--bronze-light); font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+        .lesson-table .lt { color: var(--ink-black); font-size: 0.98rem; }
+        .lesson-table .ld { width: 6rem; text-align: right; white-space: nowrap; }
+        .lesson-table .ld a { font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--bronze-light); text-decoration: none; border: 1px solid var(--bronze-light); border-radius: 3px; padding: 0.18rem 0.6rem; }
+        .lesson-table .ld a:hover { background: var(--bronze-light); color: #fff; }
     </style>
 </head>
 <body>
@@ -24,43 +35,42 @@
             Oscillations &amp; Waves
         </nav>
         <div class="section-header">
-            <span class="eyebrow">MYP Physics · Year 9 · Unit 2</span>
+            <span class="eyebrow">MYP Physics · Year 9 · Unit 1</span>
             <h1>Oscillations &amp; Waves</h1>
-            <p class="subtitle">Movement can cause useful and problematic consequences in physical systems</p>
         </div>
         <div class="rule--full"></div>
 
-        <div class="article">
-            <p>This Year 9 unit studies regular, repeating motion — oscillations — and the waves that carry it. Students measure frequency and period, investigate the swing of a pendulum, and explore how vibrations travel through different substances. The conceptual heart of the unit is resonance: how a system driven at its natural frequency can build up large oscillations, and how that can be both useful and destructive, from musical instruments to bridges that have to be engineered against it.</p>
-            <p>The key concept is <em>systems</em>, with related concepts of movement and consequences, in the global context of scientific and technical innovation. The unit's debatable question — whether the cost of building oscillation-proof structures is always worth it — gives students a genuine engineering trade-off to reason about.</p>
-        </div>
+        <h2>Summary</h2>
+        <p class="summary">This Year 9 unit begins with the simplest repeating motion — a swinging pendulum — and builds towards the waves that carry energy through ropes, water and air. Students measure period and frequency, model transverse and longitudinal waves, and finish by asking why matching a system&rsquo;s natural frequency can shake a bridge apart.</p>
 
-        <div class="inquiry-box">
-            <strong>Statement of inquiry:</strong> Movement can cause useful and problematic consequences in physical systems.
-            <br><br>
-            <strong>Inquiry questions include:</strong> What are the effects of oscillations on objects? How can we build systems to mitigate the consequences of oscillations? Is the cost of building oscillation-proof structures always worth it?
-        </div>
+        <h2>Assessments</h2>
+        <table class="criteria-table">
+            <tr><td class="a-name">Pendulum Investigation</td><td class="a-crit"><span class="crit-badge">B</span><span class="crit-badge">C</span> Inquiring &amp; designing · Processing &amp; evaluating</td></tr>
+            <tr><td class="a-name">Resonance Research Report</td><td class="a-crit"><span class="crit-badge">D</span> Reflecting on the impacts of science</td></tr>
+            <tr><td class="a-name">End-of-Unit Test</td><td class="a-crit"><span class="crit-badge">A</span> Knowing &amp; understanding</td></tr>
+        </table>
 
-        <h2>What students learn</h2>
-        <ul class="understanding-list">
-            <li>Calculating frequency and period, and the relationship between them</li>
-            <li>The frequency and period of a pendulum, and what changes them</li>
-            <li>How waves carry energy and how their speed differs between substances</li>
-            <li>Resonance — what it is, where it occurs, and why it matters for real structures</li>
-            <li>How engineers design systems to manage or suppress unwanted oscillations</li>
-        </ul>
+        <h2>Calendar</h2>
+        <div class="calendar-stub">Unit calendar — coming soon.</div>
 
-        <h2>Activities &amp; investigations</h2>
-        <ul class="understanding-list">
-            <li>Frequency and period calculation work, and a pendulum investigation</li>
-            <li>Researching and presenting the speed of sound in different substances</li>
-            <li>A research project into resonance and how engineers solve the problems it causes</li>
-        </ul>
+        <div class="rule--full"></div>
 
-        <h2>How it is assessed</h2>
-        <div class="article">
-            <p>The unit is assessed with a strong criterion D focus. Students complete a research project describing where resonance occurs and how engineers address it, discussing the implications of the science, applying scientific language effectively, and documenting their sources — the four strands of reflecting on the impacts of science.</p>
-        </div>
+        <!-- LESSONS:START -->
+        <h2>Lessons</h2>
+        <table class="lesson-table">
+            <tr><td class="ln">1.1</td><td class="lt">Oscillations &amp; Frequency</td><td class="ld"><a href="1.1-oscillations-and-frequency.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.2</td><td class="lt">Period &amp; Frequency</td><td class="ld"><a href="1.2-period-and-frequency.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.3</td><td class="lt">Measuring the Period of a Pendulum</td><td class="ld"><a href="1.3-measuring-the-period-of-a-pendulum.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.4</td><td class="lt">Transverse Waves</td><td class="ld"><a href="1.4-transverse-waves.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.5</td><td class="lt">Longitudinal Waves</td><td class="ld"><a href="1.5-longitudinal-waves.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.6</td><td class="lt">Sound Waves</td><td class="ld"><a href="1.6-sound-waves.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.7</td><td class="lt">The Speed of Sound in Different Substances</td><td class="ld"><a href="1.7-speed-of-sound-in-different-substances.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.8</td><td class="lt">The Wave Equation</td><td class="ld"><a href="1.8-the-wave-equation.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.9</td><td class="lt">Reflection, Refraction &amp; Diffraction</td><td class="ld"><a href="1.9-reflection-refraction-and-diffraction.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.10</td><td class="lt">Natural Frequency &amp; Resonance</td><td class="ld"><a href="1.10-natural-frequency-and-resonance.pdf">PDF</a></td></tr>
+            <tr><td class="ln">1.11</td><td class="lt">Damping &amp; Engineering Solutions</td><td class="ld"><a href="1.11-damping-and-engineering-solutions.pdf">PDF</a></td></tr>
+        </table>
+        <!-- LESSONS:END -->
 
         <footer class="site-footer">The Vault · MYP Physics · Oscillations &amp; Waves · 2026</footer>
     </div>
