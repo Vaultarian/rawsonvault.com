@@ -39,6 +39,39 @@
             color: var(--gray-mid);
             border-color: var(--gray-light);
         }
+        .walkthrough-card {
+            background: #faf7f2;
+            border: 1px solid #f0ece4;
+            border-left: 3px solid var(--bronze-light);
+            border-radius: var(--radius);
+            padding: var(--gap-md);
+            margin: var(--gap-lg) 0;
+        }
+        .walkthrough-eyebrow {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 0.6rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--bronze-dark);
+            margin-bottom: var(--gap-xs);
+        }
+        .walkthrough-link {
+            font-family: var(--font-heading);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ink-black);
+            text-decoration: none;
+            border-bottom: 1px solid var(--bronze-light);
+        }
+        .walkthrough-link:hover { color: var(--bronze-dark); }
+        .walkthrough-card p {
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            color: var(--gray-dark);
+            line-height: 1.6;
+            margin: var(--gap-sm) 0 0;
+        }
         .linking { margin: var(--gap-lg) 0; }
         .linking li {
             font-family: var(--font-body);
@@ -77,6 +110,12 @@
 
         <div class="question-box">
             A ball is launched horizontally from the edge of a cliff at 15 m s<sup>−1</sup>. The cliff is 45 m high. Where does the ball land, and what is its speed at the moment of impact? (<em>g</em> = 9.8 m s<sup>−2</sup>)
+        </div>
+
+        <div class="walkthrough-card">
+            <span class="walkthrough-eyebrow">Start here</span>
+            <a class="walkthrough-link" href="walkthrough/">A.1 Kinematics — Visual Walkthrough</a>
+            <p>One hundred figures with a teaching note on each, covering one-dimensional motion end to end: motion diagrams, position and displacement, vectors and components, units and significant figures, both graph relationships, acceleration, the equations of motion, and free fall.</p>
         </div>
 
         <h2>What students must understand</h2>
