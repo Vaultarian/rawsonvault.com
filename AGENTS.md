@@ -65,6 +65,21 @@ the first publish run (see `_build/publish-safety-log.md`):
   stated on the page. Audience size is not a defence — "hardly anyone will see it" carries
   no weight here. When the ground is unclear, link to the source instead of hosting a copy.
 
+### Owner overrides of the third-party rule
+
+Alex owns this site and may override the two grounds above for a named body of material. An
+override is recorded here, names exactly what it covers, and does not generalise: anything not
+listed below still faces the full gate. An override never waives the credit line.
+
+- **2026-08-18 — Knight figure library, chapters 1–2.** The 100 teaching figures from Randall
+  D. Knight, *Physics for Scientists and Engineers: A Strategic Approach* (© 2015 Pearson
+  Education), published at `physics/dp/theme-a/a1-kinematics/walkthrough/`. These are Pearson
+  instructor-resource figures and meet **neither** the licensed nor the free-for-classroom
+  ground. Alex was shown that finding and chose to publish with credit anyway; this line
+  records the decision so the gate does not silently re-litigate it. Credit line appears at the
+  head and foot of the page. Take-down on request, without argument. Scope is those two
+  chapters on that page — not a general licence for Pearson material.
+
 ## Verification discipline
 
 - **Every external embed is live-verified before it ships.** YouTube: oEmbed returns
