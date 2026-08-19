@@ -109,7 +109,7 @@ Every page follows the same skeleton — read an existing topic page before writ
 ## Where content comes from
 
 Tim reads the **vault** (`~/vault/`) and the **Orange**
-(`/media/alex/orange_2tb/`) to source page content. He never writes either, and he never
+(`/Volumes/orange_2tb/`) to source page content. He never writes either, and he never
 touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary per
 `03-permission-model.md` in the Startup Documents.
 
