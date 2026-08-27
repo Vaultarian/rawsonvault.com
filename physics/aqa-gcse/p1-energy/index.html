@@ -9,111 +9,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../vault.css">
     <style>
-        .understanding-list { list-style: none; margin: var(--gap-md) 0 var(--gap-lg); }
-        .understanding-list li { font-family: var(--font-body); font-size: 0.9rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
-        .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
-        .ht-ext { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); border: 1px solid var(--gray-light); border-radius: var(--radius); padding: 1px 5px; margin-right: 4px; }
-        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
-        .eq-note { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-mid); margin-left: 0.4em; }
-        .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .section-header h1 { font-size: clamp(2.1rem, 5.5vw, 3.2rem); }
+        .summary { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-lg); }
+        .criteria-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .criteria-table td { padding: 0.65rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .crit-badge { display: inline-block; min-width: 1.35rem; text-align: center; font-weight: 700; font-size: 0.78rem; color: #fff; background: var(--bronze-light); border-radius: 3px; padding: 0.1rem 0.34rem; margin-right: 0.25rem; }
+        .a-name { color: var(--ink-black); font-weight: 700; font-size: 0.96rem; width: 46%; }
+        .a-crit { color: var(--gray-dark); font-size: 0.88rem; }
+        .lesson-table { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); font-family: var(--font-body); }
+        .lesson-table td { padding: 0.7rem 0.4rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .lesson-table tr:hover td { background: #fdf9f4; }
+        .lesson-table .ln { width: 4.6rem; color: var(--bronze-light); font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+        .lesson-table .lt { color: var(--ink-black); font-size: 0.98rem; }
+        .lesson-table .ld { width: 6rem; text-align: right; white-space: nowrap; }
+        .lesson-table .ld a { font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--bronze-light); text-decoration: none; border: 1px solid var(--bronze-light); border-radius: 3px; padding: 0.18rem 0.6rem; }
+        .lesson-table .ld a:hover { background: var(--bronze-light); color: #fff; }
+        .chapter-row td { background: #faf7f2; font-family: 'Cinzel', Georgia, serif; font-size: 0.9rem; letter-spacing: 0.04em; color: var(--bronze-core); padding: 0.75rem 0.4rem 0.6rem; border-bottom: 1px solid #e6dfd2; }
+        .chapter-row:hover td { background: #faf7f2; }
     </style>
 </head>
 <body>
     <div class="container">
         <nav class="breadcrumb">
-            <a href="../../../../">The Vault</a><span>·</span>
-            <a href="../../../">Physics</a><span>·</span>
-            <a href="../">AQA GCSE Physics</a><span>·</span>
+            <a href="../../../">The Vault</a><span>·</span>
+            <a href="../../../physics/">Physics</a><span>·</span>
+            <a href="../../../physics/aqa-gcse/">AQA GCSE Physics</a><span>·</span>
             P1 Energy
         </nav>
         <div class="section-header">
             <span class="eyebrow">AQA GCSE · Trilogy 8464 · Physics Paper 1 · Spec section 6.1</span>
             <h1>P1 Energy</h1>
-            <p class="subtitle">How is energy stored, transferred, and why can't any transfer be 100% efficient?</p>
         </div>
         <div class="rule--full"></div>
-        <div class="article">
-            <p>Energy cannot be created or destroyed — only stored differently and transferred between stores. When a ball rolls to a stop, its kinetic energy store doesn't disappear; it transfers to thermal energy stores in the ball and the floor through work done by friction. This is the first law of thermodynamics, and it underpins every calculation in this topic. The skill is identifying which stores are involved at the start and end of a change, then tracking what moved between them.</p>
-            <p>Efficiency captures the idea that every real energy transfer wastes some energy — usually to thermal stores due to friction or resistance. A more efficient device doesn't "create" energy, it just dissipates less of it uselessly. The National Grid minimises wasted energy in transmission by using very high voltages (and therefore very low currents), since power lost to heating = I²R.</p>
-        </div>
-        <div class="question-box">
-            A 2 kg ball is dropped from 5 m above the ground. Calculate its speed at the point of impact (assume no air resistance). If the impact transfers 80 J to thermal stores, what percentage of the original energy was usefully transferred to kinetic energy just before impact?
-        </div>
-        <h2>Key equations</h2>
-        <div class="eq-box">Kinetic energy: E<sub>k</sub> = ½mv² <span class="eq-note">recall</span></div>
-        <div class="eq-box">Gravitational PE: E<sub>p</sub> = mgh <span class="eq-note">recall</span></div>
-        <div class="eq-box">Power: P = E/t = W/t <span class="eq-note">recall</span></div>
-        <div class="eq-box">Efficiency: useful output energy / total input energy (also as power ratio) <span class="eq-note">recall</span></div>
-        <div class="eq-box">Elastic PE: E<sub>e</sub> = ½ke² <span class="eq-note">equation sheet</span></div>
-        <div class="eq-box">Thermal energy change: ΔE = mcΔθ <span class="eq-note">equation sheet</span></div>
-        <h2>What students must understand</h2>
-        <ul class="understanding-list">
-            <li>Energy stores: kinetic, gravitational potential, elastic potential, thermal, chemical, nuclear, electrostatic, magnetic</li>
-            <li>A system is an object or group of objects; changes in a closed system have no net change in total energy</li>
-            <li>Tracing energy stores before and after changes (projectile, braking vehicle, kettle, spring)</li>
-            <li>Kinetic energy: E<sub>k</sub> = ½mv² — recall and apply</li>
-            <li>Gravitational PE: E<sub>p</sub> = mgh — recall and apply</li>
-            <li>Elastic PE: E<sub>e</sub> = ½ke² (up to limit of proportionality) — equation sheet</li>
-            <li>Power is the rate of energy transfer: P = E/t (watts = joules per second)</li>
-            <li>Specific heat capacity: energy needed to raise 1 kg by 1 °C; ΔE = mcΔθ</li>
-            <li>Energy is conserved but dissipated (wasted to thermal stores); cannot be destroyed</li>
-            <li>Efficiency = useful output / total input; expressed as decimal or percentage</li>
-            <li>Lubrication and insulation reduce unwanted energy transfers</li>
-            <li>Thermal conductivity: rate of conduction increases with conductivity, decreases with wall thickness</li>
-            <li>Renewable vs non-renewable energy resources; environmental impacts</li>
-            <li><span class="ht-ext">HT</span> Methods to increase efficiency of energy transfers</li>
-        </ul>
+
+        <h2>Summary</h2>
+        <p class="summary">Energy cannot be created or destroyed — only stored differently and transferred between stores. This topic builds the habit of naming the stores before and after a change, then putting numbers to them: kinetic, gravitational and elastic potential energy, thermal energy and specific heat capacity, and power as the rate of transfer.</p>
+
+        <h2>Assessments</h2>
+
+
         <div class="rule--full"></div>
-        <h2>Linking questions</h2>
-        <ul class="linking">
-            <li>How does electrical work connect to energy stores? → <em>P2 Electricity</em></li>
-            <li>How is elastic PE related to Hooke's Law? → <em>P5 Forces</em></li>
-            <li>How does specific heat capacity connect to changes of state? → <em>P3 Particle Model</em></li>
-        </ul>
-        
-        <div class="rule--full"></div>
-        <h2>Practice worksheets</h2>
-        <ul class="linking">
-            <li><a href="../../../worksheets/physics/energy/">Energy worksheets</a> — 7 worksheets · 8 with answers</li>
-        </ul>
-<!-- LAB-LINKS:START -->
-<div class="rule--full"></div>
-<h2>Labs</h2>
-<ul class="linking">
-<li><a href="../../../labs/#energy-momentum">Energy &amp; Momentum labs</a> — instruction sheets from the Physics Lab Library</li>
-<li><a href="../../../labs/#thermal">Thermal labs</a> — instruction sheets from the Physics Lab Library</li>
-</ul>
-<!-- LAB-LINKS:END -->
-<!-- VIDEO-SUPPORT:START -->
-<div class="rule--full"></div>
-<h2>Video Support</h2>
-<div class="video-source-label">Khan Academy</div>
-<div class="video-grid">
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/30o4omX5qfo" title="Work and the work-energy principle" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Work and the work-energy principle</figcaption></figure>
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/HR5iEX3Sy1k" title="Law of conservation of energy | Work and energy" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Law of conservation of energy | Work and energy</figcaption></figure>
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/GdDrYgXzBew" title="Conservation of energy (part 1)" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Conservation of energy (part 1)</figcaption></figure>
-</div>
-<div class="video-source-label">Flipping Physics</div>
-<div class="video-grid">
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/AnuLW0ZX7-Q" title="Introduction to Conservation of Mechanical Energy with Demonstrations" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Introduction to Conservation of Mechanical Energy with Demonstrations</figcaption></figure>
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/4wk3fZH2EHU" title="Energy Systems Clarified" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Energy Systems Clarified</figcaption></figure>
-</div>
-<div class="video-source-label">The Organic Chemistry Tutor</div>
-<div class="video-grid">
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/DyaVgHGssos" title="Kinetic Energy and Potential Energy" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Kinetic Energy and Potential Energy</figcaption></figure>
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/_MR1Dp8-F8w" title="Work, Energy, and Power - Basic Introduction" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Work, Energy, and Power - Basic Introduction</figcaption></figure>
-</div>
-<div class="video-source-label">Michel van Biezen</div>
-<div class="video-grid">
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/Lm7UL0XU74U" title="Physics 8  Work, Energy, and Power (1 of 37) Basics" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Physics 8  Work, Energy, and Power (1 of 37) Basics</figcaption></figure>
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/3tnAsvB8_fA" title="Physics Review: Energy, Work, and Power Basics (Part 1 of 7)" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>Physics Review: Energy, Work, and Power Basics (Part 1 of 7)</figcaption></figure>
-</div>
-<div class="video-source-label">WNY Tutor — worked problems</div>
-<div class="video-grid">
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/7bLMEJ4Pgjc" title="John is pulling a sled to haul wood up a snowy hill" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>John is pulling a sled to haul wood up a snowy hill</figcaption></figure>
-<figure class="video-cell"><iframe src="https://www.youtube-nocookie.com/embed/h80-imYZT4g" title="An initially stationary 2 kg object accelerates horizontally" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><figcaption>An initially stationary 2 kg object accelerates horizontally</figcaption></figure>
-</div>
-<!-- VIDEO-SUPPORT:END -->
+
+        <!-- LESSONS:START -->
+        <h2>Lessons</h2>
+        <table class="lesson-table">
+            <tr class="chapter-row"><td colspan="3">P1.1 · Energy changes in a system</td></tr>
+            <tr><td class="ln">P1.1.1</td><td class="lt">Energy stores and systems</td><td class="ld"></td></tr>
+            <tr><td class="ln">P1.1.2</td><td class="lt">Changes in energy</td><td class="ld"></td></tr>
+            <tr><td class="ln">P1.1.3</td><td class="lt">Energy changes in systems</td><td class="ld"></td></tr>
+            <tr><td class="ln">P1.1.4</td><td class="lt">Power</td><td class="ld"></td></tr>
+            <tr class="chapter-row"><td colspan="3">P1.2 · Conservation and dissipation of energy</td></tr>
+            <tr><td class="ln">P1.2.1</td><td class="lt">Energy transfers in a system</td><td class="ld"></td></tr>
+            <tr><td class="ln">P1.2.2</td><td class="lt">Efficiency</td><td class="ld"></td></tr>
+            <tr class="chapter-row"><td colspan="3">P1.3 · National and global energy resources</td></tr>
+            <tr><td class="ln">P1.3</td><td class="lt">Energy resources, renewable and non-renewable</td><td class="ld"></td></tr>
+        </table>
+        <!-- LESSONS:END -->
+
         <footer class="site-footer">The Vault · AQA GCSE Physics · P1 Energy · 2026</footer>
     </div>
 </body>
