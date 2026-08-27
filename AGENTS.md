@@ -80,6 +80,16 @@ listed below still faces the full gate. An override never waives the credit line
   head and foot of the page. Take-down on request, without argument. Scope is those two
   chapters on that page — not a general licence for Pearson material.
 
+- **2026-08-27 — Knight chapter 10, two system diagrams.** `10_Summary_01` ("Basic Energy
+  Model") and `10_Keyconcept_01` ("Choosing an isolated system"), from Randall D. Knight,
+  *College Physics: A Strategic Approach* 4e (© 2019 Pearson Education), published at
+  `physics/aqa-gcse/p1-energy/walkthrough/`. Pearson instructor-resource figures, so the
+  same finding as the 2026-08-18 override applies: they meet neither the licensed nor the
+  free-for-classroom ground. Alex was shown that and chose to publish with credit. Note
+  that the rest of that page is OpenStax under CC BY and needs no override — this covers
+  **two figures only**, and the page credits the two sources separately so the distinction
+  stays visible. Take-down on request, without argument.
+
 ## Verification discipline
 
 - **Every external embed is live-verified before it ships.** YouTube: oEmbed returns
