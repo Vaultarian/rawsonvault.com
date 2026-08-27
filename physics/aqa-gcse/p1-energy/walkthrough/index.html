@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P1 Energy · Visual Walkthrough — AQA GCSE Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        /* ── Jump navigation ─────────────────────────────────── */
+        .walk-nav {
+            background: #faf7f2;
+            border: 1px solid #f0ece4;
+            border-radius: var(--radius);
+            padding: var(--gap-md);
+            margin: var(--gap-lg) 0;
+        }
+        .walk-nav-label {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 0.6rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--bronze-dark);
+            margin-bottom: var(--gap-sm);
+        }
+        .walk-nav ol {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 2px var(--gap-md);
+        }
+        .walk-nav li { margin: 0; }
+        .walk-nav a {
+            font-family: var(--font-ui);
+            font-size: 0.82rem;
+            font-weight: 300;
+            color: var(--gray-dark);
+            text-decoration: none;
+            display: block;
+            padding: 3px 0;
+            border-bottom: 1px solid transparent;
+        }
+        .walk-nav a:hover {
+            color: var(--bronze-dark);
+            border-bottom-color: var(--bronze-light);
+        }
+
+        .walk-spec {
+            font-family: var(--font-display);
+            font-size: 0.62rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--bronze-dark);
+            margin: calc(-1 * var(--gap-sm)) 0 var(--gap-sm);
+        }
+
+        /* ── Sections ────────────────────────────────────────── */
+        .walk-section { scroll-margin-top: var(--gap-md); }
+        .walk-intro {
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--gray-dark);
+            line-height: 1.7;
+            margin: 0 0 var(--gap-lg);
+            max-width: 46em;
+        }
+        .walk-top {
+            margin: var(--gap-lg) 0 var(--gap-xl);
+            text-align: right;
+        }
+        .walk-top a {
+            font-family: var(--font-ui);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            color: var(--gray-silver);
+            text-decoration: none;
+        }
+        .walk-top a:hover { color: var(--bronze-dark); }
+
+        /* ── The figure block ────────────────────────────────── */
+        .walk-figure {
+            margin: 0 0 var(--gap-xl);
+            padding: 0;
+        }
+        .walk-figure img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto var(--gap-md);
+            background: var(--white);
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            padding: var(--gap-sm);
+        }
+        .walk-figure figcaption {
+            max-width: 42em;
+            margin: 0 auto;
+            border-left: 2px solid var(--bronze-light);
+            padding-left: var(--gap-md);
+        }
+        .walk-title {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ink-black);
+            line-height: 1.4;
+            margin-bottom: 0.35em;
+        }
+        .walk-note {
+            display: block;
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            color: var(--gray-dark);
+            line-height: 1.65;
+        }
+        .walk-note em { font-style: italic; }
+
+        /* ── Scope note ──────────────────────────────────────── */
+        .scope-note {
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            color: var(--gray-dark);
+            font-style: italic;
+            background: #faf7f2;
+            border: 1px solid #f0ece4;
+            border-radius: var(--radius);
+            padding: var(--gap-sm) var(--gap-md);
+            margin: var(--gap-md) 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .walk-figure figcaption {
+                border-left-width: 2px;
+                padding-left: var(--gap-sm);
+            }
+            .walk-figure { margin-bottom: var(--gap-lg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="top">
+
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Physics</a><span>·</span>
+            <a href="../../">AQA GCSE Physics</a><span>·</span>
+            <a href="../">P1 Energy</a><span>·</span>
+            Visual Walkthrough
+        </nav>
+
+        <div class="section-header">
+            <span class="eyebrow">AQA GCSE · Trilogy 8464 · Physics Paper 1 · Spec section 6.1</span>
+            <h1>P1 Energy — Visual Walkthrough</h1>
+            <p class="subtitle">Stores, transfers, efficiency and resources, one figure at a time.</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <p>Energy is the accounting system of physics. Nothing is created and nothing is destroyed, so every question in this topic comes down to the same move: name the store the energy was in, name the store it ended up in, and work out how much made the trip. This page walks P1 in that order, from a single push through to how a country powers itself. Read it top to bottom the first time, then use the jump links to find the one figure you have forgotten.</p>
+        </div>
+
+        <p class="scope-note">These figures come from an American textbook, so they say <em>potential energy</em> where AQA says <em>gravitational potential energy store</em>, and <em>nonconservative force</em> where AQA says <em>dissipation</em>. The physics is identical. The resource data in the last section is from 2006 and 2011, so treat the shape of the pie as the lesson and not the numbers.</p>
+
+<!-- WALKTHROUGH-BODY:START -->
+<nav class="walk-nav" aria-label="Sections">
+<span class="walk-nav-label">Jump to</span>
+<ol>
+<li><a href="#stores-systems">1 · Energy stores and systems</a></li>
+<li><a href="#changes-in-energy">2 · Changes in energy</a></li>
+<li><a href="#energy-changes-systems">3 · Energy changes in systems</a></li>
+<li><a href="#power">4 · Power</a></li>
+<li><a href="#dissipation">5 · Conservation and dissipation of energy</a></li>
+<li><a href="#resources">6 · National and global energy resources</a></li>
+</ol>
+</nav>
+<p class="diagram-credit">Figures marked OpenStax: <em>College Physics for AP® Courses</em>, chapters 7, 14 and 20, OpenStax, Rice University — licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Two figures in section 1 are from Randall D. Knight, <em>College Physics: A Strategic Approach</em> 4e, chapter 10, © 2019 Pearson Education, reproduced for classroom teaching at St Leonards. Individual photograph credits appear in the captions where the source names them.</p>
+<section class="walk-section" id="stores-systems">
+<div class="rule--full"></div>
+<h2>1 · Energy stores and systems</h2>
+<p class="walk-spec">Specification P1.1.1</p>
+<p class="walk-intro">A system is an object or group of objects. When a system changes, there are changes in the way energy is stored within it. Everything else in this topic is a special case of that one sentence.</p>
+<figure class="walk-figure">
+<img src="img/01-energy-model.webp" alt="A system drawn inside its environment, containing kinetic, potential, chemical and thermal energy stores, with arrows for work and heat crossing the boundary." width="1100" height="676" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">A system, its stores, and its boundary</strong>
+<span class="walk-note">The single most useful picture in this topic. The loop is the system, everything outside it is the surroundings, and the arrows inside show energy moving between stores without ever leaving. The two arrows crossing the boundary are the only ways energy gets in or out. Draw this in the margin whenever a question mentions a system. <em>Knight, ch.10 · © 2019 Pearson Education</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/02-choosing-the-system.webp" alt="Four situations, each with a system boundary drawn round it: an object in free fall, an object sliding down a frictionless ramp, an object compressing a spring, and an object sliding on a surface with friction." width="1100" height="628" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Where you draw the line changes the answer</strong>
+<span class="walk-note">A system is whatever you choose to enclose, and the choice matters. Enclose the ball on its own and gravity is an outside force doing work on it. Enclose the ball <em>and</em> the Earth, and the same energy is simply moving between stores inside. Same physics, different bookkeeping, and the second is nearly always the easier one. <em>Knight, ch.10 · © 2019 Pearson Education</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/03-the-system.webp" alt="Two systems drawn as enclosed boundaries. In the first, a rock bounces on a spring and the energy labels repeat. In the second, the rock lands with a thud and the energy goes to heat, sound and deformation." width="1100" height="606" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">A system, and what changes inside it</strong>
+<span class="walk-note">Start here. The line drawn round each picture <em>is</em> the system. On the left, the rock's gravitational store empties into an elastic store, then into a kinetic store, and back again with no net change to the total energy: this is a closed system. On the right, the same fall ends in a thud, and the energy is dissipated to thermal and sound stores in the ground. Nothing has been destroyed in either case. In the second, it has simply been stored in less useful ways.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/04-naming-the-stores.webp" alt="A wind farm of many turbines under a cloudy sky in Iowa." width="1100" height="716" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Naming the stores in a real system</strong>
+<span class="walk-note">Before any equation, practise the naming. Here there is a kinetic store in the moving air and the turning blades, a gravitational store in the raised blades, and energy transferred away electrically down the cables. Deciding where the system ends is your choice, and it changes the answer. <em>Credit: Jürgen from Sandesneben, Germany, via Wikimedia Commons.</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/05-work-done-by-forces.webp" alt="Panels showing a person pushing a lawn mower, carrying a briefcase along a level path, and lifting a case, with force and displacement arrows." width="688" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Changing a system by work done by forces</strong>
+<span class="walk-note">The specification lists three ways to change a system: heating it, doing work with a force, and doing work when a current flows. This is the middle one. Push the mower and it moves, so work is done and energy is transferred. Carry the briefcase along a level path and the force is vertical while the motion is horizontal, so no work is done on it at all.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/06-work-when-current-flows.webp" alt="A vaporiser that passes an electric current directly through water to boil it, with an inset circuit diagram showing an AC source and the water acting as a resistance." width="907" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Changing a system by work done when a current flows</strong>
+<span class="walk-note">The third of the specification's three routes, and very nearly its own worked example: the water itself is the resistance, so charge doing work against it fills the thermal store directly. This is the electric kettle from the specification, opened up. The third route, heating, is section 3. <em>OpenStax, CC BY 4.0</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/07-accelerated-by-constant-force.webp" alt="A package on a roller belt being pushed horizontally through a distance d by a constant force." width="1100" height="325" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">An object accelerated by a constant force</strong>
+<span class="walk-note">One of the common situations you are asked to describe by name. The force does work on the package, and the energy transferred fills its kinetic store. Strip away the scenery and almost every calculation in this topic is this picture.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/08-object-hitting-obstacle.webp" alt="A kangaroo landing, with the ground exerting an upward force on its feet." width="853" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">A moving object hitting an obstacle</strong>
+<span class="walk-note">Another named situation. The ground pushes up while the kangaroo moves down, so the kinetic store empties. Bending the legs makes the stopping distance longer, which reduces the force needed. Vehicle stopping distances in P5 are this same argument.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/09-object-projected-upwards.webp" alt="A weight raised by an applied force, then descending to drive a nail into a piece of wood." width="984" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Filling a store, then spending it</strong>
+<span class="walk-note">Work done raising the mass fills a gravitational store, and that store belongs to the mass and the Earth together rather than to the mass alone. Release it and the store empties, doing work on the nail. Follow it round and the accounting balances at every stage.</span>
+</figcaption>
+</figure>
+<p class="walk-top"><a href="#top">Back to top</a></p>
+</section>
+<section class="walk-section" id="changes-in-energy">
+<div class="rule--full"></div>
+<h2>2 · Changes in energy</h2>
+<p class="walk-spec">Specification P1.1.2</p>
+<p class="walk-intro">Three stores carry nearly every mark at GCSE: kinetic, gravitational potential and elastic potential. Each has an equation, and each equation counts the work that went in.</p>
+<figure class="walk-figure">
+<img src="img/10-kinetic-and-gravitational.webp" alt="A roller coaster starting at rest 25 metres above the lowest point, then rising to a height of 20 metres." width="1100" height="414" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Gravitational store to kinetic store</strong>
+<span class="walk-note">The gravitational store falls, the kinetic store fills, and in a closed system the total does not change. Assume no dissipation and you can find the speed at the bottom without knowing anything about the shape of the track. That is what makes this such a powerful method.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/11-height-not-path.webp" alt="Three different routes between the same two points A and B, separated by a height h." width="528" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Only the change in height matters</strong>
+<span class="walk-note">Straight up, up a ramp, or by a wandering route, the gravitational store gains the same <em>mgh</em>. Because <em>g</em> is given to you in the exam, these questions come down to reading the mass and the height change correctly.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/12-elastic-store.webp" alt="A spring shown undeformed, then stretched a distance x by an applied force." width="1100" height="299" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">The elastic potential energy store</strong>
+<span class="walk-note">An undeformed spring stores nothing. Stretch or compress it, up to the limit of proportionality, and the energy stored grows with the <em>square</em> of the extension. Double the stretch and you store four times as much. This equation is given on the equation sheet.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/13-elastic-store-released.webp" alt="A guitar string being plucked, deforming and then vibrating." width="497" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">The elastic store, released</strong>
+<span class="walk-note">Pulling the string aside does work against its tension and fills an elastic store. Let go and that store empties into a kinetic store, and then into sound. Three stores inside a second.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/14-store-to-store-to-store.webp" alt="A toy car pushed by a compressed spring, then coasting up a sloped track." width="1100" height="275" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">One transfer, then another</strong>
+<span class="walk-note">Elastic store to kinetic store to gravitational store, in a single diagram. Assume no dissipation and the energy in the compressed spring fixes the height reached, so you can work backwards from the height to the spring. This is the standard shape of an exam question.</span>
+</figcaption>
+</figure>
+<p class="walk-top"><a href="#top">Back to top</a></p>
+</section>
+<section class="walk-section" id="energy-changes-systems">
+<div class="rule--full"></div>
+<h2>3 · Energy changes in systems</h2>
+<p class="walk-spec">Specification P1.1.3</p>
+<p class="walk-intro">Heating is the third way to change a system. How much the temperature rises depends on three things, and the specific heat capacity is the one that belongs to the substance.</p>
+<figure class="walk-figure">
+<img src="img/15-specific-heat-capacity.webp" alt="Three pairs of panels. In the first, doubling the temperature change needs twice the energy. In the second, doubling the mass needs twice the energy. In the third, water needs 10.8 times the energy that copper does for the same change." width="907" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">What the temperature rise depends on</strong>
+<span class="walk-note">Read it as the equation in three parts. Double the temperature change and you need twice the energy. Double the mass and you need twice the energy. Change the substance and everything changes, because the same mass of water needs about eleven times what copper needs for the same rise. That third panel <em>is</em> specific heat capacity: the energy to raise one kilogram by one degree. <em>OpenStax, CC BY 4.0</em></span>
+</figcaption>
+</figure>
+<p class="walk-top"><a href="#top">Back to top</a></p>
+</section>
+<section class="walk-section" id="power">
+<div class="rule--full"></div>
+<h2>4 · Power</h2>
+<p class="walk-spec">Specification P1.1.4</p>
+<p class="walk-intro">Power is the rate at which energy is transferred, or the rate at which work is done. An energy transfer of one joule per second is a power of one watt.</p>
+<figure class="walk-figure">
+<img src="img/16-same-work-different-power.webp" alt="A woman running up a flight of stairs from rest." width="1100" height="936" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Same work done, different power</strong>
+<span class="walk-note">This is the comparison the specification asks you to be able to make. Walking up and sprinting up fill the gravitational store by exactly the same amount, so the work done is identical. Only the time differs, so only the power differs. Chemical store to kinetic and gravitational stores, at a rate you choose.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/17-very-high-power.webp" alt="The Space Shuttle Endeavour launching on a column of flame." width="1100" height="855" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">A very large transfer, in very little time</strong>
+<span class="walk-note">Power is not the size of the transfer on its own. A great many joules divided by a very few seconds is what produces a number this extreme, which is why the same energy released slowly would be unremarkable. <em>Credit: NASA.</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/18-power-at-national-scale.webp" alt="A coal-fired power station with cooling towers emitting steam." width="1100" height="824" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Power measured in gigawatts</strong>
+<span class="walk-note">A station is rated by a rate, not an amount. Notice how much is leaving through the towers: even here, most of the energy in the chemical store of the coal is dissipated to thermal stores in the surroundings rather than reaching a plug.</span>
+</figcaption>
+</figure>
+<p class="walk-top"><a href="#top">Back to top</a></p>
+</section>
+<section class="walk-section" id="dissipation">
+<div class="rule--full"></div>
+<h2>5 · Conservation and dissipation of energy</h2>
+<p class="walk-spec">Specification P1.2.1</p>
+<p class="walk-intro">Energy can be transferred usefully, stored, or dissipated, but it cannot be created or destroyed. Dissipated energy is not gone. It is stored in less useful ways, which is what the word wasted means.</p>
+<figure class="walk-figure">
+<img src="img/19-dissipation-depends-on-path.webp" alt="A drawing of a face partly erased along two different routes between points A and B." width="1100" height="453" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Friction dissipates more the further you go</strong>
+<span class="walk-note">Compare this with the gravitational figure in section 2, where the route made no difference at all. Here it makes every difference: the longer the path, the more is rubbed away and the more energy is dissipated to thermal stores. That is precisely why it cannot be recovered.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/20-useful-and-wasted.webp" alt="A person pushing a crate up a ramp, with friction and gravitational force acting on it." width="1100" height="515" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Splitting the input into useful and wasted</strong>
+<span class="walk-note">Some of the work done raises the crate and fills a gravitational store you could get back. The rest is dissipated, warming the ramp and the crate. Reducing unwanted transfers here means lubrication, and that split between useful and wasted is exactly what the efficiency calculation asks for.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/21-dissipated-to-thermal-stores.webp" alt="A baseball player sliding to a stop over a distance d." width="1100" height="507" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">A kinetic store emptied entirely into thermal stores</strong>
+<span class="walk-note">Nothing useful fills up. The ground and the clothing end up very slightly warmer, spread through an enormous amount of matter. The energy is all still there and none of it can be gathered back, which is the whole idea of dissipation.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/22-reducing-unwanted-transfers.webp" alt="A timber-framed wall cavity filled with sprayed foam insulation." width="730" height="1100" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Reducing an unwanted transfer</strong>
+<span class="walk-note">The specification asks you to explain ways of reducing unwanted energy transfers, and names two: lubrication and thermal insulation. This is the second. The foam works because it traps air, and trapped air is a poor conductor. <em>OpenStax, CC BY 4.0</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/23-thermal-conductivity.webp" alt="A bar of material of thickness d and cross-sectional area A, with energy Q flowing from the hotter face at T2 to the cooler face at T1." width="1100" height="532" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Conductivity and thickness</strong>
+<span class="walk-note">Two statements in one diagram. The higher the thermal conductivity of the material, the faster energy is transferred across it. The greater the thickness <em>d</em>, the slower. You are not asked to define thermal conductivity, only to use it this way. <em>OpenStax, CC BY 4.0</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/24-rate-of-cooling-of-a-building.webp" alt="A photograph of a building with a thermal image overlaid on half of it, showing hot spots in yellow and red around the windows and doors." width="1100" height="813" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">The rate of cooling of a building, made visible</strong>
+<span class="walk-note">The overlay puts the specification statement on screen: the rate at which a building cools depends on the thickness and the conductivity of its walls. The yellow and red are where both are working against you. Windows and doors lose fastest, which is exactly where the money goes on insulation. <em>OpenStax, CC BY 4.0</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/25-dissipation-at-grid-scale.webp" alt="Two large substation transformers behind a fence, with insulators and high-voltage connections." width="1100" height="824" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Dissipation, and the trick used to beat it</strong>
+<span class="walk-note">Current flowing through a transmission line dissipates energy to thermal stores all the way along it. Transformers like these raise the voltage, which lowers the current for the same power, and less current means far less wasted. It is the same reasoning as lubricating a bearing, applied to a country. <em>OpenStax, CC BY 4.0</em></span>
+</figcaption>
+</figure>
+<p class="walk-top"><a href="#top">Back to top</a></p>
+</section>
+<section class="walk-section" id="resources">
+<div class="rule--full"></div>
+<h2>6 · National and global energy resources</h2>
+<p class="walk-spec">Specification P1.3</p>
+<p class="walk-intro">The last part of P1 asks you to compare resources: renewable against non-renewable, how each is used, which are reliable, and what their use costs the environment.</p>
+<figure class="walk-figure">
+<img src="img/26-the-sun-as-a-resource.webp" alt="A solar-powered aircraft with photovoltaic cells covering its wing." width="1100" height="721" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">The Sun, used for transport</strong>
+<span class="walk-note">Renewable, and it produces no emissions in use. The wing area needed to fly one very light aircraft tells you the weakness straight away, which is a good habit: name the use, then name the limit.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/27-hydroelectricity.webp" alt="A hydroelectric dam with water discharging from its outlets." width="1100" height="812" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Renewable and reliable together</strong>
+<span class="walk-note">Water held behind the dam is a gravitational store that can be released exactly when demand arrives. Renewable and reliable in the same resource is unusual, and it is the point to reach for whenever a question asks about reliability. <em>Credit: Denis Belevich, via Wikimedia Commons.</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/28-solar-for-electricity.webp" alt="Rows of solar panels in a field at a power plant in Steindorf, Germany." width="1100" height="660" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">The same resource, generating electricity</strong>
+<span class="walk-note">Renewable, with little environmental impact once built, but it generates when the Sun shines rather than when the country needs it. Reliability, not cleanliness, is the weakness to name. <em>Credit: Michael Betke, Flickr.</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/29-what-the-world-uses.webp" alt="Pie chart of world energy consumption by source, dominated by petroleum, coal and natural gas." width="1100" height="468" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Renewable against non-renewable, by scale</strong>
+<span class="walk-note">Petroleum, coal and gas together take roughly seven eighths of the total, with every renewable sharing what is left. The data is from 2006 and renewables have grown considerably since, so use the shape and not the percentages. <em>Credit: KVDP.</em></span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/30-trends-in-energy-use.webp" alt="Graph of past and projected world energy use, rising steadily over time." width="1100" height="722" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Explaining patterns and trends</strong>
+<span class="walk-note">Demand climbs decade on decade, which is why changing resources is harder than it sounds: a new resource has to cover the growth before it starts replacing anything. Questions on trends are asking you to read a graph like this one and say why.</span>
+</figcaption>
+</figure>
+<figure class="walk-figure">
+<img src="img/31-why-change-is-slow.webp" alt="Scatter graph of power consumption per person against GDP per person for many countries." width="1100" height="752" loading="lazy" decoding="async">
+<figcaption>
+<strong class="walk-title">Where the politics comes in</strong>
+<span class="walk-note">Richer countries use more energy per person, with few exceptions. Science can identify the environmental problem, but political, social, ethical and economic considerations decide what is done about it. That last sentence is a specification statement, and this is its figure.</span>
+</figcaption>
+</figure>
+<p class="walk-top"><a href="#top">Back to top</a></p>
+</section>
+<div class="rule--full"></div>
+<p class="diagram-credit">Figures marked OpenStax: <em>College Physics for AP® Courses</em>, chapters 7, 14 and 20, OpenStax, Rice University — licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Two figures in section 1 are from Randall D. Knight, <em>College Physics: A Strategic Approach</em> 4e, chapter 10, © 2019 Pearson Education, reproduced for classroom teaching at St Leonards. Individual photograph credits appear in the captions where the source names them.</p>
+<!-- WALKTHROUGH-BODY:END -->
+
+        <footer class="site-footer">The Vault · AQA GCSE Physics · P1 Energy · Visual Walkthrough · 2026</footer>
+
+    </div>
+</body>
+</html>
