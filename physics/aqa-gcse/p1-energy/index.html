@@ -26,6 +26,12 @@
         .lesson-table .ld a:hover { background: var(--bronze-light); color: #fff; }
         .chapter-row td { background: #faf7f2; font-family: 'Cinzel', Georgia, serif; font-size: 0.9rem; letter-spacing: 0.04em; color: var(--bronze-core); padding: 0.75rem 0.4rem 0.6rem; border-bottom: 1px solid #e6dfd2; }
         .chapter-row:hover td { background: #faf7f2; }
+        .doc-row { display: flex; align-items: center; gap: 0.15rem; margin: calc(-1 * var(--gap-sm)) 0 var(--gap-lg); }
+        .doc-row .doc-label { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-black); text-decoration: none; border-bottom: 1px solid transparent; }
+        .doc-row .doc-label:hover { border-bottom-color: var(--bronze-light); }
+        .ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; text-decoration: none; transition: transform 0.15s; }
+        .ico img { width: 26px; height: 26px; object-fit: contain; display: block; }
+        .ico:hover { transform: translateY(-1px) scale(1.06); }
     </style>
 </head>
 <body>
@@ -44,6 +50,7 @@
 
         <h2>Summary</h2>
         <p class="summary">Energy cannot be created or destroyed — only stored differently and transferred between stores. This topic builds the habit of naming the stores before and after a change, then putting numbers to them: kinetic, gravitational and elastic potential energy, thermal energy and specific heat capacity, and power as the rate of transfer.</p>
+        <div class="doc-row"><a class="ico" href="p1-energy-overview.pdf" title="Unit Overview (PDF)"><img src="../../../images/third-party/pdf-solid.svg" alt="Unit Overview, PDF"></a><a class="doc-label" href="p1-energy-overview.pdf">Unit Overview</a></div>
 
         <h2>Assessments</h2>
 
