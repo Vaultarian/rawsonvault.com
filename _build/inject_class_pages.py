@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from school_week import week_for, monday_of, term_for  # noqa: E402
 # Shared with the Daily Print injector on purpose: two parsers of the same log
 # format would drift, and the pages would quietly disagree with each other.
-from inject_daily_print import field, strip_md, pdfs_in, page_count  # noqa: E402
+from inject_daily_print import field, strip_md, pdf_links, page_count  # noqa: E402
 
 VAULT = HOME / "vault"
 LOGS = VAULT / "01-Teaching/Class Logs"
@@ -77,7 +77,7 @@ def parse_log(path):
         entries.append(dict(
             date=cur[0], status=cur[1],
             topic=strip_md(field(block, "Topic")),
-            docs=pdfs_in(field(block, "Publish")),   # whitelist, never Resources
+            docs=pdf_links(field(block, "Publish")),  # whitelist, never Resources
         ))
 
     for ln in lines:
@@ -144,9 +144,9 @@ def render_class(name, subtitle, weeks):
         for en in entries:
             if en["docs"]:
                 docs = "".join(
-                    f'<a class="lesson-doc" href="files/{e(p.name)}">{e(p.stem)}'
+                    f'<a class="lesson-doc" href="files/{e(p.name)}">{e(lbl or p.stem)}'
                     + (f' <span class="pp">{n}pp</span>' if n else "") + "</a>"
-                    for p, n in en["docs"])
+                    for p, lbl, n in en["docs"])
             else:
                 docs = '<span class="lesson-none">No handout</span>'
             rows.append(f"""          <div class="lesson">
@@ -242,7 +242,7 @@ def main():
         # newest week first -- the common question is "what did we just do?"
         by_week = {}
         for en in taught:
-            en["docs"] = [(p, page_count(p)) for p in en["docs"]]
+            en["docs"] = [(p, lbl, page_count(p)) for p, lbl in en["docs"]]
             by_week.setdefault(monday_of(en["date"]), []).append(en)
         weeks = [(mon, sorted(v, key=lambda x: x["date"]))
                  for mon, v in sorted(by_week.items(), reverse=True)]
@@ -254,7 +254,7 @@ def main():
         wanted = set()
         for _, ens in weeks:
             for en in ens:
-                for pdf, _n in en["docs"]:
+                for pdf, _lbl, _n in en["docs"]:
                     shutil.copy2(pdf, cdir / "files" / pdf.name)
                     wanted.add(pdf.name)
 

@@ -192,8 +192,20 @@ Two rules keep them safe to publish. Both are Alex's explicit decisions, 2026-08
   `Publish:` field means no documents, and the page says "No handout". Uncertainty
   resolves to exclusion, as everywhere else in this repo.
 
+> ⚠️ **A whitelisted document must be wholly student-facing.** The whitelist works at file
+> granularity, so publishing a PDF publishes *every page of it*. On 2026-08-29
+> `p2-electricity-audit.pdf` was nearly published: page 1 is a student self-audit, but
+> page 2 is a teacher master naming two colleagues. Nothing would have caught it —
+> `name_audit.py` scans repo text and cannot read inside a PDF. **Before adding a file to
+> `Publish:`, check its last page, not just its first.** A mixed file must be split, not
+> published.
+
 Lessons group by school week, newest week first, using `school_week.py` for both the A/B
 label and the week's date range.
+
+Link text comes from the wikilink label — `[[path/to/file.pdf|Course Expectations]]` —
+falling back to the filename. Students should read "Course Expectations", not
+"y11r-physics-gcse".
 
 The injector owns `classes/` outright — it deletes any PDF under `classes/*/files/` that
 the current whitelist does not name, and declares the whole subtree's diff so removals

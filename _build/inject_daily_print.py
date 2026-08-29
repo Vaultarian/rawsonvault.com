@@ -105,17 +105,28 @@ def strip_md(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
-def pdfs_in(block):
-    """Vault-relative PDF paths named by wikilinks in this block."""
-    found = []
-    for target in re.findall(r"\[\[([^\]|]+)", block):
+def pdf_links(block):
+    """[(path, label)] for the PDF wikilinks in this block.
+
+    `label` is the text after the pipe in [[path|label]], or None. The class
+    pages use it as the visible link text -- a student reads "Course
+    Expectations", not "y11r-physics-gcse".
+    """
+    found, seen = [], set()
+    for target, label in re.findall(r"\[\[([^\]|]+)(?:\|([^\]]*))?\]\]", block):
         target = target.strip()
         if not target.lower().endswith(".pdf"):
             continue
         p = VAULT / target
-        if p.exists() and p not in found:
-            found.append(p)
+        if p.exists() and p not in seen:
+            seen.add(p)
+            found.append((p, (label or "").strip() or None))
     return found
+
+
+def pdfs_in(block):
+    """Vault-relative PDF paths named by wikilinks in this block."""
+    return [p for p, _ in pdf_links(block)]
 
 
 def page_count(pdf):
