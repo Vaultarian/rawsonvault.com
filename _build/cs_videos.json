@@ -1,0 +1,37 @@
+{
+  "_note": "All IDs verified 2026-06-12 via YouTube oEmbed (HTTP 200 + author_name == Craig'n'Dave).",
+  "playlists": {
+    "1-1-systems-architecture": [{"list": "PLCiOXwirraUCvYFmgaS_gQ4eKe1GJqIJa", "title": "1.1 Systems architecture — unit playlist"}],
+    "1-2-memory-storage": [{"list": "PLCiOXwirraUCaJP5LxCsFXWgX1_S-liGM", "title": "1.2 Memory and storage — unit playlist"}],
+    "1-3-networks": [{"list": "PLCiOXwirraUBnOLZCIxrLTSuIfgvYeWj-", "title": "1.3 Computer networks, connections and protocols — unit playlist"}],
+    "1-6-impacts": [{"list": "PLCiOXwirraUCJmKc7xDNgrKdUNIxIeQbi", "title": "1.6 Ethical, legal, cultural and environmental concerns — unit playlist"}],
+    "2-1-algorithms": [{"list": "PLCiOXwirraUAzsy9tacd98LBTbj7cyFQV", "title": "2.1 Algorithms — unit playlist"}],
+    "2-2-programming": [{"list": "PLCiOXwirraUAujkBVyzSh-LjjTCDwMU8v", "title": "2.2 Programming fundamentals — unit playlist"}],
+    "2-3-robust-programs": [{"list": "PLCiOXwirraUBb_Y1hsCHRgbvq0wXFVnj2", "title": "2.3 Producing robust programs — unit playlist"}]
+  },
+  "videos": {
+    "1-4-network-security": [
+      {"id": "4f05t8ppJfk", "title": "Forms of attack"},
+      {"id": "jlvvek8n5g8", "title": "Threats to networks"},
+      {"id": "XJEjQN-CEDk", "title": "Preventing vulnerabilities"}
+    ],
+    "1-5-systems-software": [
+      {"id": "tArQQD4SZ7Q", "title": "The purpose of operating systems"},
+      {"id": "dX9zhaBLJ7w", "title": "Operating systems 1"},
+      {"id": "feECP9Q21Ow", "title": "Operating systems 2"},
+      {"id": "PW_T3UtaMgw", "title": "Utility system software"}
+    ],
+    "2-4-boolean-logic": [
+      {"id": "jN9WtjyjXf4", "title": "Simple logic diagrams"},
+      {"id": "U7dbx9fllLc", "title": "Truth tables"},
+      {"id": "M7h8XBjp0-s", "title": "Combining Boolean operators"},
+      {"id": "vPG5c-RJtog", "title": "Applying logical operators in truth tables"}
+    ],
+    "2-5-languages-ides": [
+      {"id": "4qNj8zIQzWw", "title": "Characteristics and purpose of different languages"},
+      {"id": "BYFXtpIUPpY", "title": "The purpose of translators"},
+      {"id": "-uaeVcs2XFs", "title": "Compilers & interpreters"},
+      {"id": "QPMrXhx784Y", "title": "IDE"}
+    ]
+  }
+}

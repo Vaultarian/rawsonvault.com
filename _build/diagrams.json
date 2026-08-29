@@ -1,0 +1,93 @@
+{
+  "_credit": "Diagrams: PG Online (Paul Long), OCR J277 textbook. Used under the school site licence.",
+  "1-1-systems-architecture": [
+    {"file": "von-neumann-architecture.png",
+     "alt": "Von Neumann architecture diagram: the CPU, containing registers, control unit and ALU, connected to main memory by the address, data and control buses",
+     "caption": "Von Neumann architecture. The CPU and main memory exchange addresses and data over buses, and instructions and data share the same memory."},
+    {"file": "cpu-package.jpg",
+     "alt": "Photograph of a desktop CPU package",
+     "caption": "The physical CPU, a desktop processor package."}
+  ],
+  "1-2-memory-storage": [
+    {"file": "ram-module.jpg",
+     "alt": "Photograph of a RAM memory module",
+     "caption": "A RAM module. Primary storage is fast and volatile, holding running programs and their data."},
+    {"file": "optical-disc-pits-lands.png",
+     "alt": "Diagram of the surface of an optical disc showing pits and lands and the binary data they encode",
+     "caption": "Optical storage records data as pits and lands. Each transition between them is read as a 1."},
+    {"file": "bitmap-binary-grid.png",
+     "alt": "A grid of ones and zeros shown as black and white pixels, illustrating how a bitmap image is stored in binary",
+     "caption": "A bitmap is just binary. Each pixel's colour is stored as a binary value, here 1 bit per pixel."},
+    {"file": "sound-sampling.png",
+     "alt": "An analogue sound wave with sample points marked at regular time intervals",
+     "caption": "Sampling. The analogue wave is measured at regular intervals, and each sample is stored as a binary number."},
+    {"file": "ascii-table.png",
+     "alt": "The full ASCII character table with decimal and 7-bit binary codes for each character",
+     "caption": "The ASCII character set. Each character maps to a 7-bit binary code."}
+  ],
+  "1-3-networks": [
+    {"file": "star-topology.png",
+     "alt": "Star topology diagram: eight computers each cabled to one central switch",
+     "caption": "Star topology. Every device connects to a central switch, so one failed cable isolates only one device."},
+    {"file": "mesh-topologies.png",
+     "alt": "Two mesh network diagrams, a partial mesh on the left and a fully connected mesh on the right",
+     "caption": "Mesh topologies, partial on the left and full on the right. Every node has more than one route to the others."},
+    {"file": "packet-switching-routers.png",
+     "alt": "Diagram of nine routers between a sender and receiver, showing the many routes a packet can take",
+     "caption": "Packet switching. Routers pass packets from sender to receiver, and each packet can take a different route."},
+    {"file": "tcp-ip-layers.png",
+     "alt": "The four network layers stacked: application, transport, internet and link",
+     "caption": "Protocol layers. Each layer has one job and passes data only to the layer above or below it."}
+  ],
+  "1-4-network-security": [
+    {"file": "social-engineering.jpg",
+     "alt": "Sketchnote of social engineering themes: access, login, spying, fraud, passwords, security, influence and pretext",
+     "caption": "Social engineering targets the person, not the machine."},
+    {"file": "phishing-text-message.jpg",
+     "alt": "A phishing text message offering a fake tax refund with a fraudulent HMRC link",
+     "caption": "A phishing text. Urgency, a refund hook and a fake HMRC web address."},
+    {"file": "firewall-lan-wan.png",
+     "alt": "Diagram of a firewall as a brick wall between a LAN and the wider network",
+     "caption": "A firewall sits between the LAN and the wider network, filtering traffic in both directions."}
+  ],
+  "1-5-systems-software": [
+    {"file": "defragmentation-blocks.png",
+     "alt": "A grid of numbered coloured blocks scattered across a disk, representing fragmented files",
+     "caption": "A fragmented disk holds files in scattered blocks. Defragmentation reorders them so each file is contiguous and faster to read."}
+  ],
+  "1-6-impacts": [
+    {"file": "device-lifecycle.png",
+     "alt": "Circular diagram of a device's lifecycle: resource extraction, manufacturing, transportation, use and end-of-life recycling",
+     "caption": "The device lifecycle. Every stage, from resource extraction to disposal, carries an environmental cost."},
+    {"file": "e-waste.jpg",
+     "alt": "Photograph of a large pile of discarded electronic equipment",
+     "caption": "E-waste. Discarded devices hold both toxic materials and recoverable metals."}
+  ],
+  "2-1-algorithms": [
+    {"file": "binary-search-low-mid-high.jpg",
+     "alt": "A sorted list of numbers one to nine with low, mid and high pointers marked for binary search",
+     "caption": "Binary search. The low, mid and high pointers halve the search space with each comparison. The list must already be sorted."},
+    {"file": "merge-sort-trace.png",
+     "alt": "Merge sort trace: a list of eight numbers repeatedly split into halves, then merged back together in sorted order",
+     "caption": "Merge sort. Split the list until each part holds one item, then merge the parts back together in order."}
+  ],
+  "2-3-robust-programs": [
+    {"file": "iterative-code-test-cycle.png",
+     "alt": "Two circles labelled Code and Test joined by arrows in a loop",
+     "caption": "Iterative testing. Code and test alternate in a loop all the way through development."},
+    {"file": "recaptcha-authentication.png",
+     "alt": "A reCAPTCHA checkbox reading I'm not a robot",
+     "caption": "Authentication in defensive design. A CAPTCHA checks the user is human before input is accepted."}
+  ],
+  "2-4-boolean-logic": [
+    {"file": "and-gate-switches.png",
+     "alt": "AND gate truth table shown physically: two switches in series light a bulb only when both are closed, beside gate symbols for all four input pairs",
+     "caption": "The AND gate. Output is 1 only when both inputs are 1, shown here as switches and a bulb."},
+    {"file": "or-gate-switches.png",
+     "alt": "OR gate truth table shown physically: the bulb lights when either switch is closed, beside gate symbols for all four input pairs",
+     "caption": "The OR gate. Output is 1 when at least one input is 1."},
+    {"file": "logic-circuit-and-or-not.png",
+     "alt": "Logic circuit with inputs A, B and C passing through an AND gate and an OR gate into another OR gate, then a NOT gate, to output Q",
+     "caption": "A logic circuit built from AND, OR and NOT gates. Trace each input combination through to Q."}
+  ]
+}

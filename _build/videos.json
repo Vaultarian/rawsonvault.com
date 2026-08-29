@@ -1,0 +1,1852 @@
+{
+ "khan": {
+  "A1": [
+   {
+    "id": "ihNZlp7iUHE",
+    "title": "Intro to vectors & scalars"
+   },
+   {
+    "id": "3yaZ7lkQPUQ",
+    "title": "Introduction to frames of reference"
+   },
+   {
+    "id": "oRKxmXwLvUU",
+    "title": "Calculating average velocity or speed"
+   },
+   {
+    "id": "awzOvyMKeMA",
+    "title": "Solving for time"
+   },
+   {
+    "id": "lQ-dvt3V4yQ",
+    "title": "Displacement from time and velocity example"
+   },
+   {
+    "id": "FOkQszg1-j8",
+    "title": "Acceleration"
+   },
+   {
+    "id": "wlB0x9W-qBU",
+    "title": "Deriving displacement as a function of time, acceleration, and initial velocity"
+   },
+   {
+    "id": "GtoamALPOP0",
+    "title": "Position vs. time graphs"
+   },
+   {
+    "id": "9XxzIoUQd78",
+    "title": "Position-time graphs"
+   },
+   {
+    "id": "d-_eqgj5-K8",
+    "title": "Why distance is area under velocity-time line"
+   },
+   {
+    "id": "dr39gKnviAc",
+    "title": "Developing kinematic equations from data"
+   },
+   {
+    "id": "pJWRXgqn8PA",
+    "title": "Proportional reasoning with motion"
+   },
+   {
+    "id": "txJP95lBv98",
+    "title": "Projectile motion"
+   },
+   {
+    "id": "T0zpF_j7Mvo",
+    "title": "Plotting projectile displacement, acceleration, and velocity"
+   },
+   {
+    "id": "xp6ibuI8UuQ",
+    "title": "Visualizing vectors in 2 dimensions | Two-dimensional motion"
+   },
+   {
+    "id": "O-Onby3soVo",
+    "title": "Visualizing vectors in 2 dimensions | Physical Processes | MCAT"
+   },
+   {
+    "id": "36Rym2q4H94",
+    "title": "Would a brick or feather fall faster?"
+   }
+  ],
+  "A2": [
+   {
+    "id": "WLoBo-enxAw",
+    "title": "Systems and Objects | Dynamics"
+   },
+   {
+    "id": "BtQnTyGq4sI",
+    "title": "Contact Forces | Dynamics"
+   },
+   {
+    "id": "CQYELiTtUs8",
+    "title": "More on Newton's first law of motion"
+   },
+   {
+    "id": "fFFgWl6t-6c",
+    "title": "Mass and Inertia | Dynamics"
+   },
+   {
+    "id": "By-ggTfeuJU",
+    "title": "Newton's third law of motion | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "VfpKzwrhmqQ",
+    "title": "More on Newton's third law | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "KYz6HH9wZ8g",
+    "title": "Breaking down forces for free body diagrams"
+   },
+   {
+    "id": "TC23wD34C7k",
+    "title": "Inclined plane force components | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "ou9YMWlJgkE",
+    "title": "Newton's second law of motion | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "24vtg9Ehr0Q",
+    "title": "More on Newton's second law"
+   },
+   {
+    "id": "Mz2nDXElcoM",
+    "title": "Ice accelerating down an incline | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "i447NWNpScM",
+    "title": "Forces and free-body diagrams"
+   },
+   {
+    "id": "W6rb-0AghZE",
+    "title": "Forces at an angle"
+   },
+   {
+    "id": "IuBoeDihLUc",
+    "title": "Mass and weight clarification | Centripetal force and gravitation"
+   },
+   {
+    "id": "tVsYgAM8MV4",
+    "title": "Weight, apparent weight, and weightlessness"
+   },
+   {
+    "id": "iptKZt4FHRo",
+    "title": "Introduction to Momentum | Forces and Motion | High School Physics"
+   },
+   {
+    "id": "8bHPj3ll0vs",
+    "title": "Force vs. time graphs | Impacts and linear momentum"
+   },
+   {
+    "id": "8OB8eIPgEkQ",
+    "title": "Elastic and inelastic collisions | Impacts and linear momentum"
+   },
+   {
+    "id": "5_bdL_g-X9I",
+    "title": "Changes in Momentum Worked Examples | Momentum and Impulse"
+   },
+   {
+    "id": "1i8VMBvMQ_E",
+    "title": "Bouncing fruit collision example | Impacts and linear momentum"
+   },
+   {
+    "id": "vPkkCOlGND4",
+    "title": "Momentum: Ice skater throws a ball | Impacts and linear momentum"
+   },
+   {
+    "id": "zQLxbN8dxJg",
+    "title": "Conservation of linear momentum"
+   },
+   {
+    "id": "OtaIhafsDFI",
+    "title": "Change in centripetal acceleration from change in linear velocity and radius: Worked examples"
+   },
+   {
+    "id": "G9zt6-fIq9I",
+    "title": "Identifying centripetal force for ball on string"
+   },
+   {
+    "id": "FvsIDLrS2rI",
+    "title": "Identifying centripetal force for cars and satellites"
+   },
+   {
+    "id": "6UPYPv3LXxk",
+    "title": "Identifying force vectors for pendulum: Worked example"
+   }
+  ],
+  "A3": [
+   {
+    "id": "30o4omX5qfo",
+    "title": "Work and the work-energy principle"
+   },
+   {
+    "id": "BYkxKrbETb4",
+    "title": "Work-energy theorem example"
+   },
+   {
+    "id": "iba4gUeQN0w",
+    "title": "Conservative forces"
+   },
+   {
+    "id": "HR5iEX3Sy1k",
+    "title": "Law of conservation of energy | Work and energy"
+   },
+   {
+    "id": "GdDrYgXzBew",
+    "title": "Conservation of energy (part 1)"
+   },
+   {
+    "id": "JrVd-czHl_g",
+    "title": "Conservation of energy (part 2)"
+   }
+  ],
+  "A4": [
+   {
+    "id": "garegCgMxxg",
+    "title": "Angular motion variables | Moments, torque, and angular momentum"
+   },
+   {
+    "id": "dVYYh8C80zo",
+    "title": "Relating angular and regular motion variables"
+   },
+   {
+    "id": "TBlDBaUGqNc",
+    "title": "Rotational kinematic formulas | Moments, torque, and angular momentum"
+   },
+   {
+    "id": "TQQXpFhACSU",
+    "title": "Torque"
+   },
+   {
+    "id": "ZQnGh-t25tI",
+    "title": "Finding torque for angled forces"
+   },
+   {
+    "id": "nFSMu3bxXVA",
+    "title": "Angular momentum | Moments, torque, and angular momentum"
+   },
+   {
+    "id": "xusMSv2z77s",
+    "title": "Rotational version of Newton's second law"
+   },
+   {
+    "id": "KFrhclyEpVM",
+    "title": "Angular momentum of an extended object"
+   },
+   {
+    "id": "vfmLI150g4w",
+    "title": "Conservation of angular momentum | Torque and angular momentum"
+   },
+   {
+    "id": "viLpmZtQYzE",
+    "title": "Ball hits rod angular momentum example"
+   },
+   {
+    "id": "pY1rwEsdCRo",
+    "title": "Rotational kinetic energy of rigid systems"
+   },
+   {
+    "id": "-7trrETEE7k",
+    "title": "Conservation of angular momentum"
+   },
+   {
+    "id": "inus3WE5eTI",
+    "title": "Angular momentum of satellites"
+   }
+  ],
+  "B4": [
+   {
+    "id": "vny1qUaToHw",
+    "title": "First Law of Thermodynamics introduction | Biology"
+   }
+  ],
+  "B5": [
+   {
+    "id": "Nbb5Lw14wvo",
+    "title": "Electric circuits (part 1)"
+   },
+   {
+    "id": "1ASc6piVKhQ",
+    "title": "Electric circuits (part 2)"
+   }
+  ],
+  "C1": [
+   {
+    "id": "mzatvUid9Pw",
+    "title": "Period of a Pendulum | Simple harmonic motion and rotational motion"
+   },
+   {
+    "id": "tLOWcfeJ-74",
+    "title": "Definition of Amplitude and Period"
+   },
+   {
+    "id": "6M_bjRzyUn0",
+    "title": "Period dependence for mass on spring"
+   },
+   {
+    "id": "kLWXLbciobw",
+    "title": "Equation for simple harmonic oscillators"
+   },
+   {
+    "id": "zJtCmpH--70",
+    "title": "Energy graphs for simple harmonic motion | Simple harmonic motion"
+   }
+  ],
+  "D1": [
+   {
+    "id": "1E3Z_R5AHdg",
+    "title": "Viewing g as the value of Earth's gravitational field near the surface"
+   },
+   {
+    "id": "Xcel427Ezl0",
+    "title": "Introduction to gravity | Centripetal force and gravitation"
+   },
+   {
+    "id": "R5CRZONOHCU",
+    "title": "Acceleration due to gravity at the space station"
+   },
+   {
+    "id": "Ws3yB3QsKY4",
+    "title": "Inertial Mass vs. Gravitational Mass | Circular motion and gravitation"
+   },
+   {
+    "id": "9BNkmfHYYYI",
+    "title": "Space station speed in orbit | Centripetal force and gravitation"
+   },
+   {
+    "id": "_bBzcwnrLgs",
+    "title": "Impact of mass on orbital speed"
+   },
+   {
+    "id": "CJV7RZNCN28",
+    "title": "Gravitational forces and fields"
+   },
+   {
+    "id": "FEF6PxWOvsk",
+    "title": "Four fundamental forces | Scale of the universe | Cosmology & Astronomy"
+   }
+  ],
+  "P1": [
+   {
+    "id": "30o4omX5qfo",
+    "title": "Work and the work-energy principle"
+   },
+   {
+    "id": "HR5iEX3Sy1k",
+    "title": "Law of conservation of energy | Work and energy"
+   },
+   {
+    "id": "GdDrYgXzBew",
+    "title": "Conservation of energy (part 1)"
+   }
+  ],
+  "P2": [
+   {
+    "id": "Nbb5Lw14wvo",
+    "title": "Electric circuits (part 1)"
+   },
+   {
+    "id": "1ASc6piVKhQ",
+    "title": "Electric circuits (part 2)"
+   }
+  ],
+  "P5": [
+   {
+    "id": "ou9YMWlJgkE",
+    "title": "Newton's second law of motion | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "By-ggTfeuJU",
+    "title": "Newton's third law of motion | Forces and Newton's laws of motion"
+   },
+   {
+    "id": "CQYELiTtUs8",
+    "title": "More on Newton's first law of motion"
+   },
+   {
+    "id": "i447NWNpScM",
+    "title": "Forces and free-body diagrams"
+   },
+   {
+    "id": "IuBoeDihLUc",
+    "title": "Mass and weight clarification | Centripetal force and gravitation"
+   },
+   {
+    "id": "iptKZt4FHRo",
+    "title": "Introduction to Momentum | Forces and Motion | High School Physics"
+   },
+   {
+    "id": "36Rym2q4H94",
+    "title": "Would a brick or feather fall faster?"
+   }
+  ]
+ },
+ "anderson": {
+  "A1": [
+   {
+    "list": "PLMXAf0aPgIuUA_4jTkQD2-u3fNE38ZwXd",
+    "title": "Module 1 | Unit Conversion and Math | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuXCzXEVwRVrhovtOW7x8AnW",
+    "title": "Module 2 | Motion in One Dimension | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuW8VVdnaOxRf2Ul3wT4oOt2",
+    "title": "Module 3 | Coordinate Systems and Vectors | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWEBtSKMZFqJr8ktilz32TJ",
+    "title": "Module 4 | Motion in Two Dimensions | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWrts__oqmlCcLwzWOGpl3p",
+    "title": "Module 8 | Planar Motion | Physics with Professor Matt Anderson"
+   }
+  ],
+  "A2": [
+   {
+    "list": "PLMXAf0aPgIuUOr3djCOZWRakaeAS4FTY6",
+    "title": "Module 5 | Newton's Laws 1 & 2 | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWlG9d9HKeh1AINxHxVh1YB",
+    "title": "Module 6 | Applications of Newton's Laws | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuXyPkDgjnPqrQdpe5b7g5AA",
+    "title": "Module 7 | Newton's Law #3 | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWKe1yLPpxlSX1RSbqNbM4F",
+    "title": "Module 9 | Momentum | Physics with Professor Matt Anderson"
+   }
+  ],
+  "A3": [
+   {
+    "list": "PLMXAf0aPgIuXqy_jmB7hwZVugbMWXU4Kd",
+    "title": "Module 10 | Work | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuW8NgN7DZ58IaX3rPDXr72b",
+    "title": "Module 11 | Energy | Physics with Professor Matt Anderson"
+   }
+  ],
+  "A4": [
+   {
+    "list": "PLMXAf0aPgIuUL2YMAA7Sbr2fUmDceBgx1",
+    "title": "Module 12 | Torque and Rotation | Physics with Professor Matt Anderson"
+   }
+  ],
+  "A5": [
+   {
+    "list": "PLMXAf0aPgIuX-xHE_cEP8UIZtjajCASWc",
+    "title": "Module 29 | Relativity | Physics with Professor Matt Anderson"
+   }
+  ],
+  "B3": [
+   {
+    "list": "PLMXAf0aPgIuXB3TXeLzlb73OXAgbZUejI",
+    "title": "Module 15 | Pressure and Fluids | Physics with Professor Matt Anderson"
+   }
+  ],
+  "B5": [
+   {
+    "list": "PLMXAf0aPgIuWVCzulmKEBhrYpLPjqiWi8",
+    "title": "Module 21 | Current | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWKyunt9jihHMb88zQFAvk6",
+    "title": "Module 22 | DC Circuits | Physics with Professor Matt Anderson"
+   }
+  ],
+  "C1": [
+   {
+    "list": "PLMXAf0aPgIuUIRUmHLx9RlY8IHMEaIHe-",
+    "title": "Module 14 | Simple Harmonic Motion | Physics with Professor Matt Anderson"
+   }
+  ],
+  "C2": [
+   {
+    "list": "PLMXAf0aPgIuWgOnRiKcs92YZm8xD72Hrw",
+    "title": "Module 25 | EM Waves | Physics with Professor Matt Anderson"
+   }
+  ],
+  "C3": [
+   {
+    "list": "PLMXAf0aPgIuVcelVL2B-u1yjU4cS643ak",
+    "title": "Module 27 | Ray Optics | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWB9FSyXmZ5SqPruhwIoqX2",
+    "title": "Module 28 | Optical Instruments | Physics with Professor Matt Anderson"
+   }
+  ],
+  "D1": [
+   {
+    "list": "PLMXAf0aPgIuXfzJlQqTexksrVfHJf-WJQ",
+    "title": "Module 13 | Gravitation | Physics with Professor Matt Anderson"
+   }
+  ],
+  "D2": [
+   {
+    "list": "PLMXAf0aPgIuUovxIiiMUvmPGPPkZr07JS",
+    "title": "Module 16 | Electric Charge and Field | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuUy9Yo72ZPYt75baVpV9pQn",
+    "title": "Module 17 | Electric Field | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuXqRLNH8xK9Ze3LIpyfXNkx",
+    "title": "Module 18 | Gauss' Law | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuWJvHKqbC4EIe7FOp2wiwce",
+    "title": "Module 19 | Electric Potential | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuVePbDAk5QRJb3fzpkUXhJJ",
+    "title": "Module 20 | Potential and Field | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuUW-5Q__5Qb4DtrrkdQHVvd",
+    "title": "Module 23 | Magnetic Field | Physics with Professor Matt Anderson"
+   }
+  ],
+  "D4": [
+   {
+    "list": "PLMXAf0aPgIuVwhKy8nu0HfGwMheuXfehp",
+    "title": "Module 24 | Induction | Physics with Professor Matt Anderson"
+   },
+   {
+    "list": "PLMXAf0aPgIuVGCZE1NYlASZk-mOPn7MZR",
+    "title": "Module 26 | AC Circuits | Physics with Professor Matt Anderson"
+   }
+  ]
+ },
+ "oct": {
+  "P1": [
+   {
+    "id": "DyaVgHGssos",
+    "title": "Kinetic Energy and Potential Energy"
+   },
+   {
+    "id": "_MR1Dp8-F8w",
+    "title": "Work, Energy, and Power - Basic Introduction"
+   }
+  ],
+  "P2": [
+   {
+    "id": "_rSHqvjDksg",
+    "title": "Ohm's Law"
+   },
+   {
+    "id": "7mdc-lRrW1c",
+    "title": "Series and Parallel Circuits"
+   }
+  ],
+  "P3": [
+   {
+    "id": "LiXut4P0drg",
+    "title": "What Is Density?"
+   },
+   {
+    "id": "dxtz2POUTJE",
+    "title": "Latent Heat of Fusion and Vaporization, Specific Heat Capacity & Calorimetry - Physics"
+   }
+  ],
+  "P4": [
+   {
+    "id": "tW_ItPxFwvY",
+    "title": "Protons Neutrons Electrons Isotopes - Average Mass Number & Atomic Structure"
+   },
+   {
+    "id": "WTQvfvoOF3g",
+    "title": "Half Life Chemistry Problems - Nuclear Radioactive Decay Calculations"
+   }
+  ],
+  "P5": [
+   {
+    "id": "g550H4e5FCY",
+    "title": "Newton's Law of Motion - First, Second & Third - Physics"
+   },
+   {
+    "id": "hODlmGK7pl8",
+    "title": "Introduction to Impulse & Momentum - Physics"
+   }
+  ],
+  "P6": [
+   {
+    "id": "XY0RJu4sDHk",
+    "title": "Transverse and Longitudinal Waves"
+   },
+   {
+    "id": "FrfcjNTapCU",
+    "title": "Electromagnetic Spectrum - Basic Introduction"
+   }
+  ],
+  "P7": [
+   {
+    "id": "csMqfwJRjCs",
+    "title": "Magnetism, Magnetic Field Force, Right Hand Rule, Ampere's Law, Torque, Solenoid"
+   },
+   {
+    "id": "GJm-FOMeG4E",
+    "title": "Transformers Physics Problems - Voltage, Current & Power Calculations"
+   }
+  ],
+  "C1": [
+   {
+    "id": "_Gnke2x3vT8",
+    "title": "How To Solve Simple Harmonic Motion Problems In Physics"
+   },
+   {
+    "id": "iubb3eFBQ9U",
+    "title": "Simple Harmonic Motion, Mass Spring System - Amplitude, Frequency, Velocity - Physics Problems"
+   }
+  ],
+  "C5": [
+   {
+    "id": "WiTQxNaKAYA",
+    "title": "How To Solve Doppler Effect Physics Problems"
+   },
+   {
+    "id": "yVBtcAEHLfU",
+    "title": "Sound Waves, Intensity level, Decibels, Beat Frequency, Doppler Effect, Open Organ Pipe - Physics"
+   }
+  ],
+  "A2": [
+   {
+    "id": "g550H4e5FCY",
+    "title": "Newton's Law of Motion - First, Second & Third - Physics"
+   },
+   {
+    "id": "FfaEbqmvKQA",
+    "title": "Impulse and Momentum Conservation - Inelastic & Elastic Collisions"
+   },
+   {
+    "id": "pL2YfC-22Uc",
+    "title": "Static & Kinetic Friction, Tension, Normal Force, Inclined Plane & Pulley System Problems - Physics"
+   },
+   {
+    "id": "hODlmGK7pl8",
+    "title": "Introduction to Impulse & Momentum - Physics"
+   }
+  ],
+  "D4": [
+   {
+    "id": "LDOa7UdfcMQ",
+    "title": "Faraday's Law of Electromagnetic Induction, Magnetic Flux & Induced EMF - Physics & Electromagnetism"
+   },
+   {
+    "id": "HhFZfWLl-P0",
+    "title": "Lenz's Law, Right Hand Rule, Induced Current, Electromagnetic Induction - Physics"
+   }
+  ],
+  "B4": [
+   {
+    "id": "TnDCxw0y6YM",
+    "title": "Thermodynamics, PV Diagrams, Internal Energy, Heat, Work, Isothermal, Adiabatic, Isobaric, Physics"
+   },
+   {
+    "id": "QBd2zraOe2k",
+    "title": "Carnot Heat Engines, Efficiency, Refrigerators, Pumps, Entropy, Thermodynamics - Second Law, Physics"
+   },
+   {
+    "id": "DWiCaDPM7Hk",
+    "title": "Second Law of Thermodynamics - Heat Energy, Entropy & Spontaneous Processes"
+   }
+  ],
+  "C4": [
+   {
+    "id": "-8nn8hb0H8o",
+    "title": "Standing Waves on a String, Fundamental Frequency, Harmonics, Overtones, Nodes, Antinodes, Physics"
+   },
+   {
+    "id": "7eyYNNUojEc",
+    "title": "Standing Waves In Organ Pipes - Closed & Open Tubes - Physics Problems"
+   }
+  ],
+  "D1": [
+   {
+    "id": "8CykJ3NgBQs",
+    "title": "Gravity and the Universal Law of Gravitation - Physics"
+   },
+   {
+    "id": "CCsbSq9wlyI",
+    "title": "Kepler's Third Law of Planetary Motion Explained, Physics Problems, Period & Orbital Radius"
+   },
+   {
+    "id": "Ep1jIhHdf2A",
+    "title": "Gravity, Universal Gravitation Constant - Gravitational Force Between Earth, Moon & Sun, Physics"
+   }
+  ],
+  "E2": [
+   {
+    "id": "-LECEvusk8E",
+    "title": "Photoelectric Effect, Work Function, Threshold Frequency, Wavelength, Speed & Kinetic Energy, Electr"
+   },
+   {
+    "id": "cYyFPFU6s_A",
+    "title": "De Broglie Wavelength Problems In Chemistry"
+   }
+  ],
+  "E4": [
+   {
+    "id": "eLwraf_A80U",
+    "title": "Nuclear Binding Energy Per Nucleon & Mass Defect Problems - Nuclear Chemistry"
+   }
+  ],
+  "E3": [
+   {
+    "id": "WTQvfvoOF3g",
+    "title": "Half Life Chemistry Problems - Nuclear Radioactive Decay Calculations Practice Examples"
+   },
+   {
+    "id": "zF5pn8FVlPI",
+    "title": "Alpha Decay, Beta Decay, Gamma Decay -  Electron Capture, Positron Production - Nuclear Chemistry"
+   },
+   {
+    "id": "cPRFF-eCGT8",
+    "title": "Alpha Particles, Beta Particles, Gamma Rays, Positrons, Electrons, Protons, and Neutrons"
+   }
+  ],
+  "B2": [
+   {
+    "id": "yCNcbkLFTFs",
+    "title": "Blackbody Radiation and Wien's Law"
+   },
+   {
+    "id": "LR5bYxC4syI",
+    "title": "Thermal Conductivity, Stefan Boltzmann Law, Heat Transfer, Conduction, Convecton, Radiation, Physics"
+   },
+   {
+    "id": "bF3WAOBejqg",
+    "title": "Planck's Constant and BlackBody Radiation"
+   }
+  ],
+  "B5": [
+   {
+    "id": "r-SCyD7f_zI",
+    "title": "Electric Current & Circuits Explained, Ohm's Law, Charge, Power, Physics Problems, Basic Electricity"
+   },
+   {
+    "id": "2Zu3ppq3n8I",
+    "title": "Kirchhoff's Law, Junction & Loop Rule, Ohm's Law - KCl & KVl Circuit Analysis - Physics"
+   },
+   {
+    "id": "_rSHqvjDksg",
+    "title": "Ohm's Law"
+   }
+  ],
+  "D2": [
+   {
+    "id": "kCp5yYjo9zE",
+    "title": "Coulomb's Law - Net Electric Force & Point Charges"
+   },
+   {
+    "id": "V9RLc9EX1so",
+    "title": "Electric Field Due To Point Charges - Physics Problems"
+   }
+  ],
+  "B1": [
+   {
+    "id": "dxtz2POUTJE",
+    "title": "Latent Heat of Fusion and Vaporization, Specific Heat Capacity & Calorimetry - Physics"
+   },
+   {
+    "id": "bRZwzy0xvhM",
+    "title": "Heat Transfer - Conduction, Convection, and Radiation"
+   },
+   {
+    "id": "ePm_N6RgLfk",
+    "title": "Specific Heat Capacity Problems & Calculations - Chemistry Tutorial - Calorimetry"
+   }
+  ],
+  "D3": [
+   {
+    "id": "7MBawzone30",
+    "title": "Magnetic Force on a Moving Charge In a Magnetic Field"
+   },
+   {
+    "id": "nv28Cp-ILJ0",
+    "title": "Magnetic Force on a Current Carrying Wire"
+   },
+   {
+    "id": "CXChim2gOzs",
+    "title": "Magnetic Field of a Moving Charge, Proton, Right Hand Rule - Physics & Electromagnetism"
+   }
+  ],
+  "B3": [
+   {
+    "id": "iaZ96KaQ44c",
+    "title": "Ideal Gas Law Practice Problems"
+   },
+   {
+    "id": "iAsP-9m2aH0",
+    "title": "Kinetic Molecular Theory of Gases - Practice Problems"
+   },
+   {
+    "id": "W2g2iP83JoI",
+    "title": "Gas Law Formulas and Equations - College Chemistry Study Guide"
+   }
+  ],
+  "A4": [
+   {
+    "id": "jg4e8W44_E4",
+    "title": "Torque, Basic Introduction, Lever Arm, Moment of Force, Simple Machines & Mechanical Advantage"
+   },
+   {
+    "id": "WzjIMuf-yuo",
+    "title": "Angular Momentum - Basic Introduction, Torque, Inertia, Conservation of Angular Momentum"
+   },
+   {
+    "id": "SPSvosj6Snc",
+    "title": "Torque, Moment of Inertia, Rotational Kinetic Energy, Pulley, Incline, Angular Acceleration, Physics"
+   }
+  ],
+  "C3": [
+   {
+    "id": "ohQheheySDw",
+    "title": "Snell's Law & Index of Refraction Practice Problems - Physics"
+   },
+   {
+    "id": "xaAthgG0o8o",
+    "title": "Young's Double Slit Experiment"
+   },
+   {
+    "id": "KiJi8yqB_Rg",
+    "title": "Snell's Law & Index of Refraction - Wavelength, Frequency and Speed of Light"
+   }
+  ],
+  "A1": [
+   {
+    "id": "dHjWVlfNraM",
+    "title": "Kinematics In One Dimension - Physics"
+   },
+   {
+    "id": "tfItlGfPHyo",
+    "title": "How To Solve Projectile Motion Problems In Physics"
+   },
+   {
+    "id": "ulXdXTkIkAM",
+    "title": "Kinematics Physics Formulas"
+   },
+   {
+    "id": "8NLzuURxFwY",
+    "title": "Introduction to Projectile Motion - Formulas and Equations"
+   }
+  ],
+  "C2": [
+   {
+    "id": "XY0RJu4sDHk",
+    "title": "Transverse and Longitudinal Waves"
+   },
+   {
+    "id": "ys0mQbJYQjY",
+    "title": "Period, Frequency, Amplitude, & Wavelength - Waves"
+   },
+   {
+    "id": "DSz4ZILAneQ",
+    "title": "Wavelength, Frequency, Energy, Speed, Amplitude, Period Equations & Formulas - Chemistry & Physics"
+   }
+  ],
+  "E1": [
+   {
+    "id": "mXxsT1ut35Q",
+    "title": "Bohr Model of the Hydrogen Atom, Electron Transitions, Atomic Energy Levels, Lyman & Balmer Series"
+   },
+   {
+    "id": "sNQsdrqsD_s",
+    "title": "Rutherford's Gold Foil Experiment - Quick and Simple!"
+   },
+   {
+    "id": "4sLXUr2HWIs",
+    "title": "Orbitals, Atomic Energy Levels, & Sublevels Explained - Basic Introduction to Quantum Numbers"
+   }
+  ],
+  "A3": [
+   {
+    "id": "_MR1Dp8-F8w",
+    "title": "Work, Energy, and Power - Basic Introduction"
+   },
+   {
+    "id": "_DwG8fukuj4",
+    "title": "Conservation of Energy Physics Problems"
+   },
+   {
+    "id": "3gcCKvKzAW0",
+    "title": "Work, Energy, & Power - Formulas and Equations - College Physics"
+   }
+  ]
+ },
+ "flipping": {
+  "A1": [
+   {
+    "id": "WCR2Ki6hFf4",
+    "title": "Introduction to Uniformly Accelerated Motion with Examples of Objects in UAM"
+   },
+   {
+    "id": "GiiWsXtt5GE",
+    "title": "Introduction to Projectile Motion"
+   }
+  ],
+  "A2": [
+   {
+    "id": "j1TUpbGzPBQ",
+    "title": "Introduction to Newton's Second Law of Motion with Example Problem"
+   },
+   {
+    "id": "Kf0bBxmNeec",
+    "title": "Introduction to Conservation of Momentum with Demonstrations"
+   }
+  ],
+  "A3": [
+   {
+    "id": "0Oeywu5IR6s",
+    "title": "Introduction to Work with Examples"
+   },
+   {
+    "id": "dyueNvRuxic",
+    "title": "AP Physics 1 - Unit 3 Review - Work, Energy, and Power - Exam Prep"
+   }
+  ],
+  "A4": [
+   {
+    "id": "Tu6e9_SrzBA",
+    "title": "Torque Introduction"
+   },
+   {
+    "id": "oGzQflqf1VA",
+    "title": "Conservation of Angular Momentum Introduction and Demonstrations"
+   }
+  ],
+  "B5": [
+   {
+    "id": "coDW6I2L20Y",
+    "title": "Electric Circuit Basics"
+   },
+   {
+    "id": "HKPMK4nuCLA",
+    "title": "Resistance and Ohm's Law"
+   }
+  ],
+  "C1": [
+   {
+    "id": "QVkfRELZpK0",
+    "title": "Simple Harmonic Motion Introduction (SHM) via a Horizontal Mass-Spring System"
+   },
+   {
+    "id": "wgEyKvMN2ME",
+    "title": "AP Physics 1 - Unit 7 Review - Oscillations - Exam Prep"
+   }
+  ],
+  "C2": [
+   {
+    "id": "drOnyIIe5Eg",
+    "title": "Introduction to Waves"
+   },
+   {
+    "id": "O9cRDGsDKwU",
+    "title": "Wave Speed Equation Derivation and Demonstration"
+   }
+  ],
+  "C3": [
+   {
+    "id": "JUCLoczzwPo",
+    "title": "Wave Superposition Introduction"
+   }
+  ],
+  "C4": [
+   {
+    "id": "DUPLRe5PHvE",
+    "title": "Standing Waves Introduction"
+   },
+   {
+    "id": "B_u3sGbpM8M",
+    "title": "Resonance Introduction using 9 Demonstrations"
+   }
+  ],
+  "C5": [
+   {
+    "id": "SqGtp6RQy_8",
+    "title": "Doppler Effect Demonstrations and Animations"
+   },
+   {
+    "id": "odH_IQ6rLHQ",
+    "title": "Doppler Effect in One Minute"
+   }
+  ],
+  "D1": [
+   {
+    "id": "LspI56OPmqA",
+    "title": "Newton's Universal Law of Gravitation Introduction (The Big G Equation)"
+   },
+   {
+    "id": "Wrxrbixp47k",
+    "title": "Gravitational Field Introduction"
+   }
+  ],
+  "D2": [
+   {
+    "id": "nQXFueA1sMY",
+    "title": "Electric Fields"
+   },
+   {
+    "id": "Sn1GVo2btKA",
+    "title": "Magnetic Fields - Review for AP Physics C: Electricity and Magnetism"
+   }
+  ],
+  "D3": [
+   {
+    "id": "URPKNQ69XdA",
+    "title": "Magnetic Fields and Magnetic Forces on Moving Charges"
+   },
+   {
+    "id": "XFOzwYbqNbE",
+    "title": "Magnetic Force Direction (Right-Hand Rule)"
+   }
+  ],
+  "D4": [
+   {
+    "id": "QV0o8Kyixy0",
+    "title": "Electromagnetic Induction"
+   },
+   {
+    "id": "05uKKzQcaag",
+    "title": "Lenz's Law"
+   }
+  ],
+  "E1": [
+   {
+    "id": "6IEM6EHZbEY",
+    "title": "Determining the Speed of the Electron in the Bohr Model of the Hydrogen Atom"
+   }
+  ],
+  "P1": [
+   {
+    "id": "AnuLW0ZX7-Q",
+    "title": "Introduction to Conservation of Mechanical Energy with Demonstrations"
+   },
+   {
+    "id": "4wk3fZH2EHU",
+    "title": "Energy Systems Clarified"
+   }
+  ],
+  "P2": [
+   {
+    "id": "coDW6I2L20Y",
+    "title": "Electric Circuit Basics"
+   },
+   {
+    "id": "BiY3Qfo8EG4",
+    "title": "Basic Series and Parallel Resistor Circuit Demos and Animations"
+   }
+  ],
+  "P3": [
+   {
+    "id": "xkCkKbd0kJA",
+    "title": "Density"
+   },
+   {
+    "id": "hKitwhmotwQ",
+    "title": "3 States of Matter - Solid, Liquid, Gas"
+   }
+  ],
+  "P5": [
+   {
+    "id": "7kPRD0ow-hM",
+    "title": "Introduction to Newton's First Law of Motion"
+   },
+   {
+    "id": "bAevUhFUhV4",
+    "title": "Introduction to Newton's Third Law of Motion"
+   }
+  ],
+  "P6": [
+   {
+    "id": "IhzZAoSYDLE",
+    "title": "What is Sound?"
+   },
+   {
+    "id": "drOnyIIe5Eg",
+    "title": "Introduction to Waves"
+   }
+  ],
+  "P7": [
+   {
+    "id": "DJ0oub4wvI4",
+    "title": "Magnetic Force on Current"
+   },
+   {
+    "id": "EKn_Q4apRbU",
+    "title": "Solenoid Magnetic Field"
+   }
+  ]
+ },
+ "dewitt": {
+  "B1": [
+   {
+    "id": "EZHmUTmJtF8",
+    "title": "Phase Changes"
+   }
+  ],
+  "B3": [
+   {
+    "id": "WhP6zJbSxec",
+    "title": "Ideal Gas Law Introduction"
+   },
+   {
+    "id": "ZoGtVVu3ymQ",
+    "title": "Boyle's Law"
+   }
+  ],
+  "E1": [
+   {
+    "id": "NSAgLvKOPLQ",
+    "title": "Models of the Atom Timeline"
+   },
+   {
+    "id": "h6LPAwAmnCQ",
+    "title": "Basic Atomic Structure: A Look Inside the Atom"
+   }
+  ],
+  "E2": [
+   {
+    "id": "nOOeqXM9bb0",
+    "title": "Ionization Energy and the Photoelectric Effect (AP Chemistry)"
+   }
+  ],
+  "E3": [
+   {
+    "id": "opjJ-3Tkfyg",
+    "title": "Nuclear Half Life: Intro and Explanation"
+   },
+   {
+    "id": "WAsmY4ocWSA",
+    "title": "Nuclear Half Life: Calculations"
+   }
+  ],
+  "E4": [
+   {
+    "id": "_pY5HeZpNr8",
+    "title": "Nuclear Fission"
+   }
+  ],
+  "P3": [
+   {
+    "id": "T9oGD50-0SU",
+    "title": "States of Matter (Phases of Matter): Solids, Liquids, and Gases"
+   },
+   {
+    "id": "7tVebi3TSsg",
+    "title": "Density Practice Problems"
+   }
+  ],
+  "P4": [
+   {
+    "id": "h6LPAwAmnCQ",
+    "title": "Basic Atomic Structure: A Look Inside the Atom"
+   },
+   {
+    "id": "CwExbnOzc4o",
+    "title": "Alpha Decay"
+   }
+  ]
+ },
+ "vanbiezen": {
+  "A1": [
+   {
+    "id": "ld1FLVqJKoU",
+    "title": "Physics 3: Motion in 2-D Projectile Motion (1 of 21) Independent Motion in x and y"
+   },
+   {
+    "id": "IbWmfdzLHvQ",
+    "title": "Physics Review: Projectile Motion (Part 1 of 2)"
+   }
+  ],
+  "A2": [
+   {
+    "id": "ruyHfepjgcE",
+    "title": "Physics 4  Newton's Laws of Motion (1 of 20) What is Newton's First Law?"
+   },
+   {
+    "id": "QIb4_CagoH0",
+    "title": "Physics 9.5  Introduction to Momentum (1 of 9) What is Momentum?"
+   }
+  ],
+  "A3": [
+   {
+    "id": "Lm7UL0XU74U",
+    "title": "Physics 8  Work, Energy, and Power (1 of 37) Basics"
+   },
+   {
+    "id": "3tnAsvB8_fA",
+    "title": "Physics Review: Energy, Work, and Power Basics (Part 1 of 7)"
+   }
+  ],
+  "A4": [
+   {
+    "id": "KyZ1-fzcng8",
+    "title": "Physics 15  Torque Fundamentals (1 of 13) What is Torque?"
+   },
+   {
+    "id": "diZDoY07LG4",
+    "title": "Physics 13.5  Angular Momentum (1 of 11) What is angular momentum? Basics"
+   }
+  ],
+  "A5": [
+   {
+    "id": "tsTY9Ko1T0k",
+    "title": "Physics 62.1  Understanding Space, Time & Relativity (3 of 55) Is Relativity Real?"
+   },
+   {
+    "id": "eLGLQ1n6sjs",
+    "title": "Physics 62  Special Relativity (18 of 43) A Relativistic Time Experiment"
+   }
+  ],
+  "B1": [
+   {
+    "id": "N8c-NAnAX48",
+    "title": "Physics 22  Introduction to Heat & Temperature (4 of 6) Specific Heat"
+   },
+   {
+    "id": "uL0S0HBznNo",
+    "title": "Physics 23  Calorimetry (2 of 5) Finding Specific Heat"
+   }
+  ],
+  "B2": [
+   {
+    "id": "Cr4MoKWxI-w",
+    "title": "Physics 24  Heat Transfer: Radiation (23 of 34) Black Body Radiation"
+   },
+   {
+    "id": "YnCjH7avw1c",
+    "title": "Physics: Ch 24C -Heat Radiation: Test Your Knowledge (12 of 20) Earth's Non-Greenhouse Temp=?"
+   }
+  ],
+  "B3": [
+   {
+    "id": "GgiWD-MJicQ",
+    "title": "Physics 32 Kinetic Theory of a Gas (1 of 10) Pressure and the Kinetic Model of an Ideal Gas"
+   },
+   {
+    "id": "eIVrpvgQnVo",
+    "title": "Physics 26 (6 of 10) Ideal Gas Equation: Example 1"
+   }
+  ],
+  "B4": [
+   {
+    "id": "AsjLI3g9feU",
+    "title": "Physics 27  First Law of Thermodynamics (1 of 22) What is the First Law of Thermodynamics?"
+   },
+   {
+    "id": "AzmXVvxXN70",
+    "title": "Physics 27  First Law of Thermodynamics (21 of 22) Summary of the 4 Thermodynamic Processes"
+   }
+  ],
+  "B5": [
+   {
+    "id": "GcQeEXYXpww",
+    "title": "Physics 42   Ohm's Law and Resistor Circuits (1 of 23) Series and Parallel"
+   },
+   {
+    "id": "NqnyYNxl89g",
+    "title": "Electrical Engineering: Basic Laws  (2 of 31) Ohm's Law"
+   }
+  ],
+  "C1": [
+   {
+    "id": "TjfQcQSDNHE",
+    "title": "Physics 16.2  Simple Harmonic Motion Basics (1 of 5) Introduction 1"
+   },
+   {
+    "id": "pKKfmthLNmQ",
+    "title": "Physics 16  Simple Harmonic Motion (1 of 19) Why is There a (-) in F=-kx?"
+   }
+  ],
+  "C2": [
+   {
+    "id": "3NY2aSIMVOo",
+    "title": "Physics 19  Mechanical Waves (1 of 21) Basics"
+   },
+   {
+    "id": "a6VdSvmH0PM",
+    "title": "Physics 19  Mechanical Waves (9 of 21) The Wave Equation"
+   }
+  ],
+  "C3": [
+   {
+    "id": "eCwiuiW_zQU",
+    "title": "Physics - Optics: Single Slit Diffraction (1 of 15) Basics"
+   },
+   {
+    "id": "5SqR8nAL6Lw",
+    "title": "Physics 60  Interference of Light (4 of 8) Young's Double Slit"
+   }
+  ],
+  "C4": [
+   {
+    "id": "_0p5z8S-_MA",
+    "title": "Physics 19  Mechanical Waves (16 of 21) Standing Waves: Resonance Frequency 1: 1st Harmonic"
+   },
+   {
+    "id": "6m9gF_GcF_M",
+    "title": "Physics 19  Mechanical Waves (14 of 21) Standing Waves 1"
+   }
+  ],
+  "C5": [
+   {
+    "id": "soqarQ_fuvg",
+    "title": "Physics 20  Sound and Sound Waves (18 of 49) Doppler Shift"
+   },
+   {
+    "id": "dsKIv0qBwP0",
+    "title": "Physics 20  Sound and Sound Waves (23 of 49) Doppler Shift"
+   }
+  ],
+  "D1": [
+   {
+    "id": "08pS2kz5CmI",
+    "title": "Physics 18 Gravity (6 of 20) Acceleration (and Weight) Of A Satellite In Orbit"
+   },
+   {
+    "id": "2VLOveeMyMY",
+    "title": "Physics 18 Gravity (13 of 20) Keppler's 3rd Law"
+   }
+  ],
+  "D2": [
+   {
+    "id": "-jxX7Vt2wrA",
+    "title": "Physics 35 Coulomb's Law (1 of 8)"
+   },
+   {
+    "id": "EPIhhbwbCNc",
+    "title": "Physics 36   The Electric Field (1 of 18)"
+   }
+  ],
+  "D3": [
+   {
+    "id": "kBoasyx8C_Y",
+    "title": "Physics 43  Magnetic Forces on Moving Charges (1 of 26) An Introduction - Determine Direction"
+   },
+   {
+    "id": "GE07eLk2ojA",
+    "title": "Physics 43  Magnetic Forces on Moving Charges (21 of 26) The Cyclotron"
+   }
+  ],
+  "D4": [
+   {
+    "id": "1-aoGz5X_j0",
+    "title": "Physics 45 Electromagnetic Induction: Faraday's Law and Lenz's Law (1 of 2) Introduction"
+   },
+   {
+    "id": "XETUcuXYWSc",
+    "title": "Physics 47.2  The Transformer (1 of 1) Example"
+   }
+  ],
+  "E1": [
+   {
+    "id": "xL02C8Tq3eU",
+    "title": "Physics - Modern Physics (15 of 26) The Bohr Atom: Radius of the Atom"
+   },
+   {
+    "id": "a0HbPzaIthw",
+    "title": "Chemistry - Electron Structures in Atoms (4 of 40) Atomic Spectra"
+   }
+  ],
+  "E2": [
+   {
+    "id": "nAFaw7w7y8o",
+    "title": "Physics - Modern Physics (1 of 26) The Photoelectric Effect"
+   },
+   {
+    "id": "G62jqc5xMXo",
+    "title": "Physics - Modern Physics (2 of 26) The Photoelectric Effect"
+   }
+  ],
+  "E3": [
+   {
+    "id": "gvd1oIatbj0",
+    "title": "Physics - Nuclear Physics (7 of 22) Half-Life of Nuclear Decay"
+   },
+   {
+    "id": "gcKZtZc6-YI",
+    "title": "Physics - Nuclear Physics (10 of 22) Radioactive Decay: How Much is Left?"
+   }
+  ],
+  "E4": [
+   {
+    "id": "2UHbZjSVZtQ",
+    "title": "Physics - Nuclear Physics (15 of 22) What is Nuclear Fission?"
+   },
+   {
+    "id": "HabHiugD27g",
+    "title": "Physics - Nuclear Physics (6 of 22) Binding Energy of a Nucleus"
+   }
+  ],
+  "E5": [
+   {
+    "id": "FCdMkaZuKdE",
+    "title": "Physics - Nuclear Physics (16 of 22) What is Nuclear Fusion?"
+   },
+   {
+    "id": "gGysCq57rq4",
+    "title": "Astronomy - The Sun (3 of 16) Nuclear Fusion"
+   }
+  ],
+  "P1": [
+   {
+    "id": "Lm7UL0XU74U",
+    "title": "Physics 8  Work, Energy, and Power (1 of 37) Basics"
+   },
+   {
+    "id": "3tnAsvB8_fA",
+    "title": "Physics Review: Energy, Work, and Power Basics (Part 1 of 7)"
+   }
+  ],
+  "P2": [
+   {
+    "id": "9wl2YSEbhNk",
+    "title": "Electrical Engineering: Basic Laws  (1 of 31) Resistance and Resistivity"
+   },
+   {
+    "id": "GcQeEXYXpww",
+    "title": "Physics 42   Ohm's Law and Resistor Circuits (1 of 23) Series and Parallel"
+   }
+  ],
+  "P3": [
+   {
+    "id": "mzjlAla3H1Q",
+    "title": "Physics 33 - Fluid Statics (1 of 10) Pressure in a Fluid"
+   },
+   {
+    "id": "2ljTrRVfReQ",
+    "title": "Physics 33 - Fluid Statics (2 of 10) Gauge Pressure VS Total Pressure"
+   }
+  ],
+  "P4": [
+   {
+    "id": "m4bmC77iHg4",
+    "title": "Physics - Nuclear Physics (13 of 22) What is Alpha Decay?"
+   },
+   {
+    "id": "gcKZtZc6-YI",
+    "title": "Physics - Nuclear Physics (10 of 22) Radioactive Decay: How Much is Left?"
+   }
+  ],
+  "P5": [
+   {
+    "id": "dsW4FSIXuTE",
+    "title": "Physics 4.6   Friction (1 of 14) What is Friction?"
+   },
+   {
+    "id": "bLWpKeByGsQ",
+    "title": "Physics 4.1 Newton's Laws Examples (1 of 25) Acceleration and Friction"
+   }
+  ],
+  "P6": [
+   {
+    "id": "ori2zGxuv_s",
+    "title": "Physics 19  Mechanical Waves (8 of 21) How to Read a Wave Equation"
+   },
+   {
+    "id": "uSJ4fmqV8nY",
+    "title": "Physics 50   E&M Radiation (2 of 33) Frequency and Wavelength"
+   }
+  ],
+  "P7": [
+   {
+    "id": "D8TyClG8d5k",
+    "title": "Physics 44  Magnetic Field Generated (1 of 28) By Moving Charges"
+   },
+   {
+    "id": "froA_4AooCA",
+    "title": "Physics 44  Magnetic Field Generated (5 of 28) By a Current"
+   }
+  ]
+ },
+ "wny": {
+  "A1": [
+   {
+    "id": "v1jtszZiICw",
+    "title": "How to solve any projectile motion question"
+   },
+   {
+    "id": "3VrzHCj-8hs",
+    "title": "A student stands at the edge of a cliff and throws a stone horizontally"
+   }
+  ],
+  "A2": [
+   {
+    "id": "PPfT2FY1I7Q",
+    "title": "Two forces are applied to a car in an effort to move it - resultant force"
+   },
+   {
+    "id": "a8OAcuyGyzs",
+    "title": "Two blocks are in contact on a frictionless table - applied force"
+   }
+  ],
+  "A3": [
+   {
+    "id": "wQUFyOeZHq4",
+    "title": "A 7.80-g bullet penetrates a tree trunk - work and energy"
+   },
+   {
+    "id": "C3LuVhtqWdk",
+    "title": "A block of mass m = 5.00 kg is released from rest from point A"
+   }
+  ],
+  "A4": [
+   {
+    "id": "3QCWz2Z5WZY",
+    "title": "A uniform plank of length 2.00 m"
+   },
+   {
+    "id": "po6L4TDxgsk",
+    "title": "The puck in the figure has a mass of 0.120 kg - angular momentum"
+   }
+  ],
+  "A5": [
+   {
+    "id": "95dBvqU9BqA",
+    "title": "An astronaut at rest on Earth has a heart rate - time dilation"
+   },
+   {
+    "id": "pakeQm5yLNc",
+    "title": "An electron has a total energy equal to five times its rest energy"
+   }
+  ],
+  "B1": [
+   {
+    "id": "jtMcJARD2xI",
+    "title": "A volume of 125 mL of H2O is initially at room temperature"
+   },
+   {
+    "id": "7hhUY5tEcY0",
+    "title": "Steam at 100\u00b0C is added to ice at 0\u00b0C"
+   }
+  ],
+  "B3": [
+   {
+    "id": "Be2kiFFMhuc",
+    "title": "A sample of an ideal gas goes through the process shown"
+   },
+   {
+    "id": "VD2qwK8uwQs",
+    "title": "A gas increases in pressure from 2.00 atm"
+   }
+  ],
+  "B4": [
+   {
+    "id": "yMxvauknew0",
+    "title": "The figure shows a reversible cycle"
+   },
+   {
+    "id": "j82TuyJ_-OY",
+    "title": "One mole of neon gas is heated from 300 K to 420 K at constant pressure"
+   }
+  ],
+  "B5": [
+   {
+    "id": "uSVgnwU8D5Q",
+    "title": "Two resistors connected in series have an equivalent resistance of 690 \u03a9"
+   },
+   {
+    "id": "tBb5aJaudMM",
+    "title": "Using Kirchhoff's rules find the current in each resistor"
+   }
+  ],
+  "C1": [
+   {
+    "id": "tnLNMT3DAqo",
+    "title": "A 3.0 kg particle in simple harmonic motion - equation of motion"
+   },
+   {
+    "id": "4XNkB1RthL4",
+    "title": "A simple harmonic oscillator consists of a block of mass"
+   }
+  ],
+  "C2": [
+   {
+    "id": "i0P1ok5sgko",
+    "title": "A sinusoidal wave is traveling on a string with speed"
+   },
+   {
+    "id": "XS5LamYF9z8",
+    "title": "String 1 has a linear density of 3.00 g/m, string 2 of 5.00 g/m"
+   }
+  ],
+  "C3": [
+   {
+    "id": "i-4KHRm_kfE",
+    "title": "Young's double-slit experiment with 633-nm laser light"
+   },
+   {
+    "id": "pbb1CkgElvU",
+    "title": "A jewel thief hides a diamond - refraction"
+   }
+  ],
+  "C4": [
+   {
+    "id": "Z30KgnbAvgQ",
+    "title": "A string tied to a sinusoidal oscillator at P - standing waves"
+   },
+   {
+    "id": "6606xyzbcGo",
+    "title": "A stretched string fixed at each end has a mass of"
+   }
+  ],
+  "C5": [
+   {
+    "id": "09fABC7e4xI",
+    "title": "Two trains on separate tracks move toward each other - Doppler"
+   },
+   {
+    "id": "8UKZids2Vxg",
+    "title": "Two trains are traveling toward each other - Doppler"
+   }
+  ],
+  "D1": [
+   {
+    "id": "iyLhs-Ar-ic",
+    "title": "A 20 kg satellite has a circular orbit with a period of"
+   },
+   {
+    "id": "5mzU-65tpM4",
+    "title": "Two objects attract each other with a gravitational force of 1.00 \u00d7 10\u207b\u2078 N"
+   }
+  ],
+  "D2": [
+   {
+    "id": "t6S-PX14Pu4",
+    "title": "Three point charges at the corners of an equilateral triangle"
+   },
+   {
+    "id": "IjHZyXBO9d0",
+    "title": "Coulomb force on each of three charges"
+   }
+  ],
+  "D3": [
+   {
+    "id": "pCVEZcIoCeQ",
+    "title": "A proton travels through uniform magnetic and electric fields"
+   },
+   {
+    "id": "rnUg0ndD-6s",
+    "title": "An electron moves through a uniform magnetic field"
+   }
+  ],
+  "D4": [
+   {
+    "id": "Eu18AoozI-Y",
+    "title": "An emf of 24.0 mV is induced in a 500-turn coil"
+   },
+   {
+    "id": "5P2_2XiZ2HU",
+    "title": "The primary coil of a transformer has N1 = 250 turns"
+   }
+  ],
+  "E1": [
+   {
+    "id": "BXRyUi9aD6k",
+    "title": "Bohr model of the hydrogen atom - electron speed in the lowest energy state"
+   }
+  ],
+  "E2": [
+   {
+    "id": "qBhfwlNeWz8",
+    "title": "Threshold wavelength for emission of electrons from a metal surface"
+   },
+   {
+    "id": "259lrvkJy-A",
+    "title": "Work functions for sodium, cesium, copper, and iron"
+   }
+  ],
+  "P1": [
+   {
+    "id": "7bLMEJ4Pgjc",
+    "title": "John is pulling a sled to haul wood up a snowy hill"
+   },
+   {
+    "id": "h80-imYZT4g",
+    "title": "An initially stationary 2 kg object accelerates horizontally"
+   }
+  ],
+  "P2": [
+   {
+    "id": "aXWv4GGAEvw",
+    "title": "Find the current in the 12-\u03a9 resistor"
+   },
+   {
+    "id": "Jx5Q9Ztm4FE",
+    "title": "Four resistors are connected to a battery - potential difference"
+   }
+  ],
+  "P3": [
+   {
+    "id": "7FPs1NoFU9Q",
+    "title": "An unknown material weighs 300 N in air and 200 N in alcohol - density"
+   },
+   {
+    "id": "jJ5IbQckHIE",
+    "title": "A cube of wood floats on water - density and buoyancy"
+   }
+  ],
+  "P4": [
+   {
+    "id": "K-Ivjk9kXMU",
+    "title": "Rutherford's scattering experiments - alpha particles"
+   },
+   {
+    "id": "zXblOs-6e7M",
+    "title": "The nucleus of Be which consists of 4 protons"
+   }
+  ],
+  "P5": [
+   {
+    "id": "cwwQwMG70Fc",
+    "title": "A car traveling at 50.0 km/h - friction and stopping"
+   },
+   {
+    "id": "s2uPQ1diXic",
+    "title": "A 1000 N crate pushed across a level floor at constant speed"
+   }
+  ],
+  "P6": [
+   {
+    "id": "ijWvKyFldQk",
+    "title": "A string along which waves can travel"
+   },
+   {
+    "id": "6E9Ooke6RDk",
+    "title": "Two sound waves from two different sources with the same frequency"
+   }
+  ],
+  "P7": [
+   {
+    "id": "buno4Brydx0",
+    "title": "A 300-turn solenoid with a length of 20 cm"
+   },
+   {
+    "id": "5CWkmxkhoZU",
+    "title": "A long solenoid of radius r = 2.00 cm"
+   }
+  ]
+ },
+ "wny_playlists": {
+  "A1": [
+   {
+    "list": "PL22NDeS914HcPUKnAwqrVYs8GKE5z5BpZ",
+    "title": "Motion in One Dimension"
+   }
+  ],
+  "A2": [
+   {
+    "list": "PL22NDeS914HcFEPbJ1vysQyarx-L7O5XO",
+    "title": "Momentum and Collisions"
+   },
+   {
+    "list": "PL22NDeS914HdHRbcirVVCOVxoMkSIIdo5",
+    "title": "Center of Mass and Linear Momentum"
+   }
+  ],
+  "A3": [
+   {
+    "list": "PL22NDeS914He8rE-4AhHz1CavMd9Im4Gb",
+    "title": "Work and Energy"
+   },
+   {
+    "list": "PL22NDeS914Heg5LM4sWnqphiYYtLtqi5_",
+    "title": "Potential Energy and Conservation of Energy"
+   }
+  ],
+  "A4": [
+   {
+    "list": "PL22NDeS914HezjqtkFJDN47b7kOz01rm5",
+    "title": "Rolling, Torque, and Angular Momentum"
+   },
+   {
+    "list": "PL22NDeS914HduyTXP6HmkOvmXnuQWe26U",
+    "title": "Rotational Equilibrium and Rotational Dynamics"
+   }
+  ],
+  "A5": [
+   {
+    "list": "PL22NDeS914HfbpecN16NiniixuTXXebe2",
+    "title": "Relativity"
+   }
+  ],
+  "B1": [
+   {
+    "list": "PL22NDeS914Hc3cxgY4oFHpvbGluZiq-_m",
+    "title": "Energy in Thermal Processes"
+   }
+  ],
+  "B5": [
+   {
+    "list": "PL22NDeS914HcVskwEm8dMHbIppQzX_LoF",
+    "title": "Current and Resistance"
+   }
+  ],
+  "C1": [
+   {
+    "list": "PL22NDeS914Hc6iNf9QOoxUamiCOMS8Lv5",
+    "title": "Oscillations"
+   }
+  ],
+  "C2": [
+   {
+    "list": "PL22NDeS914HfRDUJOOma2dbkqZunAms-6",
+    "title": "Waves - I"
+   },
+   {
+    "list": "PL22NDeS914Heyf2MIfZO8QsQ4iXL6cvGt",
+    "title": "Waves - II"
+   }
+  ],
+  "C3": [
+   {
+    "list": "PL22NDeS914HdVOTpTR8HBKy611zky8rZ3",
+    "title": "Reflection and Refraction of Light"
+   }
+  ],
+  "D1": [
+   {
+    "list": "PL22NDeS914HcOeU8i5JKbqb2NyJghWv5g",
+    "title": "Rotational Motion and the Law of Gravity"
+   }
+  ],
+  "D2": [
+   {
+    "list": "PL22NDeS914Hee8LUHUVMQ1Ru7HtxpuPTu",
+    "title": "Electric Forces and Electric Fields"
+   },
+   {
+    "list": "PL22NDeS914HcTJxVIXZJxbakk_aR4bPMe",
+    "title": "Electric Charge"
+   }
+  ],
+  "D4": [
+   {
+    "list": "PL22NDeS914HdpliOidfYAotYN7QA6BE5V",
+    "title": "Induced Voltages and Inductance"
+   }
+  ],
+  "P6": [
+   {
+    "list": "PL22NDeS914HfRDUJOOma2dbkqZunAms-6",
+    "title": "Waves - I"
+   }
+  ],
+  "P7": [
+   {
+    "list": "PL22NDeS914HdbCufztXzOl2zkP7sZj0zw",
+    "title": "Magnetism"
+   }
+  ]
+ }
+}

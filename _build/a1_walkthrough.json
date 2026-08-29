@@ -1,0 +1,803 @@
+{
+  "meta": {
+    "title": "A.1 Kinematics — Visual Walkthrough",
+    "subtitle": "The whole of one-dimensional motion, one figure at a time.",
+    "eyebrow": "Theme A · Space, Time and Motion · SL + HL",
+    "credit": "Figures: Randall D. Knight, <em>Physics for Scientists and Engineers: A Strategic Approach</em>, chapters 1–2. © 2015 Pearson Education, Inc. Reproduced for classroom teaching at St Leonard's.",
+    "intro": "Kinematics is the language you use to say what a body is doing before you ask why it does it. This page walks the whole of that language in order — motion diagrams, position, displacement, vectors, graphs, acceleration, and free fall — using the figures from Knight chapters 1 and 2. Read it top to bottom the first time. After that, use the jump links to go straight to the thing you have forgotten.",
+    "scope_note": "This walkthrough covers <strong>one-dimensional</strong> motion. Projectiles and two-dimensional motion — also part of A.1 — are not in these two chapters and are handled separately."
+  },
+  "sections": [
+    {
+      "id": "what-kinematics-describes",
+      "title": "1 · What kinematics describes",
+      "intro": "Before any equation, you need a way of drawing motion that strips out everything irrelevant. That is what a motion diagram does.",
+      "figures": [
+        {
+          "src": "01_01_Figure.jpg",
+          "slug": "four-types-of-motion",
+          "alt": "Four photographs illustrating straight-line motion (a truck on a desert road), circular motion (motorcycles cornering), projectile motion (a strobe sequence of a basketball arcing), and rotational motion (a spinning top)",
+          "title": "Four kinds of motion",
+          "note": "Straight-line, circular, projectile, rotational. A.1 deals with the first and the third; circular motion belongs to A.2 and rotation to A.4. Naming the type of motion first tells you which tools are legal."
+        },
+        {
+          "src": "01_Pg004_UnFigure1.jpg",
+          "slug": "skateboarder-frames",
+          "alt": "Four drawn frames of a skateboarder rolling along, the frames equally spaced",
+          "title": "Equal spacing means steady speed",
+          "note": "Four frames, equal time between each. The skateboarder covers the same ground every interval, so the speed is not changing. The spacing of the frames is the whole message."
+        },
+        {
+          "src": "01_Pg004_UnFigure2.jpg",
+          "slug": "runner-frames",
+          "alt": "Four drawn frames of a runner, the gaps between frames widening from left to right",
+          "title": "Widening gaps mean speeding up",
+          "note": "Same idea, opposite reading. The gaps grow, so each equal slice of time buys more distance than the last. That is acceleration, seen before you have written a single symbol."
+        },
+        {
+          "src": "01_Pg004_UnFigure3.jpg",
+          "slug": "car-crash-frames",
+          "alt": "Three drawn frames of a red car approaching and then colliding, the frames bunching together",
+          "title": "Bunching gaps mean slowing down",
+          "note": "The frames crowd together, so the car covers less ground per interval. Note that the car is still moving to the right the whole time — slowing down is not the same as reversing."
+        },
+        {
+          "src": "01_Pg004_UnFigure4.jpg",
+          "slug": "basketball-arc-frames",
+          "alt": "A drawn sequence of basketball positions tracing a curved arc into a hoop",
+          "title": "Two-dimensional motion, same method",
+          "note": "The arc is a motion diagram too. Notice the horizontal spacing stays even while the vertical spacing changes — the first hint that the two directions can be treated separately."
+        },
+        {
+          "src": "01_02_Figure.jpg",
+          "slug": "car-four-frames",
+          "alt": "Four stacked photographs of a car moving past a palm tree, one per frame",
+          "title": "A motion diagram is just stacked frames",
+          "note": "Take a video, keep every frame, lay them out. Nothing has been idealised yet. This is the raw observation that everything else compresses."
+        },
+        {
+          "src": "01_03_Figure.jpg",
+          "slug": "equal-time-between-frames",
+          "alt": "Four car images overlaid on a single road, with a note that the same amount of time elapses between each image and the next",
+          "title": "Equal time is the rule that makes it work",
+          "note": "The frames must be equally spaced <em>in time</em>. If they are not, the spacing on the page tells you nothing about speed. Every motion diagram assumes this silently."
+        },
+        {
+          "src": "01_ChSum_01.jpg",
+          "slug": "dots-labelled-with-time",
+          "alt": "A row of black dots labelled t equals 0 s through 6 s at equal spacing, with notes that each dot is a position and the time interval between successive positions is the same",
+          "title": "Label the dots with time",
+          "note": "Each dot is where the object was; the label is when it was there. Getting into the habit of writing the times on saves you later when you need Δt for a calculation."
+        },
+        {
+          "src": "01_04_Figure.jpg",
+          "slug": "particle-model",
+          "alt": "Top: a motion diagram of a car stopping drawn as three car shapes. Bottom: the same motion diagram using the particle model, drawn as four numbered dots",
+          "title": "The particle model",
+          "note": "Replace the object with a single dot at its centre. You lose the shape and keep the motion. This is a deliberate simplification, and knowing what you threw away is part of using it honestly."
+        },
+        {
+          "src": "01_05_Figure.jpg",
+          "slug": "rock-and-diver-same-diagram",
+          "alt": "A falling rock and a diver side by side, both reduced to the same four-dot motion diagram, with a note that the particle model shows they have exactly the same motion diagram",
+          "title": "Why the particle model earns its keep",
+          "note": "A rock and a diver look nothing alike, but as particles they fall identically. This is the point: one diagram now solves both problems, and a whole class of problems you have not met yet."
+        }
+      ]
+    },
+    {
+      "id": "position-and-time",
+      "title": "2 · Position, time and coordinate systems",
+      "intro": "A dot on a page is not yet a measurement. To get numbers you have to impose a coordinate system — and that choice is yours to make.",
+      "figures": [
+        {
+          "src": "01_06_Figure.jpg",
+          "slug": "origin-and-direction",
+          "alt": "A road scene with a post office marked as the origin, a compass showing west and east, and a car four miles from the post office",
+          "title": "You choose the origin",
+          "note": "\"Four miles from the post office\" only means something once someone declares the post office to be zero. The origin is a decision, not a fact about the world."
+        },
+        {
+          "src": "01_07_Figure.jpg",
+          "slug": "number-line-with-signs",
+          "alt": "A number line from minus 6 to plus 5 miles with the post office at zero, a cow at minus 5 miles and a car at plus 4 miles",
+          "title": "The sign carries the direction",
+          "note": "Once the axis points east, west becomes negative. The cow is not at \"5 miles the other way\" — it is at −5 miles. In one dimension the sign is the entire direction information."
+        },
+        {
+          "src": "01_ChSum_03.jpg",
+          "slug": "coordinate-definition",
+          "alt": "A number line in miles with a cow at x equals minus 5 and a car at x equals plus 4, labelled with a note that the coordinate is the variable used to describe position",
+          "title": "Coordinate, not distance",
+          "note": "<em>x</em> is the coordinate — a signed number naming a point on the axis. It is not \"how far away\" anything is. Keep the two ideas apart and negative answers stop feeling wrong."
+        },
+        {
+          "src": "01_08_Figure.jpg",
+          "slug": "axis-labels-and-units",
+          "alt": "A sprinter on a track with a labelled x axis in metres from 0 to 50, start at the origin and finish at 50, with notes on where the symbol and units go",
+          "title": "Label the axis properly",
+          "note": "Symbol, then units in brackets: <em>x</em> (m). Choosing the start line as the origin is not required, just convenient. An unlabelled axis is the most common way to lose marks on a graph question."
+        },
+        {
+          "src": "01_09_Figure.jpg",
+          "slug": "choosing-x-or-y",
+          "alt": "A vertical y axis in feet with a rock at 2 feet, and a tilted x axis in metres along a slope with a skier on it, annotated with which coordinate to use for each",
+          "title": "Pick the axis to suit the motion",
+          "note": "Use <em>y</em> for vertical motion, <em>x</em> for motion along a straight slope. The axis does not have to be horizontal — it has to lie along the motion, which makes the problem one-dimensional."
+        },
+        {
+          "src": "01_10_Figure.jpg",
+          "slug": "dots-bunching-at-the-end",
+          "alt": "Six numbered dots, widely spaced at first and crowding together at positions 4 and 5",
+          "title": "Read the crowding",
+          "note": "Dots 4 and 5 nearly overlap. In equal time the object has barely moved, so it is almost at rest. You can read a stopping motion off the spacing alone."
+        },
+        {
+          "src": "01_11_Figure.jpg",
+          "slug": "choosing-when-t-equals-zero",
+          "alt": "Two rows of dots showing the same braking car, the upper row starting t equals 0 at the beginning of the motion and the lower row starting t equals 0 where the car begins braking",
+          "title": "You choose <em>t</em> = 0 as well",
+          "note": "Both rows describe the identical car. If you only care about the braking, start the clock there and the numbers get smaller. Moving the origin of time is free and often makes the algebra easier."
+        },
+        {
+          "src": "01_19_Figure.jpg",
+          "slug": "calipers-precision",
+          "alt": "Digital vernier calipers measuring a socket, reading 15.57 millimetres, annotated as having a precision of 0.01 millimetres",
+          "title": "Precision is a property of the instrument",
+          "note": "These calipers resolve to 0.01 mm, so 15.57 mm is honest and 15.5700 mm is a lie. The instrument sets how many figures you are entitled to write down."
+        },
+        {
+          "src": "01_20_Figure.jpg",
+          "slug": "measuring-a-time-interval",
+          "alt": "A car passing a trigger that starts two clocks A and B, separated by a measured distance of 124.5 metres",
+          "title": "Measuring, not assuming",
+          "note": "Δ<em>x</em> is measured to four figures here, but the clocks will be the weak link. When you divide these to get a speed, the answer inherits the worse of the two precisions."
+        }
+      ]
+    },
+    {
+      "id": "displacement-and-distance",
+      "title": "3 · Displacement, distance and sign",
+      "intro": "The single most examined distinction in A.1, and the one students most often get wrong under pressure.",
+      "figures": [
+        {
+          "src": "01_Pg017_UnFigure.jpg",
+          "slug": "boat-wake-displacement",
+          "alt": "Aerial photograph of a speedboat that has traced a long looping white wake through marshland, with a straight blue arrow drawn from the start of the wake to the boat",
+          "title": "Distance is the wake; displacement is the arrow",
+          "note": "The boat travelled every metre of that curling wake. Its displacement is the straight arrow — start to finish, nothing else. If it had looped back to where it began, the displacement would be zero and the distance enormous."
+        },
+        {
+          "src": "01_14_Figure.jpg",
+          "slug": "initial-and-final-position",
+          "alt": "Seven dots labelled 0 s to 6 s above an x axis in feet from 0 to 120, with the initial position at 0 and the final position at 120",
+          "title": "Δ<em>x</em> = <em>x</em><sub>f</sub> − <em>x</em><sub>i</sub>",
+          "note": "Final minus initial, always in that order. Here 120 − 0 = +120 ft. Writing it the other way round is the single commonest sign error in the topic."
+        },
+        {
+          "src": "01_13_Figure.jpg",
+          "slug": "negative-displacement",
+          "alt": "A street map with an x axis in feet along 12th Street, showing an object moving from x sub i at 50 feet leftwards to x sub f at 0, with a note that a final position to the left of the initial position gives a negative displacement",
+          "title": "Negative displacement",
+          "note": "0 − 50 = −50 ft. The minus sign is not an error to be tidied away; it is the answer telling you the motion was westward. Distance travelled here is still +50 ft."
+        },
+        {
+          "src": "01_18_Figure.jpg",
+          "slug": "displacement-not-from-origin",
+          "alt": "An x axis in miles with a roost at the origin, and a displacement arrow from a start at about 60 miles to an end at about 85 miles",
+          "title": "Displacement does not care about the origin",
+          "note": "The roost sits at zero but the journey starts at 60. Δ<em>x</em> is the same whatever you called the origin — shift the axis and both positions shift together. Position depends on the origin; displacement does not."
+        },
+        {
+          "src": "01_16_Figure.jpg",
+          "slug": "car-versus-bicycle",
+          "alt": "Two rows of dots, a car and a bicycle, on a common x axis in feet, with a note that in each second the car moves twice as far as the bicycle",
+          "title": "Comparing speeds from spacing",
+          "note": "Same clock, double the spacing, double the speed. You can rank speeds off two motion diagrams without computing anything, provided the time between frames is the same for both."
+        },
+        {
+          "src": "01_17_Figure.jpg",
+          "slug": "two-bikes-opposite-directions",
+          "alt": "Two rows of dots on a common x axis, Bike 1 with times increasing left to right and Bike 2 with times increasing right to left",
+          "title": "Read the time labels, not the layout",
+          "note": "Both rows look identical until you read the numbers. Bike 2's clock runs right to left, so it is travelling in the negative direction. Always check which way time increases before you call a sign."
+        },
+        {
+          "src": "01_Pg015_UnFigure1.jpg",
+          "slug": "cyclist-motion-blur",
+          "alt": "Photograph of a mountain biker sharply in focus against a heavily motion-blurred green background",
+          "title": "Speed is relative to something",
+          "note": "The rider is frozen and the world is smeared, because the camera moved with the bike. In the bike's frame the trees are the ones moving. Every velocity is quoted relative to a chosen frame, usually the ground."
+        }
+      ]
+    },
+    {
+      "id": "vectors",
+      "title": "4 · Vectors, components and trigonometry",
+      "intro": "In one dimension a sign is enough. The moment motion leaves the line you need vectors, and the trig that goes with them.",
+      "figures": [
+        {
+          "src": "01_Pg016_UnFigure3.jpg",
+          "slug": "push-as-a-vector",
+          "alt": "Photograph of a boy pushing another child on a tree swing, with a large red arrow drawn in the direction of the push",
+          "title": "A vector has size and direction",
+          "note": "The arrow says how hard and which way. Change either and you have a different vector. A scalar — mass, time, distance — has no arrow to draw."
+        },
+        {
+          "src": "01_ChSum_02.jpg",
+          "slug": "vector-length-and-velocity-vectors",
+          "alt": "Top: a labelled vector A with a note that its length is proportional to its magnitude. Bottom: a motion diagram with velocity vectors spanning successive points and lengthening",
+          "title": "Length on the page means magnitude",
+          "note": "Draw vectors to scale and the diagram does arithmetic for you. Velocity vectors span successive dots; if they lengthen, the object is speeding up. Sloppy arrow lengths throw that away."
+        },
+        {
+          "src": "01_21_Figure.jpg",
+          "slug": "two-displacement-vectors",
+          "alt": "A street map showing Jane's displacement vector from her start diagonally up-left and Sam's displacement vector along 12th Street to the right",
+          "title": "Same streets, different displacements",
+          "note": "Jane and Sam both walked; their displacement vectors differ in both length and direction. Two vectors are equal only when magnitude <em>and</em> direction match — position on the page is irrelevant."
+        },
+        {
+          "src": "01_22_Figure.jpg",
+          "slug": "tip-to-tail-addition",
+          "alt": "A street map showing vector d1 along 12th Street and d2 diagonally, combining tip-to-tail into a net displacement vector d net equals d1 plus d2",
+          "title": "Adding vectors tip to tail",
+          "note": "Walk one leg, then the next; the net displacement is the single arrow from where you started to where you stopped. It is shorter than the distance you actually walked — that is the whole point."
+        },
+        {
+          "src": "01_TB_04.jpg",
+          "slug": "vector-addition-steps",
+          "alt": "A three-step tactics box for adding vector B to vector A: draw A, place the tail of B at the tip of A, then draw an arrow from the tail of A to the tip of B",
+          "title": "The method, in three steps",
+          "note": "Draw A. Put B's tail on A's tip. Draw from A's tail to B's tip. Do it in this order every time and the geometry never confuses you, however many vectors you are chaining."
+        },
+        {
+          "src": "01_00_ChOpener4.jpg",
+          "slug": "right-triangle-naming",
+          "alt": "A large right-angled triangle with sides labelled adjacent, opposite and hypotenuse relative to the angle theta",
+          "title": "Naming the sides",
+          "note": "Opposite and adjacent are defined relative to the angle you picked, not to the page. Move θ to the other acute angle and the two labels swap. Fix θ first, then name."
+        },
+        {
+          "src": "01_23_Figure.jpg",
+          "slug": "trig-reference",
+          "alt": "A five-panel reference showing right-triangle side naming, the definitions of sine cosine and tangent as ratios, worked examples finding sides from a hypotenuse and angle, the inverse trig functions, and worked examples finding angles from side lengths",
+          "title": "Everything trigonometric you need for A.1",
+          "note": "Sides from an angle: multiply by sin or cos. Angle from sides: use the inverse. There is nothing beyond this panel in the whole of A.1 — worth keeping open until it is automatic."
+        },
+        {
+          "src": "01_24_Figure.jpg",
+          "slug": "vector-to-components",
+          "alt": "Left: a displacement vector of 100 metres at 60 degrees north of east drawn on north and east axes. Right: the same vector as the hypotenuse of a right triangle with legs labelled distance north and distance east of start",
+          "title": "Every vector hides a right triangle",
+          "note": "Drop a perpendicular and the vector becomes the hypotenuse. The legs are the components: 100 cos 60° east, 100 sin 60° north. This move is what makes two-dimensional problems solvable."
+        },
+        {
+          "src": "01_25_Figure.jpg",
+          "slug": "components-to-vector",
+          "alt": "Left: vectors d1 east and d2 north combining to a net vector on axes marked to 100. Right: the net vector as a triangle with legs 90 metres and 50 metres and angle theta",
+          "title": "And back again",
+          "note": "Given the legs, Pythagoras gives the magnitude and tan⁻¹(50/90) gives the angle. Going vector → components → vector is the round trip you will make constantly from A.2 onwards."
+        },
+        {
+          "src": "01_28_Figure.jpg",
+          "slug": "two-leg-journey",
+          "alt": "A journey of 21 miles south-east then 28 miles north-east, meeting at a right angle, with north marked",
+          "title": "Set the problem up first",
+          "note": "Two legs at 90°. Before reaching for a calculator, notice the right angle — it is what makes this solvable with Pythagoras rather than the cosine rule."
+        },
+        {
+          "src": "01_29_Figure.jpg",
+          "slug": "hand-sketched-displacement",
+          "alt": "A hand-drawn triangle with legs of 21 miles and 28 miles at a right angle and the displacement d as the hypotenuse, annotated that the displacement is the hypotenuse of a right triangle",
+          "title": "The sketch is the working",
+          "note": "Redrawn by hand, deliberately rough. A sketch this crude is enough to see that <em>d</em> = √(21² + 28²) = 35 miles. Draw before you calculate, every time."
+        }
+      ]
+    },
+    {
+      "id": "units-and-figures",
+      "title": "5 · Units, significant figures and conversions",
+      "intro": "Unglamorous, heavily penalised in exams, and the subject of one of the most expensive mistakes in spaceflight history.",
+      "figures": [
+        {
+          "src": "01_Pg014_UnFigure.jpg",
+          "slug": "mars-climate-orbiter",
+          "alt": "Artist's rendering of the Mars Climate Orbiter spacecraft with solar panels above the orange surface of Mars",
+          "title": "What units cost",
+          "note": "The Mars Climate Orbiter was lost in 1999 because one team worked in pound-seconds and another in newton-seconds. £100 million, destroyed by an unstated unit. Write the units down."
+        },
+        {
+          "src": "01_Pg006_UnFigure.jpg",
+          "slug": "flood-depth-gauge",
+          "alt": "Photograph of a tall depth marker post beside a desert road, graduated from 6 inches up to 3 and a half feet",
+          "title": "Scales are chosen for a purpose",
+          "note": "Marked in feet and inches because that is what the people reading it use. Physics standardises on SI so that nobody has to guess — but the world it measures rarely does."
+        },
+        {
+          "src": "01_TB_02A.jpg",
+          "slug": "scientific-notation-large",
+          "alt": "The conversion of 6 370 000 metres to 6.37 times 10 to the sixth metres, showing the decimal point moved six steps and noting that the digits give the number of significant figures",
+          "title": "Scientific notation, large numbers",
+          "note": "Move the point until one digit sits to its left; count the steps for the exponent. The form also settles the ambiguity — 6.37 × 10⁶ is unmistakably three significant figures."
+        },
+        {
+          "src": "01_TB_02B.jpg",
+          "slug": "scientific-notation-small",
+          "alt": "The conversion of 0.000 007 5 metres to 7.5 times 10 to the minus sixth metres, showing the decimal point moved six steps past the leading zeros",
+          "title": "Scientific notation, small numbers",
+          "note": "Same rule, negative exponent. The leading zeros are placeholders and never count as significant — here there are two significant figures, not eight."
+        },
+        {
+          "src": "01_TB_01A.jpg",
+          "slug": "sig-figs-multiplication",
+          "alt": "The calculation 3.73 times 5.7 equals 21, annotated that three significant figures times two significant figures gives an answer with the lower of the two, two significant figures",
+          "title": "Multiplying: fewest significant figures wins",
+          "note": "Three figures times two figures gives two. The calculator says 21.261; you write 21. Extra digits are not extra accuracy, they are a claim you cannot support."
+        },
+        {
+          "src": "01_TB_01B.jpg",
+          "slug": "sig-figs-addition",
+          "alt": "The sum of 18.54 with two decimal places and 106.6 with one decimal place giving 125.1, annotated that the answer takes the lower of the two, one decimal place",
+          "title": "Adding: fewest decimal places wins",
+          "note": "A different rule from multiplication, and the reason marks get lost. Adding and subtracting go by decimal places; multiplying and dividing go by significant figures."
+        },
+        {
+          "src": "01_Pg12_UNEQ1.jpg",
+          "slug": "subtracting-times",
+          "alt": "The calculation delta t equals t sub B minus t sub A equals 4.5 seconds minus 1.22 seconds equals 3.3 seconds, annotated with the decimal-place rule",
+          "title": "The rule in action — subtraction",
+          "note": "4.5 has one decimal place, so the answer gets one: 3.3 s, not 3.28 s. The coarser measurement sets the limit, and here it throws away a digit before you have even started."
+        },
+        {
+          "src": "01_Pg12_UNEQ2.jpg",
+          "slug": "dividing-for-velocity",
+          "alt": "The calculation v equals delta x over delta t equals 124.5 metres over 3.3 seconds equals 38 metres per second, annotated that four significant figures divided by two gives two",
+          "title": "The rule in action — division",
+          "note": "A displacement good to four figures divided by a time good to two gives a velocity good to two: 38 m s⁻¹. Careful distance measurement is wasted if the timing is sloppy — worth remembering in the lab."
+        },
+        {
+          "src": "01_TB_03.jpg",
+          "slug": "unit-conversion-method",
+          "alt": "A five-step tactics box converting 60 miles to kilometres by multiplying by the conversion factor 1.609 km per 1 mi, cancelling the miles unit, and rounding to 97 km",
+          "title": "Conversion factors are just multiplying by one",
+          "note": "1.609 km / 1 mi equals 1, so multiplying by it changes the units and not the quantity. Cancel the unwanted unit on the page and you cannot get the conversion upside down."
+        },
+        {
+          "src": "01_Pg15_UNEQ3.jpg",
+          "slug": "chained-conversion",
+          "alt": "A chained conversion of 20 feet per second to 14 miles per hour, multiplying by 1 mile per 5280 feet, 60 seconds per minute and 60 minutes per hour, with the cancelling units colour-coded",
+          "title": "Chaining conversions",
+          "note": "Three factors in a row, each cancelling one unwanted unit. Chain them in a single line rather than converting in stages — fewer intermediate roundings and much easier to check."
+        }
+      ]
+    },
+    {
+      "id": "uniform-motion",
+      "title": "6 · Uniform motion and the position graph",
+      "intro": "Motion diagrams get unwieldy fast. The graph is where kinematics starts to become quantitative.",
+      "figures": [
+        {
+          "src": "02_01_Figure.jpg",
+          "slug": "sign-of-position",
+          "alt": "Four small diagrams showing a dot right of the origin with x greater than zero, left of the origin with x less than zero, above the origin with y greater than zero, and below with y less than zero",
+          "title": "The sign convention, fixed once",
+          "note": "Right and up are positive by default. You may choose otherwise, but choose before you start and never mid-problem. Most sign errors are really convention changes made halfway through."
+        },
+        {
+          "src": "02_02_Figure.jpg",
+          "slug": "student-walk-motion-diagram",
+          "alt": "A motion diagram of a student walking, one frame per minute, along an x axis in metres from 0 to over 500, with dots crowded in the middle",
+          "title": "A real journey as dots",
+          "note": "One frame per minute over about nine minutes. The crowding near 200 m says she slowed there. Getting a number out of this by counting dots is possible but painful — hence the graph."
+        },
+        {
+          "src": "02_03_Figure.jpg",
+          "slug": "position-graph-points",
+          "alt": "A scatter graph of position x in metres against time t in minutes, showing nine plotted dots rising, flattening in the middle and steepening at the end",
+          "title": "The same walk, plotted",
+          "note": "Each dot is one row of the table: a time and the position at that time. Nothing has been added yet — this is the motion diagram with time given its own axis."
+        },
+        {
+          "src": "02_04_Figure.jpg",
+          "slug": "position-graph-curve",
+          "alt": "The same position-time data joined into a continuous line, with notes that position is graphed on the vertical axis and time on the horizontal axis",
+          "title": "Joining the dots is a claim",
+          "note": "The line asserts she had a position at every instant between measurements, which is reasonable for a walking student. Position on the vertical axis, time on the horizontal — always this way round."
+        },
+        {
+          "src": "02_14_Figure.jpg",
+          "slug": "uniform-motion-diagram-and-graph",
+          "alt": "Top: a motion diagram with equally spaced dots and equal velocity vectors, labelled uniform motion. Bottom: the corresponding position-time graph, a straight line with equal displacements marked",
+          "title": "Uniform motion is a straight line",
+          "note": "Equal displacements in equal times, so the graph is straight and the slope constant. \"Uniform\" means constant velocity, which means zero acceleration — not merely \"moving\"."
+        },
+        {
+          "src": "02_ChSum_04.jpg",
+          "slug": "constant-velocity-pair",
+          "alt": "Two blank-axis graphs side by side: a horizontal velocity-time line, and a straight rising position-time line",
+          "title": "The shape pair to memorise",
+          "note": "Flat <em>v</em>–<em>t</em> goes with straight <em>x</em>–<em>t</em>. Learn these as a pair; a huge number of multiple-choice questions are testing exactly this correspondence and nothing else."
+        },
+        {
+          "src": "02_15_Figure.jpg",
+          "slug": "slope-is-velocity",
+          "alt": "A position-time graph with initial position x sub i at time t sub i and final position x sub f at time t sub f, with delta x and delta t marked and the slope labelled v sub x equals delta x over delta t",
+          "title": "Slope is velocity",
+          "note": "Rise over run, with units. Δ<em>x</em> in metres over Δ<em>t</em> in seconds gives m s⁻¹ automatically — which is a useful check that you have read the axes the right way round."
+        },
+        {
+          "src": "02_06_Figure.jpg",
+          "slug": "annotated-journey-graph",
+          "alt": "A position-time graph in kilometres and minutes with five numbered annotations describing a car starting 10 km right of the origin, moving left for 30 minutes, stopping for 10 minutes at minus 20 km, then returning to the origin at 80 minutes",
+          "title": "Reading a graph as a story",
+          "note": "Five features, five sentences. Downward slope means moving in the negative direction; flat means stopped; the crossing at 80 min is the return to the origin. Practise narrating graphs before calculating from them."
+        },
+        {
+          "src": "02_05_Figure(1).jpg",
+          "slug": "journey-graph-plain",
+          "alt": "The same position-time graph in kilometres and minutes on a gridded background, without annotations",
+          "title": "Now without the annotations",
+          "note": "The same journey stripped of help. Cover the previous figure and narrate this one yourself — where is it moving fastest, where is it stationary, when does it pass the origin?"
+        }
+      ]
+    },
+    {
+      "id": "velocity-from-slope",
+      "title": "7 · Velocity as the slope of <em>x</em>–<em>t</em>",
+      "intro": "The first of the two graph relationships that carry the whole topic. Get this one solid and half of A.1 follows.",
+      "figures": [
+        {
+          "src": "02_07_Figure.jpg",
+          "slug": "sign-of-velocity",
+          "alt": "Four diagrams showing velocity vectors: pointing right with v sub x greater than zero, left with v sub x less than zero, up with v sub y greater than zero, and down with v sub y less than zero",
+          "title": "The sign of the velocity is the direction",
+          "note": "Once the axis is chosen the sign says everything about direction. In one dimension you never need an angle — a plus or a minus does the whole job."
+        },
+        {
+          "src": "02_08_Figure.jpg",
+          "slug": "walk-in-three-phases",
+          "alt": "A motion diagram of the student's walk annotated in three phases: constant speed, then slower, then constant faster speed, with a note that she always moves toward increasing x so her velocity is always positive",
+          "title": "Slower is not backwards",
+          "note": "Three phases, three speeds, one direction. Her velocity is positive throughout even while she is slowing — a distinction the next few figures depend on completely."
+        },
+        {
+          "src": "02_09_FigureA.jpg",
+          "slug": "slope-follows-speed",
+          "alt": "A position-time graph of the walk annotated that when the student slows down the slope decreases and when she speeds up the slope increases",
+          "title": "Slope tracks speed",
+          "note": "The graph flattens where she dawdles and steepens where she hurries. You are reading a rate off a shape, which is the single most transferable skill in the course."
+        },
+        {
+          "src": "02_09_FigureB.jpg",
+          "slug": "slope-from-rise-and-run",
+          "alt": "The same position-time graph with a right triangle on the final segment showing delta x of 300 metres over delta t of 3 minutes",
+          "title": "Taking the numbers off",
+          "note": "300 m in 3 min. Convert before you divide: 300 m / 180 s = 1.7 m s⁻¹. Take the triangle over a large, clearly readable interval — small triangles magnify your reading errors."
+        },
+        {
+          "src": "02_ChSum_02.jpg",
+          "slug": "velocity-is-slope-summary",
+          "alt": "A position-time graph in metres and seconds with the note that velocity is the slope of the position graph",
+          "title": "The statement itself",
+          "note": "Worth writing on the inside cover of your notes. Velocity <em>is</em> the slope — not related to it, not proportional to it. Everything in this section is a consequence."
+        },
+        {
+          "src": "02_10_Figure.jpg",
+          "slug": "building-the-velocity-graph",
+          "alt": "A position-time graph above and its derived velocity-time graph below, with annotations showing that a constant positive slope of 60 metres per minute gives a constant velocity of 1.0 metres per second and a decreasing slope gives a smaller positive velocity",
+          "title": "Deriving <em>v</em>–<em>t</em> from <em>x</em>–<em>t</em>",
+          "note": "Read the slope of each straight segment above, plot it as a height below. Straight segments give flat steps. This is differentiation done by eye, and it is exactly what the exam asks for."
+        },
+        {
+          "src": "02_11_Figure.jpg",
+          "slug": "x-t-with-negative-and-flat",
+          "alt": "A position-time graph in metres and seconds falling from 0 to minus 4 over two seconds, flat from 2 to 4 seconds, then rising steeply to plus 6",
+          "title": "Practise on this one",
+          "note": "Three segments: negative slope, zero slope, steep positive slope. Sketch the velocity graph before looking at the next figure — that is the intended order."
+        },
+        {
+          "src": "02_12_Figure.jpg",
+          "slug": "v-t-step-graph",
+          "alt": "A velocity-time graph in metres per second showing a value of minus 2 until 2 seconds, then 0 until 4 seconds, then plus 5",
+          "title": "The answer",
+          "note": "−2 m s⁻¹, then 0, then +5 m s⁻¹. The vertical dashes are not real — velocity cannot jump instantly. They are an artefact of pretending the corners on the position graph were sharp."
+        },
+        {
+          "src": "02_13_Figure.jpg",
+          "slug": "out-and-back",
+          "alt": "A velocity-time graph showing plus 1.0 metres per second for 15 seconds then minus 3.0 for 5 seconds, above a position-time graph rising to 15 metres and falling back to zero, with annotations linking the velocities to the slopes",
+          "title": "Out and back",
+          "note": "Away at 1.0 m s⁻¹, back at 3.0 m s⁻¹ — three times faster, so a third of the time. Note the return is steeper <em>and</em> negative, and that she ends where she began: displacement zero, distance 30 m."
+        },
+        {
+          "src": "02_17_Figure.jpg",
+          "slug": "curved-position-graph",
+          "alt": "A curved position-time graph in metres and seconds with displacement intervals marked, small early and larger later, annotated that the velocity is increasing",
+          "title": "When the graph curves",
+          "note": "Equal time slices, growing displacements. A curved <em>x</em>–<em>t</em> means the velocity is changing, so a single slope no longer describes the whole motion."
+        },
+        {
+          "src": "02_Pg036_UnFigure2.jpg",
+          "slug": "instantaneous-velocity-tangent",
+          "alt": "Left: a curved position-time graph with a magnified inset showing a delta x of 1.6 metres over a delta t of 0.20 seconds. Right: the same curve with a tangent line drawn giving delta x of 8.0 metres over delta t of 1.0 seconds",
+          "title": "Instantaneous velocity is the tangent",
+          "note": "Shrink the interval and the curve straightens; the limit is the tangent. Both readings give 8.0 m s⁻¹ at that instant. Draw the tangent long — a short one is impossible to measure accurately."
+        },
+        {
+          "src": "02_18_Figure.jpg",
+          "slug": "s-curve-points-abc",
+          "alt": "An S-shaped position-time curve with points A at the minimum, B at the zero crossing, and C on the flat upper section",
+          "title": "Where is it fastest?",
+          "note": "Three points, three different slopes. Decide the sign and rough size of the velocity at A, B and C before turning to the next figure."
+        },
+        {
+          "src": "02_19_Figure.jpg",
+          "slug": "s-curve-answer",
+          "alt": "Top: the S-shaped position curve annotated that the slope is negative before A, zero at A and C, and maximum at B. Bottom: the corresponding velocity-time graph peaking at B and returning to zero at C",
+          "title": "The answer",
+          "note": "Zero slope at A and C means at rest — a turning point, not a stop in the story. Maximum slope at B gives peak velocity. A minimum on <em>x</em>–<em>t</em> is a zero on <em>v</em>–<em>t</em>, never a minimum."
+        }
+      ]
+    },
+    {
+      "id": "area-under-v-t",
+      "title": "8 · Displacement as the area under <em>v</em>–<em>t</em>",
+      "intro": "The second graph relationship, and the one students reach for least often — usually to their cost.",
+      "figures": [
+        {
+          "src": "02_16_Figure.jpg",
+          "slug": "area-rectangle",
+          "alt": "A velocity-time graph with a constant velocity of 12 metres per second and a shaded rectangle between 1 and 3 seconds, labelled area equals v sub x times delta t",
+          "title": "Constant velocity: area is a rectangle",
+          "note": "12 m s⁻¹ × 2 s = 24 m. The units multiply to metres, which is the check that the area really is a displacement and not just a number of grid squares."
+        },
+        {
+          "src": "02_21_Figure.jpg",
+          "slug": "area-triangle",
+          "alt": "A velocity-time graph rising steadily from the origin with the area under it to 3 seconds shaded as a triangle, labelled that the displacement is the area of the shaded triangle",
+          "title": "Changing velocity: area is a triangle",
+          "note": "½ × 3 s × 12 m s⁻¹ = 18 m. Not 12 × 3 — the object was slower than 12 m s⁻¹ for the entire interval except the final instant."
+        },
+        {
+          "src": "02_20_Figure.jpg",
+          "slug": "area-under-a-curve",
+          "alt": "A velocity-time graph for a lion, rising steeply then levelling to a steady speed, with the whole area beneath it shaded and labelled as the displacement",
+          "title": "Any shape at all",
+          "note": "The rule does not need a straight line. For an awkward curve, count squares or split it into strips — the area is still the displacement, however you get at it."
+        },
+        {
+          "src": "02_28_Figure.jpg",
+          "slug": "area-triangle-plus-rectangle",
+          "alt": "Top: a constant acceleration-time graph. Bottom: a velocity-time graph rising from an initial velocity, with the area under it split into a lower rectangle and an upper triangle labelled a sub x delta t",
+          "title": "Where <em>s</em> = <em>ut</em> + ½<em>at</em>² comes from",
+          "note": "Rectangle <em>u</em>Δ<em>t</em> plus triangle ½(<em>a</em>Δ<em>t</em>)Δ<em>t</em>. Add them and you have the second equation of motion. It is not something to memorise blindly — it is the area of this picture."
+        },
+        {
+          "src": "02_ChSum_05.jpg",
+          "slug": "accelerating-pair",
+          "alt": "Two blank-axis graphs side by side: a straight rising velocity-time line, and a curving upward position-time parabola",
+          "title": "The second shape pair",
+          "note": "Straight sloping <em>v</em>–<em>t</em> goes with parabolic <em>x</em>–<em>t</em>. Together with the constant-velocity pair, these two cover almost every graph you will be shown in A.1."
+        },
+        {
+          "src": "02_Pg034_UnFigure3.jpg",
+          "slug": "linear-proportionality",
+          "alt": "A graph of y equals C x, a straight line through the origin, annotated that when x is doubled y doubles as well",
+          "title": "Linear: double one, double the other",
+          "note": "A straight line through the origin. In <em>v</em> = <em>u</em> + <em>at</em> from rest, doubling the time doubles the velocity. Recognising proportionality lets you answer some questions without any numbers at all."
+        },
+        {
+          "src": "02_Pg044_UnFigure3.jpg",
+          "slug": "quadratic-proportionality",
+          "alt": "A graph of y equals A x squared curving upward, annotated that doubling x causes y to change by a factor of 4",
+          "title": "Quadratic: double one, quadruple the other",
+          "note": "Because <em>s</em> = ½<em>at</em>², doubling the fall time quadruples the distance fallen. Braking distance behaves the same way in <em>v</em>, which is why speed limits are not linear in their effect."
+        },
+        {
+          "src": "02_Pg034_UnFigure1.jpg",
+          "slug": "same-shape-different-physics",
+          "alt": "Three parabolic graphs stacked: the mathematical function y equals 4 x squared, the kinetic energy of an 8 kilogram object, and the potential energy of a spring",
+          "title": "One shape, three physics problems",
+          "note": "Identical curve, three meanings. Learning to recognise the shape rather than the context is what lets you carry kinematics into energy, fields and waves later on."
+        }
+      ]
+    },
+    {
+      "id": "acceleration",
+      "title": "9 · Acceleration and the sign trap",
+      "intro": "The concept students think they understand and consistently do not. The trap is the four-panel figure part way down — the one about what a negative acceleration actually means.",
+      "figures": [
+        {
+          "src": "02_22_Figure.jpg",
+          "slug": "sonic-versus-corvette",
+          "alt": "Two motion diagrams on a common scale, a Sonic with modestly widening gaps above a Corvette with rapidly widening gaps",
+          "title": "Both accelerating, not equally",
+          "note": "Both speed up; the Corvette's gaps grow faster. Acceleration is about how quickly the velocity changes, not how large the velocity is."
+        },
+        {
+          "src": "02_23_Figure.jpg",
+          "slug": "acceleration-from-v-t-slope",
+          "alt": "A velocity-time graph with straight lines for the Corvette and the Sonic, with a triangle on the Corvette line showing delta v sub x of 7.5 metres per second over delta t of 1.0 seconds",
+          "title": "Acceleration is the slope of <em>v</em>–<em>t</em>",
+          "note": "7.5 m s⁻¹ per second, written 7.5 m s⁻². The pattern repeats: slope of <em>x</em>–<em>t</em> is velocity, slope of <em>v</em>–<em>t</em> is acceleration. Same operation, one level down."
+        },
+        {
+          "src": "02_24_Figure.jpg",
+          "slug": "v-t-to-a-t",
+          "alt": "Top: a trapezoidal velocity-time graph. Bottom: the corresponding acceleration-time graph, positive then zero then negative, with annotations linking each segment",
+          "title": "Deriving <em>a</em>–<em>t</em> from <em>v</em>–<em>t</em>",
+          "note": "Rising, flat, falling on <em>v</em>–<em>t</em> becomes positive, zero, negative on <em>a</em>–<em>t</em>. Constant velocity means zero acceleration — not constant acceleration, which is a common slip."
+        },
+        {
+          "src": "02_25_Figure.jpg",
+          "slug": "sign-of-acceleration-four-cases",
+          "alt": "Four panels each showing a motion diagram, an acceleration vector and a velocity-time graph: moving right and speeding up with positive a, moving left and slowing down with positive a, moving right and slowing down with negative a, moving left and speeding up with negative a",
+          "title": "The one to study hardest",
+          "note": "Negative acceleration does <em>not</em> mean slowing down. It means the acceleration points in the negative direction. Speeding up happens when <em>a</em> and <em>v</em> share a sign; slowing down when they oppose. Panel two — negative velocity, positive acceleration, slowing down — is the case that catches people."
+        },
+        {
+          "src": "02_30_Figure.jpg",
+          "slug": "braking-car",
+          "alt": "A motion diagram of a braking car with shortening velocity vectors and an acceleration vector pointing left, above a velocity-time graph falling from 15 metres per second to zero at 1.5 seconds",
+          "title": "Braking, worked through",
+          "note": "Moving right, so <em>v</em> is positive; slowing, so <em>a</em> is negative and the arrow points left. From 15 m s⁻¹ to 0 in 1.5 s gives <em>a</em> = −10 m s⁻². The car never reverses — the graph stops at zero."
+        },
+        {
+          "src": "02_27_Figure.jpg",
+          "slug": "acceleration-from-data",
+          "alt": "A velocity-time graph in metres per second against seconds with six scattered data points and a straight line of best fit, showing delta v sub y of 27 metres per second over delta t of 1.5 seconds",
+          "title": "Acceleration from real data",
+          "note": "The points scatter; the line of best fit does not go through them all. 27 / 1.5 = 18 m s⁻². Take the gradient from the fitted line, never from two raw data points — that is the marked method."
+        },
+        {
+          "src": "02_29_Figure.jpg",
+          "slug": "parabola-implies-constant-acceleration",
+          "alt": "A position-time graph in metres against seconds curving upward through plotted rocket data, annotated that a parabola implies motion at constant acceleration",
+          "title": "A parabola is a fingerprint",
+          "note": "Curved <em>x</em>–<em>t</em> means acceleration; a <em>parabolic</em> <em>x</em>–<em>t</em> means constant acceleration specifically, which is what licenses you to use the four equations."
+        },
+        {
+          "src": "02_39_Figure.jpg",
+          "slug": "man-versus-horse",
+          "alt": "Top: velocity-time graphs for a man and a horse, the man's rising more steeply at first but levelling lower, the horse's rising later to a higher maximum. Bottom: the corresponding position-time graphs crossing at about 40 metres",
+          "title": "Higher acceleration, lower top speed",
+          "note": "The man out-accelerates the horse and leads to about 40 m; the horse's higher maximum velocity wins after that. Two different quantities, two different winners — read which one the question is asking about."
+        }
+      ]
+    },
+    {
+      "id": "equations-of-motion",
+      "title": "10 · The equations of motion, and how to use them",
+      "intro": "Four equations, and a setup routine that matters more than the algebra.",
+      "figures": [
+        {
+          "src": "02_31_Figure.jpg",
+          "slug": "pictorial-representation",
+          "alt": "Top: an artist's pictorial representation of a rocket sled with initial and final states labelled and a list of known values. Bottom: the same as a rough student sketch with annotations naming the sketch, coordinate system, defined symbols, known information and desired unknowns",
+          "title": "The setup that earns the marks",
+          "note": "Sketch, axis, symbols, knowns, unknowns. The bottom version is what yours should look like — deliberately rough. Most failed kinematics problems fail here, not in the algebra."
+        },
+        {
+          "src": "02_32_Figure.jpg",
+          "slug": "three-representations",
+          "alt": "A rocket problem shown three ways: a motion diagram of dots with velocity and acceleration vectors, a pictorial representation with initial and final states, and a list of known and unknown values",
+          "title": "Three views of one problem",
+          "note": "Motion diagram for the shape of the motion, pictorial representation for the two states that matter, list of values for the algebra. Writing all three takes a minute and prevents most errors."
+        },
+        {
+          "src": "02_ChSum_01.jpg",
+          "slug": "four-representations",
+          "alt": "A rocket problem shown as a motion diagram, a pictorial representation, a graphical representation of velocity against time, and a list of known and unknown values",
+          "title": "Adding the graph",
+          "note": "The same problem with a fourth view. If your algebra gives an answer your graph says is impossible, trust the graph and go back — it is far harder to draw a wrong graph than to make a sign error."
+        },
+        {
+          "src": "02_33_Figure.jpg",
+          "slug": "aeroplane-takeoff-sketch",
+          "alt": "A hand-drawn setup for an aeroplane takeoff, with a motion diagram, a sketch of the plane at initial and final positions, and handwritten known values including an acceleration of 2.6 metres per second squared and a final velocity of 70 metres per second",
+          "title": "What yours should look like",
+          "note": "Entirely hand-drawn and perfectly adequate. Knowns on the right, unknowns named underneath. Notice <em>x</em><sub>i</sub> = 0 and <em>t</em><sub>i</sub> = 0 are choices made to simplify, not data from the question."
+        },
+        {
+          "src": "02_34_Figure.jpg",
+          "slug": "multi-phase-problem",
+          "alt": "A car problem in three labelled phases with a motion diagram, three car positions, a velocity-time graph showing constant velocity then braking, and a list of known values",
+          "title": "Problems in phases",
+          "note": "Constant speed to <em>t</em>₂, then braking to <em>t</em>₃. Apply the equations to each phase separately — they are only valid where the acceleration is constant. The end of one phase is the start of the next."
+        },
+        {
+          "src": "02_40_Figure.jpg",
+          "slug": "cheetah-and-gazelle",
+          "alt": "A two-object chase problem: motion diagrams and velocity-time graphs for a cheetah running at a constant 30 metres per second and a gazelle accelerating then running steadily, with a full list of known values and the positions to be found",
+          "title": "Two objects, one clock",
+          "note": "The hard part is bookkeeping, not physics. Subscript everything by object (C and G) and keep one shared time axis. The gazelle's 160 m head start is a difference in <em>x</em><sub>i</sub>, nothing more."
+        },
+        {
+          "src": "02_Pg054_EQUnFigure1.jpg",
+          "slug": "gazelle-phase-one",
+          "alt": "The worked equation x sub 2G equals x sub 1G plus v Delta t plus one half a Delta t squared, evaluating to 160 metres plus 0 plus one half times 4.5 times 6.0 squared equals 240 metres",
+          "title": "Phase one, in numbers",
+          "note": "160 m head start, starts from rest, accelerates at 4.5 m s⁻² for 6.0 s. Every symbol is subscripted so there is no doubt which animal it belongs to. Δ<em>t</em> is the duration of <em>this phase</em>, not the total time."
+        },
+        {
+          "src": "02_Pg054_EQUnFigure2.jpg",
+          "slug": "gazelle-phase-two",
+          "alt": "The worked equation x sub 3G equals x sub 2G plus v sub 2G Delta t equals 240 metres plus 27 metres per second times 9.0 seconds equals 480 metres",
+          "title": "Phase two picks up where phase one stopped",
+          "note": "The 240 m from phase one becomes the starting position for phase two. Acceleration is now zero so the simpler equation applies. Chain the phases; never try to span both with one equation."
+        }
+      ]
+    },
+    {
+      "id": "free-fall",
+      "title": "11 · Free fall",
+      "intro": "One acceleration, always the same, always downward — and the source of a great deal of confusion at the top of the flight.",
+      "figures": [
+        {
+          "src": "02_35_Figure.jpg",
+          "slug": "free-fall-three-cases",
+          "alt": "Three panels: a dropped object with downward velocity vectors lengthening and a downward acceleration vector; a velocity-time graph with constant slope of minus 9.8 metres per second squared; and an object thrown upward with shortening upward velocity vectors and a still-downward acceleration vector",
+          "title": "The acceleration never changes",
+          "note": "Dropped or thrown upward, <em>a</em> = 9.8 m s⁻² downward throughout. Panel (c) is the one to sit with: the object is moving up while accelerating down. Nothing about that is contradictory."
+        },
+        {
+          "src": "02_ChSum_06.jpg",
+          "slug": "free-fall-up-and-down",
+          "alt": "Two motion diagrams, one with upward velocity vectors shortening and one with downward vectors lengthening, both with a downward acceleration vector, beside a velocity-time graph that is a straight line of slope minus 9.80 crossing zero",
+          "title": "One straight line through zero",
+          "note": "Up and down are not two problems. The <em>v</em>–<em>t</em> graph is a single straight line of slope −9.80 m s⁻² that happens to cross zero at the top. Treat the whole flight as one motion."
+        },
+        {
+          "src": "02_37_Figure.jpg",
+          "slug": "ball-thrown-up",
+          "alt": "A ball thrown upward shown as two separated motion diagrams for the upward and downward parts, with annotations that the upward and downward velocity vectors are equal in magnitude and opposite in direction and that the ball is caught at the same speed it left the hand, beside a velocity-time graph crossing zero at the highest point",
+          "title": "At the top, <em>v</em> = 0 but <em>a</em> ≠ 0",
+          "note": "The two columns are drawn apart for clarity; the ball really goes straight up and back down the same line. At the highest point velocity is instantaneously zero while acceleration is still 9.8 m s⁻² down — if it were not, the ball would hang there."
+        },
+        {
+          "src": "02_36_Figure.jpg",
+          "slug": "falling-rock-setup",
+          "alt": "A hand-drawn free-fall setup with a motion diagram of a falling rock, a y axis with initial position at 100 metres and final at 0, and known values including a sub y equals minus g equals minus 9.80 metres per second squared",
+          "title": "Setting up a fall",
+          "note": "Axis up, so the fall is from <em>y</em><sub>i</sub> = 100 m to <em>y</em><sub>f</sub> = 0 and <em>a<sub>y</sub></em> = −9.80 m s⁻². Note <em>g</em> is written as a positive 9.80 and the minus comes from the direction — <em>g</em> itself is never negative."
+        },
+        {
+          "src": "02_38_Figure.jpg",
+          "slug": "kangaroo-two-phases",
+          "alt": "A kangaroo jump in two phases: pushing off the ground with an upward acceleration of 35 metres per second squared over 0.70 metres, then rising into the air with an acceleration of minus 9.8 metres per second squared, each with its own list of known values",
+          "title": "Free fall starts when contact ends",
+          "note": "While the legs are pushing, <em>a</em> = +35 m s⁻² and this is not free fall. The instant the feet leave the ground it becomes −9.8 m s⁻². The final velocity of phase one is the initial velocity of phase two."
+        }
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "12 · Where this goes next",
+      "intro": "",
+      "figures": [
+        {
+          "src": "01_26_Figure.jpg",
+          "slug": "displacement-and-velocity-vectors",
+          "alt": "Two motion diagrams of a car from 0 to 4 seconds: the upper with lengthening displacement vectors, the lower with lengthening velocity vectors, both annotated as showing the car speeding up",
+          "title": "Two ways to draw the same thing",
+          "note": "Displacement vectors span the gaps; velocity vectors do the same job scaled by 1/Δ<em>t</em>. Both lengthen, both say speeding up. Knight uses velocity vectors from here on and so should you."
+        },
+        {
+          "src": "01_27_Figure.jpg",
+          "slug": "velocity-vectors-round-a-curve",
+          "alt": "A motion diagram of a ball thrown from Jake to Jim following a curved arc, with green velocity vectors tangent to the path, longest at the ends and shortest at the top",
+          "title": "Where A.1 goes in two dimensions",
+          "note": "The velocity vectors are tangent to the path and shortest at the top — the vertical component has gone while the horizontal one has not. That independence is the key to projectile motion."
+        },
+        {
+          "src": "01_25_Figure.jpg",
+          "slug": "components-recap",
+          "alt": "Left: vectors d1 and d2 combining to a net displacement on north and east axes. Right: the net displacement as a right triangle with legs of 90 and 50 metres",
+          "title": "The tool you will need for it",
+          "note": "Resolving into perpendicular components is what makes a projectile two independent one-dimensional problems. Everything on this page then applies twice — once horizontally, once vertically."
+        }
+      ]
+    }
+  ]
+}

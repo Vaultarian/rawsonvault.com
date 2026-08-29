@@ -1,1 +1,9 @@
-_build/
+# _build/ holds the site's build system -- the injectors Tim runs and the
+# verified source data they read. It IS source and is tracked (2026-08-29):
+# inject_daily_print.py now runs unattended every school morning, and an
+# untracked generator has no history and no remote copy.
+#
+# The publish log is the one exception: Tim appends to it on every run but no
+# injector declares it, so tracking it would leave a permanently uncommitted
+# change in the working tree.
+_build/publish-safety-log.md
