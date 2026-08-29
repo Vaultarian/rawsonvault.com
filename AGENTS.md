@@ -116,14 +116,69 @@ Every page follows the same skeleton — read an existing topic page before writ
   `<!-- LAB-LINKS:START/END -->`) and are injected idempotently by `_build/` scripts —
   edit the injector and re-run, don't hand-edit between markers.
 
+## Daily Print — the one scheduled page
+
+`/daily_print` is Alex's staff print sheet: the page he opens on a **school machine** each
+morning to send the day's documents to the school printer. It is the only page in this repo
+that publishes **unattended, on a schedule, with no human in the loop.**
+
+- **Never hand-edit `daily_print/index.html` or anything in `daily_print/files/`.** Both are
+  generated wholesale by `_build/inject_daily_print.py`, which owns that directory and
+  deletes anything it did not put there. Change the *source*, then re-run.
+- **The source is the Class Log, not this repo.** For each period the injector reads
+  `~/vault/01-Teaching/Class Logs/<Subject> <Class>.md`, finds the `### YYYY-MM-DD` block for
+  the date, and follows its `[[wikilinks]]` to the PDFs. **No log entry means no documents on
+  the page** — a PDF on its own carries nothing saying which day or period it belongs to.
+- **The Copies contract:** the number is the **class size** from `Student Roster.md` — copies
+  to run, never page counts. An explicit `- **To print:** …` line in the Class Log overrides
+  it verbatim; that is how "7 copies of Version A, 6 of Version B" reaches the page. Page
+  counts appear only as a muted `Npp` beside each document name.
+- **Week A/B comes from `school_week.py`**, mounted read-only at `~/AlfredOS/scripts`. Never
+  vendor a copy into this repo: each term resets to Week A, so parity arithmetic from an
+  anchor Monday is wrong for 12 of the year's 37 teaching weeks.
+- **A day with no classes publishes an explicit "No classes scheduled" page.** An empty page
+  is honest; a stale one sends Alex to the printer with yesterday's list.
+- **Teacher-only documents publish as-is** — answer keys, staff lesson plans. Alex's explicit
+  decision, 2026-08-28. The page carries `robots: noindex, nofollow` and nothing more. This
+  is scoped to this page and relaxes none of the privacy or third-party rules above.
+
+### The daily run
+
+`k8s/cronjobs/tim-daily-print.yaml` — **05:30, Mon–Fri, `Europe/London`.**
+
+The Job itself does not publish. It POSTs to Tim's `/publish` with
+`{"injectors": ["inject_daily_print.py"]}`, so an unattended run can touch no other page,
+and then **polls `/publish/status` until a terminal state**. That polling is load-bearing:
+the POST returns as soon as the background task *starts*, so a Job that exited there would
+report success over a failed publish.
+
+Tim's pod carries `TZ=Europe/London`. The injector resolves "today" with `date.today()`
+inside that pod, and the node clock is UTC — without it, a run in the small hours would
+build the previous day's page for half the year.
+
+`name_audit.py` remains the only thing that halts a run. That gate is exactly what makes
+unattended publishing acceptable.
+
+> ⚠️ **The automated run commits directly to `main`**, not through `subject-pages`. That
+> branch holds zero unique commits and sits well behind `main`, so the flow described under
+> *Branch discipline* above cannot currently run as written. Unresolved: either restore the
+> branch or rewrite the rule.
+
 ## Where content comes from
 
-Tim reads the **vault** (`~/vault/`) and the **Orange**
-(`/Volumes/orange_2tb/`) to source page content. He never writes either, and he never
+Tim reads the **vault** (`~/vault/`) to source page content, plus `~/AlfredOS/scripts`
+read-only for the canonical week lookup. He does **not** mount the Orange: both external
+volumes were removed from the cluster on 2026-08-18 and must not be re-added. He never
+writes the vault, and he never
 touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary per
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.1 — 2026-08-29. Added **Daily Print** — the first page in this repo that publishes
+unattended on a schedule, and the rules that make that safe. Corrected *Where content comes
+from*: it still claimed Tim reads the Orange, which has been out of the cluster since
+2026-08-18.*
 
 *v1.0 — 2026-06-12. Created by Tim in his first session. Rules derived from the repo as
 found: the publish-safety log (labs + video runs), the video-injection pattern, and the
