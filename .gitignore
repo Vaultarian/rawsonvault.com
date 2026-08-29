@@ -7,3 +7,6 @@
 # injector declares it, so tracking it would leave a permanently uncommitted
 # change in the working tree.
 _build/publish-safety-log.md
+
+# Byproduct of the injectors importing shared helpers from each other.
+_build/__pycache__/
