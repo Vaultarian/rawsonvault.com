@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Make a New Illusion</title>
+  <title>Make Your Own</title>
   <style>
     body {
       margin: 0; font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
@@ -18,12 +18,24 @@
       border-radius: 14px; padding: 14px; font-family: monospace;
       font-size: 14px; line-height: 1.5; resize: vertical; /* drag the corner to make it bigger! */
     }
+
+    /* ---------- the name row: what your box will be called ---------- */
+    .namerow { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .namerow input {
+      background: #1c1c33; color: #fff; border: 3px solid #ffe14e;
+      border-radius: 12px; padding: 10px 14px; font-size: 1.1em;
+      font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    }
+    #titleBox { flex: 1; min-width: 200px; }
+    #emojiBox { width: 90px; text-align: center; font-size: 1.6em; }
+
     .buttons { margin: 14px 0; display: flex; gap: 10px; flex-wrap: wrap; }
     button {
       font-family: 'Comic Sans MS', sans-serif; font-size: 1.1em;
       padding: 10px 20px; border: none; border-radius: 12px; cursor: pointer;
     }
-    .run { background: #6bff4e; color: #000; }
+    .run   { background: #6bff4e; color: #000; }
+    .add   { background: #4edcff; color: #000; }
     .clear { background: #ff4ec7; color: #000; }
     .saved { color: #6bff4e; font-size: 0.9em; height: 1.2em; }
     iframe {
@@ -34,29 +46,41 @@
   </style>
 </head>
 <body>
-  <h1>➕ Make a New Illusion</h1>
-  <p class="hint">Paste or write your JavaScript illusion here, then press <b>Run it!</b> to test it.
+  <h1>➕ Make Your Own</h1>
+  <p class="hint">Paste or write your code here, then press <b>Run it!</b> to test it.
+  When you like it, press <b>Add to Museum!</b> and it gets its very own box. 🖼️<br>
   Your code saves all by itself, so it's still here when you come back! 💾</p>
 
   <div class="editor">
-    <textarea id="code" placeholder="// Paste your illusion code from Gemini here...
+    <textarea id="code" placeholder="// Paste your code here...
 // Then press Run it! to see it work!"></textarea>
 
+    <!-- What should the museum box be called? -->
+    <div class="namerow">
+      <input id="titleBox" placeholder="Name your creation...">
+      <input id="emojiBox" value="✨" title="Pick an emoji for your box">
+    </div>
+
     <div class="buttons">
-      <button class="run" onclick="runCode()">▶ Run it!</button>
+      <button class="run"   onclick="runCode()">▶ Run it!</button>
+      <button class="add"   onclick="addToMuseum()">🖼️ Add to Museum!</button>
       <button class="clear" onclick="clearCode()">🗑️ Clear</button>
     </div>
     <div class="saved" id="savedMsg"></div>
 
-    <iframe id="preview" title="Illusion preview"></iframe>
+    <iframe id="preview" title="Preview"></iframe>
   </div>
 
   <a class="back" href="index.html">⬅ Back to the museum</a>
 
   <script>
-    const codeBox = document.getElementById('code');
+    const codeBox  = document.getElementById('code');
+    const titleBox = document.getElementById('titleBox');
+    const emojiBox = document.getElementById('emojiBox');
     const savedMsg = document.getElementById('savedMsg');
-    const SAVE_KEY = 'jos-illusion-code';
+
+    const SAVE_KEY  = 'jos-illusion-code';        // the code you're working on right now
+    const MUSEUM_KEY = 'jos-museum-creations';    // ALL the ones you added to the museum
 
     // 1. When the page opens, load any code we saved before
     const saved = localStorage.getItem(SAVE_KEY);
@@ -65,32 +89,71 @@
     // 2. Every time Jos types, save it so it never gets lost
     codeBox.addEventListener('input', () => {
       localStorage.setItem(SAVE_KEY, codeBox.value);
-      savedMsg.textContent = '💾 Saved!';
-      clearTimeout(window._savedTimer);
-      window._savedTimer = setTimeout(() => savedMsg.textContent = '', 1200);
+      flash('💾 Saved!');
+      guessTheTitle();                 // try to fill the name box for you
     });
 
-    // 3. Run the code inside the preview box (safe, isolated)
-    function runCode() {
-      const code = codeBox.value;
-      const frame = document.getElementById('preview');
-      const doc = frame.contentDocument || frame.contentWindow.document;
-      doc.open();
-      doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><' +
-        'script>try{' + code + '}catch(err){document.body.innerHTML=' +
-        '"<pre style=\'color:red;font-family:monospace;padding:10px\'>Oops! "+err+"</pre>";}<' +
-        '/script></body></html>');
-      doc.close();
+    function flash(msg) {
+      savedMsg.textContent = msg;
+      clearTimeout(window._savedTimer);
+      window._savedTimer = setTimeout(() => savedMsg.textContent = '', 1500);
     }
 
-    // 4. Clear button — empties the box and the saved code
+    // 3. YOUR IDEA: if the code has a <title> inside it, use that as the name.
+    //    (It only works if the code actually HAS a title — so there's a name
+    //     box too, for when it doesn't.)
+    function guessTheTitle() {
+      if (titleBox.value.trim() !== '') return;   // don't overwrite your own name
+      const match = codeBox.value.match(/<title>(.*?)<\/title>/i);
+      if (match && match[1]) titleBox.value = match[1].trim();
+    }
+
+    // 4. Some code is a whole web page, some is just JavaScript.
+    //    This works out which one you pasted and builds the right page.
+    function buildPage(code) {
+      const looksLikeAPage = /<\s*(!doctype|html|body|div|canvas|svg|style|script|h1|p)\b/i.test(code);
+      if (looksLikeAPage) return code;                 // already a full page — run it as-is
+      return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><scr' + 'ipt>' +
+             'try{' + code + '}catch(err){document.body.innerHTML=' +
+             '"<pre style=\'color:red;font-family:monospace;padding:10px\'>Oops! "+err+"</pre>";}' +
+             '</scr' + 'ipt></body></html>';
+    }
+
+    // 5. Run the code inside the preview box (safe, isolated)
+    function runCode() {
+      document.getElementById('preview').srcdoc = buildPage(codeBox.value);
+    }
+
+    // 6. THE NEW BIT — put this creation in the museum as its own box
+    function addToMuseum() {
+      const code = codeBox.value.trim();
+      if (code === '') { alert('Write some code first! 🙂'); return; }
+
+      guessTheTitle();
+      const title = titleBox.value.trim() || 'My Creation';
+      const emoji = emojiBox.value.trim() || '✨';
+
+      const list = JSON.parse(localStorage.getItem(MUSEUM_KEY) || '[]');
+      list.push({ id: 'c' + Date.now(), title: title, emoji: emoji, code: code });
+      localStorage.setItem(MUSEUM_KEY, JSON.stringify(list));
+
+      flash('🖼️ Added to the museum!');
+      if (confirm('"' + title + '" is in the museum! Go and look at it?')) {
+        location.href = 'index.html';
+      }
+    }
+
+    // 7. Clear button — empties the box and the saved code
     function clearCode() {
       if (confirm('Clear your code? This cannot be undone!')) {
         codeBox.value = '';
+        titleBox.value = '';
         localStorage.removeItem(SAVE_KEY);
         runCode();
       }
     }
+
+    guessTheTitle();
   </script>
 </body>
 </html>

@@ -12,9 +12,7 @@
       color: #fff;
       text-align: center;
     }
-    header {
-      padding: 40px 20px 10px;
-    }
+    header { padding: 40px 20px 10px; }
     h1 {
       font-size: 3em;
       margin: 0;
@@ -23,10 +21,7 @@
       background-clip: text;
       color: transparent;
     }
-    p.tag {
-      color: #aaa;
-      font-size: 1.2em;
-    }
+    p.tag { color: #aaa; font-size: 1.2em; }
     .gallery {
       display: flex;
       flex-wrap: wrap;
@@ -34,6 +29,10 @@
       gap: 20px;
       padding: 30px;
     }
+
+    /* each box sits in a wrapper so the little ✕ can float on top of it */
+    .card-wrap { position: relative; }
+
     .card {
       width: 220px;
       height: 180px;
@@ -49,21 +48,31 @@
       color: #fff;
       font-size: 1.3em;
       transition: transform 0.15s, box-shadow 0.15s;
+      padding: 8px;
+      box-sizing: border-box;
     }
     .card:hover {
       transform: scale(1.06) rotate(-1deg);
       box-shadow: 0 0 25px var(--glow, #4edcff);
     }
     .card .emoji { font-size: 3em; }
-    .new-card {
-      border: 3px dashed #6bff4e;
-      color: #6bff4e;
-    }
+    .card .title { word-break: break-word; }
+
+    .new-card { border: 3px dashed #6bff4e; color: #6bff4e; }
     .new-card:hover { box-shadow: 0 0 25px #6bff4e; }
-    footer {
-      padding: 30px;
-      color: #555;
+
+    /* the little delete button on YOUR creations */
+    .del {
+      position: absolute; top: -8px; right: -8px;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: #ff4ec7; color: #000;
+      font-family: inherit; font-size: 1em; font-weight: bold;
+      cursor: pointer; line-height: 30px; padding: 0;
     }
+    .del:hover { background: #fff; }
+
+    .mine-label { color: #ffe14e; margin-top: 25px; font-size: 1.3em; }
+    footer { padding: 30px; color: #555; }
   </style>
 </head>
 <body>
@@ -74,19 +83,20 @@
   </header>
 
   <div class="gallery" id="gallery">
-    <!-- Illusions get added here automatically from the list below -->
+    <!-- Boxes get added here automatically by the code below -->
   </div>
 
   <footer>Made by Jos &amp; Dad 🚀</footer>
 
   <script>
-    // 🎨 THE ILLUSION LIST
-    // To add a new illusion, add one line here like the examples.
+    // 🎨 THE BUILT-IN LIST
+    // To add a permanent one, add a line here like the example.
     // { title, emoji, file }
     const ILLUSIONS = [
       { title: "Loading Glitch", emoji: "🌀", file: "illusions/loading.html" },
     ];
 
+    const MUSEUM_KEY = 'jos-museum-creations';   // the ones YOU made
     const gallery = document.getElementById('gallery');
 
     // pick a bright random colour for each box
@@ -95,38 +105,68 @@
       return `hsl(${hue}, 90%, 62%)`;
     }
 
-    // Build a card for each illusion
-    ILLUSIONS.forEach(ill => {
-      const a = document.createElement('a');
-      a.className = 'card';
-      a.href = ill.file;
+    // makes one box. Returns the <a> so we can fiddle with it after.
+    function makeCard(emoji, title, href, extraClass) {
+      const wrap = document.createElement('div');
+      wrap.className = 'card-wrap';
 
-      // give this box its own random colour
+      const a = document.createElement('a');
+      a.className = 'card' + (extraClass ? ' ' + extraClass : '');
+      a.href = href;
+
       const color = randomColor();
       a.style.borderColor = color;
       a.style.setProperty('--glow', color);
 
-      a.innerHTML = `<div class="emoji">${ill.emoji}</div><div class="title">${ill.title}</div>`;
-      gallery.appendChild(a);
+      a.innerHTML = `<div class="emoji">${emoji}</div><div class="title"></div>`;
+      a.querySelector('.title').textContent = title;   // safe: no code can sneak in
 
-      // read the real name from inside the illusion's <title> tag
+      wrap.appendChild(a);
+      gallery.appendChild(wrap);
+      return { wrap, a };
+    }
+
+    // ---------- 1. the built-in ones (they live in real files) ----------
+    ILLUSIONS.forEach(ill => {
+      const { a } = makeCard(ill.emoji, ill.title, ill.file);
+
+      // read the real name from inside the file's <title> tag
       fetch(ill.file)
         .then(r => r.text())
         .then(html => {
           const match = html.match(/<title>(.*?)<\/title>/i);
-          if (match && match[1]) {
-            a.querySelector('.title').textContent = match[1];
-          }
+          if (match && match[1]) a.querySelector('.title').textContent = match[1];
         })
         .catch(() => { /* opening as a plain file can't read other files — keep the backup name */ });
     });
 
-    // The "make a new one" button — always last
-    const newCard = document.createElement('a');
-    newCard.className = 'card new-card';
-    newCard.href = 'make-new.html';
-    newCard.innerHTML = `<div class="emoji">➕</div><div>Make a New One</div>`;
-    gallery.appendChild(newCard);
+    // ---------- 2. THE NEW BIT: everything you made yourself ----------
+    function loadMyCreations() {
+      const list = JSON.parse(localStorage.getItem(MUSEUM_KEY) || '[]');
+
+      list.forEach(item => {
+        const { wrap } = makeCard(item.emoji, item.title, 'view.html?id=' + item.id);
+
+        // a little ✕ so you can throw one away
+        const del = document.createElement('button');
+        del.className = 'del';
+        del.textContent = '✕';
+        del.title = 'Delete this one';
+        del.onclick = (e) => {
+          e.preventDefault();
+          if (confirm('Delete "' + item.title + '" from the museum?')) {
+            const now = JSON.parse(localStorage.getItem(MUSEUM_KEY) || '[]');
+            localStorage.setItem(MUSEUM_KEY, JSON.stringify(now.filter(c => c.id !== item.id)));
+            location.reload();
+          }
+        };
+        wrap.appendChild(del);
+      });
+    }
+    loadMyCreations();
+
+    // ---------- 3. the "make your own" button — always last ----------
+    makeCard('➕', 'Make Your Own', 'make-new.html', 'new-card');
   </script>
 </body>
 </html>

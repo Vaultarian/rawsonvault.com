@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Creation</title>
+  <style>
+    body {
+      margin: 0; font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+      background: #0d0d1a; color: #fff; text-align: center;
+      display: flex; flex-direction: column; height: 100vh;
+    }
+    header { padding: 14px; }
+    h1 { margin: 0 0 6px; font-size: 1.8em; color: #4edcff; }
+    a.back { color: #6bff4e; font-size: 1.1em; text-decoration: none; }
+    iframe { flex: 1; width: 100%; border: none; background: #fff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="heading">My Creation</h1>
+    <a class="back" href="index.html">⬅ Back to the museum</a>
+  </header>
+  <iframe id="stage" title="Your creation"></iframe>
+
+  <script>
+    const MUSEUM_KEY = 'jos-museum-creations';
+
+    // Which creation did we click on? It's in the web address, like view.html?id=c123
+    const wantedId = new URLSearchParams(location.search).get('id');
+    const list = JSON.parse(localStorage.getItem(MUSEUM_KEY) || '[]');
+    const item = list.find(c => c.id === wantedId);
+
+    if (!item) {
+      document.getElementById('heading').textContent = "Hmm, couldn't find that one! 🤔";
+    } else {
+      document.title = item.title;
+      document.getElementById('heading').textContent = item.emoji + ' ' + item.title;
+      document.getElementById('stage').srcdoc = buildPage(item.code);
+    }
+
+    // Same helper as the Make Your Own page: full page, or just JavaScript?
+    function buildPage(code) {
+      const looksLikeAPage = /<\s*(!doctype|html|body|div|canvas|svg|style|script|h1|p)\b/i.test(code);
+      if (looksLikeAPage) return code;
+      return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><scr' + 'ipt>' +
+             'try{' + code + '}catch(err){document.body.innerHTML=' +
+             '"<pre style=\'color:red;font-family:monospace;padding:10px\'>Oops! "+err+"</pre>";}' +
+             '</scr' + 'ipt></body></html>';
+    }
+  </script>
+</body>
+</html>

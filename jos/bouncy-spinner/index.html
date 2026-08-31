@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jos's Bouncy Spinner</title>
+<style>
+  :root {
+    --pink:#ff4ec7; --blue:#4edcff; --green:#6bff4e; --yellow:#ffe14e; --dark:#0d0d1a; --panel:#1c1c33;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0; height:100%; overflow:hidden;
+    background: var(--dark); color:#fff;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+  }
+  canvas { display:block; }
+
+  /* ---------- the control panel ---------- */
+  #panel {
+    position:fixed; top:14px; left:14px; z-index:10;
+    width:290px; max-height: calc(100vh - 28px); overflow-y:auto;
+    background: rgba(28,28,51,.94); border:3px solid var(--blue);
+    border-radius:18px; padding:14px;
+  }
+  #panel h2 { margin:0 0 10px; font-size:1.25em; color:var(--green); }
+  .row { margin-bottom:11px; }
+  .row label { display:block; font-size:.85em; color:#bbb; margin-bottom:3px; }
+  .row .val { color:var(--yellow); }
+  input[type=range] { width:100%; accent-color: var(--pink); }
+  .btnrow { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:11px; }
+  button {
+    font-family:inherit; font-size:.95em; padding:8px 13px; border:none;
+    border-radius:11px; cursor:pointer; background:var(--blue); color:#000; font-weight:bold;
+  }
+  button:hover { filter:brightness(1.15); }
+  button.on { background:var(--green); }
+  button.off { background:#555; color:#ccc; }
+  .shapes { display:flex; gap:6px; flex-wrap:wrap; }
+  .shapes button { padding:7px 11px; font-size:.9em; background:var(--panel); color:#fff; border:2px solid #444; }
+  .shapes button.sel { border-color:var(--yellow); background:#33335c; }
+
+  /* ---------- top-right title + hint ---------- */
+  #title {
+    position:fixed; top:16px; right:18px; z-index:10; text-align:right;
+    font-size:1.5em; pointer-events:none;
+    background:linear-gradient(90deg,#ff4ec7,#4edcff,#ffe14e,#6bff4e);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  #hint {
+    position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:10;
+    color:#888; font-size:.85em; text-align:center; pointer-events:none;
+  }
+  #fps { position:fixed; bottom:12px; right:16px; z-index:10; color:#555; font-size:.8em; }
+  #hide { position:fixed; top:14px; left:14px; z-index:11; display:none; }
+
+  /* ---------- draw-your-own overlay ---------- */
+  #draw {
+    position:fixed; inset:0; z-index:30; display:none;
+    background:rgba(13,13,26,.95); text-align:center; padding-top:16px;
+  }
+  #draw h2 { color:var(--green); margin:0 0 4px; }
+  #draw p  { color:#aaa; margin:0 0 10px; font-size:.95em; }
+  #drawCanvas { border:3px solid var(--blue); border-radius:16px; background:#14142a; cursor:crosshair; touch-action:none; }
+</style>
+</head>
+<body>
+
+<div id="title">Jos's Bouncy Spinner 🎡</div>
+
+<button id="hide">☰ Controls</button>
+
+<div id="panel">
+  <h2>🎡 Bouncy Spinner</h2>
+
+  <div class="btnrow">
+    <button id="pauseBtn">⏸️ Pause</button>
+    <button id="spinBtn" class="off">🔄 Auto-spin</button>
+    <button id="dirBtn">↻</button>
+  </div>
+  <div class="btnrow">
+    <button id="shakeBtn">🔀 Shake!</button>
+    <button id="viewBtn">🎥 Reset view</button>
+    <button id="hidePanel">✕</button>
+  </div>
+
+  <div class="row">
+    <label>Spin speed: <span class="val" id="speedVal">2.0</span></label>
+    <input type="range" id="speed" min="0" max="8" step="0.1" value="2">
+  </div>
+  <div class="row">
+    <label>🪐 Gravity: <span class="val" id="gravVal">4.0</span></label>
+    <input type="range" id="grav" min="0" max="20" step="0.5" value="4">
+  </div>
+  <div class="row">
+    <label>🏀 Bounciness: <span class="val" id="bounceVal">0.85</span></label>
+    <input type="range" id="bounce" min="0" max="0.99" step="0.01" value="0.85">
+  </div>
+  <div class="row">
+    <label>🔵 How many balls: <span class="val" id="countVal">60</span></label>
+    <input type="range" id="count" min="5" max="80" step="1" value="60">
+  </div>
+  <div class="row">
+    <label>⭕ Barrel size (how wide): <span class="val" id="barrelVal">5.0</span></label>
+    <input type="range" id="barrel" min="3" max="10" step="0.25" value="5">
+  </div>
+  <div class="row">
+    <label>📏 Barrel depth (front to back): <span class="val" id="depthVal">1.2</span></label>
+    <input type="range" id="depth" min="0.8" max="6" step="0.1" value="1.2">
+  </div>
+  <div class="row">
+    <label>⚪ Ball size: <span class="val" id="ballsizeVal">0.28</span></label>
+    <input type="range" id="ballsize" min="0.08" max="0.6" step="0.01" value="0.28">
+  </div>
+  <div class="row">
+    <label>📌 How many pegs: <span class="val" id="pegVal">24</span></label>
+    <input type="range" id="pegs" min="0" max="60" step="1" value="24">
+  </div>
+
+  <div class="row">
+    <label>🔺 Shape</label>
+    <div class="shapes" id="shapeBtns">
+      <button data-shape="3">▲ Triangle</button>
+      <button data-shape="4">■ Square</button>
+      <button data-shape="50" class="sel">● Circle</button>
+      <button data-shape="flower">✿ Flower</button>
+      <button data-shape="draw">✏️ Draw it</button>
+    </div>
+  </div>
+  <div class="row">
+    <label>Or slide the number of sides: <span class="val" id="sidesVal">50</span></label>
+    <input type="range" id="sides" min="3" max="50" step="1" value="50">
+  </div>
+</div>
+
+<div id="hint">LEFT-DRAG to spin it &nbsp;·&nbsp; RIGHT-DRAG to fly the camera &nbsp;·&nbsp; SCROLL to zoom &nbsp;·&nbsp; SPACE to pause</div>
+<div id="fps"></div>
+
+<!-- draw-your-own-shape screen -->
+<div id="draw">
+  <h2>✏️ Draw your own shape</h2>
+  <p>Click around to make corners. Need at least 3! Then press Use it.</p>
+  <canvas id="drawCanvas" width="520" height="520"></canvas>
+  <div class="btnrow" style="justify-content:center; margin-top:12px;">
+    <button id="drawUse">✅ Use it!</button>
+    <button id="drawUndo">↩️ Undo point</button>
+    <button id="drawClear">🗑️ Start again</button>
+    <button id="drawCancel">✕ Cancel</button>
+  </div>
+</div>
+
+<script src="lib/three.min.js"></script>
+<script>
+// =====================================================================
+//  JOS'S BOUNCY SPINNER
+//  A 3D drum full of bouncy balls. The drum spins; the balls tumble.
+//  The physics is all written here so the spinning walls work properly.
+// =====================================================================
+
+// ---------------------------------------------------------------- SETUP
+let RADIUS   = 5;      // how WIDE the drum is  (Jos's barrel size slider)
+let BALL_R   = 0.28;   // how big each ball is   (Jos's ball size slider)
+let PEG_R    = 0.16;   // how fat the pegs are   (kept in proportion)
+const SUBSTEPS = 3;      // physics steps per frame (more = steadier)
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d1a);
+
+const camera   = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 300);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 0.85);
+key.position.set(6, 9, 12); key.castShadow = true;
+key.shadow.mapSize.set(1024,1024);
+key.shadow.camera.left=-9; key.shadow.camera.right=9;
+key.shadow.camera.top=9;   key.shadow.camera.bottom=-9;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x4edcff, 0.35);
+rim.position.set(-8, -3, -6); scene.add(rim);
+
+// ------------------------------------------------------- THE WORLD STATE
+const world = {
+  poly: [], normals: [], pegs: [],
+  depth: 1.2, theta: 0, omega: 0,
+  gravity: 4, restitution: 0.85,
+  paused: false, autoSpin: false, spinSpeed: 2, spinDir: 1,
+};
+let balls = [];
+
+// ------------------------------------------------------------- SHAPES
+// A regular shape with n sides, sitting flat on the bottom.
+function regularShape(n) {
+  const pts = [], off = -Math.PI/2 + Math.PI/n;
+  for (let k = 0; k < n; k++) {
+    const a = off + k * 2*Math.PI/n;
+    pts.push({ x: Math.cos(a), y: Math.sin(a) });
+  }
+  return pts;
+}
+// The wobbly flower from Jos's photo.
+function flowerShape(petals = 6) {
+  const pts = [];
+  for (let k = 0; k < 120; k++) {
+    const a = k * 2*Math.PI/120;
+    const r = (0.80 + 0.20*Math.cos(petals*a));
+    pts.push({ x: r*Math.cos(a), y: r*Math.sin(a) });
+  }
+  return pts;
+}
+
+// Polygons must run anticlockwise so "inwards" is always the same way round.
+function makeAnticlockwise(pts) {
+  let area = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i+1)%pts.length];
+    area += a.x*b.y - b.x*a.y;
+  }
+  return area < 0 ? pts.slice().reverse() : pts;
+}
+// The inward-pointing arrow for each wall piece.
+function edgeNormals(pts) {
+  const ns = [];
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i+1)%pts.length];
+    const ex = b.x-a.x, ey = b.y-a.y, len = Math.hypot(ex,ey) || 1;
+    ns.push({ x: -ey/len, y: ex/len });   // left of the edge = inside
+  }
+  return ns;
+}
+function isInside(px, py, pts) {
+  let inside = false;
+  for (let i = 0, j = pts.length-1; i < pts.length; j = i++) {
+    const a = pts[i], b = pts[j];
+    if ((a.y > py) !== (b.y > py) &&
+        px < (b.x-a.x)*(py-a.y)/(b.y-a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+// How far from the edge is this point? (used to keep pegs and balls clear)
+function clearance(px, py, pts) {
+  let best = Infinity;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i+1)%pts.length];
+    const ex=b.x-a.x, ey=b.y-a.y;
+    let t = ((px-a.x)*ex + (py-a.y)*ey) / (ex*ex+ey*ey || 1);
+    t = Math.max(0, Math.min(1, t));
+    best = Math.min(best, Math.hypot(px-(a.x+ex*t), py-(a.y+ey*t)));
+  }
+  return best;
+}
+
+// --------------------------------------------------------------- PEGS
+function buildPegs(n) {
+  const pegs = [], rings = [0.32, 0.55, 0.78];
+  let placed = 0, ring = 0;
+  while (placed < n && ring < 30) {
+    const rr = RADIUS * rings[ring % rings.length] * (1 + 0.06*Math.floor(ring/3));
+    const perRing = Math.min(n - placed, 6 + ring*2);
+    for (let k = 0; k < perRing && placed < n; k++) {
+      const a = (k/perRing)*2*Math.PI + ring*0.4;
+      const x = rr*Math.cos(a), y = rr*Math.sin(a);
+      // only keep pegs that actually fit inside this shape
+      if (isInside(x, y, world.poly) && clearance(x, y, world.poly) > PEG_R + BALL_R*2.2) {
+        pegs.push({ x, y });
+        placed++;
+      }
+    }
+    ring++;
+  }
+  return pegs;
+}
+
+// ------------------------------------------------------- BUILDING THE 3D
+const drum = new THREE.Group();
+scene.add(drum);
+let ballMeshes = [];
+
+function clearGroup(g) {
+  while (g.children.length) {
+    const c = g.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) c.material.dispose();
+  }
+}
+
+function buildDrumMesh() {
+  clearGroup(drum);
+  const P = world.poly, d = world.depth/2;
+
+  // --- the see-through wall all the way round ---
+  const verts = [];
+  for (let i = 0; i < P.length; i++) {
+    const a = P[i], b = P[(i+1)%P.length];
+    verts.push(a.x,a.y,-d,  b.x,b.y,-d,  b.x,b.y, d);
+    verts.push(a.x,a.y,-d,  b.x,b.y, d,  a.x,a.y, d);
+  }
+  const wallGeo = new THREE.BufferGeometry();
+  wallGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  wallGeo.computeVertexNormals();
+  const wall = new THREE.Mesh(wallGeo, new THREE.MeshStandardMaterial({
+    color:0x4edcff, transparent:true, opacity:0.30,
+    roughness:0.25, metalness:0.35, side:THREE.DoubleSide
+  }));
+  drum.add(wall);
+
+  // --- bright edge lines so you can see the shape clearly ---
+  const linePts = [];
+  for (let i = 0; i < P.length; i++) {
+    const a = P[i], b = P[(i+1)%P.length];
+    linePts.push(a.x,a.y,-d, b.x,b.y,-d);
+    linePts.push(a.x,a.y, d, b.x,b.y, d);
+  }
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePts, 3));
+  drum.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color:0xffe14e })));
+
+  // --- the back plate (the red disc in Jos's photo) ---
+  const shape = new THREE.Shape();
+  shape.moveTo(P[0].x, P[0].y);
+  for (let i = 1; i < P.length; i++) shape.lineTo(P[i].x, P[i].y);
+  shape.closePath();
+  const plateGeo = new THREE.ShapeGeometry(shape);
+
+  const back = new THREE.Mesh(plateGeo, new THREE.MeshStandardMaterial({
+    color:0x9b1c1c, roughness:0.85, side:THREE.DoubleSide
+  }));
+  back.position.z = -d; back.receiveShadow = true;
+  drum.add(back);
+
+  // --- the glass front, almost invisible so you can see in ---
+  const front = new THREE.Mesh(plateGeo.clone(), new THREE.MeshStandardMaterial({
+    color:0xffffff, transparent:true, opacity:0.05,
+    roughness:0.1, metalness:0.6, side:THREE.DoubleSide
+  }));
+  front.position.z = d;
+  drum.add(front);
+
+  // --- the pegs ---
+  const pegGeo = new THREE.CylinderGeometry(PEG_R, PEG_R, world.depth, 12);
+  pegGeo.rotateX(Math.PI/2);                       // point them along the barrel
+  const pegMat = new THREE.MeshStandardMaterial({ color:0x14141f, roughness:0.5, metalness:0.3 });
+  world.pegs.forEach(p => {
+    const m = new THREE.Mesh(pegGeo, pegMat);
+    m.position.set(p.x, p.y, 0);
+    m.castShadow = true;
+    drum.add(m);
+  });
+}
+
+// Find tidy spots for the balls so they don't start squashed inside each other.
+function spawnSpots() {
+  const spots = [], sp = BALL_R * 2.1;
+  const zl = Math.max(0, world.depth/2 - BALL_R);
+  const zLayers = [];
+  for (let z = -zl; z <= zl + 1e-9; z += sp) zLayers.push(z);
+  if (!zLayers.length) zLayers.push(0);
+
+  for (let row = 0; row < 300; row++) {
+    const y = RADIUS - BALL_R - row*sp*0.86;
+    if (y < -RADIUS) break;
+    for (let col = -60; col <= 60; col++) {
+      const x = col*sp + (row % 2 ? sp/2 : 0);
+      if (Math.abs(x) > RADIUS) continue;
+      if (!isInside(x, y, world.poly)) continue;
+      if (clearance(x, y, world.poly) < BALL_R*1.08) continue;
+      let clearOfPegs = true;
+      for (const pg of world.pegs) {
+        if (Math.hypot(x-pg.x, y-pg.y) < BALL_R + PEG_R + 0.06) { clearOfPegs = false; break; }
+      }
+      if (!clearOfPegs) continue;
+      for (const z of zLayers) spots.push({ x, y, z });
+    }
+  }
+  return spots;
+}
+
+function buildBalls(n) {
+  ballMeshes.forEach(m => { scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
+  ballMeshes = []; balls = [];
+
+  const geo   = new THREE.SphereGeometry(BALL_R, 16, 12);
+  const spots = spawnSpots();
+  const use   = Math.min(n, spots.length);     // only as many as actually fit
+
+  // Be honest on the slider when the barrel is too full for all of them.
+  const label = document.getElementById('countVal');
+  if (label) label.textContent = (use < n) ? (n + ' \u2014 only ' + use + ' fit!') : String(n);
+
+  for (let i = 0; i < use; i++) {
+    const s = spots[i];
+    balls.push({
+      x:s.x, y:s.y, z:s.z,
+      vx:(Math.random()-0.5)*0.6, vy:(Math.random()-0.5)*0.6, vz:(Math.random()-0.5)*0.2
+    });
+    const mat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color().setHSL(i/Math.max(1,use), 0.95, 0.55),   // rainbow!
+      roughness:0.22, metalness:0.15
+    });
+    const m = new THREE.Mesh(geo, mat);
+    m.castShadow = true;
+    scene.add(m);
+    ballMeshes.push(m);
+  }
+}
+
+// ------------------------------------------------------------- PHYSICS
+// Where is every wall piece and peg RIGHT NOW? They spin with the drum.
+function spunGeometry() {
+  const c = Math.cos(world.theta), s = Math.sin(world.theta);
+  const P = world.poly, N = P.length;
+  const vx = new Float64Array(N), vy = new Float64Array(N);
+  const nx = new Float64Array(N), ny = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    vx[i] = P[i].x*c - P[i].y*s;  vy[i] = P[i].x*s + P[i].y*c;
+    const n = world.normals[i];
+    nx[i] = n.x*c - n.y*s;        ny[i] = n.x*s + n.y*c;
+  }
+  const pegs = world.pegs.map(p => ({ x: p.x*c - p.y*s, y: p.x*s + p.y*c }));
+  return { N, vx, vy, nx, ny, pegs };
+}
+
+function step(dt) {
+  world.theta += world.omega * dt;
+  for (const b of balls) {
+    b.vy -= world.gravity * dt;
+    b.x += b.vx*dt; b.y += b.vy*dt; b.z += b.vz*dt;
+  }
+  const G = spunGeometry();
+  // Go round THREE times. Once isn't enough: shoving two balls apart can push
+  // one into a peg, and shoving it off the peg can stack it on another ball.
+  // Order matters! Un-stacking the balls has to be the LAST thing we do --
+  // otherwise two balls inside one peg both get shoved to the same escape
+  // point and end up glued together in exactly the same place forever.
+  for (let pass = 0; pass < 3; pass++) {
+    holdInsideDrum(G, pass === 0);
+    separateBalls(pass === 0);
+  }
+}
+
+// Is this point inside the drum right now? (the drum has spun, so we test
+// against the spun wall, not the original one)
+function insideSpun(px, py, G) {
+  let inside = false;
+  for (let i = 0, j = G.N-1; i < G.N; j = i++) {
+    const ax=G.vx[i], ay=G.vy[i], bx=G.vx[j], by=G.vy[j];
+    if ((ay > py) !== (by > py) && px < (bx-ax)*(py-ay)/(by-ay) + ax) inside = !inside;
+  }
+  return inside;
+}
+
+// Keep every ball inside the spinning drum, off the pegs, behind the glass.
+function holdInsideDrum(G, withBounce) {
+  const R = BALL_R, e = world.restitution, om = world.omega;
+  const zl = Math.max(0, world.depth/2 - R);
+  const minD = R + PEG_R;
+
+  for (const b of balls) {
+    // ---- the spinning wall ----
+    // We only push a ball off a wall piece it is actually TOUCHING.
+    // (Getting this wrong breaks dented shapes: a ball resting happily out in
+    //  a flower petal counts as "outside" some far-away notch wall, and would
+    //  get teleported back to the middle. So: check the distance FIRST.)
+    let nearest = null, nearestDist = Infinity;
+    for (let i = 0; i < G.N; i++) {
+      const ax=G.vx[i], ay=G.vy[i], bx=G.vx[(i+1)%G.N], by=G.vy[(i+1)%G.N];
+      const ex=bx-ax, ey=by-ay;
+      let t = ((b.x-ax)*ex + (b.y-ay)*ey) / (ex*ex + ey*ey || 1);
+      t = Math.max(0, Math.min(1, t));
+      const qx = ax + ex*t, qy = ay + ey*t;
+      const dx = b.x-qx, dy = b.y-qy;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < nearestDist) { nearestDist = dist; nearest = { qx, qy, nx:G.nx[i], ny:G.ny[i] }; }
+      if (dist >= R) continue;                      // not touching this piece
+
+      let nx, ny;
+      if (dist > 1e-9) { nx = dx/dist; ny = dy/dist; }
+      else             { nx = G.nx[i]; ny = G.ny[i]; }
+      // pointing the wrong way means the ball just slipped through this wall
+      if (nx*G.nx[i] + ny*G.ny[i] < 0) { nx = G.nx[i]; ny = G.ny[i]; }
+      b.x = qx + nx*R; b.y = qy + ny*R;
+      if (withBounce) bounceOff(b, nx, ny, -om*qy, om*qx, e);
+    }
+    // Safety net: if a ball somehow ended up right outside the shape,
+    // bring it back in at the nearest bit of wall.
+    if (nearest && !insideSpun(b.x, b.y, G)) {
+      b.x = nearest.qx + nearest.nx*R;
+      b.y = nearest.qy + nearest.ny*R;
+      if (withBounce) bounceOff(b, nearest.nx, nearest.ny, -om*nearest.qy, om*nearest.qx, e);
+    }
+
+    // ---- the pegs ----
+    for (const pg of G.pegs) {
+      const dx = b.x-pg.x, dy = b.y-pg.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist >= minD) continue;
+      let nx, ny;
+      if (dist > 1e-9) { nx = dx/dist; ny = dy/dist; }
+      else { const a = Math.random()*6.283; nx = Math.cos(a); ny = Math.sin(a); }  // dead centre: any way out
+      b.x = pg.x + nx*minD; b.y = pg.y + ny*minD;
+      if (withBounce) bounceOff(b, nx, ny, -om*pg.y, om*pg.x, e);
+    }
+
+    // ---- the front and back glass ----
+    if (b.z >  zl) { b.z =  zl; if (withBounce && b.vz > 0) b.vz = -b.vz*e; }
+    if (b.z < -zl) { b.z = -zl; if (withBounce && b.vz < 0) b.vz = -b.vz*e; }
+  }
+}
+
+// Balls bumping into each other.
+function separateBalls(withBounce) {
+  const R = BALL_R, e = world.restitution, D = 2*R, D2 = D*D;
+  for (let i = 0; i < balls.length; i++) {
+    const a = balls[i];
+    for (let j = i+1; j < balls.length; j++) {
+      const b = balls[j];
+      const dx = b.x-a.x, dy = b.y-a.y, dz = b.z-a.z;
+      const sq = dx*dx + dy*dy + dz*dz;
+      if (sq >= D2) continue;
+      let dist = Math.sqrt(sq), nx, ny, nz;
+      if (dist > 1e-9) { nx = dx/dist; ny = dy/dist; nz = dz/dist; }
+      else { const t = Math.random()*6.283; nx = Math.cos(t); ny = Math.sin(t); nz = 0; dist = 0; }
+      const push = (D - dist)/2;
+      a.x -= nx*push; a.y -= ny*push; a.z -= nz*push;
+      b.x += nx*push; b.y += ny*push; b.z += nz*push;
+      if (!withBounce) continue;
+      const vn = (b.vx-a.vx)*nx + (b.vy-a.vy)*ny + (b.vz-a.vz)*nz;
+      if (vn >= 0) continue;                      // already moving apart
+      const imp = -(1+e)*vn/2;
+      a.vx -= imp*nx; a.vy -= imp*ny; a.vz -= imp*nz;
+      b.vx += imp*nx; b.vy += imp*ny; b.vz += imp*nz;
+    }
+  }
+}
+
+// Bounce a ball off something that is itself moving (because the drum spins).
+function bounceOff(b, nx, ny, wallVx, wallVy, e) {
+  let rvx = b.vx - wallVx, rvy = b.vy - wallVy;
+  const vn = rvx*nx + rvy*ny;
+  if (vn >= 0) return;                              // already leaving
+  const tvx = rvx - vn*nx, tvy = rvy - vn*ny;       // sideways part
+  const friction = 0.94;
+  b.vx = tvx*friction - vn*nx*e + wallVx;
+  b.vy = tvy*friction - vn*ny*e + wallVy;
+}
+
+// ------------------------------------------------------------- CAMERA
+const cam = { yaw: 0, pitch: 0.15, dist: 15 };
+function placeCamera() {
+  camera.position.set(
+    cam.dist * Math.cos(cam.pitch) * Math.sin(cam.yaw),
+    cam.dist * Math.sin(cam.pitch),
+    cam.dist * Math.cos(cam.pitch) * Math.cos(cam.yaw)
+  );
+  camera.lookAt(0,0,0);
+}
+
+// ------------------------------------------------------------- MOUSE
+const cv = renderer.domElement;
+let dragMode = null, lastX = 0, lastY = 0, lastAngle = 0, lastT = 0;
+
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId);
+  lastX = e.clientX; lastY = e.clientY;
+  if (e.button === 2) { dragMode = 'camera'; }
+  else {
+    dragMode = 'spin';
+    lastAngle = Math.atan2(e.clientY - innerHeight/2, e.clientX - innerWidth/2);
+    lastT = performance.now();
+  }
+});
+cv.addEventListener('pointermove', e => {
+  if (!dragMode) return;
+  if (dragMode === 'camera') {
+    cam.yaw   -= (e.clientX - lastX) * 0.008;
+    cam.pitch += (e.clientY - lastY) * 0.006;
+    cam.pitch = Math.max(-1.4, Math.min(1.4, cam.pitch));
+    lastX = e.clientX; lastY = e.clientY;
+    placeCamera();
+  } else {
+    // spin the drum with your hand, like the real toy
+    const ang = Math.atan2(e.clientY - innerHeight/2, e.clientX - innerWidth/2);
+    let d = ang - lastAngle;
+    while (d >  Math.PI) d -= 2*Math.PI;
+    while (d < -Math.PI) d += 2*Math.PI;
+    const now = performance.now(), dt = Math.max(1, now - lastT)/1000;
+    world.theta -= d;                 // screen y is upside down, so flip it
+    world.omega = -d/dt;
+    lastAngle = ang; lastT = now;
+  }
+});
+addEventListener('pointerup', () => { dragMode = null; });
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  cam.dist = Math.max(7, Math.min(40, cam.dist + Math.sign(e.deltaY)*1.2));
+  placeCamera();
+}, { passive:false });
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+});
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ------------------------------------------------------------ CONTROLS
+const $ = id => document.getElementById(id);
+
+// Shapes are remembered at size 1, so changing the barrel size just
+// re-stretches whatever shape you're on -- including one you drew yourself.
+function setShape(unitPts) {
+  world.shapeUnit = makeAnticlockwise(unitPts);
+  rebuildShape();
+}
+
+function rebuildShape() {
+  PEG_R         = RADIUS * 0.032;                 // pegs stay in proportion
+  world.poly    = world.shapeUnit.map(p => ({ x: p.x*RADIUS, y: p.y*RADIUS }));
+  world.normals = edgeNormals(world.poly);
+  world.pegs    = buildPegs(+$('pegs').value);
+  buildDrumMesh();
+  buildBalls(+$('count').value);
+}
+
+function togglePause() {
+  world.paused = !world.paused;
+  $('pauseBtn').textContent = world.paused ? '▶️ Play' : '⏸️ Pause';
+}
+$('pauseBtn').onclick = togglePause;
+
+$('spinBtn').onclick = () => {
+  world.autoSpin = !world.autoSpin;
+  $('spinBtn').className = world.autoSpin ? 'on' : 'off';
+};
+$('dirBtn').onclick = () => {
+  world.spinDir *= -1;
+  $('dirBtn').textContent = world.spinDir > 0 ? '↻' : '↺';
+};
+$('shakeBtn').onclick = () => {
+  balls.forEach(b => {
+    b.vx += (Math.random()-0.5)*18;
+    b.vy += (Math.random()-0.5)*18;
+    b.vz += (Math.random()-0.5)*4;
+  });
+};
+$('viewBtn').onclick = () => { cam.yaw=0; cam.pitch=0.15; cam.dist=15; placeCamera(); };
+$('hidePanel').onclick = () => { $('panel').style.display='none'; $('hide').style.display='block'; };
+$('hide').onclick      = () => { $('panel').style.display='block'; $('hide').style.display='none'; };
+
+$('speed').oninput  = e => { world.spinSpeed = +e.target.value; $('speedVal').textContent = (+e.target.value).toFixed(1); };
+$('grav').oninput   = e => { world.gravity = +e.target.value;   $('gravVal').textContent  = (+e.target.value).toFixed(1); };
+$('bounce').oninput = e => { world.restitution = +e.target.value; $('bounceVal').textContent = (+e.target.value).toFixed(2); };
+$('count').oninput  = e => { $('countVal').textContent = e.target.value; buildBalls(+e.target.value); };
+$('depth').oninput  = e => { world.depth = +e.target.value; $('depthVal').textContent = (+e.target.value).toFixed(1); buildDrumMesh(); };
+$('ballsize').oninput = e => {
+  BALL_R = +e.target.value;
+  $('ballsizeVal').textContent = BALL_R.toFixed(2);
+  rebuildShape();                       // new ball size = new spots + new spheres
+};
+$('barrel').oninput = e => {
+  const wasR = RADIUS;
+  RADIUS = +e.target.value;
+  $('barrelVal').textContent = RADIUS.toFixed(1);
+  cam.dist *= RADIUS / wasR;            // zoom out with it so it still fits on screen
+  placeCamera();
+  rebuildShape();
+};
+$('pegs').oninput   = e => { $('pegVal').textContent = e.target.value; world.pegs = buildPegs(+e.target.value); buildDrumMesh(); };
+
+$('sides').oninput = e => {
+  const n = +e.target.value;
+  $('sidesVal').textContent = n;
+  document.querySelectorAll('#shapeBtns button').forEach(b => b.classList.remove('sel'));
+  setShape(regularShape(n));
+};
+
+document.querySelectorAll('#shapeBtns button').forEach(btn => {
+  btn.onclick = () => {
+    const what = btn.dataset.shape;
+    if (what === 'draw') { openDraw(); return; }
+    document.querySelectorAll('#shapeBtns button').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    if (what === 'flower') { setShape(flowerShape(6)); }
+    else { $('sides').value = what; $('sidesVal').textContent = what; setShape(regularShape(+what)); }
+  };
+});
+
+// --------------------------------------------------- DRAW YOUR OWN SHAPE
+const dc = $('drawCanvas'), dctx = dc.getContext('2d');
+let drawPts = [];
+
+function openDraw() { drawPts = []; $('draw').style.display = 'block'; paintDraw(); }
+function closeDraw() { $('draw').style.display = 'none'; }
+
+function paintDraw() {
+  dctx.clearRect(0,0,dc.width,dc.height);
+  // a faint circle to show roughly how big the drum is
+  dctx.strokeStyle = '#2a2a4a'; dctx.lineWidth = 2;
+  dctx.beginPath(); dctx.arc(260,260,230,0,7); dctx.stroke();
+
+  if (drawPts.length) {
+    dctx.beginPath();
+    dctx.moveTo(drawPts[0].sx, drawPts[0].sy);
+    drawPts.forEach(p => dctx.lineTo(p.sx, p.sy));
+    if (drawPts.length > 2) dctx.closePath();
+    dctx.fillStyle = 'rgba(78,220,255,.18)';
+    dctx.strokeStyle = '#ffe14e'; dctx.lineWidth = 3;
+    if (drawPts.length > 2) dctx.fill();
+    dctx.stroke();
+    drawPts.forEach((p,i) => {
+      dctx.beginPath(); dctx.arc(p.sx, p.sy, 6, 0, 7);
+      dctx.fillStyle = i === 0 ? '#6bff4e' : '#ff4ec7'; dctx.fill();
+    });
+  }
+}
+dc.addEventListener('pointerdown', e => {
+  const r = dc.getBoundingClientRect();
+  const sx = (e.clientX - r.left) * dc.width / r.width;
+  const sy = (e.clientY - r.top)  * dc.height / r.height;
+  drawPts.push({ sx, sy, x:(sx-260)/230, y:-(sy-260)/230 });
+  paintDraw();
+});
+$('drawUndo').onclick   = () => { drawPts.pop(); paintDraw(); };
+$('drawClear').onclick  = () => { drawPts = []; paintDraw(); };
+$('drawCancel').onclick = closeDraw;
+$('drawUse').onclick = () => {
+  if (drawPts.length < 3) { alert('Click at least 3 corners first! 🙂'); return; }
+  document.querySelectorAll('#shapeBtns button').forEach(b => b.classList.remove('sel'));
+  document.querySelector('[data-shape="draw"]').classList.add('sel');
+  setShape(drawPts.map(p => ({ x:p.x, y:p.y })));
+  closeDraw();
+};
+
+// --------------------------------------------------------------- GO!
+setShape(regularShape(50));
+placeCamera();
+
+let last = performance.now(), fpsT = 0, fpsN = 0;
+function loop() {
+  requestAnimationFrame(loop);
+  const now = performance.now();
+  let dt = Math.min((now - last)/1000, 0.05);       // never take a giant leap
+  last = now;
+
+  if (!world.paused) {
+    if (world.autoSpin && dragMode !== 'spin') {
+      world.omega = world.spinDir * world.spinSpeed;
+    } else if (dragMode !== 'spin') {
+      world.omega *= 0.985;                          // coast to a stop
+    }
+    for (let i = 0; i < SUBSTEPS; i++) step(dt/SUBSTEPS);
+  }
+
+  drum.rotation.z = world.theta;
+  for (let i = 0; i < balls.length; i++) {
+    ballMeshes[i].position.set(balls[i].x, balls[i].y, balls[i].z);
+  }
+  renderer.render(scene, camera);
+
+  fpsN++; fpsT += dt;
+  if (fpsT > 0.5) { $('fps').textContent = Math.round(fpsN/fpsT) + ' fps · ' + balls.length + ' balls'; fpsN=0; fpsT=0; }
+}
+loop();
+</script>
+</body>
+</html>
