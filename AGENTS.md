@@ -179,13 +179,23 @@ Same source as Daily Print, sliced the other way:
 | **Daily Print** | one **day**, every class | Alex, at the printer |
 | **Class page** | one **class**, every date | students, looking back |
 
-Two rules keep them safe to publish. Both are Alex's explicit decisions, 2026-08-29:
+Two rules keep them safe to publish. Both are Alex's explicit decisions — the first
+revised 2026-09-03, the second unchanged since 2026-08-29:
 
-- **Taught only.** An entry appears only when its heading status is exactly
-  `### YYYY-MM-DD · Taught`. `Planned` and `Did not run` never render — otherwise next
-  week's plans go public the moment they are written. **Consequence: a lesson is invisible
-  to students until the log is flipped to `Taught` after teaching it.** That habit is what
-  the page runs on.
+- **The day it happens.** An entry appears once **its date has arrived**, whatever its
+  status — except `### YYYY-MM-DD · Did not run`, which never renders at all. Future-dated
+  entries stay private, so next week's plans still do not go public the moment they are
+  written. **Consequence: a lesson's handout is on the class page from 05:30 on the morning
+  of the lesson, before it has been taught.** That is the point — students get the sheet on
+  the day.
+  **The `Planned` → `Taught` flip no longer gates publishing.** Keep the statuses as a
+  record if you want them; nothing on the website depends on them any more. The one status
+  that still does real work is `Did not run` — marking a cancelled lesson removes it at the
+  next run, and the match is case-insensitive so a stray capital cannot publish it by
+  accident.
+  *(Was Taught-only until 2026-09-03. The flip's only remaining job had become withholding
+  documents Alex wanted students to have, which made it a chore that existed to unblock
+  itself.)*
 - **Documents are whitelisted, never inherited.** A lesson's PDFs come *only* from a
   `- **Publish:** …` field listing them as wikilinks. **`Resources:` is deliberately not
   used** — it routinely holds answer keys, teacher masters and staff lesson plans. No
@@ -224,6 +234,15 @@ touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary p
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.3 — 2026-09-03. **The class-page gate moved from status to the calendar.** An entry
+now publishes once its date has arrived rather than when Alex flips it to `Taught`;
+`Did not run` is still excluded, and future-dated entries are still held, so the property
+the gate was built for survives. Alex's reason: the documents are the point, and holding a
+handout back until he remembers to edit a word in a log served nobody. The `Publish:`
+whitelist is untouched and now carries more weight, since more entries reach the page.
+`CLASS_PAGES_FORCE` was repurposed to lift the date check rather than the status check —
+it still never bypasses the whitelist.*
 
 *v1.2 — 2026-08-29. Added **Class pages** — one public running log per class, the
 student-facing counterpart to Daily Print off the same Class Logs. Records the two rules
