@@ -145,7 +145,40 @@ STYLE = """    <style>
       @media (max-width: 620px) {{
         .lesson {{ grid-template-columns: 1fr; gap: 0.3rem; }}
       }}
+      .vocab-bar {{ display: flex; align-items: baseline; gap: 0.55rem;
+        flex-wrap: wrap; margin: 1.3rem 0 0; }}
+      .vocab-label {{ font-family: var(--font-ui); font-size: 0.7rem;
+        letter-spacing: 0.09em; text-transform: uppercase;
+        color: var(--bronze-rich); margin-right: 0.25rem; }}
+      .vocab-link {{ font-family: var(--font-ui); font-size: 0.82rem;
+        padding: 0.28rem 0.8rem; border: 1px solid var(--bronze-cream);
+        border-radius: 2px; text-decoration: none; }}
+      .vocab-link:hover {{ background: var(--bronze-rich); color: #fff;
+        border-color: var(--bronze-rich); }}
     </style>"""
+
+
+# Home-language vocabulary support. One page per class holds all three languages
+# (see the vocabulary spec in the vault); these are three bookmarkable doors into it,
+# so a student can save the one in their own language. Labels are the languages' own
+# names rather than flags -- a Spanish speaker is not necessarily Spanish.
+#
+# Every class that has a vocabulary page shows ALL THREE, never a subset. A subset
+# would publicly signal which languages a given class contains, which in a class of
+# twenty is close to naming a student.
+VOCAB_LANGS = [("fr", "Français"), ("de", "Deutsch"), ("es", "Español")]
+
+
+def vocab_bar(name):
+    if not (OUT / slug(name) / "vocab" / "index.html").exists():
+        return ""
+    links = "\n          ".join(
+        f'<a class="vocab-link" href="vocab/?lang={c}">{lbl}</a>'
+        for c, lbl in VOCAB_LANGS)
+    return ('\n        <div class="vocab-bar">'
+            '\n          <span class="vocab-label">Vocabulary</span>'
+            f'\n          {links}'
+            '\n        </div>')
 
 
 def render_class(name, subtitle, weeks):
@@ -193,7 +226,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>
+        <div class="rule--full"></div>{vocab_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
@@ -257,12 +290,14 @@ def main():
                           or f"{name}|{en['date']}" in FORCE)]
         held += len(entries) - len(published)
 
-        # newest week first -- the common question is "what did we just do?"
+        # Newest first, all the way down: newest week at the top, and newest
+        # day at the top inside each week. The common question is "what did we
+        # just do?", so the answer should never be scrolled to.
         by_week = {}
         for en in published:
             en["docs"] = [(p, lbl, page_count(p)) for p, lbl in en["docs"]]
             by_week.setdefault(monday_of(en["date"]), []).append(en)
-        weeks = [(mon, sorted(v, key=lambda x: x["date"]))
+        weeks = [(mon, sorted(v, key=lambda x: x["date"], reverse=True))
                  for mon, v in sorted(by_week.items(), reverse=True)]
 
         s = slug(name)
