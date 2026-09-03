@@ -210,7 +210,8 @@ revised 2026-09-03, the second unchanged since 2026-08-29:
 > `Publish:`, check its last page, not just its first.** A mixed file must be split, not
 > published.
 
-Lessons group by school week, newest week first, using `school_week.py` for both the A/B
+Lessons group by school week, newest first throughout — newest week at the top, and newest
+day at the top inside each week (2026-09-03) — using `school_week.py` for both the A/B
 label and the week's date range.
 
 Link text comes from the wikilink label — `[[path/to/file.pdf|Course Expectations]]` —
