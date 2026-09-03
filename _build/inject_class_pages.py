@@ -7,9 +7,12 @@ date, for students looking back to find which sheet went with which lesson.
 
 Two rules make these safe to publish, both decided by Alex on 2026-08-29:
 
-  1. TAUGHT ONLY. A log entry is published only if its heading status is
-     exactly "Taught". "Planned" and "Did not run" never appear -- otherwise
-     next week's plans go public the moment they are written.
+  1. THE DAY IT HAPPENS. A log entry is published once its date has arrived,
+     whatever its status -- except "Did not run", which never appears at all.
+     The gate is the calendar, not the status flip: students get the sheet on
+     the morning of the lesson, and next week's plans still stay private until
+     next week. (Changed 2026-09-03; was "Taught" only. The status flip was
+     doing nothing but withholding documents Alex wanted students to have.)
 
   2. WHITELIST THE DOCUMENTS. A lesson's PDFs appear only if the entry has a
      `- **Publish:** …` field listing them as wikilinks. `Resources:` is NOT
@@ -43,6 +46,15 @@ OUT = REPO / "classes"
 
 MONTHS = "%-d %B"
 
+# Narrow, opt-in escape hatch for publishing an entry ahead of its DATE --
+# the one thing rule 1 no longer allows on its own:
+#   CLASS_PAGES_FORCE="Computer Science 10|2026-09-01,…"
+# Unset by default, so the scheduled 05:30 run is untouched. It lifts the date
+# check only: a "Did not run" entry stays unpublished even when named here, and
+# the Publish: whitelist (rule 2) is never bypassed -- a forced entry still
+# publishes only what it whitelists.
+FORCE = {t.strip() for t in os.environ.get("CLASS_PAGES_FORCE", "").split(",") if t.strip()}
+
 
 def slug(name):
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
@@ -52,8 +64,8 @@ def parse_log(path):
     """(subtitle, [entry]) for one Class Log.
 
     entry = {date, status, topic, docs}. Every dated block is returned; the
-    Taught filter is applied by the caller so the console report can say how
-    many entries were held back.
+    visibility filter is applied by the caller so the console report can say
+    how many entries were held back.
     """
     text = path.read_text()
     lines = text.splitlines()
@@ -161,7 +173,7 @@ def render_class(name, subtitle, weeks):
 
     body = ("\n".join(blocks) if blocks else
             '        <p class="empty-note">No lessons published yet. Entries appear '
-            'here once a lesson has been taught.</p>')
+            'here on the day of each lesson.</p>')
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -231,17 +243,23 @@ def render_index(classes):
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     classes, touched, held = [], [], 0
+    today = date.today()
 
     for path in sorted(LOGS.glob("*.md")):
         name = path.stem
         subtitle, entries = parse_log(path)
 
-        taught = [en for en in entries if en["status"] == "Taught"]
-        held += len(entries) - len(taught)
+        # Tolerant status match on purpose: a stray capital in a hand-typed
+        # log must not silently publish a lesson that never ran.
+        published = [en for en in entries
+                     if en["status"].strip().lower() != "did not run"
+                     and (en["date"] <= today
+                          or f"{name}|{en['date']}" in FORCE)]
+        held += len(entries) - len(published)
 
         # newest week first -- the common question is "what did we just do?"
         by_week = {}
-        for en in taught:
+        for en in published:
             en["docs"] = [(p, lbl, page_count(p)) for p, lbl in en["docs"]]
             by_week.setdefault(monday_of(en["date"]), []).append(en)
         weeks = [(mon, sorted(v, key=lambda x: x["date"]))
@@ -263,8 +281,8 @@ def main():
                 stale.unlink()
 
         (cdir / "index.html").write_text(render_class(name, subtitle, weeks))
-        classes.append((name, s, subtitle, len(taught)))
-        print(f"  {name:24} {len(taught):>2} taught · {len(wanted)} doc(s)")
+        classes.append((name, s, subtitle, len(published)))
+        print(f"  {name:24} {len(published):>2} live · {len(wanted)} doc(s)")
 
     (OUT / "index.html").write_text(render_index(classes))
 
@@ -278,7 +296,8 @@ def main():
     except (OSError, subprocess.SubprocessError):
         touched = ["classes/index.html"]
 
-    print(f"{len(classes)} class page(s); {held} entry(ies) held back (not Taught)")
+    print(f"{len(classes)} class page(s); "
+          f"{held} entry(ies) held back (future-dated or did not run)")
     for p in sorted(set(touched)):
         print(f"PUBLISH: {p}")
 
