@@ -27,6 +27,16 @@
       @media (max-width: 620px) {
         .lesson { grid-template-columns: 1fr; gap: 0.3rem; }
       }
+      .vocab-bar { display: flex; align-items: baseline; gap: 0.55rem;
+        flex-wrap: wrap; margin: 1.3rem 0 0; }
+      .vocab-label { font-family: var(--font-ui); font-size: 0.7rem;
+        letter-spacing: 0.09em; text-transform: uppercase;
+        color: var(--bronze-rich); margin-right: 0.25rem; }
+      .vocab-link { font-family: var(--font-ui); font-size: 0.82rem;
+        padding: 0.28rem 0.8rem; border: 1px solid var(--bronze-cream);
+        border-radius: 2px; text-decoration: none; }
+      .vocab-link:hover { background: var(--bronze-rich); color: #fff;
+        border-color: var(--bronze-rich); }
     </style>
 </head>
 <body>
@@ -42,6 +52,12 @@
             <p class="subtitle">Year 8 (MYP) · Group B</p>
         </div>
         <div class="rule--full"></div>
+        <div class="vocab-bar">
+          <span class="vocab-label">Vocabulary</span>
+          <a class="vocab-link" href="vocab/?lang=fr">Français</a>
+          <a class="vocab-link" href="vocab/?lang=de">Deutsch</a>
+          <a class="vocab-link" href="vocab/?lang=es">Español</a>
+        </div>
         <p class="wk">Week B · 31 August – 4 September</p>
           <div class="lesson">
             <div class="lesson-date">Mon 31 Aug</div>
