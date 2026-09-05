@@ -133,6 +133,16 @@ def pair_docs(docs):
 # publishes only what it whitelists.
 FORCE = {t.strip() for t in os.environ.get("CLASS_PAGES_FORCE", "").split(",") if t.strip()}
 
+# The same escape hatch, driven from the log instead of the environment. A
+# bullet inside Publish: reading "⏩" (or "publish now") releases that entry the
+# next time Tim runs, without waiting for its date -- which at session close
+# means the material is live before Alex shuts the window.
+#
+# Anchored to the start of a bullet so it cannot fire from inside a document
+# label. It lifts the DATE only: "Did not run" still wins, and the Publish:
+# whitelist is never bypassed.
+PUBLISH_NOW = re.compile(r"^\s*(?:[-*]\s*)?(?:⏩|publish now\b)", re.I | re.M)
+
 
 def slug(name):
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
@@ -164,10 +174,12 @@ def parse_log(path):
         if not cur:
             return
         block = "\n".join(buf)
+        pub = field(block, "Publish")
         entries.append(dict(
             date=cur[0], status=cur[1],
             topic=strip_md(field(block, "Topic")),
-            docs=pdf_links(field(block, "Publish")),  # whitelist, never Resources
+            docs=pdf_links(pub),                      # whitelist, never Resources
+            now=bool(PUBLISH_NOW.search(pub)),        # release ahead of the date
         ))
 
     for ln in lines:
@@ -395,6 +407,7 @@ def main():
         published = [en for en in entries
                      if en["status"].strip().lower() != "did not run"
                      and (en["date"] <= today
+                          or en["now"]
                           or f"{name}|{en['date']}" in FORCE)]
         held += len(entries) - len(published)
 
