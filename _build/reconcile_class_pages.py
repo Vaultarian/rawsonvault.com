@@ -145,6 +145,54 @@ GIVEN_NAMES = {
 # The household, plus Alex. Their names in a teaching document are not a leak.
 HOUSEHOLD = {"Alex", "Tess", "Roran", "Annie", "Jos"}
 
+# A hold Alex wrote himself. An empty `Publish:` is usually a forgotten line --
+# that is the whole premise of this script -- but sometimes it is a DECISION,
+# recorded in the entry as a ⛔ marker or an HTML comment. Three of the first
+# twenty-nine candidates turned out to be these, and all three would have been
+# wrong to publish:
+#
+#   CS 10, 3 Sep  -- "⛔ Publish: must stay empty. The Do Now reproduces OCR
+#                    past-paper questions" -- and no citation line to detect,
+#                    because Alex rewrote the item. He predicted this exactly:
+#                    "nothing automated will catch this".
+#   Physics 10 P, 2 Sep -- Energy 2 held because the scheme of work moved Energy
+#                    to ~February, so publishing it would present it as current.
+#   CS 11, 2 Sep  -- the colleague-facing half of a pair, already marked ⛔.
+#
+# So: a documented hold outranks every signal below. The crawler proposes
+# nothing from an entry that carries one, and says why.
+# Scope matters here. ⛔ is Alex's general warning marker and appears freely in
+# `Notes:` for things that have nothing to do with publishing ("⛔ Never switch
+# the section to Self-Paced Game Lab"). Matching it entry-wide held back nine
+# documents instead of three. So a hold is recognised in exactly two places:
+#
+#   ENTRY-LEVEL -- inside the `Publish:` field itself, or the specific sentence
+#                  "Publish: must stay empty" wherever it is written.
+#   FILE-LEVEL  -- a ⛔ on the same line as that file's own wikilink, which is
+#                  how Alex marks one resource of several ("⛔ teacher
+#                  reference, names a colleague"). Its sibling on the next line
+#                  is marked ✅ and must still publish.
+HOLD_IN_PUBLISH = re.compile(r"⛔|<!--.*?-->", re.S)
+HOLD_SENTENCE = re.compile(r"Publish:?\*{0,2}\s*must stay empty", re.I)
+
+
+def file_marker(block, filename):
+    """Alex's own verdict on this one file: '⛔', '✅', or None.
+
+    An entry-level hold is usually about ONE of several resources, and Alex
+    marks which: in CS 11 on 2 Sep the two progression PDFs sit on consecutive
+    lines, one ✅ 'student-facing, both pages' and one ⛔ 'names a colleague'.
+    A file-level marker therefore outranks the entry-level hold in both
+    directions -- it is the more specific statement of the same intent.
+    """
+    for ln in block.splitlines():
+        if filename in ln:
+            if "⛔" in ln:
+                return "⛔"
+            if "✅" in ln:
+                return "✅"
+    return None
+
 # Structured danger patterns, mirrored from name_audit.py's intent.
 GRADED = re.compile(r"\b(TEMPLATE\s*-\s*[A-Z]|GRADED|assignsubmission|Submitted by)\b")
 
@@ -338,14 +386,33 @@ def crawl(only=None, today=None):
             else:
                 case = "Publish: points at a file that does not exist"
 
+            # A hold Alex recorded in the entry outranks every content signal.
+            pub_field = field(block, "Publish")
+            hold = HOLD_IN_PUBLISH.search(pub_field) or HOLD_SENTENCE.search(block)
+            items = [dict(file=p.name, path=str(p.relative_to(VAULT)),
+                          label=lbl, bucket=b, reasons=r)
+                     for p, lbl in missing for b, r in [classify(p, lbl)]]
+            for it in items:
+                if it["bucket"] != "PUBLISH":
+                    continue
+                mark = file_marker(block, it["file"])
+                h = hold if hold else None
+                if mark == "⛔":
+                    it["bucket"] = "EYES"
+                    it["reasons"] = ["this file's own line in the entry carries a ⛔"]
+                elif mark == "✅":
+                    it["reasons"] = ["you marked this file ✅ in the entry"]
+                elif h:
+                    it["bucket"] = "EYES"
+                    it["reasons"] = ["entry carries a hold you wrote: "
+                                     + " ".join(h.group(0).split())[:110]]
+
             report.append(dict(
                 klass=name, slug=slug(name), date=en["date"].isoformat(),
                 status=en["status"], topic=en["topic"][:90], case=case,
+                held=bool(hold),
                 published=sorted(p.name for p in published),
-                dead=dead,
-                missing=[dict(file=p.name, path=str(p.relative_to(VAULT)),
-                              label=lbl, bucket=b, reasons=r)
-                         for p, lbl in missing for b, r in [classify(p, lbl)]],
+                dead=dead, missing=items,
             ))
     return report
 
