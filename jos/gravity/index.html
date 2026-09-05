@@ -560,5 +560,15 @@ loop();
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', go); } else { go(); }
 })();
 </script>
+
+<!-- ===== HARD MODE: every 10s, a 30% chance of banishment ===== -->
+<script>
+(function () {
+  try { if (sessionStorage.getItem('jos-hard-mode') !== 'on') return; } catch (e) { return; }
+  setInterval(function () {
+    if (Math.random() < 0.30) { window.location.href = '../'; }
+  }, 10000);
+})();
+</script>
 </body>
 </html>

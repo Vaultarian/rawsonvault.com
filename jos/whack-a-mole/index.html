@@ -443,6 +443,10 @@ function goBack(){
 (function(){
   try { if (sessionStorage.getItem('jos-hard-mode') !== 'on') return; } catch(e) { return; }
   function go(){
+    /* HARD MODE: the only difficulty is HARD */
+    var be = document.getElementById('btn-easy');   if (be) be.remove();
+    var bm = document.getElementById('btn-medium'); if (bm) bm.remove();
+    var dt = document.querySelector('.diff-title'); if (dt) dt.textContent = 'HARD MODE \uD83D\uDE08 NO CHOICE';
     var hell = document.createElement('div'); hell.id = 'hmHell';
     var emb  = document.createElement('div'); emb.id  = 'hmEmb';
     for (var i = 0; i < 18; i++) {

@@ -699,6 +699,10 @@ function loop() {
 (function(){
   try { if (sessionStorage.getItem('jos-hard-mode') !== 'on') return; } catch(e) { return; }
   function go(){
+    /* HARD MODE: the only difficulty is HARD */
+    var be = document.getElementById('d-easy');   if (be) be.style.display = 'none';
+    var bm = document.getElementById('d-medium'); if (bm) bm.style.display = 'none';
+    if (typeof setDiff === 'function') setDiff('hard');
     var hell = document.createElement('div'); hell.id = 'hmHell';
     var emb  = document.createElement('div'); emb.id  = 'hmEmb';
     for (var i = 0; i < 18; i++) {
