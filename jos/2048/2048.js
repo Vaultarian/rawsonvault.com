@@ -75,7 +75,7 @@ function spawnRandomTile() {
     
     if (emptyCellsList.length > 0) {
         let picked = emptyCellsList[Math.floor(Math.random() * emptyCellsList.length)];
-        let val = Math.random() < 0.9 ? 2 : 4;
+        let val = Math.random() < ((function(){try{return sessionStorage.getItem('jos-hard-mode')==='on'}catch(e){return false}})() ? 0.45 : 0.9) ? 2 : 4;   /* HARD: far more 4s, board clogs fast */
         activeTilesList.push(new GameTile(picked.r, picked.c, val));
     }
 }

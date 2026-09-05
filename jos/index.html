@@ -11,6 +11,54 @@
         #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; }
         #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; }
         #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; }
+        @keyframes hmGlitch {
+            0%, 100% { transform: translate(0,0) skewX(0deg); text-shadow: 2px 0 #ff2d00, -2px 0 #00e5ff, 0 0 14px rgba(255,110,20,0.95); }
+            15% { transform: translate(-4px,1px) skewX(-8deg); text-shadow: -4px 0 #ff2d00, 4px 0 #00e5ff, 0 0 16px rgba(255,110,20,0.95); }
+            30% { transform: translate(4px,-2px) skewX(4deg); clip-path: inset(18% 0 34% 0); }
+            45% { transform: translate(-2px,2px); clip-path: inset(0 0 0 0); text-shadow: 3px 0 #ff2d00, -3px 0 #00e5ff, 0 0 10px rgba(255,170,30,0.95); }
+            60% { transform: translate(3px,1px) skewX(6deg); clip-path: inset(52% 0 12% 0); }
+            75% { transform: translate(-3px,-1px); clip-path: inset(0 0 0 0); }
+        }
+        #canvasContainer.hell #loadingText { color: #ffe0a8; animation: hmGlitch 0.5s infinite; }
+
+        /* ----- cursor fire ----- */
+        /* the site's own cursor - black normally, on fire when an ember touches it */
+        body.hascursor, body.hascursor * { cursor: none !important; }
+        #cursorFire { position: fixed; z-index: 1000000; pointer-events: none;
+                      width: 60px; height: 90px; opacity: 0;
+                      transform: translate(-30%, -38%) scale(0.7);
+                      transform-origin: 30% 38%;
+                      transition: opacity 0.2s ease, transform 0.25s ease; }
+        #cursorFire.lit { opacity: 1; }
+        #cursorFire.burning { transform: translate(-30%, -38%) scale(1.3); }
+        #cursorFire::before { content: ''; position: absolute; left: 30%; top: 30%; width: 110px; height: 110px;
+                              transform: translate(-50%, -50%); border-radius: 50%; z-index: -1; opacity: 0;
+                              transition: opacity 0.3s ease;
+                              background: radial-gradient(circle, rgba(255,170,40,0.5) 0%, rgba(255,80,10,0.22) 45%, rgba(255,60,0,0) 72%); }
+        #cursorFire.burning::before { opacity: 1; animation: cfHalo 1.1s ease-in-out infinite alternate; }
+        @keyframes cfHalo { from { opacity: 0.65; } to { opacity: 1; } }
+        #cursorFire svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+        #cursorFire.burning svg { filter: drop-shadow(0 0 8px rgba(255,140,20,0.95)); }
+        #cursorFire path { transform-box: fill-box; transform-origin: 50% 100%; }
+        /* the flames only exist once summoned */
+        #cursorFire .flames { opacity: 0; transition: opacity 0.25s ease; }
+        #cursorFire.burning .flames { opacity: 1; }
+        /* black arrow by default, molten while burning */
+        #cursorFire .arrow path { fill: #0d0d0d; stroke: #ffffff; }
+        #cursorFire.burning .arrow path { fill: url(#cfgArrow); stroke: #ffb03a; }
+        #cursorFire .fl1 { animation: cfF1 0.44s ease-in-out infinite alternate; }
+        #cursorFire .fl2 { animation: cfF2 0.33s ease-in-out infinite alternate; }
+        #cursorFire .fl3 { animation: cfF3 0.21s ease-in-out infinite alternate; }
+        #cursorFire .flL { animation: cfFL 0.37s ease-in-out infinite alternate; }
+        #cursorFire .flR { animation: cfFR 0.29s ease-in-out infinite alternate; }
+        @keyframes cfF1 { from { transform: scale(1, 1)       translateX(0px);   } to { transform: scale(0.88, 1.2)  translateX(-3px); } }
+        @keyframes cfF2 { from { transform: scale(1.05, 0.9)  translateX(2px);   } to { transform: scale(0.88, 1.14) translateX(-2px); } }
+        @keyframes cfF3 { from { transform: scale(0.88, 1.16) translateX(-1px);  } to { transform: scale(1.12, 0.86) translateX(2px);  } }
+        @keyframes cfFL { from { transform: scale(0.7, 0.8) rotate(-8deg);       } to { transform: scale(1, 1.15) rotate(-18deg);      } }
+        @keyframes cfFR { from { transform: scale(1, 1.1) rotate(14deg);         } to { transform: scale(0.72, 0.82) rotate(6deg);     } }
+        .spark { position: fixed; z-index: 1000000; pointer-events: none; border-radius: 50%;
+                 background: radial-gradient(circle, #fff3b0 0%, #ff8a2b 60%, rgba(255,90,20,0) 100%);
+                 transition: transform 0.65s ease-out, opacity 0.65s ease-out; }
         .whiteout-bg { background-color: #ffffff !important; }
         .fade-out-content { opacity: 0 !important; pointer-events: none; }
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,6 +109,34 @@
         #showMode { position: fixed; inset: 0; z-index: 900; background: rgba(20, 45, 45, 0.97); display: flex; flex-direction: column; align-items: center; padding: 1rem; overflow-y: auto; animation: fadeIn 0.35s ease both; }
         #showMode[hidden] { display: none; }
         body.sm-open #showModeBtn { display: none; }
+
+        /* ===== HARD MODE ===== */
+        #hardModeBtn { position: fixed; top: 4.2rem; right: 1rem; z-index: 1000001; border: none; cursor: pointer; font-family: 'Fredoka One', cursive; font-size: 1rem; letter-spacing: 0.05em; color: #fff; background: #d94f3a; padding: 0.7rem 1.35rem; border-radius: 50px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); transition: transform 0.12s, box-shadow 0.12s, background 0.2s; }
+        #hardModeBtn:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(0,0,0,0.3); }
+        #hardModeBtn.on { background: #2f9e5c; }
+        @media (max-width: 600px) { #hardModeBtn { font-size: 0.8rem; padding: 0.55rem 1rem; top: 3.4rem; right: 0.6rem; } }
+        body.sm-open #hardModeBtn { display: none; }
+
+        /* ----- the coin flip ----- */
+        @keyframes hmFlip { 0% { transform: perspective(500px) rotateX(0deg); } 50% { transform: perspective(500px) rotateX(90deg); } 100% { transform: perspective(500px) rotateX(0deg); } }
+        #hardModeBtn.flipping { animation: hmFlip 0.6s ease-in-out; }
+        #hardModeBtn.flipping:hover { transform: none; }
+
+        /* ----- HELL ----- */
+        body.hell { background-color: rgba(217, 79, 58, 0.5); }
+        #embers::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 50vh;
+                         background: linear-gradient(to top, rgba(255,120,20,0.8) 0%, rgba(220,40,10,0.4) 45%, rgba(220,40,10,0) 100%); }
+        #embers { position: fixed; inset: 0; pointer-events: none; z-index: 400; overflow: hidden; opacity: 0; transition: opacity 1.2s ease-in-out; }
+        #embers.lit { opacity: 1; }
+        .ember { position: absolute; bottom: -24px; border-radius: 50%;
+                 background: radial-gradient(circle, #fff3b0 0%, #ffab2b 40%, rgba(255,90,20,0) 75%); box-shadow: 0 0 10px 3px rgba(255,150,40,0.55);
+                 animation-name: emberRise; animation-timing-function: linear; animation-iteration-count: infinite; }
+        @keyframes emberRise {
+            0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+            8%   { opacity: 0.95; }
+            50%  { transform: translate(var(--dx), -50vh) scale(0.7); opacity: 0.8; }
+            100% { transform: translate(calc(var(--dx) * -0.6), -104vh) scale(0.2); opacity: 0; }
+        }
         .sm-bar { width: 100%; max-width: 720px; display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
         .sm-count { font-family: 'Fredoka One', cursive; color: #f2ede3; font-size: 1rem; margin-right: auto; }
         .sm-chip { border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; color: #fff; background: #3d9595; padding: 0.45rem 1.1rem; border-radius: 50px; transition: background 0.15s; }
@@ -187,10 +263,17 @@
                     ctx.beginPath();
                     ctx.moveTo(this.history[0].x, this.history[0].y);
                     for (let p of this.history) { ctx.lineTo(p.x, p.y); }
-                    ctx.strokeStyle = `rgba(0, 60, 255, ${0.4 * globalAlpha})`; ctx.lineWidth = this.radius * 0.7; ctx.stroke();
+                    ctx.strokeStyle = HELL ? `rgba(255, 70, 10, ${0.55 * globalAlpha})` : `rgba(0, 60, 255, ${0.4 * globalAlpha})`;
+                    ctx.lineWidth = this.radius * 0.7; ctx.stroke();
                 }
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 85, 255, ${globalAlpha})`; ctx.fill();
+                if (HELL) {
+                    ctx.shadowColor = 'rgba(255, 140, 20, 0.95)'; ctx.shadowBlur = 18;
+                    ctx.fillStyle = `rgba(255, 200, 60, ${globalAlpha})`;
+                } else {
+                    ctx.shadowBlur = 0; ctx.fillStyle = `rgba(0, 85, 255, ${globalAlpha})`;
+                }
+                ctx.fill(); ctx.shadowBlur = 0;
             }
         }
 
@@ -211,28 +294,45 @@
             }
         }
 
+        var HELL = false;
+        function readHell() { try { return sessionStorage.getItem('jos-hard-mode') === 'on'; } catch (e) { return false; } }
+
         function drawLoop() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            HELL = readHell();
+            container.classList.toggle('hell', HELL);
+            container.style.backgroundColor = HELL ? '#1a0300' : '#050505';
+            ctx.fillStyle = HELL ? 'rgba(26, 3, 0, 0.4)' : 'rgba(5, 5, 5, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             emitterAngle += (0.02 + (currentPercent * 0.002));
             if (isFullyLoaded && didSkipTo100) { particleFadeAlpha = Math.max(0, particleFadeAlpha - 0.02); }
             for (let particle of particles) { particle.update(); particle.draw(particleFadeAlpha); }
             if (isFullyLoaded) {
+                var jx = 0, jy = 0, jr = 0;
+                if (HELL && Math.random() < 0.35) {                 /* the glitch jump */
+                    jx = Math.random() * 12 - 6; jy = Math.random() * 12 - 6; jr = Math.random() * 8 - 4;
+                }
                 ctx.beginPath(); ctx.lineWidth = 10; ctx.lineCap = 'round';
                 if (didSkipTo100) {
                     drawProgress = Math.min(1, drawProgress + 0.012);
-                    ctx.arc(centerX, centerY, orbitRadius, -Math.PI / 2, (-Math.PI / 2) + (drawProgress * Math.PI * 2), false);
-                    ctx.strokeStyle = '#0055ff';
+                    ctx.arc(centerX + jx, centerY + jy, orbitRadius + jr, -Math.PI / 2, (-Math.PI / 2) + (drawProgress * Math.PI * 2), false);
+                    ctx.strokeStyle = HELL ? '#ff5a14' : '#0055ff';
                 } else {
                     solidRingAlpha = Math.min(1, solidRingAlpha + 0.015);
-                    ctx.arc(centerX, centerY, orbitRadius, 0, Math.PI * 2); ctx.strokeStyle = `rgba(0, 85, 255, ${solidRingAlpha})`;
+                    ctx.arc(centerX + jx, centerY + jy, orbitRadius + jr, 0, Math.PI * 2);
+                    ctx.strokeStyle = HELL ? `rgba(255, 90, 20, ${solidRingAlpha})` : `rgba(0, 85, 255, ${solidRingAlpha})`;
                 }
                 ctx.stroke();
+                if (HELL && (jx || jy)) {                            /* torn colour split */
+                    ctx.beginPath(); ctx.lineWidth = 4;
+                    ctx.arc(centerX - jx, centerY - jy, orbitRadius - jr, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(0, 229, 255, 0.45)'; ctx.stroke();
+                }
             }
             requestAnimationFrame(drawLoop);
         }
 
         function triggerWhiteout() {
-            document.body.classList.add('whiteout-bg'); container.classList.add('fade-out-content');
+            if (!readHell()) { document.body.classList.add('whiteout-bg'); }
+            container.classList.add('fade-out-content');
             setTimeout(() => { container.remove(); document.body.classList.remove('whiteout-bg'); }, 800);
         }
 
@@ -242,6 +342,7 @@
     </script>
     <!-- ===== SHOW MODE ===== -->
     <button id="showModeBtn">🎬 SHOW MODE</button>
+    <button id="hardModeBtn">😇 EASY MODE</button>
     <div id="showMode" hidden>
         <div class="sm-bar">
             <span class="sm-count"><span id="smNum">1</span> / <span id="smTotal">0</span></span>
@@ -391,6 +492,174 @@
             else if (ev.key === 'ArrowRight') { ev.preventDefault(); go(1); }
             else if (ev.key === 'ArrowLeft') { ev.preventDefault(); go(-1); }
         });
+    })();
+
+    /* ===== THE SITE CURSOR ===== added 2026-09-05 =====
+       Black arrow at all times, in both modes. Touch an ember (or the bottom
+       of the screen) in hard mode and it catches fire for three seconds. */
+    (function () {
+        var mx = -999, my = -999, cur = null, burning = false, wasTriggering = false, seen = false;
+
+        document.addEventListener('mousemove', function (e) {
+            mx = e.clientX; my = e.clientY; seen = true;
+            if (cur) { cur.style.left = mx + 'px'; cur.style.top = my + 'px'; }
+        });
+
+        function hellOn() { try { return sessionStorage.getItem('jos-hard-mode') === 'on'; } catch (e) { return false; } }
+
+        function touchingEmber() {
+            var box = document.getElementById('embers');
+            if (!box) return false;
+            var list = box.getElementsByClassName('ember');
+            for (var i = 0; i < list.length; i++) {
+                var r = list[i].getBoundingClientRect();
+                var dx = (r.left + r.width / 2) - mx, dy = (r.top + r.height / 2) - my;
+                if (dx * dx + dy * dy < 1024) { return true; }        /* within 32px */
+            }
+            return false;
+        }
+
+        function atBottom() { return my > window.innerHeight - 70; }
+
+        function explode(x, y) {
+            for (var i = 0; i < 16; i++) {
+                var sp = document.createElement('div');
+                var size = 5 + Math.random() * 7;
+                sp.className = 'spark';
+                sp.style.width = size + 'px'; sp.style.height = size + 'px';
+                sp.style.left = (x - size / 2) + 'px'; sp.style.top = (y - size / 2) + 'px';
+                document.body.appendChild(sp);
+                (function (el, ang, dist) {
+                    void el.offsetWidth;
+                    el.style.transform = 'translate(' + Math.cos(ang) * dist + 'px,' + Math.sin(ang) * dist + 'px) scale(0.2)';
+                    el.style.opacity = '0';
+                    setTimeout(function () { if (el.parentNode) el.remove(); }, 700);
+                })(sp, (i / 16) * Math.PI * 2 + Math.random() * 0.4, 60 + Math.random() * 70);
+            }
+        }
+
+        function build() {
+            if (cur || !seen) return;
+            cur = document.createElement('div');
+            cur.id = 'cursorFire';
+            cur.innerHTML =
+                '<svg viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">' +
+                  '<defs>' +
+                    '<linearGradient id="cfg1" x1="0" y1="1" x2="0" y2="0">' +
+                      '<stop offset="0%" stop-color="#c41500"/><stop offset="55%" stop-color="#ff5400"/><stop offset="100%" stop-color="#ff9020"/>' +
+                    '</linearGradient>' +
+                    '<linearGradient id="cfg2" x1="0" y1="1" x2="0" y2="0">' +
+                      '<stop offset="0%" stop-color="#ff6200"/><stop offset="60%" stop-color="#ffa81e"/><stop offset="100%" stop-color="#ffd551"/>' +
+                    '</linearGradient>' +
+                    '<linearGradient id="cfg3" x1="0" y1="1" x2="0" y2="0">' +
+                      '<stop offset="0%" stop-color="#ffce3d"/><stop offset="100%" stop-color="#fffbe6"/>' +
+                    '</linearGradient>' +
+                    '<linearGradient id="cfgArrow" x1="0" y1="0" x2="0" y2="1">' +
+                      '<stop offset="0%" stop-color="#ffd15c"/><stop offset="45%" stop-color="#ff6a00"/><stop offset="100%" stop-color="#3a0d02"/>' +
+                    '</linearGradient>' +
+                  '</defs>' +
+                  '<g class="flames">' +
+                    '<g transform="translate(-3,-9) scale(0.44)">' +
+                      '<path class="fl1" fill="url(#cfg1)" d="M50 2 C 60 32, 93 48, 93 84 C 93 116, 74 138, 50 138 C 26 138, 7 116, 7 84 C 7 48, 40 32, 50 2 Z"/>' +
+                      '<path class="fl2" fill="url(#cfg2)" d="M50 40 C 57 58, 76 68, 76 92 C 76 116, 64 133, 50 133 C 36 133, 24 116, 24 92 C 24 68, 43 58, 50 40 Z"/>' +
+                      '<path class="fl3" fill="url(#cfg3)" d="M50 76 C 54 87, 63 93, 63 106 C 63 120, 57 130, 50 130 C 43 130, 37 120, 37 106 C 37 93, 46 87, 50 76 Z"/>' +
+                    '</g>' +
+                    '<path class="flL" fill="url(#cfg1)" d="M8 44 C 11 34, 3 28, 6 18 C 0 26, -2 38, 8 44 Z"/>' +
+                    '<path class="flR" fill="url(#cfg2)" d="M31 40 C 28 31, 36 25, 34 15 C 41 23, 42 35, 31 40 Z"/>' +
+                  '</g>' +
+                  '<g class="arrow">' +
+                    '<path stroke-width="1.6" stroke-linejoin="round" fill="url(#cfgArrow)" ' +
+                          'd="M18 34 L18 72 L27 63 L33 78 L39 75 L33 61 L44 60 Z"/>' +
+                  '</g>' +
+                '</svg>';
+            cur.style.left = mx + 'px';
+            cur.style.top = my + 'px';
+            document.body.appendChild(cur);
+            /* only hide the real cursor once ours definitely exists */
+            document.body.classList.add('hascursor');
+            void cur.offsetWidth;
+            cur.classList.add('lit');
+        }
+
+        function summonFire() {
+            if (!cur || burning) return;
+            burning = true;
+            cur.classList.add('burning');
+            setTimeout(function () {
+                burning = false;
+                if (!cur) return;
+                cur.classList.remove('burning');
+                explode(mx, my);
+            }, 3000);
+        }
+
+        setInterval(function () {
+            build();
+            if (!cur || burning || !hellOn()) { if (!hellOn()) wasTriggering = false; return; }
+            var trig = touchingEmber() || atBottom();
+            if (trig && !wasTriggering) { summonFire(); }
+            wasTriggering = trig;
+        }, 80);
+    })();
+
+    /* ===== HARD MODE ===== added 2026-09-05 ===== */
+    (function () {
+        var KEY = 'jos-hard-mode';
+        var FLIP_MS = 600;
+        var btn = document.getElementById('hardModeBtn');
+        var busy = false;
+
+        function isOn()  { try { return sessionStorage.getItem(KEY) === 'on'; } catch (e) { return false; } }
+        function setOn(v){ try { sessionStorage.setItem(KEY, v ? 'on' : 'off'); } catch (e) {} paint(); }
+
+        /* fire ashes rising out of the bottom of the screen */
+        function embersOn() {
+            var box = document.getElementById('embers');
+            if (box) { box.classList.add('lit'); return; }
+            box = document.createElement('div');
+            box.id = 'embers';
+            for (var i = 0; i < 55; i++) {
+                var e = document.createElement('span');
+                var size = 6 + Math.random() * 11;
+                e.className = 'ember';
+                e.style.left = (Math.random() * 100) + 'vw';
+                e.style.width = size + 'px';
+                e.style.height = size + 'px';
+                e.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+                e.style.animationDuration = (4 + Math.random() * 5) + 's';
+                e.style.animationDelay = (Math.random() * 5) + 's';
+                box.appendChild(e);
+            }
+            document.body.appendChild(box);
+            void box.offsetWidth;              /* force a reflow so the fade actually runs */
+            box.classList.add('lit');
+        }
+        function embersOff() {
+            var box = document.getElementById('embers');
+            if (!box) return;
+            box.classList.remove('lit');
+            setTimeout(function () {
+                if (box.parentNode && !box.classList.contains('lit')) { box.remove(); }
+            }, 1200);
+        }
+
+        function paint() {
+            var on = isOn();
+            btn.classList.toggle('on', on);
+            btn.textContent = on ? '😈 HARD MODE' : '😇 EASY MODE';
+            document.body.classList.toggle('hell', on);
+            if (on) { embersOn(); } else { embersOff(); }
+        }
+
+        btn.addEventListener('click', function () {
+            if (busy) return;                                   /* the cooldown */
+            busy = true;
+            btn.classList.add('flipping');
+            setTimeout(function () { setOn(!isOn()); }, FLIP_MS / 2);   /* swap words mid-spin */
+            setTimeout(function () { btn.classList.remove('flipping'); busy = false; }, FLIP_MS);
+        });
+
+        paint();
     })();
     </script>
 </body>

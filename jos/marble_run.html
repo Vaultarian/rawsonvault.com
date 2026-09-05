@@ -328,6 +328,11 @@ for (var ci = 0; ci < 12; ci++) {
   CHECKPOINT_YS.push(RAMP_START + (ci + 0.5) * RAMP_SPACING);
 }
 var ENDZONE_Y = (RAMP_START + 12.8 * RAMP_SPACING) | 0;  /* ~4690 */
+/* ===== HARD MODE: a red line with big gaps, about a metre above the finish ===== */
+var HM_ON = (function () { try { return sessionStorage.getItem('jos-hard-mode') === 'on'; } catch (e) { return false; } })();
+var HM_LINE_Y = ENDZONE_Y - 320;
+var HM_SEGS   = [[0.00, 0.18], [0.30, 0.48], [0.60, 0.78], [0.90, 1.00]];   /* solid bits; the gaps are between them */
+var HM_LINE_H = 16;
 
 var RAMP_MAX_ANGLE = Math.PI / 4;
 var RAMP_ANG_SPEED = 0.75;
@@ -443,6 +448,14 @@ function buildWorld() {
     Bodies.rectangle(WW/2,    WORLD_H+60, WW, 120,    ws),
     Bodies.rectangle(WW/2, ENDZONE_Y + 40, WW, 20, { isStatic:true, friction:0.4, restitution:0.2, label:'platform' }),
   ]);
+
+  if (HM_ON) {
+    for (var hs = 0; hs < HM_SEGS.length; hs++) {
+      var a = HM_SEGS[hs][0] * WW, b = HM_SEGS[hs][1] * WW;
+      Composite.add(world, Bodies.rectangle((a + b) / 2, HM_LINE_Y, b - a, HM_LINE_H,
+        { isStatic: true, friction: 0.2, restitution: 0.4, label: 'hmRedLine' }));
+    }
+  }
 
   for (var i = 0; i < rampDefs.length; i++) {
     var rd = rampDefs[i];
@@ -972,6 +985,23 @@ function drawGate(x, y, passed) {
 }
 
 /* ==================== DRAW: CHECKPOINTS ==================== */
+function drawRedLine() {
+  var sp = worldToScreen(0, HM_LINE_Y);
+  if (sp.y < -40 || sp.y > H + 40) return;
+  for (var i = 0; i < HM_SEGS.length; i++) {
+    var a = worldToScreen(HM_SEGS[i][0] * WW, HM_LINE_Y);
+    var b = worldToScreen(HM_SEGS[i][1] * WW, HM_LINE_Y);
+    var h = Math.max(3, HM_LINE_H * ZOOM);
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,40,20,0.95)'; ctx.shadowBlur = 14;
+    ctx.fillStyle = '#e01a08';
+    ctx.fillRect(a.x, sp.y - h / 2, b.x - a.x, h);
+    ctx.fillStyle = '#ff7a5a';                      /* the deadly top edge */
+    ctx.fillRect(a.x, sp.y - h / 2, b.x - a.x, Math.max(2, h * 0.3));
+    ctx.restore();
+  }
+}
+
 function drawCheckpoints() {
   var gW = 22, gGap = 6;
 
@@ -1578,6 +1608,7 @@ function drawFrame() {
   drawPowerUps();
   pendulumBobs.forEach(function(p) { drawPendulum(p); });
   drawCheckpoints();
+  if (HM_ON) drawRedLine();
   drawEndZone();
   drawPlatform();
   marbles.forEach(function(m)      { drawMarble(m); });
@@ -1655,6 +1686,21 @@ function updateHUD() {
 }
 
 /* ==================== RESET ==================== */
+if (HM_ON) {
+  Events.on(engine, 'collisionStart', function (ev) {
+    for (var i = 0; i < ev.pairs.length; i++) {
+      var a = ev.pairs[i].bodyA, b = ev.pairs[i].bodyB;
+      var line = (a.label === 'hmRedLine') ? a : (b.label === 'hmRedLine') ? b : null;
+      if (!line) continue;
+      var m = (line === a) ? b : a;
+      if (String(m.label).indexOf('marble_') !== 0) continue;
+      if (m.position.y > HM_LINE_Y) continue;        /* only counts if it came down onto the top */
+      resetGame();
+      return;
+    }
+  });
+}
+
 function resetGame() {
   ceremonyActive = false;
   document.getElementById('end-screen').style.display = 'none';
@@ -1675,5 +1721,44 @@ function startGame() {
 
 </script>
 <a href="./" style="position:fixed;top:12px;left:12px;background:#3d9595;color:white;font-family:Nunito,Arial,sans-serif;font-weight:700;font-size:0.85rem;padding:0.45rem 1.1rem;border-radius:50px;text-decoration:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.background='#2d7575'" onmouseout="this.style.background='#3d9595'">← home</a>
+<!-- ===== HARD MODE (added 2026-09-05) ===== -->
+<style>
+#hmHell{position:fixed;inset:0;pointer-events:none;z-index:2147482000;background:rgba(217,79,58,.30);opacity:0;transition:opacity 1s ease}
+#hmHell.on{opacity:1}
+#hmEmb{position:fixed;inset:0;pointer-events:none;z-index:2147482001;overflow:hidden;opacity:0;transition:opacity 1s ease}
+#hmEmb.on{opacity:1}
+#hmEmb i{position:absolute;bottom:-20px;border-radius:50%;background:radial-gradient(circle,#fff3b0 0%,#ffab2b 40%,rgba(255,90,20,0) 75%);box-shadow:0 0 9px 3px rgba(255,150,40,.5);animation:hmRise linear infinite}
+@keyframes hmRise{0%{transform:translate(0,0) scale(1);opacity:0}8%{opacity:.95}50%{transform:translate(var(--dx),-50vh) scale(.7);opacity:.8}100%{transform:translate(calc(var(--dx) * -0.6),-104vh) scale(.2);opacity:0}}
+#hmShield{position:fixed;top:12px;right:12px;z-index:2147483000;width:46px;height:54px;pointer-events:none;opacity:0;transition:opacity .6s ease;filter:drop-shadow(0 0 9px rgba(255,80,20,.95))}
+#hmShield.on{opacity:1;animation:hmPulse 1.6s ease-in-out infinite alternate}
+@keyframes hmPulse{from{transform:scale(1)}to{transform:scale(1.08)}}
+#hmShield span{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);text-align:center;font-size:21px;line-height:1}
+</style>
+<script>
+(function(){
+  try { if (sessionStorage.getItem('jos-hard-mode') !== 'on') return; } catch(e) { return; }
+  function go(){
+    var hell = document.createElement('div'); hell.id = 'hmHell';
+    var emb  = document.createElement('div'); emb.id  = 'hmEmb';
+    for (var i = 0; i < 18; i++) {
+      var e = document.createElement('i'), s = 5 + Math.random() * 9;
+      e.style.left = (Math.random() * 100) + 'vw';
+      e.style.width = s + 'px'; e.style.height = s + 'px';
+      e.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+      e.style.animationDuration = (4 + Math.random() * 5) + 's';
+      e.style.animationDelay = (Math.random() * 5) + 's';
+      emb.appendChild(e);
+    }
+    var sh = document.createElement('div'); sh.id = 'hmShield';
+    sh.innerHTML = '<svg viewBox="0 0 46 54" width="46" height="54" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M23 1 L44 8 V27 C44 40 34 49 23 53 C12 49 2 40 2 27 V8 Z" fill="#8c1408" stroke="#ffb03a" stroke-width="3" stroke-linejoin="round"/>' +
+      '</svg><span>\uD83D\uDE08</span>';
+    document.body.appendChild(hell); document.body.appendChild(emb); document.body.appendChild(sh);
+    void hell.offsetWidth;
+    hell.className = 'on'; emb.className = 'on'; sh.className = 'on';
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', go); } else { go(); }
+})();
+</script>
 </body>
 </html>

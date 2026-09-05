@@ -1,3 +1,8 @@
+/* HARD MODE: the sequence flashes much faster and gives you less thinking time */
+const HM_HARD = (function(){try{return sessionStorage.getItem('jos-hard-mode')==='on'}catch(e){return false}})();
+const HM_FLASH = HM_HARD ? 140 : 300;
+const HM_GAP   = HM_HARD ? 380 : 1000;
+
 // --- CORE REGISTRY CONFIGURATION ---
 const previewGrid = document.getElementById('previewGrid');
 const interactiveKeypad = document.getElementById('interactiveKeypad');
@@ -62,7 +67,7 @@ function flashLeftTile(index) {
         targets[index].classList.add('flash-blue');
         setTimeout(() => {
             targets[index].classList.remove('flash-blue');
-        }, 300);
+        }, HM_FLASH);
     }
 }
 
@@ -84,7 +89,7 @@ function handleUserInput(index) {
                 setTimeout(() => { panel.classList.remove('victory-pulse'); }, 600);
             });
             
-            setTimeout(startNextRound, 1000);
+            setTimeout(startNextRound, HM_GAP);
         }
     } else {
         // Condition A: Wrong sequence given -> triggers cross-panel spiral meltdown
@@ -150,7 +155,7 @@ function systemWipeLogic() {
         if (rightTiles[i]) rightTiles[i].classList.remove('meltdown-red');
     }
     
-    setTimeout(startNextRound, 600);
+    setTimeout(startNextRound, HM_HARD ? 300 : 600);
 }
 
 // Global 3-second overlay lock routine
@@ -176,7 +181,7 @@ function triggerOverlayBarrier() {
                 isCooldownActive = false;
             }, 500);
         }
-    }, 1000);
+    }, HM_GAP);
 }
 
 // FIXED: Condition B: Manual click -> triggers wipe AND activates the 3s overlay shield!
@@ -190,5 +195,5 @@ function handleManualResetRequest() {
 resetBtn.addEventListener('click', handleManualResetRequest);
 
 generateGrids();
-setTimeout(startNextRound, 1000);
+setTimeout(startNextRound, HM_GAP);
 
