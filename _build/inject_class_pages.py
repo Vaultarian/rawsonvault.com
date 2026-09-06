@@ -258,10 +258,16 @@ STYLE = """    <style>
         border-color: var(--bronze-rich); }}
       /* The calendar is standing information, not a lesson row -- the tint
          says so without needing a heading. */
-      .calendar-bar {{ margin-top: 0.7rem; background: #f6ede4;
-        border-left: 3px solid var(--bronze-cream);
+      .calendar-bar {{ margin-top: 0.7rem; background: #ecdcc8;
+        border-left: 3px solid var(--bronze-core);
         padding: 0.5rem 0.9rem; border-radius: 2px; }}
-      .calendar-bar .vocab-link {{ background: #fdfbf3; }}
+      /* On the tinted strip the shared :hover (dark fill, white text) turns the
+         button into a dark block that reads as disabled. Inverted instead: the
+         button LIFTS to paper with bronze text, which is legible on the tint. */
+      .calendar-bar .vocab-link {{ background: #fdfbf3;
+        border-color: var(--bronze-core); color: var(--bronze-dark); }}
+      .calendar-bar .vocab-link:hover {{ background: #fff;
+        color: var(--bronze-deep); border-color: var(--bronze-deep); }}
       .cal-ico {{ vertical-align: -2px; margin-right: 0.35rem; }}
     </style>"""
 
@@ -288,10 +294,38 @@ VOCAB_LANGS = [("fr", "Français"), ("de", "Deutsch"), ("es", "Español")]
 # dropped deliberately -- at 16px it was mush, and the label already says
 # "Calendar".
 # Add a class here when its calendar is built; a class with no entry shows no line.
+# slug -> (source PDF in the vault, blurb). The calendar is copied by
+# copy_calendar() below rather than by a `Publish:` line, deliberately: it is
+# standing information, and a Publish: entry would also drop it into that day's
+# lesson row, where it scrolls away and reads as a one-off handout.
 CALENDARS = {
-    "design-9a":    ("y9a-design-calendar-autumn-1.pdf",  "Autumn term to the October break"),
-    "physics-11-q": ("y11q-physics-calendar-autumn-1.pdf", "Autumn term to the October break"),
+    "design-9a": (
+        VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
+              / "y9a-design-calendar-autumn-1.pdf",
+        "Autumn term to the October break"),
+    "physics-11-q": (
+        VAULT / "01-Teaching/Physics - GCSE/Calendar"
+              / "y11q-physics-calendar-autumn-1.pdf",
+        "Autumn term to the October break"),
 }
+
+
+def copy_calendar(name, cdir):
+    """Copy this class's calendar into files/ and return its filename.
+
+    Returns "" when the class has no calendar, or when the source is missing --
+    a missing source must not take the whole page down with it.
+    """
+    hit = CALENDARS.get(slug(name))
+    if not hit:
+        return ""
+    src, _ = hit
+    if not src.exists():
+        print(f"  ! calendar source missing for {name}: {src.name}")
+        return ""
+    (cdir / "files").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, cdir / "files" / src.name)
+    return src.name
 
 
 ICON_CALENDAR = (
@@ -324,7 +358,8 @@ def calendar_bar(name):
     hit = CALENDARS.get(slug(name))
     if not hit:
         return ""
-    fn, blurb = hit
+    src, blurb = hit
+    fn = src.name
     return ('\n        <div class="vocab-bar calendar-bar">'
             '\n          <span class="vocab-label">'
             + ICON_CALENDAR + 'Calendar</span>'
@@ -488,6 +523,9 @@ def main():
         (cdir / "files").mkdir(parents=True, exist_ok=True)
 
         wanted = set()
+        cal_fn = copy_calendar(name, cdir)
+        if cal_fn:
+            wanted.add(cal_fn)
         for _, ens in weeks:
             for en in ens:
                 for pdf, _lbl, _n in en["docs"]:
