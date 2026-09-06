@@ -48,9 +48,13 @@
         border-radius: 2px; text-decoration: none; }
       .vocab-link:hover { background: var(--bronze-rich); color: #fff;
         border-color: var(--bronze-rich); }
-      .calendar-bar { margin-top: 0.55rem; }
-      .cal-icon { width: 16px; height: 16px; vertical-align: -3px;
-        margin-right: 0.35rem; image-rendering: pixelated; }
+      /* The calendar is standing information, not a lesson row -- the tint
+         says so without needing a heading. */
+      .calendar-bar { margin-top: 0.7rem; background: #f6ede4;
+        border-left: 3px solid var(--bronze-cream);
+        padding: 0.5rem 0.9rem; border-radius: 2px; }
+      .calendar-bar .vocab-link { background: #fdfbf3; }
+      .cal-ico { vertical-align: -2px; margin-right: 0.35rem; }
     </style>
 </head>
 <body>
@@ -73,7 +77,7 @@
           <a class="vocab-link" href="vocab/?lang=es">Español</a>
         </div>
         <div class="vocab-bar calendar-bar">
-          <span class="vocab-label"><img src="/images/calendar.png" alt="" class="cal-icon">Calendar</span>
+          <span class="vocab-label"><svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7.6 2.2v3.6M16.4 2.2v3.6" stroke="#7d6d3a" stroke-width="2.2" stroke-linecap="round"/><rect x="2.6" y="4.4" width="18.8" height="17" rx="2" fill="#fdfbf3" stroke="#7d6d3a" stroke-width="1.7"/><path d="M2.6 9.2V6.4a2 2 0 0 1 2-2h14.8a2 2 0 0 1 2 2v2.8z" fill="#7d6d3a"/><g fill="#b9a765"><rect x="5.4" y="11.6" width="3.4" height="3" rx="0.6"/><rect x="10.3" y="11.6" width="3.4" height="3" rx="0.6"/><rect x="15.2" y="11.6" width="3.4" height="3" rx="0.6"/><rect x="5.4" y="16.2" width="3.4" height="3" rx="0.6"/></g><rect x="10.3" y="16.2" width="3.4" height="3" rx="0.6" fill="#c0392b"/></svg>Calendar</span>
           <a class="vocab-link" href="files/y11q-physics-calendar-autumn-1.pdf">Autumn term to the October break</a>
         </div>
         <p class="wk">Week A · 7–11 September</p>
