@@ -20,6 +20,17 @@
       .lesson-doc { display: block; font-family: var(--font-ui);
         font-size: 0.85rem; margin-bottom: 0.3rem; }
       .lesson-doc .pp { opacity: 0.55; font-size: 0.75rem; }
+      /* Name on the left, sheet and answer-key icons on the right --
+         the 07/08 Vault homework layout. */
+      .doc-row { display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.18rem 0; }
+      .doc-name { font-family: var(--font-ui); font-size: 0.85rem;
+        flex: 1 1 auto; min-width: 0; }
+      .doc-icons { display: flex; gap: 0.25rem; flex: 0 0 auto; }
+      .doc-link { display: inline-flex; line-height: 0; padding: 2px;
+        border-radius: 5px; transition: background 0.12s ease; }
+      .doc-link:hover { background: rgba(128,128,128,0.18); }
+      .doc-ico { display: block; }
       .lesson-none { font-family: var(--font-ui); font-size: 0.82rem;
         opacity: 0.45; }
       .empty-note { font-family: var(--font-body); opacity: 0.6;
@@ -63,14 +74,14 @@
             <div class="lesson-date">Fri 4 Sep</div>
             <div>
               <p class="lesson-topic">L3 — The law of reflection. Specular vs diffuse, then the practical: ray box, plane mirror, protractor — measure i and r and find they are equal, both measured from the normal.</p>
-              <a class="lesson-doc" href="files/y8-light-l03-law-of-reflection-handout.pdf">Law of Reflection --- handout <span class="pp">6pp</span></a>
+              <div class="doc-row"><span class="doc-name">Law of Reflection --- handout</span><span class="doc-icons"><a class="doc-link" href="files/y8-light-l03-law-of-reflection-handout.pdf" title="Worksheet — 6pp" aria-label="Law of Reflection --- handout — Worksheet — 6pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a><a class="doc-link" href="files/y8-light-l03-law-of-reflection-handout-answers.pdf" title="Answer key — 6pp" aria-label="Law of Reflection --- handout — Answer key — 6pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.8 18.9l3 3 6.1-6.4" fill="none" stroke="#fdfbf3" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.8 18.9l3 3 6.1-6.4" fill="none" stroke="#3f8f2c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></span></div>
             </div>
           </div>
           <div class="lesson">
             <div class="lesson-date">Mon 31 Aug</div>
             <div>
               <p class="lesson-topic">L2 — The electromagnetic spectrum, overview. Seven regions ordered by energy, then nineteen everyday uses sorted into them.</p>
-              <a class="lesson-doc" href="files/y8-light-l02-em-spectrum-overview.pdf">EM Spectrum Overview — handout <span class="pp">1pp</span></a><a class="lesson-doc" href="files/y8-light-l02-puzzle-pieces.pdf">Puzzle Pieces — cut-out cards <span class="pp">1pp</span></a><a class="lesson-doc" href="files/y8-light-l02-em-spectrum-overview-answers.pdf">Answer key — card sort + crossword <span class="pp">2pp</span></a>
+              <div class="doc-row"><span class="doc-name">EM Spectrum Overview — handout</span><span class="doc-icons"><a class="doc-link" href="files/y8-light-l02-em-spectrum-overview.pdf" title="Worksheet — 1pp" aria-label="EM Spectrum Overview — handout — Worksheet — 1pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a><a class="doc-link" href="files/y8-light-l02-em-spectrum-overview-answers.pdf" title="Answer key — 2pp" aria-label="EM Spectrum Overview — handout — Answer key — 2pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.8 18.9l3 3 6.1-6.4" fill="none" stroke="#fdfbf3" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.8 18.9l3 3 6.1-6.4" fill="none" stroke="#3f8f2c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></span></div><div class="doc-row"><span class="doc-name">Puzzle Pieces — cut-out cards</span><span class="doc-icons"><a class="doc-link" href="files/y8-light-l02-puzzle-pieces.pdf" title="Worksheet — 1pp" aria-label="Puzzle Pieces — cut-out cards — Worksheet — 1pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div>
             </div>
           </div>
         <p class="wk">Week A · 24–28 August</p>
@@ -78,10 +89,10 @@
             <div class="lesson-date">Fri 28 Aug</div>
             <div>
               <p class="lesson-topic">Course expectations; Beau Lotto optical illusions, with a written write-up</p>
-              <a class="lesson-doc" href="files/y8b-physics-myp.pdf">Course Expectations <span class="pp">4pp</span></a><a class="lesson-doc" href="files/y8-lotto-colour-perception.pdf">Optical Illusions — Write-up <span class="pp">3pp</span></a>
+              <div class="doc-row"><span class="doc-name">Course Expectations</span><span class="doc-icons"><a class="doc-link" href="files/y8b-physics-myp.pdf" title="Document — 4pp" aria-label="Course Expectations — Document — 4pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g></svg></a></span></div><div class="doc-row"><span class="doc-name">Optical Illusions — Write-up</span><span class="doc-icons"><a class="doc-link" href="files/y8-lotto-colour-perception.pdf" title="Worksheet — 3pp" aria-label="Optical Illusions — Write-up — Worksheet — 3pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div>
             </div>
           </div>
-        <footer class="site-footer">The Vault · Physics 8B · updated 5 September 2026</footer>
+        <footer class="site-footer">The Vault · Physics 8B · updated 6 September 2026</footer>
     </div>
 </body>
 </html>

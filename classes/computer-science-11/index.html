@@ -20,6 +20,17 @@
       .lesson-doc { display: block; font-family: var(--font-ui);
         font-size: 0.85rem; margin-bottom: 0.3rem; }
       .lesson-doc .pp { opacity: 0.55; font-size: 0.75rem; }
+      /* Name on the left, sheet and answer-key icons on the right --
+         the 07/08 Vault homework layout. */
+      .doc-row { display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.18rem 0; }
+      .doc-name { font-family: var(--font-ui); font-size: 0.85rem;
+        flex: 1 1 auto; min-width: 0; }
+      .doc-icons { display: flex; gap: 0.25rem; flex: 0 0 auto; }
+      .doc-link { display: inline-flex; line-height: 0; padding: 2px;
+        border-radius: 5px; transition: background 0.12s ease; }
+      .doc-link:hover { background: rgba(128,128,128,0.18); }
+      .doc-ico { display: block; }
       .lesson-none { font-family: var(--font-ui); font-size: 0.82rem;
         opacity: 0.45; }
       .empty-note { font-family: var(--font-body); opacity: 0.6;
@@ -63,17 +74,17 @@
             <div class="lesson-date">Thu 3 Sep</div>
             <div>
               <p class="lesson-topic">Programming 1 — IDE Setup. First practical Python in a browser IDE: `print()`, variables, `input()` and casting, selection and iteration.</p>
-              <a class="lesson-doc" href="files/prog-01-ide-setup.pdf">Programming 1 --- IDE Setup <span class="pp">5pp</span></a>
+              <div class="doc-row"><span class="doc-name">Programming 1 --- IDE Setup</span><span class="doc-icons"><a class="doc-link" href="files/prog-01-ide-setup.pdf" title="Worksheet — 5pp" aria-label="Programming 1 --- IDE Setup — Worksheet — 5pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div>
             </div>
           </div>
           <div class="lesson">
             <div class="lesson-date">Wed 2 Sep</div>
             <div>
               <p class="lesson-topic">P5 — first meeting: course expectations + whole-course J277 coverage audit. P6 — tally against the inherited record, then a first-program diagnostic (see plan; options offered, not decided).</p>
-              <a class="lesson-doc" href="files/y11-computer-science-gcse.pdf">Course Expectations <span class="pp">4pp</span></a><a class="lesson-doc" href="files/rm-progression-cs-2025-27.pdf">Computer Science — the Year 10 Record <span class="pp">2pp</span></a>
+              <div class="doc-row"><span class="doc-name">Course Expectations</span><span class="doc-icons"><a class="doc-link" href="files/y11-computer-science-gcse.pdf" title="Document — 4pp" aria-label="Course Expectations — Document — 4pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g></svg></a></span></div><div class="doc-row"><span class="doc-name">Computer Science — the Year 10 Record</span><span class="doc-icons"><a class="doc-link" href="files/rm-progression-cs-2025-27.pdf" title="Document — 2pp" aria-label="Computer Science — the Year 10 Record — Document — 2pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g></svg></a></span></div>
             </div>
           </div>
-        <footer class="site-footer">The Vault · Computer Science 11 · updated 5 September 2026</footer>
+        <footer class="site-footer">The Vault · Computer Science 11 · updated 6 September 2026</footer>
     </div>
 </body>
 </html>

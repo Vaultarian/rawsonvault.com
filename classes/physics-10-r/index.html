@@ -20,6 +20,17 @@
       .lesson-doc { display: block; font-family: var(--font-ui);
         font-size: 0.85rem; margin-bottom: 0.3rem; }
       .lesson-doc .pp { opacity: 0.55; font-size: 0.75rem; }
+      /* Name on the left, sheet and answer-key icons on the right --
+         the 07/08 Vault homework layout. */
+      .doc-row { display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.18rem 0; }
+      .doc-name { font-family: var(--font-ui); font-size: 0.85rem;
+        flex: 1 1 auto; min-width: 0; }
+      .doc-icons { display: flex; gap: 0.25rem; flex: 0 0 auto; }
+      .doc-link { display: inline-flex; line-height: 0; padding: 2px;
+        border-radius: 5px; transition: background 0.12s ease; }
+      .doc-link:hover { background: rgba(128,128,128,0.18); }
+      .doc-ico { display: block; }
       .lesson-none { font-family: var(--font-ui); font-size: 0.82rem;
         opacity: 0.45; }
       .empty-note { font-family: var(--font-body); opacity: 0.6;
@@ -63,14 +74,14 @@
             <div class="lesson-date">Thu 3 Sep</div>
             <div>
               <p class="lesson-topic">Kinematics 1 — Scalars and Vectors. Map your own journey home in My Maps and Google Earth: the driving route gives distance, the straight line gives displacement and a bearing. Then the vocabulary.</p>
-              <a class="lesson-doc" href="files/f1-l01-mapping-your-journey.pdf">Mapping Your Journey <span class="pp">8pp</span></a><a class="lesson-doc" href="files/f1-l01-scalars-and-vectors-worksheet.pdf">Kinematics 1: Scalars and Vectors --- worksheet <span class="pp">2pp</span></a>
+              <div class="doc-row"><span class="doc-name">Mapping Your Journey</span><span class="doc-icons"><a class="doc-link" href="files/f1-l01-mapping-your-journey.pdf" title="Worksheet — 8pp" aria-label="Mapping Your Journey — Worksheet — 8pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div><div class="doc-row"><span class="doc-name">Kinematics 1: Scalars and Vectors --- worksheet</span><span class="doc-icons"><a class="doc-link" href="files/f1-l01-scalars-and-vectors-worksheet.pdf" title="Worksheet — 2pp" aria-label="Kinematics 1: Scalars and Vectors --- worksheet — Worksheet — 2pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div>
             </div>
           </div>
           <div class="lesson">
             <div class="lesson-date">Tue 1 Sep</div>
             <div>
               <p class="lesson-topic">L1 — Energy stores and systems. The eight stores, and store versus pathway.</p>
-              <a class="lesson-doc" href="files/p1-l02-energy-stores-and-systems-handout.pdf">Energy stores and systems --- handout <span class="pp">4pp</span></a><a class="lesson-doc" href="files/bq001-which-planet-has-the-most-energy.pdf">Burning Question 001 — Which planet has the most energy? <span class="pp">1pp</span></a>
+              <div class="doc-row"><span class="doc-name">Energy stores and systems --- handout</span><span class="doc-icons"><a class="doc-link" href="files/p1-l02-energy-stores-and-systems-handout.pdf" title="Worksheet — 4pp" aria-label="Energy stores and systems --- handout — Worksheet — 4pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div><div class="doc-row"><span class="doc-name">Burning Question 001 — Which planet has the most energy?</span><span class="doc-icons"><a class="doc-link" href="files/bq001-which-planet-has-the-most-energy.pdf" title="Worksheet — 1pp" aria-label="Burning Question 001 — Which planet has the most energy? — Worksheet — 1pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a></span></div>
             </div>
           </div>
         <p class="wk">Week A · 24–28 August</p>
@@ -78,10 +89,10 @@
             <div class="lesson-date">Fri 28 Aug</div>
             <div>
               <p class="lesson-topic">Course expectations, then the course website and the start of P1 Energy</p>
-              <a class="lesson-doc" href="files/y10r-physics-gcse.pdf">Course Expectations <span class="pp">4pp</span></a><a class="lesson-doc" href="files/p1-energy-overview.pdf">P1 Energy — Unit Overview <span class="pp">4pp</span></a>
+              <div class="doc-row"><span class="doc-name">Course Expectations</span><span class="doc-icons"><a class="doc-link" href="files/y10r-physics-gcse.pdf" title="Document — 4pp" aria-label="Course Expectations — Document — 4pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g></svg></a></span></div><div class="doc-row"><span class="doc-name">P1 Energy — Unit Overview</span><span class="doc-icons"><a class="doc-link" href="files/p1-energy-overview.pdf" title="Document — 4pp" aria-label="P1 Energy — Unit Overview — Document — 4pp"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g></svg></a></span></div>
             </div>
           </div>
-        <footer class="site-footer">The Vault · Physics 10 R · updated 5 September 2026</footer>
+        <footer class="site-footer">The Vault · Physics 10 R · updated 6 September 2026</footer>
     </div>
 </body>
 </html>
