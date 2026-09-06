@@ -258,3 +258,17 @@ from*: it still claimed Tim reads the Orange, which has been out of the cluster 
 *v1.0 — 2026-06-12. Created by Tim in his first session. Rules derived from the repo as
 found: the publish-safety log (labs + video runs), the video-injection pattern, and the
 vault.css template — not invented.*
+
+## Class calendars — the Calendar line
+
+Each class page can carry a **Calendar** line directly below Vocabulary: standing information,
+tinted, with an inline-SVG icon. Rendered by `calendar_bar()` in `_build/inject_class_pages.py`;
+add a class to the `CALENDARS` map to give it one.
+
+⚠️ **`inject_class_pages.py` is not an injector *output*, so Tim will not commit changes to it.**
+Editing the generator, or adding an image asset, needs a deliberate `git add` of those paths once
+`name_audit.py` is clean. Tim commits only what its injectors declare — that is the safety
+property, not a bug.
+
+Full convention, including how the PDF itself is built:
+`~/vault/01-Teaching/Class Calendars — House Convention.md`.
