@@ -256,6 +256,9 @@ STYLE = """    <style>
         border-radius: 2px; text-decoration: none; }}
       .vocab-link:hover {{ background: var(--bronze-rich); color: #fff;
         border-color: var(--bronze-rich); }}
+      .calendar-bar {{ margin-top: 0.55rem; }}
+      .cal-icon {{ width: 16px; height: 16px; vertical-align: -3px;
+        margin-right: 0.35rem; image-rendering: pixelated; }}
     </style>"""
 
 
@@ -268,6 +271,28 @@ STYLE = """    <style>
 # would publicly signal which languages a given class contains, which in a class of
 # twenty is close to naming a student.
 VOCAB_LANGS = [("fr", "Français"), ("de", "Deutsch"), ("es", "Español")]
+
+# The term calendar is STATIC for a month, unlike the lesson rows above it, so it
+# gets its own line rather than sitting inside a dated entry where it would scroll
+# away. Icon is Alex's own from the 2007 site -- deliberate continuity.
+# Add a class here when its calendar is built; a class with no entry shows no line.
+CALENDARS = {
+    "design-9a":    ("y9a-design-calendar-autumn-1.pdf",  "Autumn term to the October break"),
+    "physics-11-q": ("y11q-physics-calendar-autumn-1.pdf", "Autumn term to the October break"),
+}
+
+
+def calendar_bar(name):
+    """A single always-visible line linking this class's term calendar."""
+    hit = CALENDARS.get(slug(name))
+    if not hit:
+        return ""
+    fn, blurb = hit
+    return ('\n        <div class="vocab-bar calendar-bar">'
+            '\n          <span class="vocab-label">'
+            '<img src="/images/calendar.png" alt="" class="cal-icon">Calendar</span>'
+            f'\n          <a class="vocab-link" href="files/{fn}">{blurb}</a>'
+            '\n        </div>')
 
 
 def vocab_bar(name):
@@ -346,7 +371,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>{vocab_bar(name)}
+        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
