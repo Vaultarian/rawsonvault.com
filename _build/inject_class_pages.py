@@ -46,6 +46,84 @@ OUT = REPO / "classes"
 
 MONTHS = "%-d %B"
 
+# Document icons. A matched pair, after the ones Alex used on the 07/08 Vault
+# site (images/worksheet1.png, images/worksheetanswers.png): one tag shape, a
+# red pencil for the sheet you write on, a green tick for the sheet you check
+# against. Redrawn as inline SVG rather than copied, because the originals are
+# 24px and go soft on a retina screen, and because the class-page injector
+# copies PDFs only -- an inline icon adds no asset to carry.
+_PENCIL_D = "M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z"
+_TICK_D = "M12.8 18.9l3 3 6.1-6.4"
+# The tag is scaled back to 0.84 so the badge has room to overlap its corner
+# and still sit inside the 24px box. All three icons carry the same transform,
+# or the plain one renders visibly larger than its siblings.
+_TAG = ('<g transform="translate(-1,-1) scale(0.84)">'
+        '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6'
+        'a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4"'
+        ' stroke-linejoin="round"/>'
+        '<circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e"'
+        ' stroke-width="1.2"/></g>')
+
+
+def _svg(*body):
+    return ('<svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" '
+            'aria-hidden="true" focusable="false">' + _TAG + "".join(body)
+            + "</svg>")
+
+
+# Each badge is drawn twice: once as a thick page-coloured stroke that knocks a
+# gap out of the tag behind it, then again in colour. Cheaper and cleaner than
+# a disc, which bit a notch out of the tag's diagonal edge.
+ICON_SHEET = _svg(
+    f'<path d="{_PENCIL_D}" fill="none" stroke="#fdfbf3" stroke-width="2.6"'
+    ' stroke-linejoin="round"/>',
+    f'<path d="{_PENCIL_D}" fill="#c0392b"/>',
+    '<path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4'
+    'l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/>')
+
+ICON_KEY = _svg(
+    f'<path d="{_TICK_D}" fill="none" stroke="#fdfbf3" stroke-width="5.2"'
+    ' stroke-linecap="round" stroke-linejoin="round"/>',
+    f'<path d="{_TICK_D}" fill="none" stroke="#3f8f2c" stroke-width="2.8"'
+    ' stroke-linecap="round" stroke-linejoin="round"/>')
+
+# The bare tag, for documents that are not worksheets -- a course expectations
+# sheet, a reference page. The pencil would tell a student to write on it.
+ICON_DOC = _svg()
+
+# Reference material -- read, not written on. Everything else gets the pencil,
+# because listing what a student writes on turns out to be the longer and
+# leakier list: it missed "Colour Perception -- Beau Lotto worksheet" and
+# "Optical Illusions -- Write-up" on the first pass.
+REFERENCE = re.compile(
+    r"(expectations|overview|syllabus|record|reference|progression|"
+    r"policy|guide|glossary|vocab)", re.I)
+
+
+def pair_docs(docs):
+    """Group each worksheet with its answer key.
+
+    <stem>.pdf and <stem>-answers.pdf are one row with two icons, which is the
+    layout of the 07/08 homework page: name on the left, sheet and answers to
+    the right. A key published without its sheet still gets its own row -- that
+    happens legitimately, e.g. when the sheet went out under an earlier entry.
+    Order follows the Publish: whitelist.
+    """
+    rows, seen = [], {}
+    for p, lbl, n in docs:
+        is_key = p.stem.endswith("-answers")
+        base = p.stem[:-len("-answers")] if is_key else p.stem
+        if base not in seen:
+            seen[base] = {"label": None, "sheet": None, "key": None}
+            rows.append(base)
+        slot = seen[base]
+        slot["key" if is_key else "sheet"] = (p, n)
+        # The worksheet's label names the lesson; the key's label just repeats
+        # it with "answer key" appended. Prefer the sheet's.
+        if not is_key or slot["label"] is None:
+            slot["label"] = lbl or base
+    return [(seen[b]["label"], seen[b]["sheet"], seen[b]["key"]) for b in rows]
+
 # Narrow, opt-in escape hatch for publishing an entry ahead of its DATE --
 # the one thing rule 1 no longer allows on its own:
 #   CLASS_PAGES_FORCE="Computer Science 10|2026-09-01,…"
@@ -54,6 +132,16 @@ MONTHS = "%-d %B"
 # the Publish: whitelist (rule 2) is never bypassed -- a forced entry still
 # publishes only what it whitelists.
 FORCE = {t.strip() for t in os.environ.get("CLASS_PAGES_FORCE", "").split(",") if t.strip()}
+
+# The same escape hatch, driven from the log instead of the environment. A
+# bullet inside Publish: reading "⏩" (or "publish now") releases that entry the
+# next time Tim runs, without waiting for its date -- which at session close
+# means the material is live before Alex shuts the window.
+#
+# Anchored to the start of a bullet so it cannot fire from inside a document
+# label. It lifts the DATE only: "Did not run" still wins, and the Publish:
+# whitelist is never bypassed.
+PUBLISH_NOW = re.compile(r"^\s*(?:[-*]\s*)?(?:⏩|publish now\b)", re.I | re.M)
 
 
 def slug(name):
@@ -86,10 +174,12 @@ def parse_log(path):
         if not cur:
             return
         block = "\n".join(buf)
+        pub = field(block, "Publish")
         entries.append(dict(
             date=cur[0], status=cur[1],
             topic=strip_md(field(block, "Topic")),
-            docs=pdf_links(field(block, "Publish")),  # whitelist, never Resources
+            docs=pdf_links(pub),                      # whitelist, never Resources
+            now=bool(PUBLISH_NOW.search(pub)),        # release ahead of the date
         ))
 
     for ln in lines:
@@ -138,6 +228,17 @@ STYLE = """    <style>
       .lesson-doc {{ display: block; font-family: var(--font-ui);
         font-size: 0.85rem; margin-bottom: 0.3rem; }}
       .lesson-doc .pp {{ opacity: 0.55; font-size: 0.75rem; }}
+      /* Name on the left, sheet and answer-key icons on the right --
+         the 07/08 Vault homework layout. */
+      .doc-row {{ display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.18rem 0; }}
+      .doc-name {{ font-family: var(--font-ui); font-size: 0.85rem;
+        flex: 1 1 auto; min-width: 0; }}
+      .doc-icons {{ display: flex; gap: 0.25rem; flex: 0 0 auto; }}
+      .doc-link {{ display: inline-flex; line-height: 0; padding: 2px;
+        border-radius: 5px; transition: background 0.12s ease; }}
+      .doc-link:hover {{ background: rgba(128,128,128,0.18); }}
+      .doc-ico {{ display: block; }}
       .lesson-none {{ font-family: var(--font-ui); font-size: 0.82rem;
         opacity: 0.45; }}
       .empty-note {{ font-family: var(--font-body); opacity: 0.6;
@@ -188,10 +289,29 @@ def render_class(name, subtitle, weeks):
         rows = []
         for en in entries:
             if en["docs"]:
-                docs = "".join(
-                    f'<a class="lesson-doc" href="files/{e(p.name)}">{e(lbl or p.stem)}'
-                    + (f' <span class="pp">{n}pp</span>' if n else "") + "</a>"
-                    for p, lbl, n in en["docs"])
+                parts = []
+                for lbl, sheet, key in pair_docs(en["docs"]):
+                    icons = ""
+                    # A row with an answer key is a worksheet by definition.
+                    # Otherwise test the label AND the filename -- Alex's
+                    # labels often say "worksheet" where the filename does not.
+                    written = bool(key) or not REFERENCE.search(
+                        f"{lbl} {sheet[0].name}" if sheet else lbl)
+                    for slot, icon, what in (
+                            (sheet, ICON_SHEET if written else ICON_DOC,
+                             "Worksheet" if written else "Document"),
+                            (key, ICON_KEY, "Answer key")):
+                        if not slot:
+                            continue
+                        p, n = slot
+                        tip = f"{what} — {n}pp" if n else what
+                        icons += (f'<a class="doc-link" href="files/{e(p.name)}"'
+                                  f' title="{e(tip)}" aria-label="{e(lbl)} —'
+                                  f' {e(tip)}">{icon}</a>')
+                    parts.append(f'<div class="doc-row">'
+                                 f'<span class="doc-name">{e(lbl)}</span>'
+                                 f'<span class="doc-icons">{icons}</span></div>')
+                docs = "".join(parts)
             else:
                 docs = '<span class="lesson-none">No handout</span>'
             rows.append(f"""          <div class="lesson">
@@ -287,6 +407,7 @@ def main():
         published = [en for en in entries
                      if en["status"].strip().lower() != "did not run"
                      and (en["date"] <= today
+                          or en["now"]
                           or f"{name}|{en['date']}" in FORCE)]
         held += len(entries) - len(published)
 
