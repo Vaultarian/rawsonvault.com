@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Series and Parallel in 3D — P2 Electricity — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        /* Scene colours are read at runtime by the WebGL code, so they live on :root. */
+        :root {
+            --scene-bg:    #0F161C;
+            --scene-wire:  #5C6A76;
+            --scene-grid:  #1F2932;
+            --scene-axis:  #8595A2;
+            --scene-charge:#5FD3E6;
+        }
+        /* The interactive is a dark instrument set into the parchment page. */
+        .viz {
+            --v-surface:  #1A232B;
+            --v-line:     #2C3841;
+            --v-text:     #E6EDF3;
+            --v-muted:    #93A2AE;
+            --v-volt:     #EFAE4E;
+            --v-volt-soft:#3A2E17;
+            --v-amp:      #4CC7DC;
+            --v-amp-soft: #12333A;
+            display: flex; flex-direction: column; gap: var(--gap-md);
+            margin: var(--gap-lg) 0;
+            /* the circuits need more room than the article column — break out of it */
+            width: min(1180px, calc(100vw - 3rem));
+            margin-left: 50%; transform: translateX(-50%);
+        }
+
+        /* legend */
+        .viz .legend { display: flex; flex-wrap: wrap; gap: var(--gap-xs); }
+        .viz .chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 5px 11px 5px 9px; border: 1px solid var(--gray-light);
+            border-radius: var(--radius); background: var(--white);
+            font-family: var(--font-ui); font-weight: 600; font-size: 0.72rem;
+            color: var(--ink-black);
+        }
+        .viz .chip .swatch { width: 16px; height: 16px; flex: none; display: block; }
+        .viz .chip.v .swatch { background: linear-gradient(to top,transparent 0 22%,#A05818 22% 100%); border-left: 2px solid #A05818; }
+        .viz .chip.i .swatch { background: linear-gradient(to right,transparent 0 18%,#0C7284 18% 82%,transparent 82%); }
+        .viz .chip.q .swatch { background: radial-gradient(circle at 50% 50%,#0C7284 0 38%,transparent 40%),radial-gradient(circle at 15% 50%,#0C7284 0 22%,transparent 24%),radial-gradient(circle at 85% 50%,#0C7284 0 22%,transparent 24%); }
+
+        /* controls */
+        .viz .controls {
+            display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-xs);
+            padding: 9px; border: 1px solid var(--gray-light);
+            border-radius: var(--radius); background: var(--white);
+        }
+        .viz .seg { display: flex; border: 1px solid var(--gray-light); border-radius: var(--radius); overflow: hidden; }
+        .viz button {
+            font-family: var(--font-ui); font-weight: 600; font-size: 0.78rem;
+            color: var(--ink-black); background: transparent; border: 0;
+            padding: 7px 13px; cursor: pointer; line-height: 1.2;
+        }
+        .viz .seg button + button { border-left: 1px solid var(--gray-light); }
+        .viz button:hover { background: var(--bronze-parch); }
+        .viz button[aria-pressed="true"] { background: var(--bronze-core); color: var(--white); }
+        .viz button:focus-visible { outline: 2px solid var(--bronze-dark); outline-offset: 1px; }
+        .viz .btn-solo { border: 1px solid var(--gray-light); border-radius: var(--radius); min-width: 86px; }
+        .viz .ctl-label {
+            font-family: var(--font-ui); font-weight: 600; font-size: 0.64rem;
+            letter-spacing: .12em; text-transform: uppercase; color: var(--gray-mid); margin-left: 4px;
+        }
+        .viz .spd { display: flex; align-items: center; gap: 9px; padding-left: 4px; }
+        .viz input[type=range] { width: 104px; accent-color: var(--bronze-core); }
+        .viz .hint { margin-left: auto; font-family: var(--font-ui); font-size: 0.72rem; color: var(--gray-mid); padding-right: 4px; }
+
+        /* stages */
+        .viz .stages { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-md); }
+        @media (max-width: 900px) { .viz .stages { grid-template-columns: 1fr; } }
+        .viz .stage {
+            border: 1px solid var(--gray-light); border-radius: var(--radius);
+            background: var(--white); display: flex; flex-direction: column; overflow: hidden;
+        }
+        .viz .stage-head {
+            display: flex; align-items: baseline; gap: 10px;
+            padding: 12px 14px 10px; border-bottom: 1px solid var(--rule-color);
+        }
+        .viz .stage-head h2 {
+            font-family: var(--font-heading); font-weight: 700; font-size: 1.05rem;
+            margin: 0; color: var(--ink-black); border: 0; padding: 0;
+        }
+        .viz .stage-head .sub { font-family: var(--font-ui); font-size: 0.74rem; color: var(--gray-mid); }
+        .viz .canvas-holder { position: relative; width: 100%; height: 430px; background: var(--scene-bg); }
+        @media (max-width: 900px) { .viz .canvas-holder { height: 360px; } }
+        .viz canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+        .viz canvas:active { cursor: grabbing; }
+        .viz .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+        .viz .lbl {
+            position: absolute; top: 0; left: 0; white-space: nowrap;
+            font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; font-weight: 500;
+            padding: 2.5px 7px; border-radius: 2px; background: var(--v-surface);
+            border: 1px solid var(--v-line); color: var(--v-text);
+            box-shadow: 0 1px 3px rgba(0,0,0,.35); will-change: transform;
+        }
+        .viz .lbl.v { border-left: 3px solid var(--v-volt); }
+        .viz .lbl.i { border-left: 3px solid var(--v-amp); }
+        .viz .lbl.tick { background: transparent; border: 0; box-shadow: none; padding: 0 4px; color: var(--v-muted); font-size: 11px; }
+        .viz .lbl .tag {
+            display: inline-block; margin-left: 5px; padding: 0 4px; border-radius: 2px;
+            font-family: var(--font-ui); font-size: 10px; font-weight: 600;
+            letter-spacing: .04em; text-transform: uppercase;
+        }
+        .viz .lbl .tag.slow { background: var(--v-volt-soft); color: var(--v-volt); }
+        .viz .lbl .tag.fast { background: var(--v-amp-soft); color: var(--v-amp); }
+        .viz .lbl .tag.all  { background: #26313A; color: var(--v-muted); }
+
+        /* data tables */
+        .viz .data { padding: 2px 14px 14px; overflow-x: auto; }
+        .viz table { border-collapse: collapse; width: 100%; font-family: var(--font-ui); font-size: 0.8rem; }
+        .viz caption {
+            text-align: left; padding: 10px 0 7px; color: var(--gray-mid);
+            font-family: var(--font-ui); font-weight: 600; font-size: 0.64rem;
+            letter-spacing: .12em; text-transform: uppercase;
+        }
+        .viz th, .viz td { padding: 5px 8px; text-align: right; border-bottom: 1px solid #f0ece4; color: var(--ink-black); }
+        .viz th:first-child, .viz td:first-child { text-align: left; padding-left: 0; }
+        .viz td:last-child, .viz th:last-child { padding-right: 0; }
+        .viz thead th {
+            font-weight: 600; font-size: 0.64rem; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--gray-mid); border-bottom: 1px solid var(--gray-light);
+        }
+        .viz td.num { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+        .viz tbody tr:last-child td { border-bottom: 0; }
+        .viz tr.total td { font-weight: 600; border-top: 1px solid var(--gray-light); border-bottom: 0; padding-top: 7px; }
+        .viz td .dot { display: inline-block; width: 9px; height: 9px; margin-right: 7px; border-radius: 1px; }
+
+        /* the contrast table */
+        .viz .matrix { overflow-x: auto; }
+        .viz .matrix table { font-family: var(--font-body); font-size: 0.88rem; }
+        .viz .matrix th, .viz .matrix td { text-align: left; padding: 12px 14px; vertical-align: top; line-height: 1.6; }
+        .viz .matrix thead th { font-family: var(--font-ui); border-bottom: 1px solid var(--gray-light); }
+        .viz .matrix tbody th {
+            width: 24%; font-family: var(--font-heading); font-weight: 700; font-size: 0.92rem;
+            padding-left: 0; border-right: 1px solid #f0ece4; text-transform: none; letter-spacing: 0;
+        }
+        .viz .matrix tbody th small {
+            display: block; font-family: 'IBM Plex Mono', monospace; font-weight: 400;
+            font-size: 0.68rem; color: var(--gray-mid);
+        }
+        .viz .matrix .same { color: #0C7284; font-weight: 700; }
+        .viz .matrix .diff { color: var(--bronze-dark); font-weight: 700; }
+
+        .viz .note {
+            border-left: 3px solid var(--bronze-core); background: var(--bronze-parch);
+            padding: 12px 16px; font-family: var(--font-body); font-size: 0.9rem;
+            line-height: 1.7; color: var(--ink-black); border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .viz .note b { font-family: 'IBM Plex Mono', monospace; font-weight: 500; background: rgba(184,128,64,.22); padding: 0 4px; }
+
+        .viz .combo { display: flex; flex-direction: column; gap: var(--gap-sm); }
+        .viz .combo .canvas-holder { height: 470px; }
+        @media (max-width: 900px) { .viz .combo .canvas-holder { height: 380px; } }
+        .viz .combo .data { max-width: 640px; }
+        .viz h3 { font-family: var(--font-heading); font-size: 1.15rem; margin: var(--gap-md) 0 0; color: var(--ink-black); }
+        .viz .combo p, .viz .lede { font-family: var(--font-body); font-size: 0.94rem; line-height: 1.75; margin: 0; max-width: 72ch; color: var(--gray-dark); }
+        .viz .combo p b, .viz .lede b { color: var(--ink-black); }
+        @media (prefers-reduced-motion: reduce) { .viz * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Physics</a><span>·</span>
+            <a href="../../">AQA GCSE Physics</a><span>·</span>
+            <a href="../">P2 Electricity</a><span>·</span>
+            Series and Parallel in 3D
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">AQA GCSE · Trilogy 8464 · Physics Paper 1 · Spec section 6.2</span>
+            <h1>Series and Parallel in 3D</h1>
+            <p class="subtitle">Height is potential difference. Width is current. Turn the circuit and both are visible at once.</p>
+        </div>
+        <div class="rule--full"></div>
+        <div class="article">
+            <p>The cell is an escalator that lifts charge 6&nbsp;V; every component is a step back down. Charge goes round a closed loop, so whatever height it loses across the components it regains at the cell. On a flat page you can draw height <em>or</em> width — which is why the series and parallel rules usually arrive as two separate things to memorise. Here you can turn the circuit and see both, and the two rules become one picture.</p>
+            <p>Drag any circuit to orbit; all three turn together so they stay comparable. <strong>Front</strong> is the familiar staircase, <strong>Plan</strong> looks straight down so the lane widths are the whole story, and <strong>Charge flow</strong> switches between the two halves of I&nbsp;=&nbsp;nAvq.</p>
+        </div>
+<div class="viz">
+<div class="legend">
+    <span class="chip v"><span class="swatch"></span>Height above 0 V = potential difference</span>
+    <span class="chip i"><span class="swatch"></span>Lane width = current</span>
+    <span class="chip q"><span class="swatch"></span>Charge passing a point each second = current</span>
+  </div>
+
+<div class="controls" role="group" aria-label="View and animation controls">
+  <span class="ctl-label">View</span>
+  <div class="seg" id="views">
+    <button data-view="front" aria-pressed="false">Front</button>
+    <button data-view="oblique" aria-pressed="true">Oblique</button>
+    <button data-view="plan" aria-pressed="false">Plan</button>
+  </div>
+  <button class="btn-solo" id="playBtn" aria-pressed="true">Pause</button>
+  <span class="ctl-label">Charge flow</span>
+  <div class="seg" id="flow">
+    <button data-flow="lanes" aria-pressed="true">Wider lane</button>
+    <button data-flow="speed" aria-pressed="false">Faster charge</button>
+  </div>
+  <div class="spd">
+    <span class="ctl-label">Speed</span>
+    <input type="range" id="speed" min="0.2" max="2" step="0.1" value="1" aria-label="Charge flow speed">
+  </div>
+  <span class="hint">Drag any circuit to orbit — they all turn together. Scroll to zoom.</span>
+</div>
+
+<div class="stages">
+  <section class="stage">
+    <div class="stage-head">
+      <h2>Series</h2><span class="sub">one loop · one lane</span>
+    </div>
+    <div class="canvas-holder">
+      <canvas id="cvS"></canvas><div class="labels" id="lbS"></div>
+    </div>
+    <div class="data">
+      <table>
+        <caption>6 V cell · total resistance 6 Ω · current 1 A</caption>
+        <thead><tr><th>Component</th><th>R&nbsp;/&nbsp;Ω</th><th>I&nbsp;/&nbsp;A</th><th>p.d.&nbsp;/&nbsp;V</th></tr></thead>
+        <tbody>
+          <tr><td><span class="dot" style="background:#C6362C"></span>R<sub>1</sub></td><td class="num">2.0</td><td class="num">1.0</td><td class="num">2.0</td></tr>
+          <tr><td><span class="dot" style="background:#E07B2A"></span>R<sub>2</sub></td><td class="num">3.5</td><td class="num">1.0</td><td class="num">3.5</td></tr>
+          <tr><td><span class="dot" style="background:#2E8B45"></span>R<sub>3</sub></td><td class="num">0.5</td><td class="num">1.0</td><td class="num">0.5</td></tr>
+          <tr class="total"><td>Whole loop</td><td class="num">6.0</td><td class="num">1.0</td><td class="num">6.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <h2>Parallel</h2><span class="sub">three branches · three lane widths</span>
+    </div>
+    <div class="canvas-holder">
+      <canvas id="cvP"></canvas><div class="labels" id="lbP"></div>
+    </div>
+    <div class="data">
+      <table>
+        <caption>Same 6 V cell · total resistance 1 Ω · current 6 A</caption>
+        <thead><tr><th>Branch</th><th>R&nbsp;/&nbsp;Ω</th><th>I&nbsp;/&nbsp;A</th><th>p.d.&nbsp;/&nbsp;V</th></tr></thead>
+        <tbody>
+          <tr><td><span class="dot" style="background:#2B5FA8"></span>A</td><td class="num">6.0</td><td class="num">1.0</td><td class="num">6.0</td></tr>
+          <tr><td><span class="dot" style="background:#E07B2A"></span>B</td><td class="num">3.0</td><td class="num">2.0</td><td class="num">6.0</td></tr>
+          <tr><td><span class="dot" style="background:#C6362C"></span>C</td><td class="num">2.0</td><td class="num">3.0</td><td class="num">6.0</td></tr>
+          <tr class="total"><td>Whole circuit</td><td class="num">1.0</td><td class="num">6.0</td><td class="num">6.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="thesis">
+  <h3>What changes, and what doesn't</h3>
+  <div class="matrix">
+    <table>
+      <thead><tr class="h"><th>&nbsp;</th><th>Series</th><th>Parallel</th></tr></thead>
+      <tbody>
+        <tr>
+          <th>Height<small>potential difference</small></th>
+          <td><span class="diff">Different</span> — each component takes its own share of the 6 V. Look at the staircase: 2.0 V, then 3.5 V, then 0.5 V, and the charge is back on the floor.</td>
+          <td><span class="same">The same</span> — every branch starts at the top rail and ends on the floor, so each one falls the whole 6 V. Three drops of identical height.</td>
+        </tr>
+        <tr>
+          <th>Width<small>current</small></th>
+          <td><span class="same">The same</span> — one lane all the way round, so the same 1 A passes every point. Charge is not used up in a resistor; it is only let down.</td>
+          <td><span class="diff">Different</span> — the narrowest branch is the largest resistance. Widths 1 A, 2 A and 3 A leave the rail, and 6 A returns to the cell.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Because the series current is exactly <b>1 A</b>, each step's height in volts is numerically its resistance in ohms — a 3.5 Ω resistor drops 3.5 V. Students can check <b>V = IR</b> by eye before they write a line of working. Watch the top rail in the parallel view too: it starts <b>6 A</b> wide and narrows to 5 A, then 3 A, as each branch takes its share.</p>
+</section>
+
+<section class="combo">
+  <h3>Both at once</h3>
+  <p>Real circuits are rarely one or the other. Every charge here must pass <b>R<sub>1</sub></b> — that is the series part, and it takes <b>3.0 V</b> from the full 3 A. Then the loop splits and the two branches share what is left: <b>the same 3.0 V each</b>, with the 1.5 Ω branch carrying twice the current of the 3 Ω one. Turn it to the front and you see one tall step followed by two short ones of equal height; turn it overhead and you see one wide lane becoming two of different widths.</p>
+  <div class="stage">
+    <div class="stage-head">
+      <h2>Series and parallel together</h2><span class="sub">one step down, then a split</span>
+    </div>
+    <div class="canvas-holder">
+      <canvas id="cvC"></canvas><div class="labels" id="lbC"></div>
+    </div>
+    <div class="data">
+      <table>
+        <caption>6 V cell · total resistance 2 Ω · current 3 A</caption>
+        <thead><tr><th>Component</th><th>R&nbsp;/&nbsp;Ω</th><th>I&nbsp;/&nbsp;A</th><th>p.d.&nbsp;/&nbsp;V</th></tr></thead>
+        <tbody>
+          <tr><td><span class="dot" style="background:#5E3A17"></span>R<sub>1</sub> &nbsp;in series</td><td class="num">1.0</td><td class="num">3.0</td><td class="num">3.0</td></tr>
+          <tr><td><span class="dot" style="background:#E07B2A"></span>R<sub>2</sub> &nbsp;branch</td><td class="num">3.0</td><td class="num">1.0</td><td class="num">3.0</td></tr>
+          <tr><td><span class="dot" style="background:#5E3A17"></span>R<sub>3</sub> &nbsp;branch</td><td class="num">1.5</td><td class="num">2.0</td><td class="num">3.0</td></tr>
+          <tr><td>R<sub>2</sub> in parallel with R<sub>3</sub></td><td class="num">1.0</td><td class="num">3.0</td><td class="num">3.0</td></tr>
+          <tr class="total"><td>Whole circuit</td><td class="num">2.0</td><td class="num">3.0</td><td class="num">6.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</div>
+        <div class="rule--full"></div>
+        <p class="linking" style="font-family:var(--font-ui);font-size:0.76rem;color:var(--gray-mid);">Built for P2 Electricity, 2026. Resistor blocks are coloured by the first band of the resistor colour code — brown 1, red 2, orange 3, green 5, blue 6. No third-party material.</p>
+        <footer class="site-footer">The Vault · AQA GCSE Physics · P2 Electricity · 2026</footer>
+    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+if(!window.THREE){ document.querySelectorAll('.canvas-holder').forEach(function(h){
+  h.innerHTML='<p style="padding:20px;color:var(--muted)">3D view could not load.</p>'; }); return; }
+
+var V   = 1.05;   // world units per volt
+var W0  = 0.30;   // world units per amp  (also the charge-lane pitch)
+var TH  = 0.10;   // wire thickness
+var RD  = 0.50;   // resistor depth
+var STEP= 0.50;   // charge spacing along a lane
+var PR  = 0.088;  // charge radius
+var FZ  = 1.8, BZ = -1.8, LX = -5.6, RX = 5.6, AX = -7.9;
+var vy  = function(v){ return v*V; };
+
+var BAND = { 2:0xC6362C, 3.5:0xE07B2A, 0.5:0x2E8B45, 6:0x2B5FA8, 3:0xE07B2A,
+             1:0x5E3A17, 1.5:0x5E3A17 };
+
+/* ---------- shared camera state ---------- */
+var cam = { theta:0.46, phi:1.13, dist:16.9, tgt:new THREE.Vector3(-0.2, 3.25, 0) };
+var VIEWS = { front:{theta:0, phi:1.40}, oblique:{theta:0.46, phi:1.15}, plan:{theta:0, phi:0.20} };
+var tween = null;
+
+/* ---------- stage factory ---------- */
+function makeStage(canvas, layer){
+  var renderer = new THREE.WebGLRenderer({antialias:true, canvas:canvas});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  if(THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x404a55, 0.85));
+  var d1 = new THREE.DirectionalLight(0xffffff, 0.65); d1.position.set(6,12,9); scene.add(d1);
+  var d2 = new THREE.DirectionalLight(0xffffff, 0.28); d2.position.set(-9,5,-7); scene.add(d2);
+
+  return { canvas:canvas, layer:layer, renderer:renderer, scene:scene, camera:camera,
+           lanes:[], parts:[], inst:null, labels:[], themed:[], grid:null, ox:0, ds:1 };
+}
+
+/* ---------- geometry helpers ---------- */
+function basis(f, w){
+  var up = new THREE.Vector3().crossVectors(f, w).normalize();
+  return new THREE.Matrix4().makeBasis(w.clone().normalize(), up, f.clone().normalize());
+}
+function slab(st, from, to, wdir, width, thick, mat){
+  var f = new THREE.Vector3().subVectors(to, from);
+  var len = f.length(); f.normalize();
+  var m = new THREE.Mesh(new THREE.BoxGeometry(width, thick, len), mat);
+  m.quaternion.setFromRotationMatrix(basis(f, wdir));
+  m.position.copy(from).addScaledVector(f, len/2);
+  st.scene.add(m);
+  return m;
+}
+function outline(st, mesh, color){
+  var e = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry),
+          new THREE.LineBasicMaterial({color:color, transparent:true, opacity:0.55}));
+  e.position.copy(mesh.position); e.quaternion.copy(mesh.quaternion); st.scene.add(e);
+}
+/* a lane = a stretch of circuit carrying `I` amps; charge is placed on it later */
+function lane(st, from, to, wdir, I, kind){
+  var f = new THREE.Vector3().subVectors(to, from);
+  var len = f.length(); if(len < 1e-4) return null;
+  var L = {from:from.clone(), to:to.clone(), w:wdir.clone().normalize(),
+           f:f.clone().normalize(), len:len, I:I, kind:kind||'wire', s:0};
+  st.lanes.push(L); return L;
+}
+
+/* ---------- materials ---------- */
+function mats(){
+  return {
+    wire : new THREE.MeshStandardMaterial({color:0x6D7B87, roughness:.62, metalness:.05}),
+    cell : new THREE.MeshStandardMaterial({color:0xE0A54B, roughness:.5, metalness:.05,
+             transparent:true, opacity:.62, depthWrite:false}),
+    rib  : new THREE.MeshStandardMaterial({color:0xE0A54B, roughness:.5}),
+    axis : new THREE.MeshStandardMaterial({color:0x46525D, roughness:.8}),
+    guide: new THREE.MeshBasicMaterial({color:0x46525D, transparent:true, opacity:.30}),
+    charge:new THREE.MeshStandardMaterial({color:0x0C7284, roughness:.35, metalness:.1,
+             emissive:0x000000})
+  };
+}
+function resistorMat(hex){
+  return new THREE.MeshStandardMaterial({color:hex, roughness:.55, metalness:.05,
+    transparent:true, opacity:.74, depthWrite:false});
+}
+
+/* ---------- axis + guides ---------- */
+function addAxis(st, M, levels){
+  var post = slab(st, new THREE.Vector3(AX,0,BZ), new THREE.Vector3(AX,vy(6),BZ),
+                  new THREE.Vector3(0,0,1), 0.06, 0.06, M.axis);
+  st.themed.push({m:M.axis, key:'axis'});
+  for(var v=0; v<=6; v++){
+    slab(st, new THREE.Vector3(AX,vy(v),BZ), new THREE.Vector3(AX-0.34,vy(v),BZ),
+         new THREE.Vector3(0,0,1), 0.05, 0.045, M.axis);
+    addLabel(st, new THREE.Vector3(AX-0.95, vy(v), BZ), (v===0?'0':v)+' V', 'tick');
+  }
+  levels.forEach(function(v){
+    slab(st, new THREE.Vector3(AX,vy(v),BZ), new THREE.Vector3(RX+0.5,vy(v),BZ),
+         new THREE.Vector3(0,0,1), 0.03, 0.025, M.guide);
+  });
+  st.themed.push({m:M.guide, key:'axis'});
+  return post;
+}
+
+/* ---------- labels ---------- */
+function addLabel(st, pos, html, cls){
+  var el = document.createElement('div');
+  el.className = 'lbl' + (cls ? ' ' + cls : '');
+  el.innerHTML = html;
+  st.layer.appendChild(el);
+  st.labels.push({el:el, pos:pos.clone()});
+}
+
+/* ---------- charge instancing ---------- */
+function buildCharges(st, M){
+  var total = 0, i;
+  for(i=0;i<st.lanes.length;i++){
+    var L = st.lanes[i];
+    L.n = Math.max(1, Math.round(L.len/STEP));
+    L.gap = L.len / L.n;
+    total += L.n * L.I;
+  }
+  var geo = new THREE.SphereGeometry(PR, 10, 8);
+  var mesh = new THREE.InstancedMesh(geo, M.charge, total);
+  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage || 35048);
+  st.scene.add(mesh); st.inst = mesh; st.total = total;
+  st.themed.push({m:M.charge, key:'charge'});
+}
+var dummy = new THREE.Object3D();
+var tmp = new THREE.Vector3();
+var flowMode = 'lanes';   // 'lanes' = width carries the current; 'speed' = drift speed does
+
+/* I = nAvq. In 'lanes' every charge drifts at the same rate and the number of lanes
+   past a point is the current. In 'speed' there is one stream at the same spacing,
+   drifting I times as fast. Charge past a point per second is I either way. */
+function advance(st, d){
+  for(var i=0;i<st.lanes.length;i++){
+    var L = st.lanes[i];
+    L.s = (L.s + d * (flowMode === 'speed' ? L.I * 0.55 : 1)) % L.len;
+  }
+}
+function updateCharges(st){
+  if(!st.inst) return;
+  var k = 0, solo = (flowMode === 'speed');
+  dummy.scale.set(1,1,1);
+  for(var i=0;i<st.lanes.length;i++){
+    var L = st.lanes[i];
+    var lift = (L.kind === 'wire') ? (TH/2 + PR + 0.03) : 0;
+    var rows = solo ? 1 : L.I;
+    for(var r=0;r<rows;r++){
+      var off = (r - (rows-1)/2) * W0;
+      for(var j=0;j<L.n;j++){
+        var s = (j*L.gap + L.s) % L.len;
+        tmp.copy(L.from).addScaledVector(L.f, s).addScaledVector(L.w, off);
+        dummy.position.set(tmp.x, tmp.y + lift, tmp.z);
+        dummy.updateMatrix();
+        st.inst.setMatrixAt(k++, dummy.matrix);
+      }
+    }
+  }
+  dummy.scale.set(0,0,0);                       // park the instances this mode doesn't need
+  for(; k < st.total; k++){ dummy.updateMatrix(); st.inst.setMatrixAt(k, dummy.matrix); }
+  dummy.scale.set(1,1,1);
+  st.inst.instanceMatrix.needsUpdate = true;
+}
+
+/* ---------- battery (the escalator) ---------- */
+function addCell(st, M, I){
+  var a = new THREE.Vector3(LX, 0, BZ), b = new THREE.Vector3(LX, vy(6), FZ);
+  var wdir = new THREE.Vector3(1,0,0), width = I*W0;
+  var body = slab(st, a, b, wdir, width + 0.12, 0.22, M.cell);
+  outline(st, body, 0xB07A20);
+  var f = new THREE.Vector3().subVectors(b,a); var len = f.length(); f.normalize();
+  for(var i=1;i<=7;i++){
+    var p = new THREE.Vector3().copy(a).addScaledVector(f, len*i/8);
+    var q = new THREE.Vector3().copy(p).addScaledVector(f, 0.001);
+    slab(st, p, q, wdir, width + 0.16, 0.055, M.rib);
+  }
+  lane(st, a, b, wdir, I, 'ramp');
+}
+
+/* ---------- resistor: a vertical step down ---------- */
+function addResistor(st, top, drop, wdir, I, R){
+  var a = top.clone(), b = top.clone(); b.y -= vy(drop);
+  var width = I*W0;
+  var body = slab(st, a, b, wdir, width + 0.20, RD, resistorMat(BAND[R]));
+  outline(st, body, 0x1A2229);
+  if(vy(drop) > 0.85){
+    var f = new THREE.Vector3(0,-1,0);
+    [0.30, 0.70].forEach(function(u){
+      var p = a.clone(); p.y -= vy(drop)*u;
+      var q = p.clone(); q.y -= 0.001;
+      slab(st, p, q, wdir, width + 0.26, RD*0.72,
+           new THREE.MeshStandardMaterial({color:0xF2F4F6, roughness:.6}));
+    });
+  }
+  lane(st, a, b, wdir, I, 'res');
+  return b;
+}
+
+/* =======================  SERIES  ======================= */
+function buildSeries(st){
+  var M = mats(); st.M = M;
+  st.themed.push({m:M.wire, key:'wire'});
+  addAxis(st, M, [6,4,0.5,0]);
+
+  var zx = new THREE.Vector3(0,0,1);   // width across z (for x-running wires)
+  var xx = new THREE.Vector3(1,0,0);   // width across x (for z-running wires)
+  var I = 1;
+
+  addCell(st, M, I);
+
+  // front edge: 6 V -> 0 V in three steps
+  var p = new THREE.Vector3(LX, vy(6), FZ);
+  function wire(toX, y){
+    var q = new THREE.Vector3(toX, y, FZ);
+    slab(st, p, q, zx, I*W0, TH, M.wire); lane(st, p, q, zx, I, 'wire'); p = q;
+  }
+  // cell ends at (LX, 6V, FZ)
+  wire(-3.2, vy(6));
+  p = addResistor(st, p, 2, zx, I, 2);
+  wire(-0.4, vy(4));
+  p = addResistor(st, p, 3.5, zx, I, 3.5);
+  wire(2.6, vy(0.5));
+  p = addResistor(st, p, 0.5, zx, I, 0.5);
+  wire(RX, 0);
+  // right edge, then back rail home to the cell
+  var q1 = new THREE.Vector3(RX, 0, BZ);
+  slab(st, p, q1, xx, I*W0, TH, M.wire); lane(st, p, q1, xx, I, 'wire');
+  var q2 = new THREE.Vector3(LX, 0, BZ);
+  slab(st, q1, q2, zx, I*W0, TH, M.wire); lane(st, q1, q2, zx, I, 'wire');
+
+  addLabel(st, new THREE.Vector3(LX+1.3, vy(7.25), 0.4), 'cell lifts charge <b>6.0 V</b>', 'v');
+  addLabel(st, new THREE.Vector3(-3.2, vy(5.0), FZ+1.9), 'R<sub>1</sub> 2 Ω &nbsp;→&nbsp; <b>2.0 V</b>', 'v');
+  addLabel(st, new THREE.Vector3(-0.4, vy(2.25), FZ+1.9), 'R<sub>2</sub> 3.5 Ω &nbsp;→&nbsp; <b>3.5 V</b>', 'v');
+  addLabel(st, new THREE.Vector3(2.6, vy(0.25), FZ+1.9), 'R<sub>3</sub> 0.5 Ω &nbsp;→&nbsp; <b>0.5 V</b>', 'v');
+  addLabel(st, new THREE.Vector3(-1.2, 0.30, BZ-2.4), '<b>1 A</b> everywhere &mdash; one lane', 'i');
+
+  buildCharges(st, M);
+}
+
+/* =======================  PARALLEL  ======================= */
+function buildParallel(st){
+  var M = mats(); st.M = M;
+  st.themed.push({m:M.wire, key:'wire'});
+  addAxis(st, M, [6,0]);
+
+  var zx = new THREE.Vector3(0,0,1);
+  var xx = new THREE.Vector3(1,0,0);
+
+  addCell(st, M, 6);
+
+  var BR = [ {x:-2.8, R:6, I:1, tag:'<span class="tag slow">slow current</span>'},
+             {x: 0.2, R:3, I:2, tag:''},
+             {x: 3.2, R:2, I:3, tag:'<span class="tag fast">fast current</span>'} ];
+
+  // top rail at 6 V, narrowing as each branch taps off
+  var railI = 6, p = new THREE.Vector3(LX, vy(6), FZ);
+  BR.forEach(function(b){
+    var q = new THREE.Vector3(b.x, vy(6), FZ);
+    slab(st, p, q, zx, railI*W0, TH, M.wire); lane(st, p, q, zx, railI, 'wire');
+    p = q; railI -= b.I;
+  });
+
+  // branches: short wire back, full 6 V drop, wire home to the bottom rail
+  BR.forEach(function(b){
+    var a = new THREE.Vector3(b.x, vy(6), FZ), c = new THREE.Vector3(b.x, vy(6), 0.5);
+    slab(st, a, c, xx, b.I*W0, TH, M.wire); lane(st, a, c, xx, b.I, 'wire');
+    var d = addResistor(st, c, 6, xx, b.I, b.R);
+    var e = new THREE.Vector3(b.x, 0, BZ);
+    slab(st, d, e, xx, b.I*W0, TH, M.wire); lane(st, d, e, xx, b.I, 'wire');
+  });
+
+  // bottom rail at 0 V, widening as branches rejoin
+  var accI = 0, q = new THREE.Vector3(BR[2].x, 0, BZ);
+  for(var i=2;i>=0;i--){
+    accI += BR[i].I;
+    var nx = (i>0) ? BR[i-1].x : LX;
+    var r = new THREE.Vector3(nx, 0, BZ);
+    slab(st, q, r, zx, accI*W0, TH, M.wire); lane(st, q, r, zx, accI, 'wire');
+    q = r;
+  }
+
+  addLabel(st, new THREE.Vector3(LX+0.2, vy(7.55), 0.4), 'cell lifts charge <b>6.0 V</b>', 'v');
+  addLabel(st, new THREE.Vector3(-2.8, vy(4.7), 1.75), 'A &nbsp;6 Ω · <b>1 A</b> · 6.0 V'+BR[0].tag, 'v');
+  addLabel(st, new THREE.Vector3( 0.2, vy(3.0), 1.75), 'B &nbsp;3 Ω · <b>2 A</b> · 6.0 V', 'v');
+  addLabel(st, new THREE.Vector3( 3.2, vy(1.3), 1.75), 'C &nbsp;2 Ω · <b>3 A</b> · 6.0 V'+BR[2].tag, 'v');
+  addLabel(st, new THREE.Vector3(-0.8, vy(6)+0.85, FZ+1.1), 'rail leaves at <b>6 A</b>', 'i');
+  addLabel(st, new THREE.Vector3(-1.6, 0.30, BZ-2.4), '<b>6 A</b> home = 1 + 2 + 3', 'i');
+
+  buildCharges(st, M);
+}
+
+/* =======================  SERIES + PARALLEL TOGETHER  ======================= */
+function buildCombination(st){
+  var M = mats(); st.M = M;
+  st.themed.push({m:M.wire, key:'wire'});
+  addAxis(st, M, [6,3,0]);
+
+  var zx = new THREE.Vector3(0,0,1);
+  var xx = new THREE.Vector3(1,0,0);
+
+  addCell(st, M, 3);
+
+  // 6 V rail, then the one resistor every charge has to go through
+  var p = new THREE.Vector3(LX, vy(6), FZ), q = new THREE.Vector3(-2.6, vy(6), FZ);
+  slab(st, p, q, zx, 3*W0, TH, M.wire); lane(st, p, q, zx, 3, 'wire');
+  var mid = addResistor(st, q, 3, zx, 3, 1);           // 1 Ω · 3 A · drops 6 V to 3 V
+
+  // 3 V rail, narrowing where the first branch taps off
+  var BR = [ {x:0.4, R:3, I:1}, {x:3.2, R:1.5, I:2} ];
+  var railI = 3; p = mid.clone();
+  BR.forEach(function(b){
+    var r = new THREE.Vector3(b.x, vy(3), FZ);
+    slab(st, p, r, zx, railI*W0, TH, M.wire); lane(st, p, r, zx, railI, 'wire');
+    p = r; railI -= b.I;
+  });
+
+  // the two branches, each falling the remaining 3 V
+  BR.forEach(function(b){
+    var a = new THREE.Vector3(b.x, vy(3), FZ), c = new THREE.Vector3(b.x, vy(3), 0.5);
+    slab(st, a, c, xx, b.I*W0, TH, M.wire); lane(st, a, c, xx, b.I, 'wire');
+    var d = addResistor(st, c, 3, xx, b.I, b.R);
+    var e = new THREE.Vector3(b.x, 0, BZ);
+    slab(st, d, e, xx, b.I*W0, TH, M.wire); lane(st, d, e, xx, b.I, 'wire');
+  });
+
+  // 0 V rail home, widening as the branches rejoin
+  var accI = 0, u = new THREE.Vector3(BR[1].x, 0, BZ);
+  for(var i=1;i>=0;i--){
+    accI += BR[i].I;
+    var nx = (i>0) ? BR[i-1].x : LX;
+    var w = new THREE.Vector3(nx, 0, BZ);
+    slab(st, u, w, zx, accI*W0, TH, M.wire); lane(st, u, w, zx, accI, 'wire');
+    u = w;
+  }
+
+  addLabel(st, new THREE.Vector3(LX+0.2, vy(7.55), 0.4), 'cell lifts charge <b>6.0 V</b>', 'v');
+  addLabel(st, new THREE.Vector3(-2.6, vy(4.5), FZ+1.9),
+           'R<sub>1</sub> 1 Ω · <b>3 A</b> &nbsp;→&nbsp; 3.0 V<span class="tag all">every charge</span>', 'v');
+  addLabel(st, new THREE.Vector3(1.9, vy(3)+1.5, FZ+2.9), '<b>3 A</b> splits into 1 A + 2 A', 'i');
+  addLabel(st, new THREE.Vector3(0.4, vy(1.9), 1.75), 'R<sub>2</sub> 3 Ω · <b>1 A</b> · 3.0 V', 'v');
+  addLabel(st, new THREE.Vector3(3.2, vy(0.6), 1.75), 'R<sub>3</sub> 1.5 Ω · <b>2 A</b> · 3.0 V', 'v');
+  addLabel(st, new THREE.Vector3(LX+0.7, 0.15, BZ-1.5), '<b>3 A</b> home = 1 + 2', 'i');
+
+  buildCharges(st, M);
+}
+
+/* ---------- theme ---------- */
+function readTheme(){
+  var cs = getComputedStyle(document.documentElement);
+  var g = function(n){ return cs.getPropertyValue(n).trim(); };
+  return { bg:g('--scene-bg'), wire:g('--scene-wire'), grid:g('--scene-grid'),
+           axis:g('--scene-axis'), charge:g('--scene-charge') };
+}
+function applyTheme(){
+  var t = readTheme();
+  stages.forEach(function(st){
+    st.renderer.setClearColor(new THREE.Color(t.bg), 1);
+    st.themed.forEach(function(e){ st.M && e.m.color.set(t[e.key]); });
+    if(st.grid){ st.grid.material.color.set(t.grid); }
+  });
+}
+
+/* ---------- build ---------- */
+var S = makeStage(document.getElementById('cvS'), document.getElementById('lbS'));
+var P = makeStage(document.getElementById('cvP'), document.getElementById('lbP'));
+var C = makeStage(document.getElementById('cvC'), document.getElementById('lbC'));
+var stages = [S, P, C];
+C.ox = -1.2; C.ds = 0.80;      // the full-width panel frames its circuit differently
+stages.forEach(function(st){
+  var g = new THREE.GridHelper(18, 9, 0xC3CDD6, 0xC3CDD6);
+  g.material.transparent = true; g.material.opacity = 0.22; g.position.y = 0.002;
+  st.scene.add(g); st.grid = g;
+});
+buildSeries(S);
+buildParallel(P);
+buildCombination(C);
+applyTheme();
+
+/* ---------- interaction ---------- */
+function drag(st){
+  var last = null;
+  st.canvas.addEventListener('pointerdown', function(e){
+    last = {x:e.clientX, y:e.clientY}; tween = null;
+    st.canvas.setPointerCapture(e.pointerId);
+  });
+  st.canvas.addEventListener('pointermove', function(e){
+    if(!last) return;
+    cam.theta -= (e.clientX - last.x) * 0.006;
+    cam.phi = Math.max(0.10, Math.min(1.52, cam.phi - (e.clientY - last.y) * 0.005));
+    last = {x:e.clientX, y:e.clientY};
+    setPressed(null);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+    st.canvas.addEventListener(ev, function(){ last = null; });
+  });
+  st.canvas.addEventListener('wheel', function(e){
+    e.preventDefault();
+    cam.dist = Math.max(13, Math.min(42, cam.dist * (1 + e.deltaY * 0.0012)));
+  }, {passive:false});
+}
+stages.forEach(drag);
+
+var viewBtns = Array.prototype.slice.call(document.querySelectorAll('#views button'));
+function setPressed(name){
+  viewBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.view === name)); });
+}
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+viewBtns.forEach(function(b){
+  b.addEventListener('click', function(){
+    var v = VIEWS[b.dataset.view];
+    setPressed(b.dataset.view);
+    if(reduce){ cam.theta = v.theta; cam.phi = v.phi; tween = null; }
+    else tween = {t0:performance.now(), dur:700, th0:cam.theta, ph0:cam.phi, th1:v.theta, ph1:v.phi};
+  });
+});
+
+var flowBtns = Array.prototype.slice.call(document.querySelectorAll('#flow button'));
+flowBtns.forEach(function(b){
+  b.addEventListener('click', function(){
+    flowMode = b.dataset.flow;
+    flowBtns.forEach(function(o){ o.setAttribute('aria-pressed', String(o.dataset.flow === flowMode)); });
+    stages.forEach(updateCharges);
+  });
+});
+
+var playing = !reduce, speedEl = document.getElementById('speed');
+var playBtn = document.getElementById('playBtn');
+playBtn.textContent = playing ? 'Pause' : 'Play';
+playBtn.setAttribute('aria-pressed', String(playing));
+playBtn.addEventListener('click', function(){
+  playing = !playing;
+  playBtn.textContent = playing ? 'Pause' : 'Play';
+  playBtn.setAttribute('aria-pressed', String(playing));
+});
+
+/* ---------- loop ---------- */
+var prev = performance.now();
+var lookT = new THREE.Vector3();
+function project(st, rect){
+  for(var i=0;i<st.labels.length;i++){
+    var L = st.labels[i];
+    tmp.copy(L.pos).project(st.camera);
+    var vis = tmp.z < 1;
+    L.el.style.opacity = vis ? '1' : '0';
+    if(!vis) continue;
+    var x = (tmp.x * 0.5 + 0.5) * rect.w, y = (-tmp.y * 0.5 + 0.5) * rect.h;
+    L.el.style.transform = 'translate(-50%,-50%) translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
+  }
+}
+function resize(st){
+  var w = st.canvas.clientWidth, h = st.canvas.clientHeight;
+  if(!w || !h) return {w:1,h:1};
+  if(st.canvas.width !== Math.floor(w*st.renderer.getPixelRatio()) || st._h !== h){
+    st.renderer.setSize(w, h, false); st._h = h;
+  }
+  st.camera.aspect = w/h;
+  return {w:w, h:h};
+}
+function frame(now){
+  var dt = Math.min(0.05, (now - prev)/1000); prev = now;
+  if(tween){
+    var u = Math.min(1, (now - tween.t0)/tween.dur);
+    var e = u<0.5 ? 4*u*u*u : 1 - Math.pow(-2*u+2,3)/2;
+    cam.theta = tween.th0 + (tween.th1 - tween.th0)*e;
+    cam.phi   = tween.ph0 + (tween.ph1 - tween.ph0)*e;
+    if(u >= 1) tween = null;
+  }
+  if(playing){
+    var d = dt * parseFloat(speedEl.value) * 1.55;
+    for(var q=0;q<stages.length;q++) advance(stages[q], d);
+  }
+
+  for(var i=0;i<stages.length;i++){
+    var st = stages[i], r = resize(st);
+    var d = cam.dist * st.ds * Math.max(1, 1.45/(r.w/r.h));
+    lookT.set(cam.tgt.x + st.ox, cam.tgt.y, cam.tgt.z);
+    st.camera.position.set(
+      lookT.x + d*Math.sin(cam.phi)*Math.sin(cam.theta),
+      lookT.y + d*Math.cos(cam.phi),
+      lookT.z + d*Math.sin(cam.phi)*Math.cos(cam.theta)
+    );
+    st.camera.lookAt(lookT);
+    st.camera.updateProjectionMatrix();
+    if(playing) updateCharges(st);
+    st.renderer.render(st.scene, st.camera);
+    project(st, r);
+  }
+  requestAnimationFrame(frame);
+}
+stages.forEach(updateCharges);
+requestAnimationFrame(frame);
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+window.addEventListener('resize', function(){ stages.forEach(resize); });
+})();
+</script>
+</body>
+</html>
