@@ -303,10 +303,26 @@ CALENDARS = {
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
               / "y9a-design-calendar-autumn-1.pdf",
         "Autumn term to the October break"),
+    "physics-10-p": (
+        VAULT / "01-Teaching/Physics - GCSE/Calendar"
+              / "y10p-physics-calendar-autumn-1.pdf",
+        "Forces 1: Kinematics, to the October break"),
+    "physics-10-r": (
+        VAULT / "01-Teaching/Physics - GCSE/Calendar"
+              / "y10r-physics-calendar-autumn-1.pdf",
+        "Forces 1: Kinematics, to the October break"),
     "physics-11-q": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
               / "y11q-physics-calendar-autumn-1.pdf",
         "Autumn term to the October break"),
+    "physics-11-r": (
+        VAULT / "01-Teaching/Physics - GCSE/Calendar"
+              / "y11r-physics-calendar-autumn-1.pdf",
+        "Autumn term to the October break"),
+    "physics-12-sh": (
+        VAULT / "01-Teaching/Physics - DP/Calendar"
+              / "y12sh-physics-calendar-autumn-1.pdf",
+        "Week A only \u2014 three blocks to the October break"),
 }
 
 
