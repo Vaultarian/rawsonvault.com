@@ -143,6 +143,20 @@ FORCE = {t.strip() for t in os.environ.get("CLASS_PAGES_FORCE", "").split(",") i
 # whitelist is never bypassed.
 PUBLISH_NOW = re.compile(r"^\s*(?:[-*]\s*)?(?:⏩|publish now\b)", re.I | re.M)
 
+# Markdown links in Publish: become links on the class page.
+#
+# Deliberately the SAME field as documents rather than a new one. Publish:
+# already means "this reaches students", so a link there inherits the date
+# gate, the "Did not run" exclusion and the ⏩ override for free, and there is
+# still exactly one whitelist to reason about. Resources: stays private.
+# Only http(s) -- a wikilink or bare path is a document, handled by pdf_links.
+WEB_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+
+
+def web_links(block):
+    """[(url, label)] for the external links in this block."""
+    return [(m.group(2), m.group(1)) for m in WEB_LINK.finditer(block)]
+
 
 def slug(name):
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
@@ -179,6 +193,7 @@ def parse_log(path):
             date=cur[0], status=cur[1],
             topic=strip_md(field(block, "Topic")),
             docs=pdf_links(pub),                      # whitelist, never Resources
+            links=web_links(pub),                     # external links, same whitelist
             now=bool(PUBLISH_NOW.search(pub)),        # release ahead of the date
         ))
 
@@ -254,6 +269,12 @@ STYLE = """    <style>
       .vocab-link {{ font-family: var(--font-ui); font-size: 0.82rem;
         padding: 0.28rem 0.8rem; border: 1px solid var(--bronze-cream);
         border-radius: 2px; text-decoration: none; }}
+      .lesson-links {{ margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; }}
+      .web-link {{ font-family: var(--font-ui); font-size: 0.78rem;
+        text-decoration: none; border: 1px solid var(--bronze-rich);
+        border-radius: 999px; padding: 2px 10px; color: var(--bronze-rich);
+        background: #fdfbf3; }}
+      .web-link:hover {{ background: var(--bronze-rich); color: #fff; }}
       .vocab-link:hover {{ background: var(--bronze-rich); color: #fff;
         border-color: var(--bronze-rich); }}
       /* The calendar is standing information, not a lesson row -- the tint
@@ -426,6 +447,13 @@ def render_class(name, subtitle, weeks):
                                  f'<span class="doc-icons">{icons}</span></div>')
                 docs = "".join(parts)
             else:
+                docs = ""
+            if en.get("links"):
+                docs += '<div class="lesson-links">' + "".join(
+                    f'<a class="web-link" href="{e(u)}" target="_blank"'
+                    f' rel="noopener noreferrer">{e(lbl)}</a>'
+                    for u, lbl in en["links"]) + "</div>"
+            if not docs:
                 docs = '<span class="lesson-none">No handout</span>'
             rows.append(f"""          <div class="lesson">
             <div class="lesson-date">{e(en['date'].strftime('%a %-d %b'))}</div>
