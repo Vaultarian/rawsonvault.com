@@ -179,23 +179,31 @@ Same source as Daily Print, sliced the other way:
 | **Daily Print** | one **day**, every class | Alex, at the printer |
 | **Class page** | one **class**, every date | students, looking back |
 
-Two rules keep them safe to publish. Both are Alex's explicit decisions — the first
-revised 2026-09-03, the second unchanged since 2026-08-29:
+**One rule keeps them safe to publish, and it is the whitelist.** There is no longer any
+gate on the entry itself — Alex's decision, 2026-09-08. Both rules below are his explicit
+decisions:
 
-- **The day it happens.** An entry appears once **its date has arrived**, whatever its
-  status — except `### YYYY-MM-DD · Did not run`, which never renders at all. Future-dated
-  entries stay private, so next week's plans still do not go public the moment they are
-  written. **Consequence: a lesson's handout is on the class page from 05:30 on the morning
-  of the lesson, before it has been taught.** That is the point — students get the sheet on
-  the day.
-  **The `Planned` → `Taught` flip no longer gates publishing.** Keep the statuses as a
-  record if you want them; nothing on the website depends on them any more. The one status
-  that still does real work is `Did not run` — marking a cancelled lesson removes it at the
+- **Nothing finished is held back.** An entry appears as soon as it exists, whatever its
+  status and whatever its date — except `### YYYY-MM-DD · Did not run`, which never renders
+  at all. A **future-dated entry publishes immediately**, carrying its own lesson date, so a
+  handout finished tonight is on the class page tonight under tomorrow's heading. That is the
+  point: naming a file in `Publish:` *is* Alex saying it is finished and student-facing, and
+  nothing second-guesses that.
+  **The `Planned` → `Taught` flip gates nothing, and neither does the calendar.** Keep the
+  statuses as a record if you want them; nothing on the website depends on them. The one
+  status that does real work is `Did not run` — marking a cancelled lesson removes it at the
   next run, and the match is case-insensitive so a stray capital cannot publish it by
   accident.
-  *(Was Taught-only until 2026-09-03. The flip's only remaining job had become withholding
-  documents Alex wanted students to have, which made it a chore that existed to unblock
-  itself.)*
+
+  ⚠️ **`Did not run` is therefore the only way to withdraw a lesson from a student page**,
+  and a cancelled lesson left sitting at `Planned` is already public with its handout
+  attached. `day_review.py` asks about this after each teaching day; it is the one thing in
+  that prompt that still matters.
+
+  *(Narrowed twice: `Taught`-only until 2026-09-03, date-gated until 2026-09-08. The `⏩`
+  marker and `CLASS_PAGES_FORCE` were deleted with the date check they existed to defeat —
+  do not reach for either, they are gone. Inert `⏩ publish now` bullets survive in six Class
+  Logs and mean nothing.)*
 - **Documents are whitelisted, never inherited.** A lesson's PDFs come *only* from a
   `- **Publish:** …` field listing them as wikilinks. **`Resources:` is deliberately not
   used** — it routinely holds answer keys, teacher masters and staff lesson plans. No
@@ -235,6 +243,17 @@ touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary p
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.4 — 2026-09-08. **The date gate is gone; `Publish:` is the only switch.** An entry now
+publishes as soon as it exists, so a handout finished tonight is live tonight under tomorrow's
+date. Alex's reason, in his words: *"the date gate is holding back documents, and I don't want
+to do that."* The `⏩` marker and `CLASS_PAGES_FORCE` were deleted rather than left dangling,
+since both existed only to defeat the check that has gone. **The non-obvious half of this
+change is in `reconcile_class_pages.py`**, which imports `parse_log` from the injector: its own
+date skip would have silently stopped auditing future entries at the moment they started
+publishing, so a forgotten `Publish:` line could have reached the site unclassified. It now
+audits every entry that is not `Did not run`. Recorded that `Did not run` is consequently the
+only way to withdraw a lesson.*
 
 *v1.3 — 2026-09-03. **The class-page gate moved from status to the calendar.** An entry
 now publishes once its date has arrived rather than when Alex flips it to `Taught`;
