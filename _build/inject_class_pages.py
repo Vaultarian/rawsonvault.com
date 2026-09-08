@@ -320,6 +320,18 @@ VOCAB_LANGS = [("fr", "Français"), ("de", "Deutsch"), ("es", "Español")]
 # standing information, and a Publish: entry would also drop it into that day's
 # lesson row, where it scrolls away and reads as a one-off handout.
 CALENDARS = {
+    "computer-science-10": (
+        VAULT / "01-Teaching/Computer Science - GCSE/Calendar"
+              / "y10-cs-calendar-autumn-1.pdf",
+        "\u00a71.2 Data Representation, to the October break"),
+    "computer-science-11": (
+        VAULT / "01-Teaching/Computer Science - GCSE/Calendar"
+              / "y11-cs-calendar-autumn-1.pdf",
+        "\u00a72.2 Programming Fundamentals, to the October break"),
+    "design-9b": (
+        VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
+              / "y9b-design-calendar-autumn-1.pdf",
+        "Autumn term to the October break"),
     "design-9a": (
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
               / "y9a-design-calendar-autumn-1.pdf",
