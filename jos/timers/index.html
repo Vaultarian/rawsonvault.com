@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jos's Timers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080818;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      padding: 80px 20px 60px;
+    }
+
+    /* the faint back-link in the top-left corner, same as the other pages */
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44;
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+      z-index: 10;
+    }
+    .back-link:hover { color: #fff; }
+
+    /* the rainbow title that slides its colours along */
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.4rem;
+      text-align: center;
+      background: linear-gradient(90deg, #f72585, #7fff00, #00f5ff, #f72585);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 4s linear infinite;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    @keyframes rainbowShift {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #ffffff55;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 44px;
+    }
+
+    /* the grid of ten cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      display: block;
+      text-decoration: none;
+      background: #ffffff0a;
+      border: 3px solid #ffffff18;
+      border-radius: 18px;
+      padding: 22px 20px;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      background: #ffffff14;
+    }
+
+    .card-name {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.35rem;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .card-line {
+      color: #ffffff88;
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    /* each card borrows one of the three accent colours, in turn */
+    .card:nth-child(3n+1)       { border-color: #f7258544; }
+    .card:nth-child(3n+1):hover { border-color: #f72585; }
+    .card:nth-child(3n+1) .card-name { color: #f72585; }
+
+    .card:nth-child(3n+2)       { border-color: #7fff0044; }
+    .card:nth-child(3n+2):hover { border-color: #7fff00; }
+    .card:nth-child(3n+2) .card-name { color: #7fff00; }
+
+    .card:nth-child(3n+3)       { border-color: #00f5ff44; }
+    .card:nth-child(3n+3):hover { border-color: #00f5ff; }
+    .card:nth-child(3n+3) .card-name { color: #00f5ff; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../">&larr; back</a>
+
+  <h1 class="title">Jos's Timers</h1>
+  <p class="subtitle">Ten timers. Pick one.</p>
+
+  <div class="grid">
+
+    <a class="card" href="puzzle.html">
+      <div class="card-name">Puzzle</div>
+      <div class="card-line">A piece drops in every tick. At zero the smiley face is finished.</div>
+    </a>
+
+    <a class="card" href="coke.html">
+      <div class="card-name">Coke Bottle</div>
+      <div class="card-line">It shakes harder and harder, and at zero the pressure wins.</div>
+    </a>
+
+    <a class="card" href="bomb.html">
+      <div class="card-name">Bomb</div>
+      <div class="card-line">The burning fuse is the progress bar. Watch it get shorter.</div>
+    </a>
+
+    <a class="card" href="tsunami.html">
+      <div class="card-name">Tsunami</div>
+      <div class="card-line">At zero a wave sweeps in and carries the numbers away.</div>
+    </a>
+
+    <a class="card" href="rocket.html">
+      <div class="card-name">Rocket</div>
+      <div class="card-line">Blasts off the top of the screen, then crashes back down at one.</div>
+    </a>
+
+    <a class="card" href="knock.html">
+      <div class="card-name">Knock-the-Number</div>
+      <div class="card-line">A ball flies in and knocks each digit off as it changes.</div>
+    </a>
+
+    <a class="card" href="runner.html">
+      <div class="card-name">Running Man</div>
+      <div class="card-line">A stopwatch counting up. Every footstep is one second.</div>
+    </a>
+
+    <a class="card" href="traffic.html">
+      <div class="card-name">Traffic Light</div>
+      <div class="card-line">Red, yellow, green, round and round, once every minute.</div>
+    </a>
+
+    <a class="card" href="sun.html">
+      <div class="card-name">Dying Sun</div>
+      <div class="card-line">Starts dark. Gets brighter every second until it blows up.</div>
+    </a>
+
+    <a class="card" href="book.html">
+      <div class="card-name">Flipbook</div>
+      <div class="card-line">A page turns every second, and the page you see is the time.</div>
+    </a>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Running Man Stopwatch — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080818;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 0 90px;
+      overflow-x: hidden;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44;
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+      z-index: 50;
+    }
+    .back-link:hover { color: #fff; }
+
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      background: linear-gradient(90deg, #f72585, #7fff00, #00f5ff, #f72585);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 4s linear infinite;
+      letter-spacing: 4px;
+      margin-bottom: 24px;
+      text-align: center;
+      padding: 0 16px;
+    }
+    @keyframes rainbowShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    /* The big digits — a stopwatch counting UP: minutes : seconds : tenths */
+    .display {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .unit-wrap { display: flex; flex-direction: column; align-items: center; }
+    .unit-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .unit-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(3rem, 13vw, 5.5rem);
+      line-height: 1;
+      min-width: 2ch;
+      text-align: center;
+    }
+    .cs .unit-val { min-width: 1ch; }
+    .mm .unit-label, .mm .unit-val { color: #f72585; }
+    .ss .unit-label, .ss .unit-val { color: #7fff00; }
+    .cs .unit-label, .cs .unit-val { color: #00f5ff; }
+    .colon {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.6rem, 11vw, 4.8rem);
+      color: #ffffff22;
+      padding-top: 22px;
+      line-height: 1;
+    }
+    .colon.pulse { animation: blink 1s step-start infinite; }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* The running track goes right across the screen */
+    #track {
+      width: 100vw;
+      height: clamp(160px, 32vh, 260px);
+      display: block;
+      margin-bottom: 26px;
+    }
+
+    /* Buttons */
+    .buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      padding: 14px 44px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .btn:active { transform: scale(0.93); }
+    #start-btn { background: linear-gradient(135deg, #7fff00, #00f5ff); color: #080818; }
+    #start-btn.pause-mode { background: linear-gradient(135deg, #f72585, #7209b7); color: #fff; }
+    .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
+    .btn-reset:hover { border-color: #ffffff55; }
+
+    /* ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== */
+    .type-picker {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2147483647;      /* always on top of everything */
+      font-family: 'Fredoka One', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .type-btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      color: #080818;
+      background: #00f5ff;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 18px 10px 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+    .type-btn:active { transform: scale(0.95); }
+    /* the little arrow: points UP when closed, DOWN when open */
+    .type-arrow {
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 9px solid #080818;
+      transition: transform 0.2s;
+    }
+    .type-picker.open .type-arrow { transform: rotate(180deg); }
+    .type-list {
+      list-style: none;
+      display: none;
+      flex-direction: column;
+      margin-bottom: 10px;
+      background: #080818;
+      border: 3px solid #00f5ff;
+      border-radius: 18px;
+      padding: 8px;
+      min-width: 190px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .type-picker.open .type-list { display: flex; }
+    .type-list a, .type-list span {
+      display: block;
+      padding: 8px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+    .type-list a:hover { background: #f72585; color: #080818; }
+    .type-list span.current { background: #7fff00; color: #080818; cursor: default; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../">← back</a>
+
+  <div class="title">🏃 RUNNING MAN STOPWATCH 🏃</div>
+
+  <!-- this one counts UP, so there is nothing to set -->
+  <div class="display">
+    <div class="unit-wrap mm">
+      <div class="unit-label">MIN</div>
+      <div class="unit-val" id="mm-val">00</div>
+    </div>
+    <div class="colon" id="colon1">:</div>
+    <div class="unit-wrap ss">
+      <div class="unit-label">SEC</div>
+      <div class="unit-val" id="ss-val">00</div>
+    </div>
+    <div class="colon" id="colon2">:</div>
+    <div class="unit-wrap cs">
+      <div class="unit-label">MS</div>
+      <div class="unit-val" id="cs-val">0</div>
+    </div>
+  </div>
+
+  <canvas id="track"></canvas>
+
+  <div class="buttons">
+    <button class="btn" id="start-btn" onclick="startOrPause()">START</button>
+    <button class="btn btn-reset" onclick="resetAll()">RESET</button>
+  </div>
+
+  <!-- ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== -->
+  <div class="type-picker" id="type-picker">
+    <ul class="type-list" id="type-list">
+      <li><a href="puzzle.html">Puzzle</a></li>
+      <li><a href="coke.html">Coke Bottle</a></li>
+      <li><a href="bomb.html">Bomb</a></li>
+      <li><a href="tsunami.html">Tsunami</a></li>
+      <li><a href="rocket.html">Rocket</a></li>
+      <li><a href="knock.html">Knock-the-Number</a></li>
+      <li><a href="runner.html">Running Man</a></li>
+      <li><a href="traffic.html">Traffic Light</a></li>
+      <li><a href="sun.html">Dying Sun</a></li>
+      <li><a href="book.html">Flipbook</a></li>
+    </ul>
+    <button class="type-btn" id="type-btn">Type <span class="type-arrow"></span></button>
+  </div>
+  <script>
+    // Theme picker: click "Type" to open the list upwards, click again (or anywhere) to close.
+    // The page you are already on is shown in green and cannot be clicked.
+    (function () {
+      const picker = document.getElementById('type-picker');
+      const button = document.getElementById('type-btn');
+      const thisPage = location.pathname.split('/').pop() || 'index.html';
+      picker.querySelectorAll('.type-list a').forEach(link => {
+        if (link.getAttribute('href') === thisPage) {
+          const here = document.createElement('span');
+          here.className = 'current';
+          here.textContent = link.textContent;
+          link.replaceWith(here);
+        }
+      });
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        picker.classList.toggle('open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target)) picker.classList.remove('open');
+      });
+    })();
+  </script>
+
+<script>
+  // ===================== THE STOPWATCH =====================
+  // Counts UP from zero. Driven by real time (performance.now) so it never drifts.
+  let elapsedBefore = 0;   // time on the clock before the last pause
+  let startStamp = 0;
+  let running = false;
+  let elapsedMs = 0;       // the time on the clock right now
+
+  const startBtn = document.getElementById('start-btn');
+
+  function startOrPause() {
+    if (running) { pause(); return; }
+    running = true;
+    startStamp = performance.now();
+    startBtn.textContent = 'PAUSE';
+    startBtn.classList.add('pause-mode');
+    document.getElementById('colon1').classList.add('pulse');
+    document.getElementById('colon2').classList.add('pulse');
+  }
+
+  function pause() {
+    running = false;
+    elapsedBefore += performance.now() - startStamp;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    document.getElementById('colon1').classList.remove('pulse');
+    document.getElementById('colon2').classList.remove('pulse');
+  }
+
+  function resetAll() {
+    running = false;
+    elapsedBefore = 0;
+    elapsedMs = 0;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    document.getElementById('colon1').classList.remove('pulse');
+    document.getElementById('colon2').classList.remove('pulse');
+    showTime(0);
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function showTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    document.getElementById('mm-val').textContent = pad(Math.min(99, Math.floor(totalSec / 60)));
+    document.getElementById('ss-val').textContent = pad(totalSec % 60);
+    document.getElementById('cs-val').textContent = String(Math.floor(ms / 100) % 10);
+  }
+
+  // ===================== THE RUNNER =====================
+  // A flat black stick-figure silhouette running left to right along a pale track.
+  // His FOOTSTEPS ARE THE SECONDS: at 1 the left foot lands, at 2 the right foot,
+  // at 3 the left again... so one stride takes exactly one second.
+  const canvas = document.getElementById('track');
+  const ctx = canvas.getContext('2d');
+  let trackW = 0, trackH = 0;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    trackW = rect.width;
+    trackH = rect.height;
+    canvas.width = Math.round(trackW * dpr);
+    canvas.height = Math.round(trackH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  const FORWARD = 35 * Math.PI / 180;   // how far the landing leg reaches forward
+  const BACK    = 55 * Math.PI / 180;   // how far the other leg kicks up behind
+  // a leg swings between +FORWARD and -BACK, so it is centred a little behind vertical
+  const LEG_MID   = (FORWARD - BACK) / 2;
+  const LEG_SWING = (FORWARD + BACK) / 2;
+
+  function drawRunner(seconds) {
+    const size = trackH * 0.72;           // how tall the runner is
+    const legLen = size * 0.36;
+    const armLen = size * 0.28;
+    const headR  = size * 0.11;
+    const bodyLen = size * 0.30;
+    const thick  = size * 0.075;          // thick straight limbs
+    const ground = trackH * 0.86;
+
+    // --- where he is: runs across, off the right edge, back on at the left ---
+    const stride = size * 0.55;           // how far one footstep carries him
+    const loopLen = trackW + size;        // off the right edge and back on the left
+    const x = ((seconds * stride + size) % loopLen) - size / 2;
+
+    // --- the stride: left leg forward on odd seconds, right leg forward on even ---
+    // angle > 0 means the leg is swung FORWARD (to the right)
+    const leftLeg  = LEG_MID - LEG_SWING * Math.cos(Math.PI * seconds);   // = +FORWARD at 1, 3, 5...
+    const rightLeg = LEG_MID + LEG_SWING * Math.cos(Math.PI * seconds);   // = +FORWARD at 2, 4, 6...
+    // arms swing the opposite way to the leg on the same side, held a little forward
+    const ARM_SWING = 40 * Math.PI / 180;
+    const leftArm  = 0.25 + ARM_SWING * Math.cos(Math.PI * seconds);
+    const rightArm = 0.25 - ARM_SWING * Math.cos(Math.PI * seconds);
+
+    // he is lowest when a foot lands (on the whole second) and bounces up in between
+    const bounce = legLen * 0.22 * Math.abs(Math.sin(Math.PI * seconds));
+    const hipY = ground - legLen * Math.cos(FORWARD) - bounce;
+
+    // body leans forward a little because he is running
+    const lean = 12 * Math.PI / 180;
+    const shoulderX = x + bodyLen * Math.sin(lean);
+    const shoulderY = hipY - bodyLen * Math.cos(lean);
+    const headX = shoulderX + headR * 0.9 * Math.sin(lean);
+    const headY = shoulderY - headR * 1.1;
+
+    ctx.fillStyle = '#000';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = thick;
+    ctx.lineCap = 'round';
+
+    function limb(fromX, fromY, angle, len) {
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(fromX + len * Math.sin(angle), fromY + len * Math.cos(angle));
+      ctx.stroke();
+    }
+
+    // body
+    ctx.beginPath(); ctx.moveTo(x, hipY); ctx.lineTo(shoulderX, shoulderY); ctx.stroke();
+    // legs
+    limb(x, hipY, leftLeg, legLen);
+    limb(x, hipY, rightLeg, legLen);
+    // arms
+    limb(shoulderX, shoulderY, leftArm, armLen);
+    limb(shoulderX, shoulderY, rightArm, armLen);
+    // round head
+    ctx.beginPath(); ctx.arc(headX, headY, headR, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function drawTrack(seconds) {
+    ctx.clearRect(0, 0, trackW, trackH);
+    // a pale track so the black runner shows up on the dark page
+    ctx.fillStyle = '#e9e9f4';
+    ctx.fillRect(0, trackH * 0.06, trackW, trackH * 0.88);
+    // the ground line he runs along
+    ctx.fillStyle = '#00f5ff';
+    ctx.fillRect(0, trackH * 0.86, trackW, trackH * 0.03);
+    drawRunner(seconds);
+  }
+
+  // ===================== THE LOOP =====================
+  function loop(now) {
+    if (running) {
+      elapsedMs = elapsedBefore + (now - startStamp);
+      showTime(elapsedMs);
+    }
+    drawTrack(elapsedMs / 1000);
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', sizeCanvas);
+  sizeCanvas();
+  resetAll();
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>

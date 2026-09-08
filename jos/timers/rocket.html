@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rocket Timer — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080818;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* THE PICTURE LAYER — a canvas that fills the whole screen.
+       Normally it sits BEHIND the numbers (z-index 1 is lower than the numbers' 5). */
+    #scene {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;   /* clicks go straight through it to the buttons */
+    }
+    /* When the body gets the "front" class, the picture jumps IN FRONT of the numbers. */
+    body.front #scene { z-index: 8; }
+
+    /* everything you read and click lives in here, on top of the picture */
+    .ui {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 12px;
+      width: 100%;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 20;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44;
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #fff; }
+
+    /* the rainbow title, same as the main timer page */
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+      background: linear-gradient(90deg, #f72585, #7fff00, #00f5ff, #f72585);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 4s linear infinite;
+      letter-spacing: 4px;
+      margin-bottom: 22px;
+      text-align: center;
+    }
+    @keyframes rainbowShift {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    /* the minutes : seconds boxes for choosing how long the countdown is */
+    .setup { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+    .setup input {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem;
+      width: 80px;
+      text-align: center;
+      background: #ffffff11;
+      border: 3px solid #f72585;
+      border-radius: 14px;
+      color: #f72585;
+      padding: 6px;
+      outline: none;
+    }
+    .setup input:focus { border-color: #fff; color: #fff; }
+    .setup span { font-family: 'Fredoka One', cursive; font-size: 2rem; color: #ffffff33; }
+
+    /* the big digits */
+    .display { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 28px; }
+    .unit-wrap { display: flex; flex-direction: column; align-items: center; }
+    .unit-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .unit-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(4.5rem, 22vw, 8rem);
+      line-height: 1;
+      min-width: 2ch;
+      text-align: center;
+    }
+    .mm .unit-label, .mm .unit-val { color: #f72585; }
+    .ss .unit-label, .ss .unit-val { color: #7fff00; }
+    .colon {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(3.8rem, 18vw, 7rem);
+      color: #ffffff22;
+      padding-top: 24px;
+      line-height: 1;
+    }
+    .colon.pulse { animation: blink 1s step-start infinite; }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* buttons */
+    .buttons { display: flex; gap: 14px; }
+    .btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.3rem;
+      padding: 12px 36px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.93); }
+    #start-btn { background: linear-gradient(135deg, #7fff00, #00f5ff); color: #080818; }
+    #start-btn.pause-mode { background: linear-gradient(135deg, #f72585, #7209b7); color: #fff; }
+    .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
+    .btn-reset:hover { border-color: #ffffff55; }
+
+    /* ===== THEME PICKER — the "Type" drop-UP in the bottom-right corner (same on every page) ===== */
+    .theme-picker {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 100000;            /* on top of EVERYTHING, even an explosion */
+      font-family: 'Fredoka One', cursive;
+    }
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: #00f5ff;
+      background: #080818;
+      border: 3px solid #00f5ff;
+      border-radius: 50px;
+      padding: 8px 18px;
+      cursor: pointer;
+    }
+    .theme-btn:hover { background: #00f5ff22; }
+    /* the little arrow is a triangle made out of borders — it points UP when the list is closed */
+    .theme-arrow {
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 9px solid #00f5ff;
+      transition: transform 0.2s;
+    }
+    /* ...and flips to point DOWN when the list is open */
+    .theme-picker.open .theme-arrow { transform: rotate(180deg); }
+    .theme-list {
+      display: none;
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 10px);   /* sits ABOVE the button, so it opens upwards */
+      list-style: none;
+      min-width: 230px;
+      white-space: nowrap;
+      max-height: 70vh;
+      overflow-y: auto;
+      background: #080818;
+      border: 3px solid #f72585;
+      border-radius: 18px;
+      padding: 8px 0;
+    }
+    .theme-picker.open .theme-list { display: block; }
+    .theme-list a, .theme-list .current {
+      display: block;
+      padding: 7px 18px;
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+      color: #fff;
+      text-decoration: none;
+    }
+    .theme-list a:hover { background: #f72585; color: #080818; }
+    .theme-list .current { color: #7fff00; cursor: default; }
+    .theme-list .current::after { content: ' ●'; font-size: 0.7em; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../">← back</a>
+
+  <!-- the picture: everything animated is drawn on this canvas -->
+  <canvas id="scene"></canvas>
+
+  <div class="ui">
+    <div class="title">ROCKET TIMER</div>
+
+    <div class="setup">
+      <input type="number" id="min-input" value="0" min="0" max="99" aria-label="minutes">
+      <span>:</span>
+      <input type="number" id="sec-input" value="30" min="0" max="59" aria-label="seconds">
+    </div>
+
+    <div class="display">
+      <div class="unit-wrap mm">
+        <div class="unit-label">MIN</div>
+        <div class="unit-val" id="min-val">00</div>
+      </div>
+      <div class="colon" id="colon">:</div>
+      <div class="unit-wrap ss">
+        <div class="unit-label">SEC</div>
+        <div class="unit-val" id="sec-val">30</div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn" id="start-btn" onclick="toggleTimer()">START</button>
+      <button class="btn btn-reset" onclick="resetTimer()">RESET</button>
+    </div>
+  </div>
+
+  <!-- ===== THEME PICKER (Jos's idea — this block is identical on every timer page) ===== -->
+  <div class="theme-picker" id="theme-picker">
+    <ul class="theme-list" id="theme-list">
+      <li><a href="puzzle.html">Puzzle</a></li>
+      <li><a href="coke.html">Coke Bottle</a></li>
+      <li><a href="bomb.html">Bomb</a></li>
+      <li><a href="tsunami.html">Tsunami</a></li>
+      <li><a href="rocket.html">Rocket</a></li>
+      <li><a href="knock.html">Knock-the-Number</a></li>
+      <li><a href="runner.html">Running Man</a></li>
+      <li><a href="traffic.html">Traffic Light</a></li>
+      <li><a href="sun.html">Dying Sun</a></li>
+      <li><a href="book.html">Flipbook</a></li>
+    </ul>
+    <button class="theme-btn" id="theme-btn" type="button">Type <span class="theme-arrow"></span></button>
+  </div>
+
+<script>
+  // ===================== THEME PICKER (identical on every page) =====================
+  (function () {
+    const picker = document.getElementById('theme-picker');
+    const button = document.getElementById('theme-btn');
+    const list = document.getElementById('theme-list');
+
+    // work out which page we are on, e.g. "coke.html"
+    const here = (location.pathname.split('/').pop() || '').toLowerCase();
+    list.querySelectorAll('a').forEach(function (link) {
+      if (link.getAttribute('href').toLowerCase() === here) {
+        // this is the theme we are already on: show it, but it is not a link
+        const label = document.createElement('span');
+        label.className = 'current';
+        label.textContent = link.textContent;
+        link.replaceWith(label);
+      }
+    });
+
+    button.addEventListener('click', function (event) {
+      event.stopPropagation();   // otherwise the "click anywhere else" rule below would close it straight away
+      picker.classList.toggle('open');
+    });
+    // click anywhere else on the page and the list closes
+    document.addEventListener('click', function (event) {
+      if (!picker.contains(event.target)) picker.classList.remove('open');
+    });
+  })();
+
+  // ===================== THE SCREEN =====================
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;   // the width and height of the screen, in CSS pixels
+
+  // Make the canvas exactly the size of the window (and sharp on phones with high-res screens).
+  function fitCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', fitCanvas);
+  fitCanvas();
+
+  // little drawing helpers used by the scene and the explosion
+  function disc(x, y, r, colour) {
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2);
+    ctx.fillStyle = colour;
+    ctx.fill();
+  }
+  function roundBox(x, y, w, h, r, colour) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fillStyle = colour;
+    ctx.fill();
+  }
+  function triangle(x1, y1, x2, y2, x3, y3, colour) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x3, y3);
+    ctx.closePath();
+    ctx.fillStyle = colour;
+    ctx.fill();
+  }
+
+  // ===================== THE CLOCK =====================
+  // The clock uses performance.now(), which is the browser's own stopwatch.
+  // We remember the exact moment the countdown will hit zero (endMoment), and every
+  // frame we work out how much is left from that. So it never drifts, however slow the drawing is.
+  const minInput = document.getElementById('min-input');
+  const secInput = document.getElementById('sec-input');
+  const minVal = document.getElementById('min-val');
+  const secVal = document.getElementById('sec-val');
+  const colon = document.getElementById('colon');
+  const startBtn = document.getElementById('start-btn');
+
+  let totalMs = 0;        // how long the whole countdown is, in milliseconds
+  let remainingMs = 0;    // how much time is left right now
+  let running = false;    // is the clock ticking?
+  let finished = false;   // have we hit zero?
+  let endMoment = 0;      // the performance.now() time at which we reach zero
+
+  function readInputs() {
+    const mins = Math.max(0, parseInt(minInput.value, 10) || 0);
+    const secs = Math.max(0, Math.min(59, parseInt(secInput.value, 10) || 0));
+    totalMs = (mins * 60 + secs) * 1000;
+  }
+
+  function startTimer() {
+    if (finished) resetTimer();       // pressing start after the bang begins a fresh countdown
+    if (totalMs <= 0) return;         // nothing to count down
+    running = true;
+    endMoment = performance.now() + remainingMs;
+    startBtn.textContent = 'PAUSE';
+    startBtn.classList.add('pause-mode');
+    colon.classList.add('pulse');
+    onStart();
+  }
+
+  function pauseTimer() {
+    running = false;
+    remainingMs = Math.max(0, endMoment - performance.now());
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    colon.classList.remove('pulse');
+    onPause();
+  }
+
+  function toggleTimer() {
+    if (running) pauseTimer(); else startTimer();
+  }
+
+  // Reset puts EVERYTHING back to the beginning: the clock, the layers, the picture.
+  function resetTimer() {
+    running = false;
+    finished = false;
+    readInputs();
+    remainingMs = totalMs;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    colon.classList.remove('pulse');
+    document.body.classList.remove('front');   // numbers back in front of the picture
+    clearExplosion();
+    resetScene();
+    showDigits();
+  }
+
+  // called once per frame
+  function tickClock(now) {
+    if (running) {
+      // (clamped to totalMs too: a frame's timestamp can be a whisker earlier than the moment we pressed start)
+      remainingMs = Math.min(totalMs, Math.max(0, endMoment - now));
+      if (remainingMs === 0) {
+        running = false;
+        finished = true;
+        startBtn.textContent = 'START';
+        startBtn.classList.remove('pause-mode');
+        colon.classList.remove('pulse');
+        onZero();   // the big moment — each timer does its own thing here
+      }
+    }
+    showDigits();
+  }
+
+  function showDigits() {
+    const secsLeft = Math.ceil(remainingMs / 1000);
+    minVal.textContent = pad(Math.min(99, Math.floor(secsLeft / 60)));
+    secVal.textContent = pad(secsLeft % 60);
+  }
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  // how far through the countdown we are: 0 = just started, 1 = time's up
+  function progress() { return totalMs > 0 ? Math.min(1, Math.max(0, 1 - remainingMs / totalMs)) : 0; }
+
+  // changing the minutes or seconds boxes (while not running) resets the countdown to the new length
+  minInput.addEventListener('input', function () { if (!running) resetTimer(); });
+  secInput.addEventListener('input', function () { if (!running) resetTimer(); });
+
+  // ===================== THE EXPLOSION (the same one in every timer) =====================
+  const BOOM_COLOURS = ['#f72585', '#7fff00', '#00f5ff', '#ffd60a', '#ff6b00', '#ffffff'];
+  const boom = { on: false, startedAt: 0, x: 0, y: 0, bits: [], rings: [], fireballRadius: 0, holdMs: 0, bitsDelayMs: 0 };
+
+  // Call this to go BANG at a point on the screen. options (all optional):
+  //   fireballRadius — how big the fireball grows (bigger than the screen = covers everything)
+  //   holdMs         — how long the fireball stays at full size before it fades away
+  //   bitsDelayMs    — wait this long before the flying bits appear
+  //   count          — how many flying bits
+  //   extraColours   — extra colours for the bits (e.g. brown for cola)
+  function startExplosion(x, y, options) {
+    options = options || {};
+    boom.on = true;
+    boom.startedAt = performance.now();
+    boom.x = x;
+    boom.y = y;
+    boom.fireballRadius = options.fireballRadius || 0.3 * Math.min(W, H);
+    boom.holdMs = options.holdMs || 250;
+    boom.bitsDelayMs = options.bitsDelayMs || 0;
+    const colours = BOOM_COLOURS.concat(options.extraColours || []);
+    const count = options.count || 150;
+    boom.bits = [];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 250 + Math.random() * 800;   // pixels per second
+      boom.bits.push({
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 150,       // a little upward kick
+        size: 5 + Math.random() * 16,
+        colour: colours[Math.floor(Math.random() * colours.length)],
+        square: Math.random() < 0.4,             // some bits are squares, some are circles
+        spin: (Math.random() - 0.5) * 10
+      });
+    }
+    boom.rings = [
+      { delay: 0,   colour: '#ffffff' },
+      { delay: 120, colour: '#f72585' },
+      { delay: 260, colour: '#00f5ff' }
+    ];
+  }
+
+  function clearExplosion() {
+    boom.on = false;
+    boom.bits = [];
+    boom.rings = [];
+  }
+
+  function drawExplosion(now) {
+    if (!boom.on) return;
+    const t = (now - boom.startedAt) / 1000;   // seconds since the bang
+    const hold = boom.holdMs / 1000;
+    const GROW = 0.25;                          // the fireball takes a quarter of a second to reach full size
+
+    // --- the fireball: three flat discs, orange, yellow, white ---
+    let alpha = 1;
+    if (t > GROW + hold) alpha = Math.max(0, 1 - (t - GROW - hold) / 0.6);   // then it fades out
+    if (alpha > 0) {
+      const r = boom.fireballRadius * Math.min(1, t / GROW);
+      const wobble = Math.sin(now / 50) * r * 0.04;   // so the fire looks alive
+      ctx.globalAlpha = alpha;
+      disc(boom.x, boom.y, r, '#ff6b00');
+      disc(boom.x + wobble, boom.y - wobble, r * 0.68, '#ffd60a');
+      disc(boom.x - wobble, boom.y + wobble, r * 0.36, '#ffffff');
+      ctx.globalAlpha = 1;
+    }
+
+    // --- the shock rings racing outwards ---
+    boom.rings.forEach(function (ring) {
+      const rt = t - ring.delay / 1000;
+      if (rt < 0 || rt > 0.9) return;
+      ctx.globalAlpha = 1 - rt / 0.9;
+      ctx.lineWidth = 12;
+      ctx.strokeStyle = ring.colour;
+      ctx.beginPath();
+      ctx.arc(boom.x, boom.y, 20 + rt * 1000, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+
+    // --- the flying bits ---
+    const bt = t - boom.bitsDelayMs / 1000;
+    const BITS_LIFE = 1.8;   // seconds the bits fly for
+    if (bt > 0 && bt < BITS_LIFE) {
+      const travel = (1 - Math.exp(-2.5 * bt)) / 2.5;   // the bits start fast and slow down
+      const shrink = 1 - bt / BITS_LIFE;                 // and get smaller as they go
+      boom.bits.forEach(function (bit) {
+        const bx = boom.x + bit.vx * travel;
+        const by = boom.y + bit.vy * travel + 450 * bt * bt;   // gravity pulls them down
+        const size = bit.size * shrink;
+        if (bit.square) {
+          ctx.save();
+          ctx.translate(bx, by);
+          ctx.rotate(bit.spin * bt);
+          ctx.fillStyle = bit.colour;
+          ctx.fillRect(-size / 2, -size / 2, size, size);
+          ctx.restore();
+        } else {
+          disc(bx, by, size / 2, bit.colour);
+        }
+      });
+    }
+
+    // --- the white flash right at the start ---
+    if (t < 0.2) {
+      ctx.globalAlpha = 1 - t / 0.2;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+    }
+
+    // all over?
+    if (t > GROW + hold + 0.6 && bt > BITS_LIFE) boom.on = false;
+  }
+
+  // ===================== THE ROCKET =====================
+  let rocketGone = false;     // true after the crash-bang — no rocket left to draw
+  const stars = [];           // a few stars in the sky (x and y are fractions of the screen)
+  for (let i = 0; i < 40; i++) {
+    stars.push({ x: Math.random(), y: Math.random() * 0.8, size: 1 + Math.random() * 2 });
+  }
+
+  function resetScene() { rocketGone = false; }
+  function onStart() {}
+  function onPause() {}
+
+  function onZero() {
+    // it has just hit the ground — BANG
+    rocketGone = true;
+    startExplosion(W / 2, groundTop(), {
+      fireballRadius: 0.32 * Math.min(W, H),
+      holdMs: 250,
+      extraColours: ['#f4f4f8']   // bits of the rocket
+    });
+  }
+
+  function groundTop() { return H * 0.86; }
+  function rocketHeight() { return Math.min(H * 0.28, W * 0.5); }
+
+  // How long the blast-off takes: about two seconds, but never so long that it
+  // runs into the crash, which needs the last second all to itself.
+  function launchMs() { return totalMs > 1000 ? Math.min(2200, totalMs - 1000) : Math.max(1, totalMs / 2); }
+
+  function drawScene(now) {
+    // --- the sky ---
+    stars.forEach(function (s) { disc(s.x * W, s.y * H, s.size, '#ffffff'); });
+    // --- the ground and the launch pad ---
+    ctx.fillStyle = '#2f9e44';
+    ctx.fillRect(0, groundTop(), W, H - groundTop());
+    ctx.fillStyle = '#1f7a32';
+    ctx.fillRect(0, groundTop(), W, 8);
+    const padWidth = rocketHeight() * 0.7;
+    ctx.fillStyle = '#7a7a90';
+    ctx.fillRect(W / 2 - padWidth / 2, groundTop() - 10, padWidth, 10);
+
+    if (rocketGone) return;
+
+    const rh = rocketHeight();
+    const padTop = groundTop() - 10;
+    const elapsed = totalMs - remainingMs;          // how long the countdown has been going
+    const started = running || elapsed > 0;
+
+    if (!started) {
+      // sitting on the pad, waiting for play
+      drawRocket(W / 2, padTop, rh, false, false, now);
+    } else if (remainingMs > 1000) {
+      // BLAST OFF — it climbs faster and faster until it is right off the top of the screen.
+      // After that the sky is empty for the rest of the countdown.
+      const t = Math.min(1, elapsed / launchMs());
+      const climb = t * t;   // slow at first, then quick
+      const bottomY = padTop - (padTop + rh * 0.8) * climb;
+      drawRocket(W / 2, bottomY, rh, false, t < 1, now);   // the flame is on while it climbs
+    } else {
+      // CRASH — with one second left it comes back DOWN from the top and hits the ground at zero
+      const t = (1000 - remainingMs) / 1000;
+      const noseY = (-rh - 20) + (groundTop() + rh + 20) * t * t;   // falls faster and faster
+      drawRocket(W / 2, noseY, rh, true, false, now);
+    }
+  }
+
+  // Draws the rocket. When it is the right way up, y is where its BASE is.
+  // When noseDown is true it is flipped upside down and y is where its NOSE is.
+  function drawRocket(x, y, rh, noseDown, flameOn, now) {
+    const rw = rh * 0.36;   // how wide the body is
+    ctx.save();
+    if (noseDown) {
+      ctx.translate(x, y - rh);
+      ctx.scale(1, -1);   // flip it: the nose now points at the ground
+    } else {
+      ctx.translate(x, y);
+    }
+    // from here the rocket's base is at (0, 0) and its nose is at (0, -rh)
+
+    // the flame out of the bottom
+    if (flameOn) {
+      const flicker = 0.8 + 0.4 * Math.sin(now / 30) + 0.2 * Math.random();
+      triangle(-rw * 0.4, 0, rw * 0.4, 0, 0, rh * 0.5 * flicker, '#ff6b00');
+      triangle(-rw * 0.22, 0, rw * 0.22, 0, 0, rh * 0.3 * flicker, '#ffd60a');
+    }
+    // fins
+    triangle(-rw / 2, -rh * 0.35, -rw / 2 - rw * 0.5, 0, -rw / 2, 0, '#f72585');
+    triangle(rw / 2, -rh * 0.35, rw / 2 + rw * 0.5, 0, rw / 2, 0, '#f72585');
+    // body
+    roundBox(-rw / 2, -rh * 0.78, rw, rh * 0.78, rw * 0.15, '#f4f4f8');
+    // a stripe near the bottom
+    ctx.fillStyle = '#00f5ff';
+    ctx.fillRect(-rw / 2, -rh * 0.22, rw, rh * 0.07);
+    // the nose cone
+    triangle(-rw / 2, -rh * 0.78, rw / 2, -rh * 0.78, 0, -rh, '#f72585');
+    // the porthole
+    disc(0, -rh * 0.52, rw * 0.22, '#23233a');
+    disc(0, -rh * 0.52, rw * 0.15, '#00f5ff');
+
+    ctx.restore();
+  }
+
+
+  // ===================== THE FRAME LOOP =====================
+  // requestAnimationFrame calls this about 60 times a second, whenever the screen is ready to draw.
+  function frame(now) {
+    tickClock(now);
+    ctx.clearRect(0, 0, W, H);
+    drawScene(now);
+    drawExplosion(now);
+    requestAnimationFrame(frame);
+  }
+  resetTimer();
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

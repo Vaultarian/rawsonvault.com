@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puzzle Timer — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080818;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 16px 90px;
+      overflow-x: hidden;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44;
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+      z-index: 50;
+    }
+    .back-link:hover { color: #fff; }
+
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      background: linear-gradient(90deg, #f72585, #7fff00, #00f5ff, #f72585);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 4s linear infinite;
+      letter-spacing: 4px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    @keyframes rainbowShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    /* Set how long the countdown is */
+    .timer-setup {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .timer-setup input {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2rem;
+      width: 84px;
+      text-align: center;
+      background: #ffffff11;
+      border: 3px solid #f72585;
+      border-radius: 14px;
+      color: #f72585;
+      padding: 6px;
+      outline: none;
+    }
+    .timer-setup input:focus { border-color: #fff; color: #fff; }
+    .timer-setup span {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2rem;
+      color: #ffffff33;
+    }
+
+    /* The big digits — these sit ABOVE the puzzle so the time is always visible */
+    .display {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .unit-wrap { display: flex; flex-direction: column; align-items: center; }
+    .unit-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .unit-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(3.4rem, 14vw, 5.5rem);
+      line-height: 1;
+      min-width: 2ch;
+      text-align: center;
+    }
+    .mm .unit-label, .mm .unit-val { color: #f72585; }
+    .ss .unit-label, .ss .unit-val { color: #7fff00; }
+    .colon {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(3rem, 12vw, 4.8rem);
+      color: #ffffff22;
+      padding-top: 22px;
+      line-height: 1;
+    }
+    .colon.pulse { animation: blink 1s step-start infinite; }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* A little line under the digits saying how many pieces are in and how big the step is */
+    .piece-info {
+      font-family: 'Fredoka One', cursive;
+      color: #00f5ff;
+      letter-spacing: 2px;
+      font-size: 1rem;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    /* The puzzle itself */
+    #puzzle {
+      width: min(92vw, 560px, 58vh);   /* never taller than the screen allows */
+      aspect-ratio: 4 / 3;
+      border-radius: 18px;
+      border: 4px dashed #ffffff22;
+      display: block;
+      margin-bottom: 26px;
+    }
+
+    /* Buttons */
+    .buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      padding: 14px 44px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .btn:active { transform: scale(0.93); }
+    #start-btn { background: linear-gradient(135deg, #7fff00, #00f5ff); color: #080818; }
+    #start-btn.pause-mode { background: linear-gradient(135deg, #f72585, #7209b7); color: #fff; }
+    .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
+    .btn-reset:hover { border-color: #ffffff55; }
+
+    /* ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== */
+    .type-picker {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2147483647;      /* always on top of everything */
+      font-family: 'Fredoka One', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .type-btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      color: #080818;
+      background: #00f5ff;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 18px 10px 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+    .type-btn:active { transform: scale(0.95); }
+    /* the little arrow: points UP when closed, DOWN when open */
+    .type-arrow {
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 9px solid #080818;
+      transition: transform 0.2s;
+    }
+    .type-picker.open .type-arrow { transform: rotate(180deg); }
+    .type-list {
+      list-style: none;
+      display: none;
+      flex-direction: column;
+      margin-bottom: 10px;
+      background: #080818;
+      border: 3px solid #00f5ff;
+      border-radius: 18px;
+      padding: 8px;
+      min-width: 190px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .type-picker.open .type-list { display: flex; }
+    .type-list a, .type-list span {
+      display: block;
+      padding: 8px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+    .type-list a:hover { background: #f72585; color: #080818; }
+    .type-list span.current { background: #7fff00; color: #080818; cursor: default; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../">← back</a>
+
+  <div class="title">🧩 PUZZLE TIMER 🧩</div>
+
+  <div class="timer-setup">
+    <input type="number" id="tm-min" value="0" min="0" max="99">
+    <span>:</span>
+    <input type="number" id="tm-sec" value="30" min="0" max="59">
+  </div>
+
+  <!-- time left, always above the puzzle -->
+  <div class="display">
+    <div class="unit-wrap mm">
+      <div class="unit-label">MIN</div>
+      <div class="unit-val" id="mm-val">00</div>
+    </div>
+    <div class="colon" id="colon">:</div>
+    <div class="unit-wrap ss">
+      <div class="unit-label">SEC</div>
+      <div class="unit-val" id="ss-val">30</div>
+    </div>
+  </div>
+
+  <div class="piece-info" id="piece-info"></div>
+
+  <canvas id="puzzle"></canvas>
+
+  <div class="buttons">
+    <button class="btn" id="start-btn" onclick="startOrPause()">START</button>
+    <button class="btn btn-reset" onclick="resetAll()">RESET</button>
+  </div>
+
+  <!-- ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== -->
+  <div class="type-picker" id="type-picker">
+    <ul class="type-list" id="type-list">
+      <li><a href="puzzle.html">Puzzle</a></li>
+      <li><a href="coke.html">Coke Bottle</a></li>
+      <li><a href="bomb.html">Bomb</a></li>
+      <li><a href="tsunami.html">Tsunami</a></li>
+      <li><a href="rocket.html">Rocket</a></li>
+      <li><a href="knock.html">Knock-the-Number</a></li>
+      <li><a href="runner.html">Running Man</a></li>
+      <li><a href="traffic.html">Traffic Light</a></li>
+      <li><a href="sun.html">Dying Sun</a></li>
+      <li><a href="book.html">Flipbook</a></li>
+    </ul>
+    <button class="type-btn" id="type-btn">Type <span class="type-arrow"></span></button>
+  </div>
+  <script>
+    // Theme picker: click "Type" to open the list upwards, click again (or anywhere) to close.
+    // The page you are already on is shown in green and cannot be clicked.
+    (function () {
+      const picker = document.getElementById('type-picker');
+      const button = document.getElementById('type-btn');
+      const thisPage = location.pathname.split('/').pop() || 'index.html';
+      picker.querySelectorAll('.type-list a').forEach(link => {
+        if (link.getAttribute('href') === thisPage) {
+          const here = document.createElement('span');
+          here.className = 'current';
+          here.textContent = link.textContent;
+          link.replaceWith(here);
+        }
+      });
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        picker.classList.toggle('open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target)) picker.classList.remove('open');
+      });
+    })();
+  </script>
+
+<script>
+  // ===================== THE CLOCK =====================
+  // The clock is driven by real time (performance.now) so it never drifts.
+  let totalMs = 0;        // how long the whole countdown is
+  let remainingMs = 0;    // how much is left right now
+  let elapsedBefore = 0;  // time used up before the last pause
+  let startStamp = 0;     // when we last pressed start
+  let running = false;
+  let finished = false;
+
+  const minInput = document.getElementById('tm-min');
+  const secInput = document.getElementById('tm-sec');
+  const startBtn = document.getElementById('start-btn');
+
+  function readInputs() {
+    const mm = Math.max(0, parseInt(minInput.value) || 0);
+    const ss = Math.max(0, Math.min(59, parseInt(secInput.value) || 0));
+    return (mm * 60 + ss) * 1000;
+  }
+
+  function startOrPause() {
+    if (running) { pause(); return; }
+    if (finished || remainingMs <= 0) {
+      // fresh start: read the inputs and build a brand new empty puzzle
+      totalMs = readInputs();
+      if (totalMs <= 0) return;
+      elapsedBefore = 0;
+      remainingMs = totalMs;
+      finished = false;
+      buildPuzzle(totalMs / 1000);
+    }
+    running = true;
+    startStamp = performance.now();
+    startBtn.textContent = 'PAUSE';
+    startBtn.classList.add('pause-mode');
+    document.getElementById('colon').classList.add('pulse');
+  }
+
+  function pause() {
+    running = false;
+    elapsedBefore += performance.now() - startStamp;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    document.getElementById('colon').classList.remove('pulse');
+  }
+
+  function resetAll() {
+    running = false;
+    finished = false;
+    elapsedBefore = 0;
+    totalMs = readInputs();
+    remainingMs = totalMs;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    document.getElementById('colon').classList.remove('pulse');
+    buildPuzzle(totalMs / 1000);   // empty puzzle again
+    showTime(remainingMs);
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function showTime(ms) {
+    const totalSec = Math.ceil(ms / 1000);
+    document.getElementById('mm-val').textContent = pad(Math.min(99, Math.floor(totalSec / 60)));
+    document.getElementById('ss-val').textContent = pad(totalSec % 60);
+  }
+
+  // ===================== JOS'S PIECE RULE =====================
+  // How many seconds between pieces, so the puzzle always ends up around 20-60 pieces.
+  function secondsPerPiece(totalSec) {
+    if (totalSec <= 60)   return 1;    // up to about 1 minute  -> a piece every second
+    if (totalSec <= 120)  return 2;
+    if (totalSec <= 300)  return 5;
+    if (totalSec <= 420)  return 10;
+    if (totalSec <= 900)  return 30;   // around 10 minutes     -> a piece every 30 seconds
+    if (totalSec <= 3600) return 60;   // around 30 min / 1 hour -> a piece every minute
+    return 120;                        // longer than an hour (Jos's rule stops at 1 hour)
+  }
+
+  // ===================== THE PUZZLE =====================
+  const canvas = document.getElementById('puzzle');
+  const ctx = canvas.getContext('2d');
+  let picture = null;       // the finished smiley face, drawn once and kept hidden
+  let pieces = [];          // every piece: where it is and its jigsaw shape
+  let pieceOrder = [];      // the order the pieces appear in (shuffled)
+  let pieceCount = 0;
+  let stepMs = 1000;
+  let appearedAt = [];      // when each piece popped in (for the little pop animation)
+  let canvasW = 0, canvasH = 0;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvasW = rect.width;
+    canvasH = rect.height;
+    canvas.width = Math.round(canvasW * dpr);
+    canvas.height = Math.round(canvasH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawPicture();
+    layoutPieces();
+  }
+
+  // The picture: a big yellow smiley face on a pink background
+  function drawPicture() {
+    const dpr = window.devicePixelRatio || 1;
+    picture = document.createElement('canvas');
+    picture.width = Math.round(canvasW * dpr);
+    picture.height = Math.round(canvasH * dpr);
+    const p = picture.getContext('2d');
+    p.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = canvasW, h = canvasH;
+    const cx = w / 2, cy = h / 2;
+    const r = Math.min(w, h) * 0.42;
+
+    p.fillStyle = '#f72585';                // background
+    p.fillRect(0, 0, w, h);
+
+    p.fillStyle = '#ffd60a';                // the face
+    p.beginPath(); p.arc(cx, cy, r, 0, Math.PI * 2); p.fill();
+
+    p.fillStyle = '#080818';                // two eyes
+    p.beginPath(); p.arc(cx - r * 0.35, cy - r * 0.25, r * 0.11, 0, Math.PI * 2); p.fill();
+    p.beginPath(); p.arc(cx + r * 0.35, cy - r * 0.25, r * 0.11, 0, Math.PI * 2); p.fill();
+
+    p.strokeStyle = '#080818';              // the big smile
+    p.lineWidth = r * 0.09;
+    p.lineCap = 'round';
+    p.beginPath(); p.arc(cx, cy + r * 0.1, r * 0.55, Math.PI * 0.15, Math.PI * 0.85); p.stroke();
+  }
+
+  // Decide the step and the number of pieces for this countdown, and shuffle the order.
+  function buildPuzzle(totalSec) {
+    stepMs = secondsPerPiece(totalSec) * 1000;
+    pieceCount = Math.max(1, Math.ceil(totalSec / (stepMs / 1000)));
+    pieceOrder = [];
+    for (let i = 0; i < pieceCount; i++) pieceOrder.push(i);
+    for (let i = pieceOrder.length - 1; i > 0; i--) {    // shuffle
+      const j = Math.floor(Math.random() * (i + 1));
+      [pieceOrder[i], pieceOrder[j]] = [pieceOrder[j], pieceOrder[i]];
+    }
+    appearedAt = new Array(pieceCount).fill(-1);
+    layoutPieces();
+    const stepSec = stepMs / 1000;
+    document.getElementById('piece-info').textContent =
+      pieceCount + ' PIECES · 1 PIECE EVERY ' + (stepSec === 1 ? 'SECOND' :
+      stepSec < 60 ? stepSec + ' SECONDS' : (stepSec / 60) + ' MINUTE' + (stepSec > 60 ? 'S' : ''));
+  }
+
+  // Cut the picture into rows, and each row into pieces, so there are EXACTLY pieceCount pieces.
+  function layoutPieces() {
+    pieces = [];
+    if (!pieceCount || !canvasW) return;
+    const rows = Math.max(1, Math.round(Math.sqrt(pieceCount * 3 / 4)));
+    const base = Math.floor(pieceCount / rows);
+    const extra = pieceCount % rows;        // the first few rows get one extra piece
+    const rowH = canvasH / rows;
+    let index = 0;
+    for (let r = 0; r < rows; r++) {
+      const inThisRow = base + (r < extra ? 1 : 0);
+      const w = canvasW / inThisRow;
+      for (let c = 0; c < inThisRow; c++) {
+        pieces.push({
+          x: c * w, y: r * rowH, w: w, h: rowH,
+          knobLeft:  c === 0 ? 0 : ((r + c) % 2 === 0 ? 1 : -1),           // 1 = bump to the right
+          knobRight: c === inThisRow - 1 ? 0 : ((r + c + 1) % 2 === 0 ? 1 : -1),
+          index: index++
+        });
+      }
+    }
+  }
+
+  // Draw the outline of one jigsaw piece (a rectangle with a knob or a notch on each side).
+  function piecePath(pc) {
+    const k = Math.min(pc.w, pc.h) * 0.16;   // knob size
+    const ym = pc.y + pc.h / 2;
+    const neck = 0.527 * k;
+    const cxOff = 0.85 * k;
+    const ang = 2.586;                        // where the knob circle meets the edge
+    ctx.beginPath();
+    ctx.moveTo(pc.x, pc.y);
+    ctx.lineTo(pc.x + pc.w, pc.y);
+    // right edge, going down
+    const xr = pc.x + pc.w;
+    if (pc.knobRight === 0) {
+      ctx.lineTo(xr, pc.y + pc.h);
+    } else {
+      ctx.lineTo(xr, ym - neck);
+      if (pc.knobRight === 1) ctx.arc(xr + cxOff, ym, k, -ang, ang, false);
+      else                    ctx.arc(xr - cxOff, ym, k, -(Math.PI - ang), Math.PI - ang, true);
+      ctx.lineTo(xr, pc.y + pc.h);
+    }
+    ctx.lineTo(pc.x, pc.y + pc.h);
+    // left edge, going up
+    if (pc.knobLeft === 0) {
+      ctx.lineTo(pc.x, pc.y);
+    } else {
+      ctx.lineTo(pc.x, ym + neck);
+      if (pc.knobLeft === 1) ctx.arc(pc.x + cxOff, ym, k, ang, -ang, true);
+      else                   ctx.arc(pc.x - cxOff, ym, k, Math.PI - ang, -(Math.PI - ang), false);
+      ctx.lineTo(pc.x, pc.y);
+    }
+    ctx.closePath();
+  }
+
+  function drawPiece(pc, pop) {
+    // pop goes 0 -> 1 in the first quarter second, so the piece grows into place
+    const scale = 0.5 + 0.5 * pop;
+    const cx = pc.x + pc.w / 2, cy = pc.y + pc.h / 2;
+    ctx.save();
+    ctx.translate(cx, cy); ctx.scale(scale, scale); ctx.translate(-cx, -cy);
+    ctx.globalAlpha = 0.4 + 0.6 * pop;
+    piecePath(pc);
+    ctx.save();
+    ctx.clip();
+    ctx.drawImage(picture, 0, 0, canvasW, canvasH);
+    ctx.restore();
+    ctx.strokeStyle = '#080818';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // How many pieces should be showing? Counted from the END so the last piece lands at 0:00.
+  function piecesToShow(ms) {
+    return pieceCount - Math.ceil(ms / stepMs);
+  }
+
+  function drawPuzzle(now) {
+    ctx.clearRect(0, 0, canvasW, canvasH);
+    const showing = Math.max(0, Math.min(pieceCount, piecesToShow(remainingMs)));
+    for (let n = 0; n < showing; n++) {
+      const pc = pieces[pieceOrder[n]];
+      if (!pc) continue;
+      if (appearedAt[n] < 0) appearedAt[n] = now;
+      const pop = Math.min(1, (now - appearedAt[n]) / 250);
+      drawPiece(pc, pop);
+    }
+    // forget pops for pieces that are not showing (so Reset really empties it)
+    for (let n = showing; n < pieceCount; n++) appearedAt[n] = -1;
+  }
+
+  // ===================== THE LOOP =====================
+  function loop(now) {
+    if (running) {
+      const elapsed = elapsedBefore + (now - startStamp);
+      remainingMs = Math.max(0, totalMs - elapsed);
+      showTime(remainingMs);
+      if (remainingMs === 0) finishUp();
+    }
+    drawPuzzle(now);
+    requestAnimationFrame(loop);
+  }
+
+  function finishUp() {
+    running = false;
+    finished = true;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    document.getElementById('colon').classList.remove('pulse');
+    // the puzzle is complete — every piece is in
+  }
+
+  // typing a new time while stopped updates the digits and the empty puzzle
+  minInput.addEventListener('input', () => { if (!running) resetAll(); });
+  secInput.addEventListener('input', () => { if (!running) resetAll(); });
+  window.addEventListener('resize', sizeCanvas);
+
+  sizeCanvas();
+  resetAll();
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>
