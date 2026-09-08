@@ -5,14 +5,24 @@ The Daily Print slices the Class Logs by DATE (one day, every class, for Alex
 at the printer). This slices the same source the other way: one CLASS, every
 date, for students looking back to find which sheet went with which lesson.
 
-Two rules make these safe to publish, both decided by Alex on 2026-08-29:
+One rule makes these safe to publish, and it is the Publish: whitelist below.
+There is no longer a second gate on the entry itself:
 
-  1. THE DAY IT HAPPENS. A log entry is published once its date has arrived,
-     whatever its status -- except "Did not run", which never appears at all.
-     The gate is the calendar, not the status flip: students get the sheet on
-     the morning of the lesson, and next week's plans still stay private until
-     next week. (Changed 2026-09-03; was "Taught" only. The status flip was
-     doing nothing but withholding documents Alex wanted students to have.)
+  1. NOTHING FINISHED IS HELD BACK. An entry publishes as soon as it exists,
+     whatever its status and whatever its date -- except "Did not run", which
+     never appears at all. Naming a document in Publish: IS Alex saying it is
+     finished and student-facing, and nothing second-guesses that.
+
+     To withhold a document, leave it out of Publish:. That field is the only
+     switch, and since 2026-09-08 it is the only one -- so it now carries the
+     entire decision.
+
+     (History, because this gate has been narrowed twice. Until 2026-09-03 an
+     entry needed the status flipped to "Taught". Until 2026-09-08 it needed
+     its lesson date to have arrived, with a ⏩ marker and CLASS_PAGES_FORCE as
+     escape hatches. Both gates withheld material Alex had already declared
+     finished, and both escape hatches existed only to defeat the date check,
+     so all four went together.)
 
   2. WHITELIST THE DOCUMENTS. A lesson's PDFs appear only if the entry has a
      `- **Publish:** …` field listing them as wikilinks. `Resources:` is NOT
@@ -124,31 +134,12 @@ def pair_docs(docs):
             slot["label"] = lbl or base
     return [(seen[b]["label"], seen[b]["sheet"], seen[b]["key"]) for b in rows]
 
-# Narrow, opt-in escape hatch for publishing an entry ahead of its DATE --
-# the one thing rule 1 no longer allows on its own:
-#   CLASS_PAGES_FORCE="Computer Science 10|2026-09-01,…"
-# Unset by default, so the scheduled 05:30 run is untouched. It lifts the date
-# check only: a "Did not run" entry stays unpublished even when named here, and
-# the Publish: whitelist (rule 2) is never bypassed -- a forced entry still
-# publishes only what it whitelists.
-FORCE = {t.strip() for t in os.environ.get("CLASS_PAGES_FORCE", "").split(",") if t.strip()}
-
-# The same escape hatch, driven from the log instead of the environment. A
-# bullet inside Publish: reading "⏩" (or "publish now") releases that entry the
-# next time Tim runs, without waiting for its date -- which at session close
-# means the material is live before Alex shuts the window.
-#
-# Anchored to the start of a bullet so it cannot fire from inside a document
-# label. It lifts the DATE only: "Did not run" still wins, and the Publish:
-# whitelist is never bypassed.
-PUBLISH_NOW = re.compile(r"^\s*(?:[-*]\s*)?(?:⏩|publish now\b)", re.I | re.M)
-
 # Markdown links in Publish: become links on the class page.
 #
 # Deliberately the SAME field as documents rather than a new one. Publish:
-# already means "this reaches students", so a link there inherits the date
-# gate, the "Did not run" exclusion and the ⏩ override for free, and there is
-# still exactly one whitelist to reason about. Resources: stays private.
+# already means "this reaches students", so a link there inherits the
+# "Did not run" exclusion for free, and there is still exactly one whitelist
+# to reason about. Resources: stays private.
 # Only http(s) -- a wikilink or bare path is a document, handled by pdf_links.
 WEB_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
 
@@ -194,7 +185,6 @@ def parse_log(path):
             topic=strip_md(field(block, "Topic")),
             docs=pdf_links(pub),                      # whitelist, never Resources
             links=web_links(pub),                     # external links, same whitelist
-            now=bool(PUBLISH_NOW.search(pub)),        # release ahead of the date
         ))
 
     for ln in lines:
@@ -549,19 +539,15 @@ def render_index(classes):
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     classes, touched, held = [], [], 0
-    today = date.today()
 
     for path in sorted(LOGS.glob("*.md")):
         name = path.stem
         subtitle, entries = parse_log(path)
 
-        # Tolerant status match on purpose: a stray capital in a hand-typed
-        # log must not silently publish a lesson that never ran.
+        # The only gate. Tolerant status match on purpose: a stray capital in a
+        # hand-typed log must not silently publish a lesson that never ran.
         published = [en for en in entries
-                     if en["status"].strip().lower() != "did not run"
-                     and (en["date"] <= today
-                          or en["now"]
-                          or f"{name}|{en['date']}" in FORCE)]
+                     if en["status"].strip().lower() != "did not run"]
         held += len(entries) - len(published)
 
         # Newest first, all the way down: newest week at the top, and newest
@@ -609,7 +595,7 @@ def main():
         touched = ["classes/index.html"]
 
     print(f"{len(classes)} class page(s); "
-          f"{held} entry(ies) held back (future-dated or did not run)")
+          f"{held} entry(ies) held back (did not run)")
     for p in sorted(set(touched)):
         print(f"PUBLISH: {p}")
 

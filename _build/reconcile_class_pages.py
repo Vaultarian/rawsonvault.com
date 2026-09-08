@@ -364,13 +364,13 @@ def crawl(only=None, today=None):
         blocks = entry_blocks(path)
 
         for en in entries:
-            # A ⏩ entry publishes ahead of its date, so it must be audited now
-            # rather than on the day. Skipping it would let a document reach
-            # the site having never been classified -- the exact hole this
-            # crawler exists to close.
+            # Audit EVERY entry, including future-dated ones. Since the date
+            # gate was dropped (2026-09-08) a future entry is already live, so
+            # skipping it here would let a document reach the site having never
+            # been classified -- the exact hole this crawler exists to close.
+            # "Did not run" is the only entry that never publishes, so it is
+            # the only one safe to skip.
             if en["status"].strip().lower() == "did not run":
-                continue
-            if en["date"] > today and not en.get("now"):
                 continue
             block = blocks.get(en["date"], "")
 
