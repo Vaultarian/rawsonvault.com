@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Traffic Light Timer — Jos</title>
+  <title>Candle Timer — Jos</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,7 +16,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 70px 16px 90px;
+      padding: 70px 0 90px;
       overflow-x: hidden;
     }
 
@@ -43,20 +43,21 @@
       -webkit-text-fill-color: transparent;
       animation: rainbowShift 4s linear infinite;
       letter-spacing: 4px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       text-align: center;
+      padding: 0 16px;
     }
     @keyframes rainbowShift {
       0% { background-position: 0% 50%; }
       100% { background-position: 300% 50%; }
     }
 
-    /* Set how long the countdown is */
+    /* Set the time here before you press start */
     .timer-setup {
       display: flex;
       gap: 12px;
       align-items: center;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     .timer-setup input {
       font-family: 'Fredoka One', cursive;
@@ -82,7 +83,7 @@
       display: flex;
       align-items: flex-start;
       gap: 6px;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
     }
     .unit-wrap { display: flex; flex-direction: column; align-items: center; }
     .unit-label {
@@ -95,7 +96,7 @@
     }
     .unit-val {
       font-family: 'Fredoka One', cursive;
-      font-size: clamp(3.4rem, 14vw, 5.5rem);
+      font-size: clamp(2.4rem, 10vw, 4.2rem);
       line-height: 1;
       min-width: 2ch;
       text-align: center;
@@ -104,64 +105,38 @@
     .ss .unit-label, .ss .unit-val { color: #7fff00; }
     .colon {
       font-family: 'Fredoka One', cursive;
-      font-size: clamp(3rem, 12vw, 4.8rem);
+      font-size: clamp(2rem, 8vw, 3.6rem);
       color: #ffffff22;
-      padding-top: 22px;
+      padding-top: 20px;
       line-height: 1;
     }
     .colon.pulse { animation: blink 1s step-start infinite; }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-    /* ===== The traffic light, drawn with CSS shapes ===== */
-    .traffic {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 26px;
-      --lamp: clamp(48px, min(14vw, 10vh), 84px);   /* size of one lamp */
+    /* The candle lives in here, and the rewind symbol sits on top of it */
+    .stage {
+      position: relative;
+      width: min(100vw, 520px);
+      height: clamp(300px, 48vh, 460px);
+      margin-bottom: 20px;
     }
-    .housing {
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-radius: calc(var(--lamp) * 0.5);
-      padding: calc(var(--lamp) * 0.18);
-      display: flex;
-      flex-direction: column;
-      gap: calc(var(--lamp) * 0.16);
+    #scene { width: 100%; height: 100%; display: block; }
+
+    /* Jos's rewind GIF — hidden until the candle has melted */
+    #rewind-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: clamp(110px, 30%, 170px);
+      display: none;
+      pointer-events: none;
+      /* the GIF has a solid white square behind it, so cut it down to just
+         the circle — anything outside the circle is thrown away */
+      clip-path: circle(46%);
+      filter: drop-shadow(0 6px 18px #000a);
     }
-    .lamp {
-      width: var(--lamp);
-      height: var(--lamp);
-      border-radius: 50%;
-      background: #0b0b18;            /* an OFF lamp is dark */
-      border: 4px solid #000;
-      transition: background 0.15s;
-    }
-    /* each lamp lit up in its own colour */
-    .lamp.red.on    { background: #ff3b3b; }
-    .lamp.yellow.on { background: #ffd60a; }
-    .lamp.green.on  { background: #7fff00; }
-    /* the pole it stands on */
-    .pole {
-      width: calc(var(--lamp) * 0.22);
-      height: calc(var(--lamp) * 0.6);
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-top: none;
-    }
-    .foot {
-      width: calc(var(--lamp) * 1.2);
-      height: calc(var(--lamp) * 0.16);
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-radius: 8px;
-    }
-    /* At 0:00 all three lamps flash green together */
-    .traffic.flash .lamp { animation: flashGreen 0.5s step-start infinite; }
-    @keyframes flashGreen {
-      0%, 100% { background: #7fff00; }
-      50%      { background: #0b0b18; }
-    }
+    .stage.rewinding #rewind-icon { display: block; }
 
     /* Buttons */
     .buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
@@ -178,6 +153,7 @@
     .btn:active { transform: scale(0.93); }
     #start-btn { background: linear-gradient(135deg, #7fff00, #00f5ff); color: #080818; }
     #start-btn.pause-mode { background: linear-gradient(135deg, #f72585, #7209b7); color: #fff; }
+    #start-btn.busy { background: #ffffff22; color: #ffffff77; cursor: default; }
     .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
     .btn-reset:hover { border-color: #ffffff55; }
 
@@ -186,7 +162,7 @@
       position: fixed;
       right: 16px;
       bottom: 16px;
-      z-index: 2147483647;      /* always on top of everything */
+      z-index: 2147483647;
       font-family: 'Fredoka One', cursive;
       display: flex;
       flex-direction: column;
@@ -208,7 +184,6 @@
       user-select: none;
     }
     .type-btn:active { transform: scale(0.95); }
-    /* the little arrow: points UP when closed, DOWN when open */
     .type-arrow {
       width: 0; height: 0;
       border-left: 7px solid transparent;
@@ -248,35 +223,29 @@
 
   <a class="back-link" href="../">← back</a>
 
-  <div class="title">🚦 TRAFFIC LIGHT TIMER 🚦</div>
+  <div class="title">🕯️ CANDLE TIMER 🕯️</div>
 
   <div class="timer-setup">
-    <input type="number" id="tm-min" value="3" min="0" max="99">
+    <input type="number" id="tm-min" value="1" min="0" max="99">
     <span>:</span>
-    <input type="number" id="tm-sec" value="1" min="0" max="59">
+    <input type="number" id="tm-sec" value="0" min="0" max="59">
   </div>
 
   <div class="display">
     <div class="unit-wrap mm">
       <div class="unit-label">MIN</div>
-      <div class="unit-val" id="mm-val">03</div>
+      <div class="unit-val" id="mm-val">01</div>
     </div>
     <div class="colon" id="colon">:</div>
     <div class="unit-wrap ss">
       <div class="unit-label">SEC</div>
-      <div class="unit-val" id="ss-val">01</div>
+      <div class="unit-val" id="ss-val">00</div>
     </div>
   </div>
 
-  <!-- the traffic light -->
-  <div class="traffic" id="traffic">
-    <div class="housing">
-      <div class="lamp red"    id="lamp-red"></div>
-      <div class="lamp yellow" id="lamp-yellow"></div>
-      <div class="lamp green"  id="lamp-green"></div>
-    </div>
-    <div class="pole"></div>
-    <div class="foot"></div>
+  <div class="stage" id="stage">
+    <canvas id="scene"></canvas>
+    <img id="rewind-icon" src="assets/rewind-circle.gif" alt="rewinding">
   </div>
 
   <div class="buttons">
@@ -338,23 +307,28 @@
 
 <script>
   // ===================== THE CLOCK =====================
-  // Driven by real time (performance.now) so it never drifts.
+  // Four things this page can be doing:
+  //   idle    - a whole candle, unlit, waiting for you
+  //   running - lit, melting down as the clock runs out
+  //   goop    - melted, a puddle of yellow goop for a moment
+  //   rewind  - the grey rewind, running backwards at DOUBLE SPEED
+  let phase = 'idle';
   let totalMs = 0;
   let remainingMs = 0;
   let elapsedBefore = 0;   // time used up before the last pause
   let startStamp = 0;
-  let running = false;
-  let finished = false;
+  let goopAt = 0;
+  let rewindAt = 0;
+  let rewindMs = 0;
+  let melt = 0;            // 0 = whole candle, 1 = completely melted
+
+  const GOOP_HOLD = 900;   // how long the goop sits there before the rewind starts
 
   const minInput = document.getElementById('tm-min');
   const secInput = document.getElementById('tm-sec');
   const startBtn = document.getElementById('start-btn');
-  const traffic  = document.getElementById('traffic');
-  const lamps = {
-    red:    document.getElementById('lamp-red'),
-    yellow: document.getElementById('lamp-yellow'),
-    green:  document.getElementById('lamp-green')
-  };
+  const stage    = document.getElementById('stage');
+  const colon    = document.getElementById('colon');
 
   function readInputs() {
     const mm = Math.max(0, parseInt(minInput.value) || 0);
@@ -363,43 +337,43 @@
   }
 
   function startOrPause() {
-    if (running) { pause(); return; }
-    if (finished || remainingMs <= 0) {
+    // while it is melting into goop or rewinding, the button does nothing
+    if (phase === 'goop' || phase === 'rewind') return;
+
+    if (phase === 'running') {                 // pause
+      elapsedBefore += performance.now() - startStamp;
+      phase = 'idle';
+      startBtn.textContent = 'START';
+      startBtn.classList.remove('pause-mode');
+      colon.classList.remove('pulse');
+      return;
+    }
+
+    if (remainingMs <= 0) {                    // a fresh run: light the candle
       totalMs = readInputs();
       if (totalMs <= 0) return;
       elapsedBefore = 0;
       remainingMs = totalMs;
-      finished = false;
-      lastSeconds = -1;          // the light watches the seconds from scratch
-      setLight('off');
+      melt = 0;
     }
-    running = true;
+    phase = 'running';
     startStamp = performance.now();
     startBtn.textContent = 'PAUSE';
     startBtn.classList.add('pause-mode');
-    document.getElementById('colon').classList.add('pulse');
-  }
-
-  function pause() {
-    running = false;
-    elapsedBefore += performance.now() - startStamp;
-    startBtn.textContent = 'START';
-    startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
+    colon.classList.add('pulse');
   }
 
   function resetAll() {
-    running = false;
-    finished = false;
-    elapsedBefore = 0;
+    phase = 'idle';
     totalMs = readInputs();
     remainingMs = totalMs;
-    lastSeconds = -1;
+    elapsedBefore = 0;
+    melt = 0;
+    stage.classList.remove('rewinding');
     startBtn.textContent = 'START';
-    startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
-    setLight('off');
-    showTime(remainingMs);
+    startBtn.classList.remove('pause-mode', 'busy');
+    colon.classList.remove('pulse');
+    showTime(totalMs);
   }
 
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -410,75 +384,210 @@
     document.getElementById('ss-val').textContent = pad(totalSec % 60);
   }
 
-  // ===================== THE LIGHT =====================
-  // Jos's rule: the light is driven by the SECONDS, and repeats every minute.
-  //   seconds hit :59 -> RED
-  //   seconds hit :30 -> YELLOW
-  //   seconds hit :10 -> GREEN
-  //   next :59        -> RED again, round and round.
-  // At 0:00 (and only then) all three lamps flash green together.
-  const triggers = [
-    { at: 59, colour: 'red' },
-    { at: 30, colour: 'yellow' },
-    { at: 10, colour: 'green' }
-  ];
-  let lastSeconds = -1;   // the seconds we saw on the last frame
+  minInput.addEventListener('change', resetAll);
+  secInput.addEventListener('change', resetAll);
 
-  function setLight(colour) {
-    traffic.classList.remove('flash');
-    for (const name in lamps) lamps[name].classList.toggle('on', name === colour);
-    if (colour === 'flash') traffic.classList.add('flash');
+  // ===================== THE CANDLE =====================
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // Called every frame with the seconds currently on the display.
-  function watchSeconds(sec) {
-    if (sec === lastSeconds) return;
-    if (lastSeconds === -1) {
-      // first look after Start: only counts as a hit if we are sitting exactly on a trigger
-      for (const t of triggers) if (t.at === sec) setLight(t.colour);
-      lastSeconds = sec;
-      return;
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // The puddle of melted wax at the bottom. It grows as the candle shrinks.
+  function drawGoop(cx, baseY, candleW, m, t) {
+    const w = candleW * (1 + m * 1.9);
+    const h = 10 + m * 16;
+    ctx.fillStyle = '#e9c53f';
+    ctx.beginPath();
+    ctx.ellipse(cx, baseY, w / 2, h / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // a lighter top so it looks wet
+    ctx.fillStyle = '#f7dd6a';
+    ctx.beginPath();
+    ctx.ellipse(cx, baseY - h * 0.18, w / 2 * 0.86, h / 2 * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // three slow blobs bulging out of the edge, so the goop looks alive
+    for (let i = 0; i < 3; i++) {
+      const a = i * 2.1 + Math.sin(t * 0.6 + i) * 0.25;
+      const r = w / 2 * (0.72 + 0.1 * Math.sin(t * 1.1 + i * 2));
+      ctx.beginPath();
+      ctx.ellipse(cx + Math.cos(a) * r, baseY + Math.sin(a) * h * 0.22,
+                  w * 0.11, h * 0.34, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
-    // Which trigger numbers did the seconds pass on the way down from lastSeconds to sec?
-    // (Usually just one step, but if the tab was hidden the clock may have jumped.)
-    let newColour = null;
-    for (const t of triggers) {
-      const wrapped = sec > lastSeconds;                 // went past :00 and round to :59
-      const passed = wrapped ? (t.at < lastSeconds || t.at >= sec)
-                             : (t.at < lastSeconds && t.at >= sec);
-      if (passed) newColour = t.colour;                  // the lowest one passed wins
+  }
+
+  function drawFlame(cx, topY, t, strength) {
+    const flick = Math.sin(t * 9) * 0.5 + Math.sin(t * 17 + 1.3) * 0.3;
+    const h = (34 + flick * 5) * strength;
+    const w = (15 + flick * 2) * strength;
+    if (h < 1) return;
+
+    // the warm glow the flame throws around the room
+    const glow = ctx.createRadialGradient(cx, topY - h * 0.4, 2, cx, topY - h * 0.4, 150 * strength);
+    glow.addColorStop(0, 'rgba(255,190,80,0.30)');
+    glow.addColorStop(1, 'rgba(255,190,80,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, topY - h * 0.4, 150 * strength, 0, Math.PI * 2);
+    ctx.fill();
+
+    // the outer teardrop
+    ctx.fillStyle = '#ff9d1c';
+    ctx.beginPath();
+    ctx.moveTo(cx, topY - h);
+    ctx.quadraticCurveTo(cx + w, topY - h * 0.35, cx, topY + 2);
+    ctx.quadraticCurveTo(cx - w, topY - h * 0.35, cx, topY - h);
+    ctx.fill();
+    // the bright middle
+    ctx.fillStyle = '#ffe066';
+    ctx.beginPath();
+    ctx.moveTo(cx, topY - h * 0.72);
+    ctx.quadraticCurveTo(cx + w * 0.45, topY - h * 0.25, cx, topY);
+    ctx.quadraticCurveTo(cx - w * 0.45, topY - h * 0.25, cx, topY - h * 0.72);
+    ctx.fill();
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+
+    // the dark room behind everything
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#101026');
+    bg.addColorStop(1, '#1a1436');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const baseY = H * 0.86;              // the table the candle stands on
+    const candleW = Math.min(84, W * 0.22);
+    const fullH = H * 0.56;
+    const m = Math.max(0, Math.min(1, melt));
+    const bodyH = fullH * (1 - m);
+
+    // the table top
+    ctx.fillStyle = '#2b2350';
+    roundRect(cx - W * 0.34, baseY + 4, W * 0.68, 12, 6);
+    ctx.fill();
+
+    if (bodyH > 2) {
+      const topY = baseY - bodyH;
+      // the wax body
+      const wax = ctx.createLinearGradient(cx - candleW / 2, 0, cx + candleW / 2, 0);
+      wax.addColorStop(0,    '#d9bd63');
+      wax.addColorStop(0.35, '#f7e9a8');
+      wax.addColorStop(1,    '#cfae55');
+      ctx.fillStyle = wax;
+      roundRect(cx - candleW / 2, topY, candleW, bodyH, 8);
+      ctx.fill();
+
+      // the hollow melted dip in the top
+      ctx.fillStyle = '#e9c53f';
+      ctx.beginPath();
+      ctx.ellipse(cx, topY, candleW / 2, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // two drips running down the side, longer as it melts more
+      ctx.fillStyle = '#f2d661';
+      for (const side of [-1, 1]) {
+        const dx = cx + side * candleW * 0.34;
+        const len = 12 + m * bodyH * 0.5;
+        roundRect(dx - 5, topY + 2, 10, Math.min(len, bodyH - 4), 5);
+        ctx.fill();
+      }
+
+      // the wick
+      ctx.strokeStyle = '#3a2f22';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx, topY - 1);
+      ctx.lineTo(cx + 2, topY - 11);
+      ctx.stroke();
+
+      // lit only while it is actually running
+      if (phase === 'running') drawFlame(cx + 2, topY - 11, t, 1);
     }
-    if (newColour) setLight(newColour);
-    lastSeconds = sec;
+
+    drawGoop(cx, baseY, candleW, m, t);
+
+    // ===== the rewind: everything behind the symbol turns grey =====
+    if (phase === 'rewind') {
+      ctx.globalCompositeOperation = 'saturation';
+      ctx.fillStyle = 'hsl(0, 0%, 50%)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(20,20,26,0.35)';
+      ctx.fillRect(0, 0, W, H);
+    }
   }
 
   // ===================== THE LOOP =====================
   function loop(now) {
-    if (running) {
-      const elapsed = elapsedBefore + (now - startStamp);
-      remainingMs = Math.max(0, totalMs - elapsed);
+    if (phase === 'running') {
+      const used = elapsedBefore + (now - startStamp);
+      remainingMs = Math.max(0, totalMs - used);
+      melt = totalMs > 0 ? 1 - remainingMs / totalMs : 0;
       showTime(remainingMs);
-      if (remainingMs === 0) {
-        finishUp();
-      } else {
-        watchSeconds(Math.ceil(remainingMs / 1000) % 60);
+      if (remainingMs <= 0) {
+        // fully melted: the flame is out and only the goop is left
+        melt = 1;
+        phase = 'goop';
+        goopAt = now;
+        startBtn.textContent = 'MELTED';
+        startBtn.classList.remove('pause-mode');
+        startBtn.classList.add('busy');
+        colon.classList.remove('pulse');
+      }
+    } else if (phase === 'goop') {
+      if (now - goopAt >= GOOP_HOLD) {
+        phase = 'rewind';
+        rewindAt = now;
+        rewindMs = Math.max(600, totalMs / 2);   // DOUBLE SPEED backwards
+        stage.classList.add('rewinding');
+        startBtn.textContent = 'REWIND';
+      }
+    } else if (phase === 'rewind') {
+      const f = Math.min(1, (now - rewindAt) / rewindMs);
+      melt = 1 - f;                     // the goop climbs back up into a candle
+      remainingMs = totalMs * f;        // and the clock runs back up too
+      showTime(remainingMs);
+      if (f >= 1) {
+        // back to a whole unlit candle. It waits here — you have to press go.
+        phase = 'idle';
+        melt = 0;
+        remainingMs = totalMs;
+        elapsedBefore = 0;
+        stage.classList.remove('rewinding');
+        startBtn.textContent = 'START';
+        startBtn.classList.remove('busy');
+        showTime(totalMs);
       }
     }
+    draw(now / 1000);
     requestAnimationFrame(loop);
   }
 
-  function finishUp() {
-    running = false;
-    finished = true;
-    startBtn.textContent = 'START';
-    startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
-    setLight('flash');    // 0:00 — all three flash green
-  }
-
-  minInput.addEventListener('input', () => { if (!running) resetAll(); });
-  secInput.addEventListener('input', () => { if (!running) resetAll(); });
-
+  window.addEventListener('resize', sizeCanvas);
+  sizeCanvas();
   resetAll();
   requestAnimationFrame(loop);
 </script>

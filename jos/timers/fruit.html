@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fruit Box Timer — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080818;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 70px 0 90px; overflow-x: hidden;
+    }
+
+    .back-link {
+      position: fixed; top: 20px; left: 20px;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44; text-decoration: none;
+      font-size: 1rem; letter-spacing: 1px;
+      transition: color 0.2s; z-index: 50;
+    }
+    .back-link:hover { color: #fff; }
+
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      background: linear-gradient(90deg, #f72585, #7fff00, #00f5ff, #f72585);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 4s linear infinite;
+      letter-spacing: 4px; margin-bottom: 16px;
+      text-align: center; padding: 0 16px;
+    }
+    @keyframes rainbowShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    .timer-setup { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .timer-setup input {
+      font-family: 'Fredoka One', cursive; font-size: 2.2rem;
+      width: 84px; text-align: center; background: #ffffff11;
+      border: 3px solid #f72585; border-radius: 14px;
+      color: #f72585; padding: 6px; outline: none;
+    }
+    .timer-setup input:focus { border-color: #fff; color: #fff; }
+    .timer-setup span { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: #ffffff33; }
+
+    .display { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 14px; }
+    .unit-wrap { display: flex; flex-direction: column; align-items: center; }
+    .unit-label {
+      font-family: 'Fredoka One', cursive; font-size: 0.85rem;
+      letter-spacing: 3px; margin-bottom: 4px; text-transform: uppercase; opacity: 0.8;
+    }
+    .unit-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.4rem, 10vw, 4.2rem);
+      line-height: 1; min-width: 2ch; text-align: center;
+    }
+    .mm .unit-label, .mm .unit-val { color: #f72585; }
+    .ss .unit-label, .ss .unit-val { color: #7fff00; }
+    .colon {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2rem, 8vw, 3.6rem);
+      color: #ffffff22; padding-top: 20px; line-height: 1;
+    }
+    .colon.pulse { animation: blink 1s step-start infinite; }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* The invisible box is the WHOLE SCREEN. This layer sits on top of the
+       page and is only switched on once the timer hits zero. */
+    #scene {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: none;
+      z-index: 9000;
+      pointer-events: none;
+      /* NO background. Nothing is hidden — the fruit lands ON TOP of the
+         buttons and the numbers and buries them. */
+    }
+    body.flooding #scene { display: block; }
+
+    .buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem; padding: 14px 44px; border-radius: 50px;
+      border: none; cursor: pointer; letter-spacing: 1px;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .btn:active { transform: scale(0.93); }
+    #start-btn { background: linear-gradient(135deg, #7fff00, #00f5ff); color: #080818; }
+    #start-btn.pause-mode { background: linear-gradient(135deg, #f72585, #7209b7); color: #fff; }
+    #start-btn.busy { background: #ffffff22; color: #ffffff77; cursor: default; }
+    .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
+    .btn-reset:hover { border-color: #ffffff55; }
+
+    /* ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== */
+    .type-picker {
+      position: fixed; right: 16px; bottom: 16px;
+      z-index: 2147483647; font-family: 'Fredoka One', cursive;
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
+    .type-btn {
+      font-family: 'Fredoka One', cursive; font-size: 1.1rem; letter-spacing: 2px;
+      color: #080818; background: #00f5ff; border: none; border-radius: 50px;
+      padding: 10px 18px 10px 22px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    .type-btn:active { transform: scale(0.95); }
+    .type-arrow {
+      width: 0; height: 0;
+      border-left: 7px solid transparent; border-right: 7px solid transparent;
+      border-bottom: 9px solid #080818; transition: transform 0.2s;
+    }
+    .type-picker.open .type-arrow { transform: rotate(180deg); }
+    .type-list {
+      list-style: none; display: none; flex-direction: column;
+      margin-bottom: 10px; background: #080818;
+      border: 3px solid #00f5ff; border-radius: 18px;
+      padding: 8px; min-width: 190px; max-height: 70vh; overflow-y: auto;
+    }
+    .type-picker.open .type-list { display: flex; }
+    .type-list a, .type-list span {
+      display: block; padding: 8px 14px; border-radius: 12px;
+      text-decoration: none; color: #fff; font-size: 1rem; letter-spacing: 1px;
+    }
+    .type-list a:hover { background: #f72585; color: #080818; }
+    .type-list span.current { background: #7fff00; color: #080818; cursor: default; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../">← back</a>
+
+  <div class="title">🍎 FRUIT BOX TIMER 🍌</div>
+
+  <div class="timer-setup">
+    <input type="number" id="tm-min" value="0" min="0" max="99">
+    <span>:</span>
+    <input type="number" id="tm-sec" value="10" min="0" max="59">
+  </div>
+
+  <div class="display">
+    <div class="unit-wrap mm"><div class="unit-label">MIN</div><div class="unit-val" id="mm-val">00</div></div>
+    <div class="colon" id="colon">:</div>
+    <div class="unit-wrap ss"><div class="unit-label">SEC</div><div class="unit-val" id="ss-val">10</div></div>
+  </div>
+
+  <canvas id="scene"></canvas>
+
+  <div class="buttons">
+    <button class="btn" id="start-btn" onclick="startOrPause()">START</button>
+    <button class="btn btn-reset" onclick="resetAll()">RESET</button>
+  </div>
+
+  <!-- ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== -->
+  <div class="type-picker" id="type-picker">
+    <ul class="type-list" id="type-list">
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;font-family:'Fredoka One',cursive;">REGULAR</li>
+      <li><a href="regular.html">Regular</a></li>
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;border-top:2px solid #ffffff1f;margin-top:8px;font-family:'Fredoka One',cursive;">TIMER</li>
+      <li><a href="puzzle.html">Puzzle</a></li>
+      <li><a href="coke.html">Coke Bottle</a></li>
+      <li><a href="bomb.html">Bomb</a></li>
+      <li><a href="tsunami.html">Tsunami</a></li>
+      <li><a href="rocket.html">Rocket</a></li>
+      <li><a href="knock.html">Knock-the-Number</a></li>
+      <li><a href="traffic.html">Traffic Light</a></li>
+      <li><a href="sun.html">Dying Sun</a></li>
+      <li><a href="book.html">Flipbook</a></li>
+      <li><a href="candle.html">Candle</a></li>
+      <li><a href="fruit.html">Fruit Box</a></li>
+      <li><a href="exciting.html">Exciting</a></li>
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;border-top:2px solid #ffffff1f;margin-top:8px;font-family:'Fredoka One',cursive;">STOPWATCH</li>
+      <li><a href="runner.html">Running Man</a></li>
+      <li><a href="lego.html">Lego</a></li>
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;border-top:2px solid #ffffff1f;margin-top:8px;font-family:'Fredoka One',cursive;">CRAZY IDEAS</li>
+      <li><a href="zeroescape.html">Zero Escape</a></li>
+      <li><a href="world.html">World Spinning</a></li>
+    </ul>
+    <button class="type-btn" id="type-btn">Type <span class="type-arrow"></span></button>
+  </div>
+  <script>
+    (function () {
+      const picker = document.getElementById('type-picker');
+      const button = document.getElementById('type-btn');
+      const thisPage = location.pathname.split('/').pop() || 'index.html';
+      picker.querySelectorAll('.type-list a').forEach(link => {
+        if (link.getAttribute('href') === thisPage) {
+          const here = document.createElement('span');
+          here.className = 'current';
+          here.textContent = link.textContent;
+          link.replaceWith(here);
+        }
+      });
+      button.addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('open'); });
+      document.addEventListener('click', (e) => { if (!picker.contains(e.target)) picker.classList.remove('open'); });
+    })();
+  </script>
+
+<script>
+  // ===================== THE CLOCK =====================
+  // phases: idle -> running -> pour (the lid opens and fruit floods in)
+  //         -> full (it sits there, you cannot see a thing)
+  //         -> empty (the bottom opens and the lot falls out) -> idle
+  let phase = 'idle';
+  let totalMs = 0, remainingMs = 0, elapsedBefore = 0, startStamp = 0;
+  let phaseAt = 0;
+
+  const POUR_MS  = 1500;   // how long the fruit takes to pour in through the top
+  const FULL_MS  = 2500;   // how long it sits there full, before the bottom opens
+  const EMPTY_MS = 2200;   // how long the fruit takes to fall out of the bottom
+
+  const minInput = document.getElementById('tm-min');
+  const secInput = document.getElementById('tm-sec');
+  const startBtn = document.getElementById('start-btn');
+  const colon    = document.getElementById('colon');
+
+  function readInputs() {
+    const mm = Math.max(0, parseInt(minInput.value) || 0);
+    const ss = Math.max(0, Math.min(59, parseInt(secInput.value) || 0));
+    return (mm * 60 + ss) * 1000;
+  }
+
+  function startOrPause() {
+    if (phase === 'pour' || phase === 'full' || phase === 'empty') return;
+    if (phase === 'running') {
+      elapsedBefore += performance.now() - startStamp;
+      phase = 'idle';
+      startBtn.textContent = 'START';
+      startBtn.classList.remove('pause-mode');
+      colon.classList.remove('pulse');
+      return;
+    }
+    if (remainingMs <= 0) {
+      totalMs = readInputs();
+      if (totalMs <= 0) return;
+      elapsedBefore = 0;
+      remainingMs = totalMs;
+    }
+    fruit.length = 0;
+    phase = 'running';
+    startStamp = performance.now();
+    startBtn.textContent = 'PAUSE';
+    startBtn.classList.add('pause-mode');
+    colon.classList.add('pulse');
+  }
+
+  function resetAll() {
+    phase = 'idle';
+    totalMs = readInputs();
+    remainingMs = totalMs;
+    elapsedBefore = 0;
+    fruit.length = 0;
+    spawned = 0;
+    document.body.classList.remove('flooding');
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode', 'busy');
+    colon.classList.remove('pulse');
+    showTime(totalMs);
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function showTime(ms) {
+    const totalSec = Math.ceil(ms / 1000);
+    document.getElementById('mm-val').textContent = pad(Math.min(99, Math.floor(totalSec / 60)));
+    document.getElementById('ss-val').textContent = pad(totalSec % 60);
+  }
+  minInput.addEventListener('change', resetAll);
+  secInput.addEventListener('change', resetAll);
+
+  // ===================== THE INVISIBLE BOX =====================
+  // The box has walls and a floor you cannot see. The lid opens at zero, the
+  // fruit pours in, the lid shuts, and a couple of seconds later the FLOOR
+  // opens and everything drops out of the bottom of the screen.
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+
+  let HOW_MANY = 200;        // worked out from the window size in sizeCanvas()
+  const GRAVITY  = 1900;     // pixels per second per second
+  const fruit = [];
+  let spawned = 0;
+  let floorOn = true;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // enough fruit to bury a screen this size, however big the window is
+    HOW_MANY = Math.max(26, Math.min(110, Math.round(W * H / 26000)));
+  }
+
+  const KINDS = ['apple', 'orange', 'banana', 'grapes', 'melon', 'lemon', 'strawberry', 'pear', 'cherry'];
+
+  function addFruit() {
+    const kind = KINDS[Math.floor(Math.random() * KINDS.length)];
+    const r = 100 + Math.random() * 60;   // huge fruit
+    fruit.push({
+      kind, r,
+      x: r + Math.random() * (W - r * 2),
+      y: -r - Math.random() * H * 1.6,      // starts well above the screen
+      vx: (Math.random() - 0.5) * 90,
+      vy: 120 + Math.random() * 260,
+      spin: (Math.random() - 0.5) * 3,
+      a: Math.random() * Math.PI * 2
+    });
+  }
+
+  function physics(dt) {
+    for (const f of fruit) {
+      f.vy += GRAVITY * dt;
+      f.x += f.vx * dt;
+      f.y += f.vy * dt;
+      f.a += f.spin * dt;
+
+      // the invisible walls
+      if (f.x < f.r)     { f.x = f.r;     f.vx = Math.abs(f.vx) * 0.4; }
+      if (f.x > W - f.r) { f.x = W - f.r; f.vx = -Math.abs(f.vx) * 0.4; }
+
+      // the invisible floor — until the bottom opens
+      if (floorOn && f.y > H - f.r) {
+        f.y = H - f.r;
+        f.vy *= -0.22;                 // a small bounce, then it settles
+        f.vx *= 0.86;
+        f.spin *= 0.7;
+      }
+    }
+
+    // Push fruit apart so they pile up instead of sitting inside each other.
+    // Checking every fruit against every other one would be far too slow with
+    // hundreds of them, so the screen is chopped into squares and each fruit
+    // only looks at the squares next to it.
+    const CELL = 340;
+    const cols = Math.ceil(W / CELL) + 1;
+    for (let pass = 0; pass < 5; pass++) {
+      const grid = new Map();
+      for (let i = 0; i < fruit.length; i++) {
+        const f = fruit[i];
+        const key = (Math.floor(f.y / CELL) * cols) + Math.floor(f.x / CELL);
+        let cell = grid.get(key);
+        if (!cell) { cell = []; grid.set(key, cell); }
+        cell.push(i);
+      }
+      for (let i = 0; i < fruit.length; i++) {
+        const a = fruit[i];
+        const gx = Math.floor(a.x / CELL), gy = Math.floor(a.y / CELL);
+        for (let oy = -1; oy <= 1; oy++) {
+          for (let ox = -1; ox <= 1; ox++) {
+            const cell = grid.get(((gy + oy) * cols) + (gx + ox));
+            if (!cell) continue;
+            for (const j of cell) {
+              if (j <= i) continue;
+              const b = fruit[j];
+              let dx = b.x - a.x, dy = b.y - a.y;
+              const min = (a.r + b.r) * 0.80;   // packed tight, so no gaps show through
+              if (Math.abs(dx) > min || Math.abs(dy) > min) continue;
+              let d = Math.hypot(dx, dy);
+              if (d === 0) { dx = 0.5; dy = 0.5; d = 0.7; }
+              if (d >= min) continue;
+              const push = (min - d) / 2;
+              const nx = dx / d, ny = dy / d;
+              a.x -= nx * push; a.y -= ny * push;
+              b.x += nx * push; b.y += ny * push;
+              // swap a little speed so the pile settles instead of jiggling
+              const rel = (b.vy - a.vy) * ny + (b.vx - a.vx) * nx;
+              if (rel < 0) {
+                a.vx += nx * rel * 0.4; a.vy += ny * rel * 0.4;
+                b.vx -= nx * rel * 0.4; b.vy -= ny * rel * 0.4;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // once the bottom is open, forget the ones that have gone
+    if (!floorOn) {
+      for (let i = fruit.length - 1; i >= 0; i--) {
+        if (fruit[i].y - fruit[i].r > H + 80) fruit.splice(i, 1);
+      }
+    }
+  }
+
+  // ===================== DRAWING THE FRUIT =====================
+  function leaf(r) {
+    ctx.fillStyle = '#3aa14a';
+    ctx.beginPath();
+    ctx.ellipse(r * 0.45, -r * 0.85, r * 0.38, r * 0.17, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  function stalk(r) {
+    ctx.strokeStyle = '#6b4a22';
+    ctx.lineWidth = Math.max(2, r * 0.14);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 0.8);
+    ctx.lineTo(0, -r * 1.15);
+    ctx.stroke();
+  }
+  function shine(r) {
+    ctx.fillStyle = '#ffffff55';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.32, -r * 0.34, r * 0.22, r * 0.14, -0.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawFruit(f) {
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    ctx.rotate(f.a);
+    const r = f.r * 0.96;
+
+    if (f.kind === 'apple') {
+      ctx.fillStyle = '#e02020';
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      shine(r); stalk(r); leaf(r);
+
+    } else if (f.kind === 'orange') {
+      ctx.fillStyle = '#ff8c1a';
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e0700f'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.62, 0, Math.PI * 2); ctx.stroke();
+      shine(r); leaf(r);
+
+    } else if (f.kind === 'lemon') {
+      ctx.fillStyle = '#ffdd33';
+      ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.72, 0, 0, Math.PI * 2); ctx.fill();
+      shine(r);
+
+    } else if (f.kind === 'banana') {
+      ctx.strokeStyle = '#ffd633';
+      ctx.lineWidth = r * 0.55; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, r * 0.5, r * 0.95, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.stroke();
+      ctx.strokeStyle = '#e8b81f'; ctx.lineWidth = r * 0.12;
+      ctx.beginPath();
+      ctx.arc(0, r * 0.5, r * 1.12, Math.PI * 1.2, Math.PI * 1.8);
+      ctx.stroke();
+
+    } else if (f.kind === 'grapes') {
+      ctx.fillStyle = '#8a3fc0';
+      const spots = [[0,-0.45],[-0.42,-0.12],[0.42,-0.12],[-0.2,0.28],[0.2,0.28],[0,0.66]];
+      for (const [gx, gy] of spots) {
+        ctx.beginPath(); ctx.arc(gx * r, gy * r, r * 0.34, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#a55ad6';
+      ctx.beginPath(); ctx.arc(-0.12 * r, -0.35 * r, r * 0.12, 0, Math.PI * 2); ctx.fill();
+      leaf(r);
+
+    } else if (f.kind === 'melon') {
+      ctx.fillStyle = '#2f9e44';                       // the rind
+      ctx.beginPath(); ctx.arc(0, 0, r, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#ff4d6d';                       // the pink inside
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.82, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#20240f';
+      for (const sx of [-0.42, 0, 0.42]) {
+        ctx.beginPath();
+        ctx.ellipse(sx * r, -r * 0.36, r * 0.07, r * 0.11, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+    } else if (f.kind === 'strawberry') {
+      ctx.fillStyle = '#e8253f';
+      ctx.beginPath();
+      ctx.moveTo(0, r);
+      ctx.quadraticCurveTo(-r * 1.05, -r * 0.15, -r * 0.42, -r * 0.72);
+      ctx.quadraticCurveTo(0, -r * 1.0, r * 0.42, -r * 0.72);
+      ctx.quadraticCurveTo(r * 1.05, -r * 0.15, 0, r);
+      ctx.fill();
+      ctx.fillStyle = '#ffe98a';
+      for (const [px, py] of [[-0.3,-0.3],[0.3,-0.3],[0,0.05],[-0.22,0.35],[0.22,0.35]]) {
+        ctx.beginPath(); ctx.ellipse(px * r, py * r, r * 0.06, r * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#3aa14a';
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.55, -r * 0.72);
+      ctx.lineTo(r * 0.55, -r * 0.72);
+      ctx.lineTo(0, -r * 0.3);
+      ctx.fill();
+
+    } else if (f.kind === 'pear') {
+      ctx.fillStyle = '#b5d334';
+      ctx.beginPath(); ctx.arc(0, r * 0.32, r * 0.78, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -r * 0.42, r * 0.5, 0, Math.PI * 2); ctx.fill();
+      shine(r); stalk(r);
+
+    } else {  // cherry
+      ctx.strokeStyle = '#4e7a22'; ctx.lineWidth = Math.max(2, r * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.35, r * 0.1); ctx.quadraticCurveTo(0, -r, r * 0.35, r * 0.1);
+      ctx.stroke();
+      ctx.fillStyle = '#d11141';
+      ctx.beginPath(); ctx.arc(-r * 0.42, r * 0.42, r * 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(r * 0.42, r * 0.42, r * 0.5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const f of fruit) drawFruit(f);   // nothing behind them: the page shows through
+  }
+
+  // ===================== THE LOOP =====================
+  let last = 0;
+  function loop(now) {
+    const dt = last ? Math.min(0.032, (now - last) / 1000) : 0.016;
+    last = now;
+
+    if (phase === 'running') {
+      remainingMs = Math.max(0, totalMs - (elapsedBefore + (now - startStamp)));
+      showTime(remainingMs);
+      if (remainingMs <= 0) {
+        // ZERO. The lid opens.
+        phase = 'pour';
+        phaseAt = now;
+        document.body.classList.add('flooding');
+        spawned = 0;
+        floorOn = true;
+        startBtn.textContent = 'FRUIT!';
+        startBtn.classList.remove('pause-mode');
+        startBtn.classList.add('busy');
+        colon.classList.remove('pulse');
+      }
+    } else if (phase === 'pour') {
+      // pour the fruit in through the open top
+      const want = Math.min(HOW_MANY, Math.round(HOW_MANY * (now - phaseAt) / POUR_MS));
+      while (spawned < want) { addFruit(); spawned++; }
+      if (spawned >= HOW_MANY && now - phaseAt > POUR_MS + 300) {
+        phase = 'full';                 // the lid shuts again
+        phaseAt = now;
+      }
+    } else if (phase === 'full') {
+      if (now - phaseAt >= FULL_MS) {
+        phase = 'empty';                // and now the BOTTOM opens
+        phaseAt = now;
+        floorOn = false;
+      }
+    } else if (phase === 'empty') {
+      if (fruit.length === 0 || now - phaseAt >= EMPTY_MS) {
+        fruit.length = 0;
+        floorOn = true;
+        phase = 'idle';
+        document.body.classList.remove('flooding');
+        remainingMs = totalMs;
+        elapsedBefore = 0;
+        startBtn.textContent = 'START';
+        startBtn.classList.remove('busy');
+        showTime(totalMs);
+      }
+    }
+
+    if (fruit.length) physics(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', sizeCanvas);
+  sizeCanvas();
+  resetAll();
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>

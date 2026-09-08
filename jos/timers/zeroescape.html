@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Traffic Light Timer — Jos</title>
+  <title>Zero Escape — Jos</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,14 +16,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 70px 16px 90px;
+      padding: 70px 0 90px;
       overflow-x: hidden;
     }
 
     .back-link {
       position: fixed;
-      top: 20px;
-      left: 20px;
+      top: 20px; left: 20px;
       font-family: 'Fredoka One', cursive;
       color: #ffffff44;
       text-decoration: none;
@@ -43,21 +42,30 @@
       -webkit-text-fill-color: transparent;
       animation: rainbowShift 4s linear infinite;
       letter-spacing: 4px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       text-align: center;
+      padding: 0 16px;
     }
     @keyframes rainbowShift {
       0% { background-position: 0% 50%; }
       100% { background-position: 300% 50%; }
     }
 
-    /* Set how long the countdown is */
-    .timer-setup {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 18px;
+    /* the warning, because this one really does leave the website */
+    .warning {
+      font-family: 'Fredoka One', cursive;
+      color: #f72585;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      text-align: center;
+      padding: 0 20px;
+      margin-bottom: 22px;
+      max-width: 420px;
+      line-height: 1.5;
     }
+    .warning b { color: #7fff00; }
+
+    .timer-setup { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
     .timer-setup input {
       font-family: 'Fredoka One', cursive;
       font-size: 2.2rem;
@@ -71,108 +79,44 @@
       outline: none;
     }
     .timer-setup input:focus { border-color: #fff; color: #fff; }
-    .timer-setup span {
-      font-family: 'Fredoka One', cursive;
-      font-size: 2.2rem;
-      color: #ffffff33;
-    }
+    .timer-setup span { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: #ffffff33; }
 
-    /* The big digits */
-    .display {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      margin-bottom: 22px;
-    }
+    .display { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 28px; }
     .unit-wrap { display: flex; flex-direction: column; align-items: center; }
     .unit-label {
       font-family: 'Fredoka One', cursive;
-      font-size: 0.85rem;
-      letter-spacing: 3px;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      opacity: 0.8;
+      font-size: 0.85rem; letter-spacing: 3px; margin-bottom: 4px;
+      text-transform: uppercase; opacity: 0.8;
     }
     .unit-val {
       font-family: 'Fredoka One', cursive;
-      font-size: clamp(3.4rem, 14vw, 5.5rem);
-      line-height: 1;
-      min-width: 2ch;
-      text-align: center;
+      font-size: clamp(3rem, 15vw, 6.5rem);
+      line-height: 1; min-width: 2ch; text-align: center;
     }
     .mm .unit-label, .mm .unit-val { color: #f72585; }
     .ss .unit-label, .ss .unit-val { color: #7fff00; }
     .colon {
       font-family: 'Fredoka One', cursive;
-      font-size: clamp(3rem, 12vw, 4.8rem);
-      color: #ffffff22;
-      padding-top: 22px;
-      line-height: 1;
+      font-size: clamp(2.6rem, 12vw, 5.4rem);
+      color: #ffffff22; padding-top: 24px; line-height: 1;
     }
     .colon.pulse { animation: blink 1s step-start infinite; }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-    /* ===== The traffic light, drawn with CSS shapes ===== */
-    .traffic {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 26px;
-      --lamp: clamp(48px, min(14vw, 10vh), 84px);   /* size of one lamp */
-    }
-    .housing {
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-radius: calc(var(--lamp) * 0.5);
-      padding: calc(var(--lamp) * 0.18);
-      display: flex;
-      flex-direction: column;
-      gap: calc(var(--lamp) * 0.16);
-    }
-    .lamp {
-      width: var(--lamp);
-      height: var(--lamp);
-      border-radius: 50%;
-      background: #0b0b18;            /* an OFF lamp is dark */
-      border: 4px solid #000;
-      transition: background 0.15s;
-    }
-    /* each lamp lit up in its own colour */
-    .lamp.red.on    { background: #ff3b3b; }
-    .lamp.yellow.on { background: #ffd60a; }
-    .lamp.green.on  { background: #7fff00; }
-    /* the pole it stands on */
-    .pole {
-      width: calc(var(--lamp) * 0.22);
-      height: calc(var(--lamp) * 0.6);
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-top: none;
-    }
-    .foot {
-      width: calc(var(--lamp) * 1.2);
-      height: calc(var(--lamp) * 0.16);
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-radius: 8px;
-    }
-    /* At 0:00 all three lamps flash green together */
-    .traffic.flash .lamp { animation: flashGreen 0.5s step-start infinite; }
-    @keyframes flashGreen {
-      0%, 100% { background: #7fff00; }
-      50%      { background: #0b0b18; }
+    /* the last ten seconds go red and shake, so you know it is coming */
+    .display.panic .unit-val, .display.panic .colon { color: #ff2d2d; }
+    .display.panic { animation: shake 0.35s infinite; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
     }
 
-    /* Buttons */
     .buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
     .btn {
       font-family: 'Fredoka One', cursive;
-      font-size: 1.4rem;
-      padding: 14px 44px;
-      border-radius: 50px;
-      border: none;
-      cursor: pointer;
-      letter-spacing: 1px;
+      font-size: 1.4rem; padding: 14px 44px; border-radius: 50px;
+      border: none; cursor: pointer; letter-spacing: 1px;
       transition: transform 0.1s, opacity 0.1s;
     }
     .btn:active { transform: scale(0.93); }
@@ -181,34 +125,31 @@
     .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
     .btn-reset:hover { border-color: #ffffff55; }
 
+    /* the white flash on the way out */
+    #flash {
+      position: fixed; inset: 0; background: #fff;
+      opacity: 0; pointer-events: none; z-index: 99999;
+      transition: opacity 0.25s;
+    }
+    #flash.on { opacity: 1; }
+
     /* ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== */
     .type-picker {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      z-index: 2147483647;      /* always on top of everything */
+      position: fixed; right: 16px; bottom: 16px;
+      z-index: 2147483647;
       font-family: 'Fredoka One', cursive;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+      display: flex; flex-direction: column; align-items: flex-end;
     }
     .type-btn {
       font-family: 'Fredoka One', cursive;
-      font-size: 1.1rem;
-      letter-spacing: 2px;
-      color: #080818;
-      background: #00f5ff;
-      border: none;
-      border-radius: 50px;
+      font-size: 1.1rem; letter-spacing: 2px;
+      color: #080818; background: #00f5ff;
+      border: none; border-radius: 50px;
       padding: 10px 18px 10px 22px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      cursor: pointer; display: flex; align-items: center; gap: 10px;
       user-select: none;
     }
     .type-btn:active { transform: scale(0.95); }
-    /* the little arrow: points UP when closed, DOWN when open */
     .type-arrow {
       width: 0; height: 0;
       border-left: 7px solid transparent;
@@ -218,27 +159,15 @@
     }
     .type-picker.open .type-arrow { transform: rotate(180deg); }
     .type-list {
-      list-style: none;
-      display: none;
-      flex-direction: column;
-      margin-bottom: 10px;
-      background: #080818;
-      border: 3px solid #00f5ff;
-      border-radius: 18px;
-      padding: 8px;
-      min-width: 190px;
-      max-height: 70vh;
-      overflow-y: auto;
+      list-style: none; display: none; flex-direction: column;
+      margin-bottom: 10px; background: #080818;
+      border: 3px solid #00f5ff; border-radius: 18px;
+      padding: 8px; min-width: 190px; max-height: 70vh; overflow-y: auto;
     }
     .type-picker.open .type-list { display: flex; }
     .type-list a, .type-list span {
-      display: block;
-      padding: 8px 14px;
-      border-radius: 12px;
-      text-decoration: none;
-      color: #fff;
-      font-size: 1rem;
-      letter-spacing: 1px;
+      display: block; padding: 8px 14px; border-radius: 12px;
+      text-decoration: none; color: #fff; font-size: 1rem; letter-spacing: 1px;
     }
     .type-list a:hover { background: #f72585; color: #080818; }
     .type-list span.current { background: #7fff00; color: #080818; cursor: default; }
@@ -248,41 +177,33 @@
 
   <a class="back-link" href="../">← back</a>
 
-  <div class="title">🚦 TRAFFIC LIGHT TIMER 🚦</div>
+  <div class="title">🚪 ZERO ESCAPE 🚪</div>
+  <p class="warning">Careful. This is a normal timer, but at <b>0:00</b> — or the second you press <b>ESC</b> — it throws you off the website and onto Google.</p>
 
   <div class="timer-setup">
-    <input type="number" id="tm-min" value="3" min="0" max="99">
+    <input type="number" id="tm-min" value="0" min="0" max="99">
     <span>:</span>
-    <input type="number" id="tm-sec" value="1" min="0" max="59">
+    <input type="number" id="tm-sec" value="20" min="0" max="59">
   </div>
 
-  <div class="display">
+  <div class="display" id="display">
     <div class="unit-wrap mm">
       <div class="unit-label">MIN</div>
-      <div class="unit-val" id="mm-val">03</div>
+      <div class="unit-val" id="mm-val">00</div>
     </div>
     <div class="colon" id="colon">:</div>
     <div class="unit-wrap ss">
       <div class="unit-label">SEC</div>
-      <div class="unit-val" id="ss-val">01</div>
+      <div class="unit-val" id="ss-val">20</div>
     </div>
-  </div>
-
-  <!-- the traffic light -->
-  <div class="traffic" id="traffic">
-    <div class="housing">
-      <div class="lamp red"    id="lamp-red"></div>
-      <div class="lamp yellow" id="lamp-yellow"></div>
-      <div class="lamp green"  id="lamp-green"></div>
-    </div>
-    <div class="pole"></div>
-    <div class="foot"></div>
   </div>
 
   <div class="buttons">
     <button class="btn" id="start-btn" onclick="startOrPause()">START</button>
     <button class="btn btn-reset" onclick="resetAll()">RESET</button>
   </div>
+
+  <div id="flash"></div>
 
   <!-- ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== -->
   <div class="type-picker" id="type-picker">
@@ -313,7 +234,6 @@
   </div>
   <script>
     // Theme picker: click "Type" to open the list upwards, click again (or anywhere) to close.
-    // The page you are already on is shown in green and cannot be clicked.
     (function () {
       const picker = document.getElementById('type-picker');
       const button = document.getElementById('type-btn');
@@ -337,24 +257,20 @@
   </script>
 
 <script>
-  // ===================== THE CLOCK =====================
-  // Driven by real time (performance.now) so it never drifts.
-  let totalMs = 0;
-  let remainingMs = 0;
-  let elapsedBefore = 0;   // time used up before the last pause
-  let startStamp = 0;
-  let running = false;
-  let finished = false;
+  // ===================== ZERO ESCAPE =====================
+  // A perfectly normal countdown, with one rule: reaching 0:00, or pressing ESC,
+  // takes you straight off this website and onto Google.
+  const ESCAPE_TO = 'https://www.google.com';
+
+  let totalMs = 0, remainingMs = 0, elapsedBefore = 0, startStamp = 0;
+  let running = false, escaped = false;
 
   const minInput = document.getElementById('tm-min');
   const secInput = document.getElementById('tm-sec');
   const startBtn = document.getElementById('start-btn');
-  const traffic  = document.getElementById('traffic');
-  const lamps = {
-    red:    document.getElementById('lamp-red'),
-    yellow: document.getElementById('lamp-yellow'),
-    green:  document.getElementById('lamp-green')
-  };
+  const display  = document.getElementById('display');
+  const colon    = document.getElementById('colon');
+  const flash    = document.getElementById('flash');
 
   function readInputs() {
     const mm = Math.max(0, parseInt(minInput.value) || 0);
@@ -363,43 +279,38 @@
   }
 
   function startOrPause() {
-    if (running) { pause(); return; }
-    if (finished || remainingMs <= 0) {
+    if (escaped) return;
+    if (running) {
+      running = false;
+      elapsedBefore += performance.now() - startStamp;
+      startBtn.textContent = 'START';
+      startBtn.classList.remove('pause-mode');
+      colon.classList.remove('pulse');
+      return;
+    }
+    if (remainingMs <= 0) {
       totalMs = readInputs();
       if (totalMs <= 0) return;
       elapsedBefore = 0;
       remainingMs = totalMs;
-      finished = false;
-      lastSeconds = -1;          // the light watches the seconds from scratch
-      setLight('off');
     }
     running = true;
     startStamp = performance.now();
     startBtn.textContent = 'PAUSE';
     startBtn.classList.add('pause-mode');
-    document.getElementById('colon').classList.add('pulse');
-  }
-
-  function pause() {
-    running = false;
-    elapsedBefore += performance.now() - startStamp;
-    startBtn.textContent = 'START';
-    startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
+    colon.classList.add('pulse');
   }
 
   function resetAll() {
     running = false;
-    finished = false;
-    elapsedBefore = 0;
     totalMs = readInputs();
     remainingMs = totalMs;
-    lastSeconds = -1;
+    elapsedBefore = 0;
     startBtn.textContent = 'START';
     startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
-    setLight('off');
-    showTime(remainingMs);
+    colon.classList.remove('pulse');
+    display.classList.remove('panic');
+    showTime(totalMs);
   }
 
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -408,76 +319,36 @@
     const totalSec = Math.ceil(ms / 1000);
     document.getElementById('mm-val').textContent = pad(Math.min(99, Math.floor(totalSec / 60)));
     document.getElementById('ss-val').textContent = pad(totalSec % 60);
+    // the last ten seconds go red and shake
+    display.classList.toggle('panic', running && ms > 0 && ms <= 10000);
   }
 
-  // ===================== THE LIGHT =====================
-  // Jos's rule: the light is driven by the SECONDS, and repeats every minute.
-  //   seconds hit :59 -> RED
-  //   seconds hit :30 -> YELLOW
-  //   seconds hit :10 -> GREEN
-  //   next :59        -> RED again, round and round.
-  // At 0:00 (and only then) all three lamps flash green together.
-  const triggers = [
-    { at: 59, colour: 'red' },
-    { at: 30, colour: 'yellow' },
-    { at: 10, colour: 'green' }
-  ];
-  let lastSeconds = -1;   // the seconds we saw on the last frame
-
-  function setLight(colour) {
-    traffic.classList.remove('flash');
-    for (const name in lamps) lamps[name].classList.toggle('on', name === colour);
-    if (colour === 'flash') traffic.classList.add('flash');
+  // The escape itself: a white flash, then off to Google.
+  function escape() {
+    if (escaped) return;
+    escaped = true;
+    running = false;
+    display.classList.remove('panic');
+    flash.classList.add('on');
+    setTimeout(() => { window.location.href = ESCAPE_TO; }, 260);
   }
 
-  // Called every frame with the seconds currently on the display.
-  function watchSeconds(sec) {
-    if (sec === lastSeconds) return;
-    if (lastSeconds === -1) {
-      // first look after Start: only counts as a hit if we are sitting exactly on a trigger
-      for (const t of triggers) if (t.at === sec) setLight(t.colour);
-      lastSeconds = sec;
-      return;
-    }
-    // Which trigger numbers did the seconds pass on the way down from lastSeconds to sec?
-    // (Usually just one step, but if the tab was hidden the clock may have jumped.)
-    let newColour = null;
-    for (const t of triggers) {
-      const wrapped = sec > lastSeconds;                 // went past :00 and round to :59
-      const passed = wrapped ? (t.at < lastSeconds || t.at >= sec)
-                             : (t.at < lastSeconds && t.at >= sec);
-      if (passed) newColour = t.colour;                  // the lowest one passed wins
-    }
-    if (newColour) setLight(newColour);
-    lastSeconds = sec;
-  }
+  // ESC works at any moment, whether the clock is running or not.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); escape(); }
+  });
 
-  // ===================== THE LOOP =====================
+  minInput.addEventListener('change', resetAll);
+  secInput.addEventListener('change', resetAll);
+
   function loop(now) {
     if (running) {
-      const elapsed = elapsedBefore + (now - startStamp);
-      remainingMs = Math.max(0, totalMs - elapsed);
+      remainingMs = Math.max(0, totalMs - (elapsedBefore + (now - startStamp)));
       showTime(remainingMs);
-      if (remainingMs === 0) {
-        finishUp();
-      } else {
-        watchSeconds(Math.ceil(remainingMs / 1000) % 60);
-      }
+      if (remainingMs <= 0) escape();
     }
     requestAnimationFrame(loop);
   }
-
-  function finishUp() {
-    running = false;
-    finished = true;
-    startBtn.textContent = 'START';
-    startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
-    setLight('flash');    // 0:00 — all three flash green
-  }
-
-  minInput.addEventListener('input', () => { if (!running) resetAll(); });
-  secInput.addEventListener('input', () => { if (!running) resetAll(); });
 
   resetAll();
   requestAnimationFrame(loop);

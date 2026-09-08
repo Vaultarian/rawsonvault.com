@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Spinning — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #050510;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 70px 0 90px;
+      overflow-x: hidden;
+    }
+
+    .back-link {
+      position: fixed; top: 20px; left: 20px;
+      font-family: 'Fredoka One', cursive;
+      color: #ffffff44; text-decoration: none;
+      font-size: 1rem; letter-spacing: 1px;
+      transition: color 0.2s; z-index: 50;
+    }
+    .back-link:hover { color: #fff; }
+
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      background: linear-gradient(90deg, #f72585, #7fff00, #00f5ff, #f72585);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowShift 4s linear infinite;
+      letter-spacing: 4px; margin-bottom: 14px;
+      text-align: center; padding: 0 16px;
+    }
+    @keyframes rainbowShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    .display { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 6px; }
+    .unit-wrap { display: flex; flex-direction: column; align-items: center; }
+    .unit-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem; letter-spacing: 3px;
+      margin-bottom: 4px; text-transform: uppercase; opacity: 0.8;
+    }
+    .unit-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.2rem, 9vw, 3.8rem);
+      line-height: 1; min-width: 2ch; text-align: center;
+    }
+    .cs .unit-val { min-width: 1ch; }
+    .mm .unit-label, .mm .unit-val { color: #f72585; }
+    .ss .unit-label, .ss .unit-val { color: #7fff00; }
+    .cs .unit-label, .cs .unit-val { color: #00f5ff; }
+    .colon {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.8rem, 7vw, 3.2rem);
+      color: #ffffff22; padding-top: 18px; line-height: 1;
+    }
+    .colon.pulse { animation: blink 1s step-start infinite; }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* the speedometer under the clock */
+    .speedo {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.6rem, 6vw, 2.4rem);
+      color: #ffd166; letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+    .speedo small { font-size: 0.5em; color: #ffffff55; letter-spacing: 3px; }
+    .stage-name {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.9rem; letter-spacing: 2px;
+      color: #ffffff44; margin-bottom: 12px; height: 1.2em;
+      text-align: center;
+    }
+
+    #scene {
+      width: min(100vw, 560px);
+      height: clamp(300px, 48vh, 460px);
+      display: block; margin-bottom: 18px;
+    }
+
+    .buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem; padding: 14px 44px; border-radius: 50px;
+      border: none; cursor: pointer; letter-spacing: 1px;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .btn:active { transform: scale(0.93); }
+    #start-btn { background: linear-gradient(135deg, #7fff00, #00f5ff); color: #080818; }
+    #start-btn.pause-mode { background: linear-gradient(135deg, #f72585, #7209b7); color: #fff; }
+    .btn-reset { background: transparent; border: 3px solid #ffffff22; color: #fff; }
+    .btn-reset:hover { border-color: #ffffff55; }
+
+    /* ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== */
+    .type-picker {
+      position: fixed; right: 16px; bottom: 16px;
+      z-index: 2147483647; font-family: 'Fredoka One', cursive;
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
+    .type-btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem; letter-spacing: 2px;
+      color: #080818; background: #00f5ff;
+      border: none; border-radius: 50px;
+      padding: 10px 18px 10px 22px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    .type-btn:active { transform: scale(0.95); }
+    .type-arrow {
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 9px solid #080818;
+      transition: transform 0.2s;
+    }
+    .type-picker.open .type-arrow { transform: rotate(180deg); }
+    .type-list {
+      list-style: none; display: none; flex-direction: column;
+      margin-bottom: 10px; background: #080818;
+      border: 3px solid #00f5ff; border-radius: 18px;
+      padding: 8px; min-width: 190px; max-height: 70vh; overflow-y: auto;
+    }
+    .type-picker.open .type-list { display: flex; }
+    .type-list a, .type-list span {
+      display: block; padding: 8px 14px; border-radius: 12px;
+      text-decoration: none; color: #fff; font-size: 1rem; letter-spacing: 1px;
+    }
+    .type-list a:hover { background: #f72585; color: #080818; }
+    .type-list span.current { background: #7fff00; color: #080818; cursor: default; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../">← back</a>
+
+  <div class="title">🌍 WORLD SPINNING 🌍</div>
+
+  <!-- this one counts UP, so there is nothing to set -->
+  <div class="display">
+    <div class="unit-wrap mm"><div class="unit-label">MIN</div><div class="unit-val" id="mm-val">00</div></div>
+    <div class="colon" id="colon1">:</div>
+    <div class="unit-wrap ss"><div class="unit-label">SEC</div><div class="unit-val" id="ss-val">00</div></div>
+    <div class="colon" id="colon2">:</div>
+    <div class="unit-wrap cs"><div class="unit-label">MS</div><div class="unit-val" id="cs-val">0</div></div>
+  </div>
+
+  <div class="speedo"><span id="mph">0</span> <small>MPH</small></div>
+  <div class="stage-name" id="stage-name"></div>
+
+  <canvas id="scene"></canvas>
+
+  <div class="buttons">
+    <button class="btn" id="start-btn" onclick="startOrPause()">START</button>
+    <button class="btn btn-reset" onclick="resetAll()">RESET</button>
+  </div>
+
+  <!-- ===== Theme picker (Jos's drop-UP bar) — identical on every page ===== -->
+  <div class="type-picker" id="type-picker">
+    <ul class="type-list" id="type-list">
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;font-family:'Fredoka One',cursive;">REGULAR</li>
+      <li><a href="regular.html">Regular</a></li>
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;border-top:2px solid #ffffff1f;margin-top:8px;font-family:'Fredoka One',cursive;">TIMER</li>
+      <li><a href="puzzle.html">Puzzle</a></li>
+      <li><a href="coke.html">Coke Bottle</a></li>
+      <li><a href="bomb.html">Bomb</a></li>
+      <li><a href="tsunami.html">Tsunami</a></li>
+      <li><a href="rocket.html">Rocket</a></li>
+      <li><a href="knock.html">Knock-the-Number</a></li>
+      <li><a href="traffic.html">Traffic Light</a></li>
+      <li><a href="sun.html">Dying Sun</a></li>
+      <li><a href="book.html">Flipbook</a></li>
+      <li><a href="candle.html">Candle</a></li>
+      <li><a href="fruit.html">Fruit Box</a></li>
+      <li><a href="exciting.html">Exciting</a></li>
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;border-top:2px solid #ffffff1f;margin-top:8px;font-family:'Fredoka One',cursive;">STOPWATCH</li>
+      <li><a href="runner.html">Running Man</a></li>
+      <li><a href="lego.html">Lego</a></li>
+      <li style="padding:12px 14px 5px;color:#f72585;font-size:0.78rem;letter-spacing:2px;text-decoration:underline;border-top:2px solid #ffffff1f;margin-top:8px;font-family:'Fredoka One',cursive;">CRAZY IDEAS</li>
+      <li><a href="zeroescape.html">Zero Escape</a></li>
+      <li><a href="world.html">World Spinning</a></li>
+    </ul>
+    <button class="type-btn" id="type-btn">Type <span class="type-arrow"></span></button>
+  </div>
+  <script>
+    (function () {
+      const picker = document.getElementById('type-picker');
+      const button = document.getElementById('type-btn');
+      const thisPage = location.pathname.split('/').pop() || 'index.html';
+      picker.querySelectorAll('.type-list a').forEach(link => {
+        if (link.getAttribute('href') === thisPage) {
+          const here = document.createElement('span');
+          here.className = 'current';
+          here.textContent = link.textContent;
+          link.replaceWith(here);
+        }
+      });
+      button.addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('open'); });
+      document.addEventListener('click', (e) => { if (!picker.contains(e.target)) picker.classList.remove('open'); });
+    })();
+  </script>
+
+<script>
+  // ===================== THE STOPWATCH =====================
+  let elapsedBefore = 0, startStamp = 0, elapsedMs = 0, running = false;
+  const startBtn = document.getElementById('start-btn');
+
+  function startOrPause() {
+    if (running) {
+      running = false;
+      elapsedBefore += performance.now() - startStamp;
+      startBtn.textContent = 'START';
+      startBtn.classList.remove('pause-mode');
+      colonPulse(false);
+      return;
+    }
+    running = true;
+    startStamp = performance.now();
+    startBtn.textContent = 'PAUSE';
+    startBtn.classList.add('pause-mode');
+    colonPulse(true);
+  }
+
+  function colonPulse(on) {
+    document.getElementById('colon1').classList.toggle('pulse', on);
+    document.getElementById('colon2').classList.toggle('pulse', on);
+  }
+
+  function resetAll() {
+    running = false; elapsedBefore = 0; elapsedMs = 0; spin = 0;
+    startBtn.textContent = 'START';
+    startBtn.classList.remove('pause-mode');
+    colonPulse(false);
+    showTime(0);
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function showTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    document.getElementById('mm-val').textContent = pad(Math.min(99, Math.floor(totalSec / 60)));
+    document.getElementById('ss-val').textContent = pad(totalSec % 60);
+    document.getElementById('cs-val').textContent = String(Math.floor(ms / 100) % 10);
+  }
+
+  // ===================== THE WORLD =====================
+  // The longer it runs, the faster the world spins. Three things switch on:
+  const FIRST_FLAMES = 25;   // mph — little flames start in random places
+  const RING_FLAMES  = 50;   // mph — one flame all the way round the planet
+  const ALL_FLAMES   = 100;  // mph — the whole world is on fire, and stays on fire
+  const MPH_PER_SEC  = 2;    // how fast it winds up
+
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  let spin = 0;              // how far the world has turned, in radians
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  // Fixed patches of land, so the same world comes round every time.
+  // lon/lat in radians, r is how big the patch is.
+  const LAND = [];
+  (function buildLand() {
+    let seed = 7;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    for (let i = 0; i < 26; i++) {
+      LAND.push({
+        lon: rnd() * Math.PI * 2,
+        lat: (rnd() - 0.5) * 2.1,
+        r:   0.13 + rnd() * 0.20
+      });
+    }
+  })();
+
+  // Stars behind the world
+  const STARS = [];
+  (function buildStars() {
+    let seed = 99;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    for (let i = 0; i < 90; i++) STARS.push({ x: rnd(), y: rnd(), r: rnd() * 1.4 + 0.3, tw: rnd() * 6 });
+  })();
+
+  function drawFlame(cx, cy, angle, len, wide, t, seed) {
+    const flick = 1 + 0.35 * Math.sin(t * 13 + seed) + 0.2 * Math.sin(t * 23 + seed * 2);
+    const L = len * flick;
+    const tipX = cx + Math.cos(angle) * L;
+    const tipY = cy + Math.sin(angle) * L;
+    const px = -Math.sin(angle) * wide, py = Math.cos(angle) * wide;
+
+    ctx.fillStyle = '#ff7b00';
+    ctx.beginPath();
+    ctx.moveTo(cx + px, cy + py);
+    ctx.quadraticCurveTo(cx + px * 1.6 + (tipX - cx) * 0.5, cy + py * 1.6 + (tipY - cy) * 0.5, tipX, tipY);
+    ctx.quadraticCurveTo(cx - px * 1.6 + (tipX - cx) * 0.5, cy - py * 1.6 + (tipY - cy) * 0.5, cx - px, cy - py);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath();
+    ctx.moveTo(cx + px * 0.55, cy + py * 0.55);
+    ctx.quadraticCurveTo(cx + px + (tipX - cx) * 0.35, cy + py + (tipY - cy) * 0.35,
+                         cx + (tipX - cx) * 0.62, cy + (tipY - cy) * 0.62);
+    ctx.quadraticCurveTo(cx - px + (tipX - cx) * 0.35, cy - py + (tipY - cy) * 0.35,
+                         cx - px * 0.55, cy - py * 0.55);
+    ctx.fill();
+  }
+
+  function draw(t, mph) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#050510';
+    ctx.fillRect(0, 0, W, H);
+
+    // stars
+    for (const s of STARS) {
+      ctx.globalAlpha = 0.35 + 0.45 * Math.abs(Math.sin(t * 0.8 + s.tw));
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    const cx = W / 2, cy = H / 2;
+    const R = Math.min(W, H) * 0.31;
+
+    // how hot things are: 0 before the first flames, 1 once the whole world burns
+    const heat = Math.max(0, Math.min(1, (mph - FIRST_FLAMES) / (ALL_FLAMES - FIRST_FLAMES)));
+
+    // ---- the flames, drawn behind the planet so they lick out past the edge ----
+    if (mph >= FIRST_FLAMES) {
+      // stage 1: a handful of flames in random places round the bottom and sides
+      const grow = Math.min(1, (mph - FIRST_FLAMES) / (RING_FLAMES - FIRST_FLAMES));
+      const spots = [0.15, 0.42, 0.62, 0.80, 0.95, 0.30];
+      for (let i = 0; i < spots.length; i++) {
+        const a = Math.PI * (0.05 + spots[i] * 0.9);   // the bottom half of the circle
+        drawFlame(cx + Math.cos(a) * R * 0.97, cy + Math.sin(a) * R * 0.97, a,
+                  R * (0.14 + 0.22 * grow), R * 0.09, t, i * 3.1);
+      }
+    }
+    if (mph >= RING_FLAMES) {
+      // stage 2: one flame all the way around the planet
+      const grow = Math.min(1, (mph - RING_FLAMES) / (ALL_FLAMES - RING_FLAMES));
+      const n = 34;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        drawFlame(cx + Math.cos(a) * R * 0.97, cy + Math.sin(a) * R * 0.97, a,
+                  R * (0.16 + 0.30 * grow), R * 0.085, t, i * 1.7);
+      }
+    }
+
+    // ---- the planet ----
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.clip();
+
+    // ocean
+    ctx.fillStyle = '#1b6ec2';
+    ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+
+    // land, turning with the spin. A patch is only drawn while it is on the
+    // side of the world facing us, and it squashes as it goes round the edge.
+    for (const p of LAND) {
+      const lon = p.lon + spin;
+      const facing = Math.cos(lon);
+      if (facing <= 0.02) continue;
+      const x = cx + Math.sin(lon) * Math.cos(p.lat) * R;
+      const y = cy + Math.sin(p.lat) * R;
+      ctx.fillStyle = '#3aa14a';
+      ctx.beginPath();
+      ctx.ellipse(x, y, p.r * R * facing, p.r * R * 0.85, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ice caps
+    ctx.fillStyle = '#eaf6ff';
+    ctx.beginPath(); ctx.ellipse(cx, cy - R * 0.96, R * 0.75, R * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy + R * 0.96, R * 0.75, R * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+
+    // the world glows red as it heats up
+    if (heat > 0) {
+      ctx.fillStyle = 'rgba(255,60,0,' + (heat * 0.5) + ')';
+      ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    }
+
+    // stage 3: flames crawling all over the surface as well
+    if (mph >= ALL_FLAMES) {
+      const n = 26;
+      for (let i = 0; i < n; i++) {
+        const a = i * 2.399963;                    // spread evenly over the disc
+        const rr = R * Math.sqrt((i + 0.5) / n) * 0.92;
+        const x = cx + Math.cos(a + spin * 0.4) * rr;
+        const y = cy + Math.sin(a + spin * 0.4) * rr;
+        drawFlame(x, y + R * 0.10, -Math.PI / 2, R * 0.22, R * 0.06, t, i * 2.3);
+      }
+    }
+
+    // the round shading that makes it look like a ball, not a disc
+    const shade = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.38, R * 0.1, cx, cy, R * 1.05);
+    shade.addColorStop(0, 'rgba(255,255,255,0.22)');
+    shade.addColorStop(0.55, 'rgba(0,0,0,0)');
+    shade.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = shade;
+    ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    ctx.restore();
+
+    // a hot rim once it is burning
+    if (heat > 0) {
+      ctx.strokeStyle = 'rgba(255,140,0,' + (0.35 + heat * 0.65) + ')';
+      ctx.lineWidth = 3 + heat * 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  // ===================== THE LOOP =====================
+  let lastNow = 0;
+  function loop(now) {
+    const dt = lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 0;
+    lastNow = now;
+
+    if (running) {
+      elapsedMs = elapsedBefore + (now - startStamp);
+      showTime(elapsedMs);
+    }
+    const secs = elapsedMs / 1000;
+    const mph = secs * MPH_PER_SEC;               // it never stops winding up
+    if (running) spin += dt * (0.5 + mph * 0.10); // faster and faster and faster
+
+    document.getElementById('mph').textContent = Math.floor(mph);
+    const label = document.getElementById('stage-name');
+    if (mph >= ALL_FLAMES)      label.textContent = 'THE WHOLE WORLD IS ON FIRE';
+    else if (mph >= RING_FLAMES) label.textContent = 'RING OF FIRE';
+    else if (mph >= FIRST_FLAMES) label.textContent = 'SPARKS';
+    else label.textContent = '';
+
+    draw(now / 1000, mph);
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', sizeCanvas);
+  sizeCanvas();
+  resetAll();
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>

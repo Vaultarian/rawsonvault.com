@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Traffic Light Timer — Jos</title>
+  <title>Lego Stopwatch — Jos</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,7 +16,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 70px 16px 90px;
+      padding: 70px 0 90px;
       overflow-x: hidden;
     }
 
@@ -45,44 +45,19 @@
       letter-spacing: 4px;
       margin-bottom: 20px;
       text-align: center;
+      padding: 0 16px;
     }
     @keyframes rainbowShift {
       0% { background-position: 0% 50%; }
       100% { background-position: 300% 50%; }
     }
 
-    /* Set how long the countdown is */
-    .timer-setup {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-    .timer-setup input {
-      font-family: 'Fredoka One', cursive;
-      font-size: 2.2rem;
-      width: 84px;
-      text-align: center;
-      background: #ffffff11;
-      border: 3px solid #f72585;
-      border-radius: 14px;
-      color: #f72585;
-      padding: 6px;
-      outline: none;
-    }
-    .timer-setup input:focus { border-color: #fff; color: #fff; }
-    .timer-setup span {
-      font-family: 'Fredoka One', cursive;
-      font-size: 2.2rem;
-      color: #ffffff33;
-    }
-
-    /* The big digits */
+    /* The big digits — a stopwatch counting UP: minutes : seconds : tenths */
     .display {
       display: flex;
       align-items: flex-start;
       gap: 6px;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
     }
     .unit-wrap { display: flex; flex-direction: column; align-items: center; }
     .unit-label {
@@ -95,72 +70,32 @@
     }
     .unit-val {
       font-family: 'Fredoka One', cursive;
-      font-size: clamp(3.4rem, 14vw, 5.5rem);
+      font-size: clamp(2.4rem, 10vw, 4.2rem);
       line-height: 1;
       min-width: 2ch;
       text-align: center;
     }
+    .cs .unit-val { min-width: 1ch; }
     .mm .unit-label, .mm .unit-val { color: #f72585; }
     .ss .unit-label, .ss .unit-val { color: #7fff00; }
+    .cs .unit-label, .cs .unit-val { color: #00f5ff; }
     .colon {
       font-family: 'Fredoka One', cursive;
-      font-size: clamp(3rem, 12vw, 4.8rem);
+      font-size: clamp(2rem, 8vw, 3.6rem);
       color: #ffffff22;
-      padding-top: 22px;
+      padding-top: 20px;
       line-height: 1;
     }
     .colon.pulse { animation: blink 1s step-start infinite; }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-    /* ===== The traffic light, drawn with CSS shapes ===== */
-    .traffic {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 26px;
-      --lamp: clamp(48px, min(14vw, 10vh), 84px);   /* size of one lamp */
-    }
-    .housing {
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-radius: calc(var(--lamp) * 0.5);
-      padding: calc(var(--lamp) * 0.18);
-      display: flex;
-      flex-direction: column;
-      gap: calc(var(--lamp) * 0.16);
-    }
-    .lamp {
-      width: var(--lamp);
-      height: var(--lamp);
-      border-radius: 50%;
-      background: #0b0b18;            /* an OFF lamp is dark */
-      border: 4px solid #000;
-      transition: background 0.15s;
-    }
-    /* each lamp lit up in its own colour */
-    .lamp.red.on    { background: #ff3b3b; }
-    .lamp.yellow.on { background: #ffd60a; }
-    .lamp.green.on  { background: #7fff00; }
-    /* the pole it stands on */
-    .pole {
-      width: calc(var(--lamp) * 0.22);
-      height: calc(var(--lamp) * 0.6);
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-top: none;
-    }
-    .foot {
-      width: calc(var(--lamp) * 1.2);
-      height: calc(var(--lamp) * 0.16);
-      background: #1c1c30;
-      border: 4px solid #ffffff22;
-      border-radius: 8px;
-    }
-    /* At 0:00 all three lamps flash green together */
-    .traffic.flash .lamp { animation: flashGreen 0.5s step-start infinite; }
-    @keyframes flashGreen {
-      0%, 100% { background: #7fff00; }
-      50%      { background: #0b0b18; }
+    /* The room the tower is built in */
+    #scene {
+      width: min(100vw, 620px);
+      height: clamp(300px, 50vh, 520px);
+      display: block;
+      margin-bottom: 22px;
+      border-radius: 20px;
     }
 
     /* Buttons */
@@ -186,7 +121,7 @@
       position: fixed;
       right: 16px;
       bottom: 16px;
-      z-index: 2147483647;      /* always on top of everything */
+      z-index: 2147483647;
       font-family: 'Fredoka One', cursive;
       display: flex;
       flex-direction: column;
@@ -208,7 +143,6 @@
       user-select: none;
     }
     .type-btn:active { transform: scale(0.95); }
-    /* the little arrow: points UP when closed, DOWN when open */
     .type-arrow {
       width: 0; height: 0;
       border-left: 7px solid transparent;
@@ -248,36 +182,27 @@
 
   <a class="back-link" href="../">← back</a>
 
-  <div class="title">🚦 TRAFFIC LIGHT TIMER 🚦</div>
+  <div class="title">🧱 LEGO STOPWATCH 🧱</div>
 
-  <div class="timer-setup">
-    <input type="number" id="tm-min" value="3" min="0" max="99">
-    <span>:</span>
-    <input type="number" id="tm-sec" value="1" min="0" max="59">
-  </div>
-
+  <!-- this one counts UP, so there is nothing to set -->
   <div class="display">
     <div class="unit-wrap mm">
       <div class="unit-label">MIN</div>
-      <div class="unit-val" id="mm-val">03</div>
+      <div class="unit-val" id="mm-val">00</div>
     </div>
-    <div class="colon" id="colon">:</div>
+    <div class="colon" id="colon1">:</div>
     <div class="unit-wrap ss">
       <div class="unit-label">SEC</div>
-      <div class="unit-val" id="ss-val">01</div>
+      <div class="unit-val" id="ss-val">00</div>
+    </div>
+    <div class="colon" id="colon2">:</div>
+    <div class="unit-wrap cs">
+      <div class="unit-label">MS</div>
+      <div class="unit-val" id="cs-val">0</div>
     </div>
   </div>
 
-  <!-- the traffic light -->
-  <div class="traffic" id="traffic">
-    <div class="housing">
-      <div class="lamp red"    id="lamp-red"></div>
-      <div class="lamp yellow" id="lamp-yellow"></div>
-      <div class="lamp green"  id="lamp-green"></div>
-    </div>
-    <div class="pole"></div>
-    <div class="foot"></div>
-  </div>
+  <canvas id="scene"></canvas>
 
   <div class="buttons">
     <button class="btn" id="start-btn" onclick="startOrPause()">START</button>
@@ -337,47 +262,23 @@
   </script>
 
 <script>
-  // ===================== THE CLOCK =====================
-  // Driven by real time (performance.now) so it never drifts.
-  let totalMs = 0;
-  let remainingMs = 0;
-  let elapsedBefore = 0;   // time used up before the last pause
+  // ===================== THE STOPWATCH =====================
+  // Counts UP from zero. Driven by real time (performance.now) so it never drifts.
+  let elapsedBefore = 0;   // time on the clock before the last pause
   let startStamp = 0;
   let running = false;
-  let finished = false;
+  let elapsedMs = 0;       // the time on the clock right now
 
-  const minInput = document.getElementById('tm-min');
-  const secInput = document.getElementById('tm-sec');
   const startBtn = document.getElementById('start-btn');
-  const traffic  = document.getElementById('traffic');
-  const lamps = {
-    red:    document.getElementById('lamp-red'),
-    yellow: document.getElementById('lamp-yellow'),
-    green:  document.getElementById('lamp-green')
-  };
-
-  function readInputs() {
-    const mm = Math.max(0, parseInt(minInput.value) || 0);
-    const ss = Math.max(0, Math.min(59, parseInt(secInput.value) || 0));
-    return (mm * 60 + ss) * 1000;
-  }
 
   function startOrPause() {
     if (running) { pause(); return; }
-    if (finished || remainingMs <= 0) {
-      totalMs = readInputs();
-      if (totalMs <= 0) return;
-      elapsedBefore = 0;
-      remainingMs = totalMs;
-      finished = false;
-      lastSeconds = -1;          // the light watches the seconds from scratch
-      setLight('off');
-    }
     running = true;
     startStamp = performance.now();
     startBtn.textContent = 'PAUSE';
     startBtn.classList.add('pause-mode');
-    document.getElementById('colon').classList.add('pulse');
+    document.getElementById('colon1').classList.add('pulse');
+    document.getElementById('colon2').classList.add('pulse');
   }
 
   function pause() {
@@ -385,100 +286,196 @@
     elapsedBefore += performance.now() - startStamp;
     startBtn.textContent = 'START';
     startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
+    document.getElementById('colon1').classList.remove('pulse');
+    document.getElementById('colon2').classList.remove('pulse');
   }
 
   function resetAll() {
     running = false;
-    finished = false;
     elapsedBefore = 0;
-    totalMs = readInputs();
-    remainingMs = totalMs;
-    lastSeconds = -1;
+    elapsedMs = 0;
+    camY = 0;               // the screen slides back down to the table
     startBtn.textContent = 'START';
     startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
-    setLight('off');
-    showTime(remainingMs);
+    document.getElementById('colon1').classList.remove('pulse');
+    document.getElementById('colon2').classList.remove('pulse');
+    showTime(0);
   }
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
   function showTime(ms) {
-    const totalSec = Math.ceil(ms / 1000);
+    const totalSec = Math.floor(ms / 1000);
     document.getElementById('mm-val').textContent = pad(Math.min(99, Math.floor(totalSec / 60)));
     document.getElementById('ss-val').textContent = pad(totalSec % 60);
+    document.getElementById('cs-val').textContent = String(Math.floor(ms / 100) % 10);
   }
 
-  // ===================== THE LIGHT =====================
-  // Jos's rule: the light is driven by the SECONDS, and repeats every minute.
-  //   seconds hit :59 -> RED
-  //   seconds hit :30 -> YELLOW
-  //   seconds hit :10 -> GREEN
-  //   next :59        -> RED again, round and round.
-  // At 0:00 (and only then) all three lamps flash green together.
-  const triggers = [
-    { at: 59, colour: 'red' },
-    { at: 30, colour: 'yellow' },
-    { at: 10, colour: 'green' }
+  // ===================== THE TOWER =====================
+  // One brick lands every second. The brick that lands at 1 second says 1,
+  // the one on top of it says 2, and so on for as long as the clock runs.
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+
+  const BRICK_W = 150;      // how wide a brick is
+  const BRICK_H = 46;       // how tall a brick is
+  const DROP_TIME = 0.32;   // how long a brick takes to fall in, in seconds
+  const SQUASH_TIME = 0.14; // the little bounce it does when it lands
+
+  let camY = 0;             // how far the screen has slid up, in pixels
+
+  // Real Lego colours. dark:true means the number is written in black on it.
+  const PALETTE = [
+    { c: '#d01012', dark: false },  // red
+    { c: '#f5cd2f', dark: true  },  // yellow
+    { c: '#0057a6', dark: false },  // blue
+    { c: '#00852b', dark: false },  // green
+    { c: '#f57d20', dark: true  },  // orange
+    { c: '#f2f3f2', dark: true  },  // white
+    { c: '#a5ca18', dark: true  },  // lime
+    { c: '#81007b', dark: false },  // purple
+    { c: '#00bcd4', dark: true  },  // cyan
   ];
-  let lastSeconds = -1;   // the seconds we saw on the last frame
 
-  function setLight(colour) {
-    traffic.classList.remove('flash');
-    for (const name in lamps) lamps[name].classList.toggle('on', name === colour);
-    if (colour === 'flash') traffic.classList.add('flash');
+  // Each brick keeps the same colour and the same tiny wobble every time you
+  // watch it, instead of flickering — the number decides them.
+  function pick(n, spread) {
+    const x = Math.sin(n * 12.9898 + spread) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  function brickColour(n) { return PALETTE[Math.floor(pick(n, 0) * PALETTE.length)]; }
+  function brickJitter(n) { return (pick(n, 4.7) - 0.5) * 7; }   // ±3.5 px, so it looks hand-stacked
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // Called every frame with the seconds currently on the display.
-  function watchSeconds(sec) {
-    if (sec === lastSeconds) return;
-    if (lastSeconds === -1) {
-      // first look after Start: only counts as a hit if we are sitting exactly on a trigger
-      for (const t of triggers) if (t.at === sec) setLight(t.colour);
-      lastSeconds = sec;
-      return;
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Draw one brick with its number on the front and four studs on top.
+  // (cx, topY) is the middle of its top edge. squash makes it land with a bump.
+  function drawBrick(n, cx, topY, squash) {
+    const skin = brickColour(n);
+    const w = BRICK_W * (1 + squash * 0.16);
+    const h = BRICK_H * (1 - squash * 0.24);
+    const x = cx - w / 2;
+    const y = topY + (BRICK_H - h);      // it squashes down onto the brick below
+
+    // the studs on top
+    ctx.fillStyle = skin.c;
+    for (let s = 0; s < 4; s++) {
+      const sx = x + w * (0.155 + s * 0.23);
+      roundRect(sx - w * 0.075, y - h * 0.19, w * 0.15, h * 0.22, 3);
+      ctx.fill();
     }
-    // Which trigger numbers did the seconds pass on the way down from lastSeconds to sec?
-    // (Usually just one step, but if the tab was hidden the clock may have jumped.)
-    let newColour = null;
-    for (const t of triggers) {
-      const wrapped = sec > lastSeconds;                 // went past :00 and round to :59
-      const passed = wrapped ? (t.at < lastSeconds || t.at >= sec)
-                             : (t.at < lastSeconds && t.at >= sec);
-      if (passed) newColour = t.colour;                  // the lowest one passed wins
+    // the body of the brick
+    ctx.fillStyle = skin.c;
+    roundRect(x, y, w, h, 5);
+    ctx.fill();
+    // a soft shine down the top third, the way plastic catches the light
+    ctx.fillStyle = '#ffffff2e';
+    roundRect(x + 4, y + 3, w - 8, h * 0.30, 4);
+    ctx.fill();
+    // a thin shadow along the bottom edge
+    ctx.fillStyle = '#0000002e';
+    roundRect(x + 4, y + h - h * 0.16, w - 8, h * 0.12, 3);
+    ctx.fill();
+
+    // the number
+    ctx.fillStyle = skin.dark ? '#141414' : '#ffffff';
+    ctx.font = 'bold ' + Math.round(h * 0.56) + "px 'Fredoka One', sans-serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(n), cx, y + h * 0.56);
+  }
+
+  function drawTable(cx, tableTopScreen) {
+    const w = BRICK_W * 2.1;
+    const top = tableTopScreen;
+    // the table top
+    ctx.fillStyle = '#8a5a2b';
+    roundRect(cx - w / 2, top, w, 16, 5);
+    ctx.fill();
+    ctx.fillStyle = '#a8703a';
+    roundRect(cx - w / 2, top, w, 6, 4);
+    ctx.fill();
+    // two legs running off the bottom of the picture
+    ctx.fillStyle = '#6d4520';
+    ctx.fillRect(cx - w / 2 + 14, top + 16, 18, H);
+    ctx.fillRect(cx + w / 2 - 32, top + 16, 18, H);
+  }
+
+  function draw(seconds) {
+    const cx = W / 2;
+    const tableTop = H * 0.80;            // where the table sits before anything scrolls
+    const count = Math.max(0, Math.floor(seconds));
+
+    // --- the screen slides up so there is always room for the next brick ---
+    // Keep the top of the tower about a third of the way down the picture.
+    const wantCam = Math.max(0, count * BRICK_H - (tableTop - H * 0.28));
+    camY += (wantCam - camY) * 0.12;      // glide, don't jump
+
+    // background: a plain playroom wall
+    ctx.clearRect(0, 0, W, H);
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#131335');
+    sky.addColorStop(1, '#1d1d4a');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    const floorY = tableTop + camY;
+    if (floorY < H) drawTable(cx, floorY);
+
+    // --- only draw the bricks that are actually on the screen ---
+    const first = Math.max(1, Math.ceil((floorY - H) / BRICK_H));
+    const last  = Math.min(count, Math.floor((floorY + BRICK_H) / BRICK_H));
+    for (let n = first; n <= last; n++) {
+      const topY = floorY - n * BRICK_H;
+      const age = seconds - n;
+      const squash = age < SQUASH_TIME ? (1 - age / SQUASH_TIME) : 0;
+      drawBrick(n, cx + brickJitter(n), topY, squash * 0.9);
     }
-    if (newColour) setLight(newColour);
-    lastSeconds = sec;
+
+    // --- the next brick, falling in from above ---
+    if (running) {
+      const next = count + 1;
+      const fallStart = next - DROP_TIME;
+      if (seconds > fallStart) {
+        const f = (seconds - fallStart) / DROP_TIME;     // 0 at the top, 1 as it lands
+        const restY = floorY - next * BRICK_H;
+        const drop = (1 - f) * (1 - f) * (H * 0.9 + BRICK_H);
+        drawBrick(next, cx + brickJitter(next), restY - drop, 0);
+      }
+    }
   }
 
   // ===================== THE LOOP =====================
   function loop(now) {
     if (running) {
-      const elapsed = elapsedBefore + (now - startStamp);
-      remainingMs = Math.max(0, totalMs - elapsed);
-      showTime(remainingMs);
-      if (remainingMs === 0) {
-        finishUp();
-      } else {
-        watchSeconds(Math.ceil(remainingMs / 1000) % 60);
-      }
+      elapsedMs = elapsedBefore + (now - startStamp);
+      showTime(elapsedMs);
     }
+    draw(elapsedMs / 1000);
     requestAnimationFrame(loop);
   }
 
-  function finishUp() {
-    running = false;
-    finished = true;
-    startBtn.textContent = 'START';
-    startBtn.classList.remove('pause-mode');
-    document.getElementById('colon').classList.remove('pulse');
-    setLight('flash');    // 0:00 — all three flash green
-  }
-
-  minInput.addEventListener('input', () => { if (!running) resetAll(); });
-  secInput.addEventListener('input', () => { if (!running) resetAll(); });
-
+  window.addEventListener('resize', sizeCanvas);
+  sizeCanvas();
   resetAll();
   requestAnimationFrame(loop);
 </script>
