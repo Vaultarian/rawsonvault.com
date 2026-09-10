@@ -326,6 +326,14 @@ CALENDARS = {
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
               / "y9a-design-calendar-autumn-1.pdf",
         "Autumn term to the October break"),
+    "physics-8a": (
+        VAULT / "01-Teaching/Physics - MYP/Year 8/Calendar"
+              / "y8a-physics-calendar-autumn-1.pdf",
+        "Light and the EM Spectrum, to the October break"),
+    "physics-8b": (
+        VAULT / "01-Teaching/Physics - MYP/Year 8/Calendar"
+              / "y8b-physics-calendar-autumn-1.pdf",
+        "Light and the EM Spectrum, to the October break"),
     "physics-10-p": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
               / "y10p-physics-calendar-autumn-1.pdf",
