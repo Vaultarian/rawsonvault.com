@@ -163,6 +163,31 @@
     </style>
 </head>
 <body>
+<script>
+/* arriving from the credits: hide the title + loader before anything paints */
+(function () {
+  try {
+    if (new URLSearchParams(location.search).get('zoom') === '1') {
+      document.documentElement.classList.add('zoomin');
+    }
+  } catch (e) {}
+})();
+</script>
+<style>
+  html.zoomin #canvasContainer { display:none !important; }
+  html.zoomin .site-title { visibility:hidden; }
+  html.zoomin body { animation:none !important; }
+  html.zoomin .container { opacity:0; transition:opacity 1s ease; }
+  html.zoomin.settled .container { opacity:1; }
+  #zoomInLogo {
+    position:fixed; z-index:900; margin:0; pointer-events:none;
+    font-family:'Fredoka One', cursive; white-space:nowrap; text-align:center;
+    letter-spacing:0.02em; color:#25f4ff;
+    transition:transform 1.25s cubic-bezier(0.45,0,0.55,1), color 1.25s ease, text-shadow 1.25s ease;
+    text-shadow:0 0 30px rgba(37,244,255,0.6);
+  }
+</style>
+
     <div id="canvasContainer"><canvas id="loaderCanvas"></canvas><div id="loadingText">0%</div></div>
     <div class="container">
         <h1 class="site-title">Jos' Projects</h1>
@@ -662,5 +687,54 @@
         paint();
     })();
     </script>
+<script>
+/* ---------- the logo shrinks into its place at the top ---------- */
+(function () {
+  if (!document.documentElement.classList.contains('zoomin')) return;
+
+  function run() {
+    const title = document.querySelector('.site-title');
+    if (!title) return;
+    window.scrollTo(0, 0);
+    const r  = title.getBoundingClientRect();
+    const cs = getComputedStyle(title);
+
+    const z = document.createElement('div');
+    z.id = 'zoomInLogo';
+    z.textContent = title.textContent;
+    z.style.left       = r.left + 'px';
+    z.style.top        = r.top + 'px';
+    z.style.width      = r.width + 'px';
+    z.style.fontSize   = cs.fontSize;
+    z.style.lineHeight = cs.lineHeight;
+    document.body.appendChild(z);
+
+    const dx = (window.innerWidth  / 2) - (r.left + r.width  / 2);
+    const dy = (window.innerHeight / 2) - (r.top  + r.height / 2);
+    /* big, but never wider than the screen */
+    const big = Math.max(1, Math.min((window.innerWidth * 0.88) / r.width, 4.5));
+    z.style.transform = `translate(${dx}px, ${dy}px) scale(${big})`;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.documentElement.classList.add('settled');   /* home screen fades in */
+      z.style.transform = 'translate(0px, 0px) scale(1)';
+      z.style.color = cs.color;                            /* cyan -> orange */
+      z.style.textShadow = 'none';
+    }));
+
+    setTimeout(() => {
+      title.style.visibility = 'visible';
+      z.remove();
+      history.replaceState(null, '', location.pathname);
+    }, 1400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => requestAnimationFrame(run));
+  } else {
+    requestAnimationFrame(run);
+  }
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jos' Projects — Credits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; overflow:hidden; background:#00131a; }
+  body { font-family:'Nunito', sans-serif; }
+
+  /* the cyan block field, scrolling up */
+  #blocks { position:fixed; inset:0; width:100%; height:100%; z-index:0; }
+
+  /* the credits scroller */
+  #scroller { position:fixed; inset:0; z-index:1; overflow:hidden; }
+  #roll {
+    position:absolute; left:50%; transform:translateX(-50%);
+    width:min(760px, 92vw); text-align:center;
+    padding-bottom:6rem;
+  }
+
+  .spacer-top { height:100vh; }
+  .spacer-mid { height:4rem; }
+
+  /* the logo, rebuilt in cyan */
+  .logo {
+    font-family:'Fredoka One', cursive;
+    font-size:clamp(2.6rem, 9vw, 5rem);
+    color:#25f4ff;
+    letter-spacing:0.02em;
+    line-height:1.1;
+    text-shadow:0 0 28px rgba(37,244,255,0.55), 0 6px 0 rgba(0,90,110,0.55);
+    margin-bottom:4rem;
+  }
+  .logo.small { font-size:clamp(1.8rem, 6vw, 3rem); margin:2.5rem 0 0; }
+
+  .role {
+    font-family:'Fredoka One', cursive;
+    font-size:clamp(1.1rem, 3.2vw, 1.6rem);
+    color:#9ff7ff;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin-bottom:0.3rem;
+  }
+  .name {
+    font-weight:900;
+    font-size:clamp(1.4rem, 4.4vw, 2.2rem);
+    color:#ffffff;
+    margin-bottom:2.6rem;
+    text-shadow:0 3px 14px rgba(0,0,0,0.6);
+  }
+  .name.wrap { font-size:clamp(1.05rem, 3.2vw, 1.5rem); line-height:1.5; }
+
+  .speech {
+    margin:3.5rem auto 1rem;
+    font-weight:700;
+    font-size:clamp(1.05rem, 3.4vw, 1.6rem);
+    color:#eafdff;
+    line-height:1.9;
+    text-shadow:0 3px 14px rgba(0,0,0,0.7);
+  }
+  .speech .big { font-family:'Fredoka One', cursive; color:#25f4ff; font-size:1.15em; }
+  .speech .you { color:#ffd166; }
+
+  /* end buttons */
+  .buttons {
+    display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;
+    margin-top:4rem;
+  }
+  .btn {
+    font-family:'Fredoka One', cursive;
+    font-size:clamp(0.95rem, 2.6vw, 1.2rem);
+    color:#fff; text-decoration:none; border:none; cursor:pointer;
+    padding:0.85rem 1.9rem; border-radius:50px;
+    background:linear-gradient(135deg, #25f4ff 0%, #1aa8e0 45%, #2b3fa8 100%);
+    box-shadow:0 8px 22px rgba(0,0,0,0.45), inset 0 2px 0 rgba(255,255,255,0.35);
+    transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+  .btn:hover { transform:translateY(-3px) scale(1.05); filter:brightness(1.12);
+               box-shadow:0 14px 30px rgba(0,0,0,0.55), inset 0 2px 0 rgba(255,255,255,0.45); }
+  .btn:active { transform:translateY(0) scale(0.98); }
+
+  /* everything above the ending fades out once we stop */
+  #above { transition: opacity 1.4s ease; }
+  #roll.done #above { opacity: 0; pointer-events: none; }
+
+  /* the logo that flies out to the home screen */
+  #zoomlogo {
+    position:fixed; left:50%; top:50%; z-index:60;
+    font-family:'Fredoka One', cursive;
+    font-size:clamp(3rem, 10vw, 5rem);
+    color:#25f4ff; white-space:nowrap; letter-spacing:0.02em;
+    text-shadow:0 0 28px rgba(37,244,255,0.55);
+    transform:translate(-50%,-50%) scale(0.6);
+    transition:transform 1.25s cubic-bezier(0.45,0,0.55,1);
+  }
+  body.leaving #scroller, body.leaving .hint { opacity:0; transition:opacity 0.45s ease; }
+
+  /* hold-to-speed hint */
+  .hint {
+    position:fixed; bottom:0.8rem; left:0; right:0; z-index:2;
+    text-align:center; color:rgba(255,255,255,0.45);
+    font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<canvas id="blocks"></canvas>
+
+<div id="scroller">
+  <div id="roll">
+    <div class="spacer-top"></div>
+
+    <div id="above">
+    <div class="logo">Jos' Projects</div>
+
+    <div class="role">Designer</div>
+    <div class="name">Jos</div>
+
+    <div class="role">Audio Producer</div>
+    <div class="name">Carl</div>
+
+    <div class="role">Colour Designer</div>
+    <div class="name">Carl</div>
+
+    <div class="role">Websites Used</div>
+    <div class="name wrap">Trinket · CodePen · GitHub<br>rawsonvault.com/jos · Claude.ai</div>
+
+    <div class="role">Publisher</div>
+    <div class="name">Carl &amp; Tim</div>
+
+    <div class="role">Executive Producer</div>
+    <div class="name">Alex Rawson</div>
+
+    <div class="role">Producer</div>
+    <div class="name">Jos</div>
+
+    <div class="role">Editor</div>
+    <div class="name">Jos</div>
+
+    <div class="role">Collaborators</div>
+    <div class="name">ALL OF ST LEONARDS CLASS 5A!!!</div>
+
+    <div class="role">Advisors</div>
+    <div class="name">CLASS 5A</div>
+
+    <div class="speech">
+      thank you for playing <span class="big">Jos' Projects</span><br>
+      i have worked really hard on this<br>
+      thank <span class="big">YOU</span> for playing<br>
+      thank <span class="big">ALL OF CLASS 5A</span> for helping<br>
+      and thank you Claude, ChatGPT,<br>
+      and <span class="big">EVERYONE WHO HELPED ME</span><br>
+      along the way<br>
+      <span class="you">(🫵 this means YOU 🫵)</span>
+    </div>
+    </div><!-- /#above -->
+
+    <div id="ending">
+    <div class="buttons">
+      <a class="btn" href="../">back to home screen</a>
+      <button class="btn" id="again">read again</button>
+    </div>
+
+    <div class="logo small">Jos' Projects</div>
+    </div><!-- /#ending -->
+  </div>
+</div>
+
+<p class="hint">hold ↓ or click to speed up · esc to go home</p>
+
+<script>
+/* ---------- the cyan block field ---------- */
+const cv = document.getElementById('blocks');
+const cx = cv.getContext('2d');
+const BLOCK = 96;                  /* big blocks */
+let cols, rows, grid, blockOffset = 0;
+
+/* every block keeps its own brightness, and drifts slowly up and down */
+function newBlock() {
+  const b = 0.22 + Math.random() * 0.78;
+  return {
+    b: b,
+    dir: Math.random() < 0.5 ? -1 : 1,
+    spd: 0.0012 + Math.random() * 0.0035,
+    lo: Math.max(0.15, b - 0.25),
+    hi: Math.min(1.0, b + 0.25)
+  };
+}
+
+function newRow() {
+  const row = [];
+  for (let x = 0; x < cols; x++) row.push(newBlock());
+  return row;
+}
+
+function buildGrid() {
+  cv.width = window.innerWidth;
+  cv.height = window.innerHeight;
+  cols = Math.ceil(cv.width / BLOCK) + 1;
+  rows = Math.ceil(cv.height / BLOCK) + 2;
+  grid = [];
+  for (let y = 0; y < rows; y++) grid.push(newRow());
+}
+buildGrid();
+window.addEventListener('resize', buildGrid);
+
+function drawBlocks() {
+  for (let y = 0; y < rows; y++) {
+    const row = grid[y];
+    for (let x = 0; x < cols; x++) {
+      const blk = row[x];
+      /* drift the brightness, turn around at the ends */
+      blk.b += blk.dir * blk.spd;
+      if (blk.b > blk.hi) { blk.b = blk.hi; blk.dir = -1; }
+      if (blk.b < blk.lo) { blk.b = blk.lo; blk.dir =  1; }
+      const g  = Math.round(232 * blk.b);
+      const bl = Math.round(255 * blk.b);
+      cx.fillStyle = `rgb(${Math.round(10 * blk.b)},${g},${bl})`;
+      cx.fillRect(x * BLOCK, y * BLOCK - blockOffset, BLOCK, BLOCK);
+    }
+  }
+  /* darken so the words stay readable */
+  cx.fillStyle = 'rgba(0, 14, 22, 0.55)';
+  cx.fillRect(0, 0, cv.width, cv.height);
+}
+
+/* slide a fresh row in at the bottom instead of snapping back */
+function advanceBlocks(px) {
+  blockOffset += px;
+  while (blockOffset >= BLOCK) {
+    blockOffset -= BLOCK;
+    grid.shift();
+    grid.push(newRow());
+  }
+}
+
+/* ---------- the scroll ---------- */
+const roll = document.getElementById('roll');
+const BASE = 0.55;                 /* pixels per frame */
+let pos = 0, fast = false, rollHeight = 0;
+
+const ending = document.getElementById('ending');
+let stopAt = 0;
+function measure() {
+  rollHeight = roll.offsetHeight;
+  /* stop when the buttons + logo sit in the middle of the screen */
+  stopAt = ending.offsetTop + (ending.offsetHeight / 2) - (window.innerHeight / 2);
+}
+window.addEventListener('load', measure);
+window.addEventListener('resize', measure);
+measure();
+
+function frame() {
+  const speed = fast ? BASE * 6 : BASE;
+  if (pos < stopAt) {
+    pos = Math.min(stopAt, pos + speed);
+    advanceBlocks(speed * 0.6);
+    if (pos >= stopAt) { fast = false; roll.classList.add('done'); }
+  } else {
+    advanceBlocks(BASE * 0.6);      /* blocks keep drifting behind the buttons */
+  }
+  roll.style.top = (-pos) + 'px';
+  drawBlocks();
+  requestAnimationFrame(frame);
+}
+roll.style.top = '0px';
+frame();
+
+/* speed up: hold down-arrow, space, or mouse */
+function on()  { fast = true; }
+function off() { fast = false; }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); on(); }
+  if (e.key === 'Escape') goHome(e);
+});
+document.addEventListener('keyup', off);
+document.addEventListener('mousedown', e => { if (!e.target.closest('.btn')) on(); });
+document.addEventListener('mouseup', off);
+document.addEventListener('touchstart', e => { if (!e.target.closest('.btn')) on(); }, {passive:true});
+document.addEventListener('touchend', off);
+
+/* ---------- flying home ---------- */
+let leaving = false;
+function goHome(e) {
+  if (e) e.preventDefault();
+  if (leaving) return;
+  leaving = true;
+  const z = document.createElement('div');
+  z.id = 'zoomlogo';
+  z.textContent = "Jos' Projects";
+  document.body.appendChild(z);
+  document.body.classList.add('leaving');
+  /* grow only as big as the screen allows */
+  const w = z.getBoundingClientRect().width / 0.6;          /* natural width at scale 1 */
+  const target = Math.min((window.innerWidth * 0.88) / w, 4.5);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    z.style.transform = `translate(-50%,-50%) scale(${target})`;
+  }));
+  setTimeout(() => { location.href = '../?zoom=1'; }, 1300);
+}
+document.querySelector('.btn[href="../"]').addEventListener('click', goHome);
+
+document.getElementById('again').addEventListener('click', e => {
+  e.preventDefault(); e.stopPropagation();
+  roll.classList.remove('done'); pos = 0; measure();
+});
+</script>
+</body>
+</html>
