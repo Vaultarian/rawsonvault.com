@@ -103,9 +103,9 @@
         .big-nav-btn { font-family: 'Fredoka One', cursive; font-size: 1.5rem; padding: 0.75rem 2.5rem; border-radius: 50px; text-decoration: none; color: white; background: #3d9595; transition: background 0.15s, transform 0.1s; letter-spacing: 0.04em; }
         .big-nav-btn:hover { background: #d9643a; transform: scale(1.05); }
         /* ===== SHOW MODE ===== */
-        #showModeBtn { position: fixed; top: 1rem; right: 1rem; z-index: 500; border: none; cursor: pointer; font-family: 'Fredoka One', cursive; font-size: 1rem; letter-spacing: 0.05em; color: #fff; background: linear-gradient(90deg, #d9643a, #3d9595); padding: 0.7rem 1.35rem; border-radius: 50px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); transition: transform 0.12s, box-shadow 0.12s; }
+        #showModeBtn { position: fixed; top: 1rem; right: 5.2rem; z-index: 500; border: none; cursor: pointer; font-family: 'Fredoka One', cursive; font-size: 1rem; letter-spacing: 0.05em; color: #fff; background: linear-gradient(90deg, #d9643a, #3d9595); padding: 0.7rem 1.35rem; border-radius: 50px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); transition: transform 0.12s, box-shadow 0.12s; }
         #showModeBtn:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(0,0,0,0.3); }
-        @media (max-width: 600px) { #showModeBtn { font-size: 0.8rem; padding: 0.55rem 1rem; top: 0.6rem; right: 0.6rem; } }
+        @media (max-width: 600px) { #showModeBtn { font-size: 0.8rem; padding: 0.55rem 1rem; top: 0.6rem; right: 4.2rem; } }
         #showMode { position: fixed; inset: 0; z-index: 900; background: rgba(20, 45, 45, 0.97); display: flex; flex-direction: column; align-items: center; padding: 1rem; overflow-y: auto; animation: fadeIn 0.35s ease both; }
         #showMode[hidden] { display: none; }
         body.sm-open #showModeBtn { display: none; }
@@ -170,11 +170,15 @@
     if (new URLSearchParams(location.search).get('zoom') === '1') {
       document.documentElement.classList.add('zoomin');
     }
+    if (sessionStorage.getItem('jos-reset-flash') === '1') {
+      sessionStorage.removeItem('jos-reset-flash');
+      document.documentElement.classList.add('resetflash');
+    }
   } catch (e) {}
 })();
 </script>
 <style>
-  html.zoomin #canvasContainer { display:none !important; }
+  html.zoomin #canvasContainer, html.resetflash #canvasContainer { display:none !important; }
   html.zoomin .site-title { visibility:hidden; }
   html.zoomin body { animation:none !important; }
   html.zoomin .container { opacity:0; transition:opacity 1s ease; }
@@ -688,6 +692,22 @@
     })();
     </script>
 <script>
+/* ---------- the white light we land in after a reset ---------- */
+(function () {
+  if (!document.documentElement.classList.contains('resetflash')) return;
+  function go() {
+    const f = document.createElement('div');
+    f.id = 'resetFlash';
+    document.body.appendChild(f);
+    setTimeout(function () { f.style.opacity = '0'; }, 1000);   /* hold the white for one second */
+    setTimeout(function () { f.remove(); }, 1750);              /* then it fades away */
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+})();
+</script>
+
+<script>
 /* ---------- the logo shrinks into its place at the top ---------- */
 (function () {
   if (!document.documentElement.classList.contains('zoomin')) return;
@@ -736,5 +756,511 @@
   }
 })();
 </script>
+
+<style>
+/* ============ SETTINGS ============ */
+#gearBtn {
+  position:fixed; top:1rem; right:1rem; z-index:500;
+  width:3.2rem; height:3.2rem; border:none; cursor:pointer; border-radius:50%;
+  background:linear-gradient(135deg,#3d9595,#2a5f7a); color:#fff; font-size:1.6rem; line-height:1;
+  box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  transition:transform 0.3s ease, box-shadow 0.12s;
+}
+#gearBtn:hover { transform:rotate(90deg) scale(1.08); box-shadow:0 8px 22px rgba(0,0,0,0.3); }
+body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
+@media (max-width:600px){ #gearBtn { top:0.6rem; right:0.6rem; width:2.8rem; height:2.8rem; font-size:1.35rem; } }
+
+#settingsWrap { position:fixed; inset:0; z-index:1200; }
+#settingsWrap[hidden] { display:none; }
+#settingsScrim { position:absolute; inset:0; background:rgba(10,35,40,0.55); opacity:0; transition:opacity 0.45s ease; }
+#settingsWrap.in #settingsScrim { opacity:1; }
+
+#settingsHang { position:absolute; left:50%; top:0; width:min(430px,92vw); }
+#settingsWrap.in  #settingsHang { animation:setDrop 1.15s cubic-bezier(0.25,0.9,0.35,1) both; }
+#settingsWrap.out #settingsHang { animation:setLift 0.5s ease-in both; }
+@keyframes setDrop {
+  0%   { transform:translate(-50%,-118vh); }
+  55%  { transform:translate(-50%,0); }
+  67%  { transform:translate(-50%,-34px); }
+  78%  { transform:translate(-50%,0); }
+  86%  { transform:translate(-50%,-13px); }
+  93%  { transform:translate(-50%,0); }
+  97%  { transform:translate(-50%,-4px); }
+  100% { transform:translate(-50%,0); }
+}
+@keyframes setLift { from { transform:translate(-50%,0); } to { transform:translate(-50%,-118vh); } }
+
+/* it swings on its chains, then settles */
+#settingsSway { position:relative; transform-origin:50% -6vh; }
+#settingsWrap.in #settingsSway { animation:setSway 2.4s ease-out 0.45s both; }
+@keyframes setSway {
+  0% { transform:rotate(2.4deg); } 22% { transform:rotate(-1.6deg); }
+  45% { transform:rotate(0.9deg); } 68% { transform:rotate(-0.45deg); }
+  85% { transform:rotate(0.18deg); } 100% { transform:rotate(0deg); }
+}
+
+/* the chains holding it up */
+.chain { position:absolute; top:-100vh; height:calc(100vh + 1.2rem); width:14px; }
+.chain.left  { left:16%; }
+.chain.right { right:16%; }
+.chain::before {
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(180deg,
+      #8f9aa3 0 4px, #cfd6db 4px 9px, #8f9aa3 9px 13px, rgba(0,0,0,0) 13px 18px);
+  border-radius:7px;
+}
+
+#settingsPanel {
+  position:relative; margin-top:1.2rem;
+  background:#f2ede3; border:5px solid #2a7070; border-radius:22px;
+  padding:1.5rem 1.4rem 1.4rem; box-shadow:0 22px 50px rgba(0,0,0,0.45);
+}
+.set-title { font-family:'Fredoka One',cursive; font-size:1.7rem; color:#d9643a; text-align:center; margin-bottom:0.2rem; }
+.set-sub { text-align:center; font-weight:700; font-size:0.78rem; color:#4e6c6c; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:1.1rem; }
+
+#creditsBtn {
+  position:absolute; top:-0.9rem; right:-0.6rem; z-index:3;
+  border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:0.82rem; color:#fff;
+  padding:0.55rem 1.1rem; border-radius:50px; letter-spacing:0.04em;
+  background:linear-gradient(135deg,#25f4ff 0%,#1aa8e0 45%,#2b3fa8 100%);
+  box-shadow:0 6px 16px rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.35);
+  transition:transform 0.12s, filter 0.12s;
+}
+#creditsBtn:hover { transform:scale(1.07); filter:brightness(1.12); }
+
+.set-row { display:flex; gap:0.8rem; margin-bottom:0.9rem; }
+.set-toggle {
+  position:relative; flex:1; cursor:pointer; border:none;
+  background:#3d9595; color:#fff; border-radius:16px; padding:1.1rem 0.5rem 0.9rem;
+  font-family:'Fredoka One',cursive; font-size:0.95rem; text-align:center;
+  transition:background 0.18s, filter 0.18s;
+}
+.set-toggle .ico { display:block; font-size:1.9rem; line-height:1; margin-bottom:0.35rem; }
+.set-toggle.off { background:#7e8c8c; filter:grayscale(0.5); }
+.set-toggle .cross { position:absolute; inset:0; opacity:0; transition:opacity 0.18s ease; pointer-events:none; }
+.set-toggle .cross::before, .set-toggle .cross::after {
+  content:''; position:absolute; left:8%; top:50%; width:84%; height:9px;
+  background:#e03a2f; border-radius:6px; box-shadow:0 0 0 3px rgba(255,255,255,0.75);
+}
+.set-toggle .cross::before { transform:translateY(-50%) rotate(28deg); }
+.set-toggle .cross::after  { transform:translateY(-50%) rotate(-28deg); }
+.set-toggle.off .cross { opacity:1; }
+
+.set-progress { background:#eee8db; border-radius:14px; padding:0.7rem 0.9rem; margin-bottom:0.9rem; text-align:center; }
+.set-progress b { font-family:'Fredoka One',cursive; color:#2a5f7a; font-size:1.05rem; }
+.set-progress .bar { height:10px; background:#d7cfc0; border-radius:6px; margin-top:0.5rem; overflow:hidden; }
+.set-progress .bar span { display:block; height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg,#25f4ff,#3d9595); transition:width 0.5s ease; }
+.set-progress small { display:block; font-weight:700; color:#4e6c6c; font-size:0.72rem; margin-top:0.45rem; }
+
+.set-foot { display:flex; gap:0.7rem; }
+.set-btn { flex:1; border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:0.92rem; color:#fff; padding:0.75rem 0.6rem; border-radius:50px; transition:transform 0.12s, filter 0.12s; }
+.set-btn:hover { transform:scale(1.04); filter:brightness(1.08); }
+.set-btn.close { background:#2a5f7a; }
+.set-btn.reset { background:#c0392b; }
+
+/* are you sure? */
+#resetAsk { position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
+            background:rgba(20,45,45,0.9); border-radius:18px; opacity:0; pointer-events:none; transition:opacity 0.35s ease; padding:1rem; }
+#resetAsk.show { opacity:1; pointer-events:auto; }
+#resetAsk .ask-card { text-align:center; }
+#resetAsk h3 { font-family:'Fredoka One',cursive; color:#fff; font-size:1.2rem; line-height:1.35; margin-bottom:0.35rem; }
+#resetAsk p { color:#cfe6e6; font-weight:700; font-size:0.8rem; margin-bottom:1rem; }
+#resetAsk .ask-row { display:flex; gap:0.7rem; justify-content:center; }
+#resetAsk button { border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:0.95rem; color:#fff; padding:0.7rem 1.5rem; border-radius:50px; transition:transform 0.12s, filter 0.12s; }
+#resetAsk button:hover { transform:scale(1.05); filter:brightness(1.1); }
+#resetAsk .yes { background:#e03a2f; }
+#resetAsk .no  { background:#3d9595; }
+
+/* the credits ask - same panel, different words */
+#creditsAsk { position:absolute; inset:0; z-index:6; display:flex; align-items:center; justify-content:center;
+              background:rgba(20,45,45,0.92); border-radius:18px; opacity:0; pointer-events:none;
+              transition:opacity 0.35s ease; padding:1rem; }
+#creditsAsk.show { opacity:1; pointer-events:auto; }
+#creditsAsk h3 { font-family:'Fredoka One',cursive; color:#25f4ff; font-size:1.25rem; line-height:1.35; margin-bottom:0.5rem; }
+#creditsAsk .count { font-family:'Fredoka One',cursive; color:#fff; font-size:1.5rem; margin-bottom:0.15rem; }
+#creditsAsk .countsub { color:#cfe6e6; font-weight:700; font-size:0.78rem; margin-bottom:1rem; }
+#creditsAsk .spoiler { color:#ffd166; font-weight:700; font-size:0.85rem; line-height:1.4; margin-bottom:0.9rem; }
+#creditsAsk .set-progress { margin-bottom:1rem; text-align:center; }
+#creditsAsk .ask-row { display:flex; gap:0.7rem; justify-content:center; }
+#creditsAsk button { border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:1rem; color:#fff;
+                     padding:0.7rem 1.8rem; border-radius:50px; transition:transform 0.12s, filter 0.12s; }
+#creditsAsk button:hover { transform:scale(1.05); filter:brightness(1.1); }
+#creditsAsk .yes { background:linear-gradient(135deg,#25f4ff,#1aa8e0 45%,#2b3fa8); }
+#creditsAsk .no  { background:#3d9595; }
+
+/* ============ THE SHATTER ============ */
+#shatter { position:fixed; inset:0; z-index:2000000; pointer-events:none; }
+#shatter[hidden] { display:none; }
+
+/* the spinning curved arrow */
+#shArrow { position:absolute; left:50%; top:50%; width:130px; height:130px; margin:-65px 0 0 -65px;
+           opacity:0; transition:opacity 0.25s ease; }
+#shArrow.go { opacity:1; animation:shSpin 0.55s linear infinite; }
+@keyframes shSpin { to { transform:rotate(360deg); } }
+
+/* the glass pane that breaks */
+#shGlass { position:absolute; inset:0; background:rgba(150,225,245,0.10);
+           opacity:0; transition:opacity 0.3s ease; }
+#shGlass.go { opacity:1; }
+#shCracks { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+#shCracks path { fill:none; stroke-linecap:round; stroke-linejoin:round;
+                 stroke-dasharray:var(--len); stroke-dashoffset:var(--len); }
+#shCracks.draw path { animation:shDraw 0.42s ease-out forwards; }
+@keyframes shDraw { to { stroke-dashoffset:0; } }
+/* three passes, offset - that is where the red/cyan fringe comes from */
+#shCracks .lay-red   path { stroke:#ff2d3a; stroke-width:1.8; opacity:0.8; }
+#shCracks .lay-cyan  path { stroke:#25f4ff; stroke-width:1.8; opacity:0.8; }
+#shCracks .lay-white path { stroke:#ffffff; stroke-width:1.15;
+                            filter:drop-shadow(0 0 3px rgba(200,245,255,0.9)); }
+#shCracks .lay-red  { transform:translate(-1.7px, 0.7px); }
+#shCracks .lay-cyan { transform:translate(1.7px, -0.7px); }
+
+.shard { position:absolute; inset:0; background:rgba(190,240,255,0.16);
+         box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5); will-change:transform, opacity; }
+.shard.fall { transition:transform 1.25s cubic-bezier(0.35,0,0.9,0.65), opacity 1.25s ease-in;
+              opacity:0; }
+
+#shWhite { position:absolute; inset:0; background:#ffffff; opacity:0; transition:opacity 0.55s ease; }
+#shWhite.go { opacity:1; }
+
+/* the white light we land on after the reload */
+#resetFlash { position:fixed; inset:0; z-index:2000001; background:#fff; pointer-events:none;
+              transition:opacity 0.7s ease; }
+</style>
+
+<button id="gearBtn" title="Settings" aria-label="Settings">⚙️</button>
+<div id="shatter" hidden>
+  <div id="shGlass"><svg id="shCracks" preserveAspectRatio="none">
+    <g class="lay-red"></g><g class="lay-cyan"></g><g class="lay-white"></g>
+  </svg></div>
+  <svg id="shArrow" viewBox="0 0 100 100">
+    <path d="M50 12 A38 38 0 1 1 12 50" fill="none" stroke="#25f4ff" stroke-width="9" stroke-linecap="round"
+          filter="url(#glowf)"/>
+    <path d="M50 12 l-14 -11 l0 22 z" fill="#25f4ff"/>
+    <defs><filter id="glowf"><feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  </svg>
+  <div id="shWhite"></div>
+</div>
+
+<div id="settingsWrap" hidden>
+  <div id="settingsScrim"></div>
+  <div id="settingsHang">
+    <div id="settingsSway">
+      <div class="chain left"></div>
+      <div class="chain right"></div>
+      <div id="settingsPanel">
+        <button id="creditsBtn">🎬 CREDITS</button>
+        <h2 class="set-title">Settings</h2>
+        <p class="set-sub">Jos' Projects</p>
+
+        <div class="set-row">
+          <button class="set-toggle" id="tAudio"><span class="ico">🎵</span>Audio<span class="cross"></span></button>
+          <button class="set-toggle" id="tSfx"><span class="ico">🔊</span>Sound Effects<span class="cross"></span></button>
+        </div>
+
+        <div class="set-foot">
+          <button class="set-btn close" id="setClose">Close</button>
+          <button class="set-btn reset" id="setReset">Reset everything</button>
+        </div>
+
+        <div id="creditsAsk">
+          <div class="ask-card" style="text-align:center;">
+            <h3>Do you want to see the credits?</h3>
+            <p class="spoiler">⚠️ Careful — the credits give away the ending!</p>
+            <div class="set-progress">
+              <b><span id="pNum">0</span> / <span id="pTot">0</span> games played</b>
+              <div class="bar"><span id="pBar"></span></div>
+              <small id="pMsg"></small>
+            </div>
+            <div class="ask-row">
+              <button class="yes" id="caYes">Yes</button>
+              <button class="no"  id="caNo">No</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="resetAsk">
+          <div class="ask-card">
+            <h3>Are you sure you want to reset?</h3>
+            <p>This wipes your museum, your games played, and your high scores. It cannot be undone.</p>
+            <div class="ask-row">
+              <button class="yes" id="askYes">RESET</button>
+              <button class="no" id="askNo">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= SETTINGS + PROGRESS ================= */
+(function () {
+  const GAMES = ['whack-a-mole/','yoga/','gravity/','brick-breaker/','fortune-teller/',
+                 'maze-runner/','type-speed/','color-mixer/','the-red-button/','reaction-time/',
+                 'password-defender/','snake/','flappy-bird/','marble_run.html',
+                 'simon-says-among-us/','2048/','bouncy-spinner/'];
+
+  const PLAYED_KEY = 'jos-games-played';
+  const SET_KEY    = 'jos-settings';
+  /* everything the reset button wipes */
+  const ALL_KEYS = [PLAYED_KEY, SET_KEY, 'jos-museum-creations', 'jos-illusion-code',
+                    '2048_highScore\u221e', 'flappyBest'];
+
+  function read(k, fallback) {
+    try { const v = localStorage.getItem(k); return v === null ? fallback : JSON.parse(v); }
+    catch (e) { return fallback; }
+  }
+  function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+  let played   = read(PLAYED_KEY, []);
+  let settings = read(SET_KEY, { audio: true, sfx: true });
+  if (!Array.isArray(played)) played = [];
+
+  /* ---- remember every game they open, for good ---- */
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a');
+    if (!a) return;
+    const href = a.getAttribute('href') || '';
+    const hit = GAMES.find(g => href === g || href.endsWith('/' + g));
+    if (hit && played.indexOf(hit) === -1) {
+      played.push(hit);
+      write(PLAYED_KEY, played);
+      paint();
+    }
+  }, true);
+
+  /* ---- painting the panel ---- */
+  const pNum = document.getElementById('pNum'), pTot = document.getElementById('pTot');
+  const pBar = document.getElementById('pBar'), pMsg = document.getElementById('pMsg');
+  const credits = document.getElementById('creditsBtn');
+  const tAudio = document.getElementById('tAudio'), tSfx = document.getElementById('tSfx');
+
+  function paint() {
+    const n = played.length, t = GAMES.length, done = n >= t;
+    pNum.textContent = n; pTot.textContent = t;
+    pBar.style.width = Math.round((n / t) * 100) + '%';
+    pMsg.textContent = done ? 'You have played every single one! 🎉'
+                            : (t - n) + ' you have not tried yet';
+    tAudio.classList.toggle('off', !settings.audio);
+    tSfx.classList.toggle('off', !settings.sfx);
+  }
+
+  tAudio.addEventListener('click', () => { settings.audio = !settings.audio; write(SET_KEY, settings); paint(); });
+  tSfx.addEventListener('click',   () => { settings.sfx   = !settings.sfx;   write(SET_KEY, settings); paint(); });
+
+  const cAsk  = document.getElementById('creditsAsk');
+  const caYes = document.getElementById('caYes');
+  credits.addEventListener('click', () => {
+    paint();
+    cAsk.classList.add('show');
+  });
+  caYes.addEventListener('click', () => { location.href = 'credits/'; });
+  document.getElementById('caNo').addEventListener('click', () => cAsk.classList.remove('show'));
+
+  /* ---- opening and closing ---- */
+  const wrap = document.getElementById('settingsWrap');
+  const ask  = document.getElementById('resetAsk');
+
+  function open() {
+    wrap.hidden = false;
+    wrap.classList.remove('out');
+    void wrap.offsetWidth;
+    wrap.classList.add('in');
+    document.body.classList.add('set-open');
+    paint();
+  }
+  function close() {
+    ask.classList.remove('show');
+    wrap.classList.remove('in');
+    wrap.classList.add('out');
+    document.body.classList.remove('set-open');
+    setTimeout(() => { wrap.hidden = true; wrap.classList.remove('out'); }, 500);
+  }
+
+  document.getElementById('gearBtn').addEventListener('click', open);
+  document.getElementById('setClose').addEventListener('click', close);
+  document.getElementById('settingsScrim').addEventListener('click', close);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || wrap.hidden) return;
+    const ca = document.getElementById('creditsAsk');
+    if (ca.classList.contains('show')) { ca.classList.remove('show'); return; }
+    if (ask.classList.contains('show')) { ask.classList.remove('show'); return; }
+    close();
+  });
+
+  /* ---- reset, with an are-you-sure ---- */
+  document.getElementById('setReset').addEventListener('click', () => ask.classList.add('show'));
+  document.getElementById('askNo').addEventListener('click', () => ask.classList.remove('show'));
+  document.getElementById('askYes').addEventListener('click', () => {
+    ALL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+    try { sessionStorage.removeItem('jos-hard-mode'); } catch (e) {}
+    played = [];
+    settings = { audio: true, sfx: true };
+    ask.classList.remove('show');
+    paint();
+    runShatter();
+  });
+
+  /* ---------- spin, crack, shatter, white light ---------- */
+  function runShatter() {
+    const sh    = document.getElementById('shatter');
+    const arrow = document.getElementById('shArrow');
+    const glass = document.getElementById('shGlass');
+    const svg   = document.getElementById('shCracks');
+    const white = document.getElementById('shWhite');
+    const W = window.innerWidth, H = window.innerHeight;
+    const cxp = W / 2, cyp = H / 2;
+    const maxR = Math.hypot(cxp, cyp);
+
+    sh.hidden = false;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    arrow.classList.add('go');
+
+    /* ---- build the fracture: keep slicing pieces of glass in two ---- */
+    function area(P) {
+      let a = 0;
+      for (let i = 0; i < P.length; i++) {
+        const j = (i + 1) % P.length;
+        a += P[i][0] * P[j][1] - P[j][0] * P[i][1];
+      }
+      return Math.abs(a) / 2;
+    }
+    function centroid(P) {
+      let x = 0, y = 0;
+      P.forEach(function (p) { x += p[0]; y += p[1]; });
+      return [x / P.length, y / P.length];
+    }
+    /* cut a piece with the line through (px,py) at angle ang */
+    function cut(P, px, py, ang) {
+      const nx = Math.cos(ang), ny = Math.sin(ang);
+      const side = P.map(function (p) { return (p[0] - px) * nx + (p[1] - py) * ny; });
+      const A = [], B = [];
+      for (let i = 0; i < P.length; i++) {
+        const j = (i + 1) % P.length, si = side[i], sj = side[j];
+        if (si >= 0) A.push(P[i]);
+        if (si <= 0) B.push(P[i]);
+        if ((si > 0 && sj < 0) || (si < 0 && sj > 0)) {
+          const t = si / (si - sj);
+          const ip = [P[i][0] + (P[j][0] - P[i][0]) * t,
+                      P[i][1] + (P[j][1] - P[i][1]) * t];
+          A.push(ip); B.push(ip);
+        }
+      }
+      return (A.length > 2 && B.length > 2) ? [A, B] : null;
+    }
+
+    let pieces = [[[0, 0], [W, 0], [W, H], [0, H]]];
+    const TARGET = 115;
+    let guard = 0;
+    while (pieces.length < TARGET && guard++ < TARGET * 8) {
+      /* bigger pieces are likelier to break again - that is what makes the sizes vary */
+      let total = 0;
+      const w = pieces.map(function (P) { const a = area(P); total += a; return total; });
+      const r = Math.random() * total;
+      let k = 0; while (k < w.length - 1 && w[k] < r) k++;
+      const P = pieces[k], c = centroid(P);
+      const bb = Math.sqrt(area(P));
+      const two = cut(P,
+                      c[0] + (Math.random() - 0.5) * bb * 0.55,
+                      c[1] + (Math.random() - 0.5) * bb * 0.55,
+                      Math.random() * Math.PI);
+      if (!two) continue;
+      pieces.splice(k, 1, two[0], two[1]);
+    }
+
+    /* ---- the crack lines are the edges between the pieces ---- */
+    const seen = Object.create(null), segs = [];
+    pieces.forEach(function (P) {
+      for (let i = 0; i < P.length; i++) {
+        const a = P[i], b = P[(i + 1) % P.length];
+        const ax = a[0].toFixed(1), ay = a[1].toFixed(1);
+        const bx = b[0].toFixed(1), by = b[1].toFixed(1);
+        const key = (ax + ',' + ay < bx + ',' + by)
+                  ? ax + ',' + ay + '|' + bx + ',' + by
+                  : bx + ',' + by + '|' + ax + ',' + ay;
+        if (seen[key]) continue;
+        seen[key] = 1;
+        /* skip the outside border, it just draws a frame round the screen */
+        const onEdge = function (p) { return p[0] < 0.6 || p[1] < 0.6 || p[0] > W - 0.6 || p[1] > H - 0.6; };
+        if (onEdge(a) && onEdge(b)) continue;
+        segs.push([a, b]);
+      }
+    });
+
+    /* ---- draw them, outside first, creeping inwards ---- */
+    const SPREAD = 1.7;                       /* seconds for the cracks to reach the middle */
+    const layers = [svg.querySelector('.lay-red'),
+                    svg.querySelector('.lay-cyan'),
+                    svg.querySelector('.lay-white')];
+    segs.forEach(function (sg) {
+      let a = sg[0], b = sg[1];
+      /* start the line at whichever end is further out, so it grows towards the middle */
+      if (Math.hypot(a[0] - cxp, a[1] - cyp) < Math.hypot(b[0] - cxp, b[1] - cyp)) { const t = a; a = b; b = t; }
+      const mx = (a[0] + b[0]) / 2 + (Math.random() - 0.5) * 3.5;
+      const my = (a[1] + b[1]) / 2 + (Math.random() - 0.5) * 3.5;
+      const d  = 'M' + a[0] + ' ' + a[1] + ' L' + mx + ' ' + my + ' L' + b[0] + ' ' + b[1];
+      const dist = Math.hypot(mx - cxp, my - cyp);
+      const delay = (1 - dist / maxR) * SPREAD + Math.random() * 0.07;
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]) + 4;
+      layers.forEach(function (g) {
+        const pa = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pa.setAttribute('d', d);
+        pa.style.setProperty('--len', len);
+        pa.style.animationDelay = delay + 's';
+        g.appendChild(pa);
+      });
+    });
+
+    /* 1 - the little curved arrow spins */
+    setTimeout(function () {
+      arrow.classList.remove('go');
+      glass.classList.add('go');
+      svg.classList.add('draw');            /* 2 - cracks creep in from the edges */
+    }, 950);
+
+    /* 3 - the cracks meet in the middle, and it all falls */
+    const FALL_AT = 950 + SPREAD * 1000 + 480;
+    setTimeout(function () {
+      glass.style.transition = 'opacity 0.25s';
+      glass.style.opacity = '0';
+      svg.style.transition = 'opacity 0.35s';
+      svg.style.opacity = '0';
+      pieces.forEach(function (P) {
+        const c = centroid(P);
+        const el = document.createElement('div');
+        el.className = 'shard';
+        el.style.clipPath = 'polygon(' + P.map(function (q) {
+          return q[0].toFixed(1) + 'px ' + q[1].toFixed(1) + 'px';
+        }).join(', ') + ')';
+        /* the middle lets go first, then it spreads outwards */
+        el.style.transitionDelay = (Math.hypot(c[0] - cxp, c[1] - cyp) / maxR * 0.35
+                                    + Math.random() * 0.12) + 's';
+        sh.appendChild(el);
+        const drift = (c[0] - cxp) * 0.25 + (Math.random() - 0.5) * 120;
+        const spin  = (Math.random() - 0.5) * 120;
+        (function (node, dr, sp) {
+          requestAnimationFrame(function () { requestAnimationFrame(function () {
+            node.classList.add('fall');
+            node.style.transform = 'translate(' + dr + 'px, ' + (H * 1.5) + 'px) rotate(' + sp + 'deg)';
+          }); });
+        })(el, drift, spin);
+      });
+      white.classList.add('go');            /* 4 - white light */
+    }, FALL_AT);
+
+    /* 5 - land on a fresh Jos' Projects */
+    setTimeout(function () {
+      try { sessionStorage.setItem('jos-reset-flash', '1'); } catch (e) {}
+      location.href = location.pathname;
+    }, FALL_AT + 1500);
+  }
+
+  paint();
+})();
+</script>
+
 </body>
 </html>
