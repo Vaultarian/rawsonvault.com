@@ -326,6 +326,14 @@ CALENDARS = {
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
               / "y9a-design-calendar-autumn-1.pdf",
         "Autumn term to the October break"),
+    "design-8a": (
+        VAULT / "01-Teaching/Computer Science - MYP/Y8 MYP Design/Calendar"
+              / "y8a-design-calendar-autumn-1.pdf",
+        "Programming the micro:bit, to the October break"),
+    "design-8b": (
+        VAULT / "01-Teaching/Computer Science - MYP/Y8 MYP Design/Calendar"
+              / "y8b-design-calendar-autumn-1.pdf",
+        "Programming the micro:bit, to the October break"),
     "physics-8a": (
         VAULT / "01-Teaching/Physics - MYP/Year 8/Calendar"
               / "y8a-physics-calendar-autumn-1.pdf",
@@ -334,6 +342,14 @@ CALENDARS = {
         VAULT / "01-Teaching/Physics - MYP/Year 8/Calendar"
               / "y8b-physics-calendar-autumn-1.pdf",
         "Light and the EM Spectrum, to the October break"),
+    "physics-9a": (
+        VAULT / "01-Teaching/Physics - MYP/Year 9/Calendar"
+              / "y9a-physics-calendar-autumn-1.pdf",
+        "Oscillations and Waves, to the October break"),
+    "physics-9b": (
+        VAULT / "01-Teaching/Physics - MYP/Year 9/Calendar"
+              / "y9b-physics-calendar-autumn-1.pdf",
+        "Oscillations and Waves, to the October break"),
     "physics-10-p": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
               / "y10p-physics-calendar-autumn-1.pdf",
