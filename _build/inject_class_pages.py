@@ -280,6 +280,18 @@ STYLE = """    <style>
       .calendar-bar .vocab-link:hover {{ background: #fff;
         color: var(--bronze-deep); border-color: var(--bronze-deep); }}
       .cal-ico {{ vertical-align: -2px; margin-right: 0.35rem; }}
+      /* Upcoming summatives sit beside the calendar as standing information,
+         so they copy its shape exactly -- tinted strip, lifted buttons. The
+         tint is a shade cooler and the left rule darker, because a summative
+         is the one thing on this page with a deadline attached and it should
+         not read as just another calendar. */
+      .summative-bar {{ margin-top: 0.5rem; background: #e6d3bb;
+        border-left: 3px solid var(--bronze-rich);
+        padding: 0.5rem 0.9rem; border-radius: 2px; }}
+      .summative-bar .vocab-link {{ background: #fdfbf3;
+        border-color: var(--bronze-core); color: var(--bronze-dark); }}
+      .summative-bar .vocab-link:hover {{ background: #fff;
+        color: var(--bronze-deep); border-color: var(--bronze-deep); }}
     </style>"""
 
 
@@ -430,6 +442,82 @@ def calendar_bar(name):
             '\n        </div>')
 
 
+# Upcoming summatives. Same treatment as CALENDARS and for the same reason: a
+# summative sheet is standing information a student returns to for weeks, so it
+# must not scroll away inside the dated lesson row it happened to be handed out
+# in. Config here rather than a `Publish:` line, deliberately -- see the note
+# above CALENDARS.
+#
+# ⚠ Drop a class's entry once the summative has been written. The label says
+# "Upcoming", so a sheet left here after the date has passed tells a student
+# something untrue.
+#
+# slug -> [(source PDF in the vault, label on the button)]
+SUMMATIVES = {
+    "design-9a": [(
+        VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Lessons"
+              / "y9-summative-a-what-you-are-marked-on.pdf",
+        "Criterion A — what you are marked on · written Wed 7 Oct")],
+    "design-9b": [(
+        VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Lessons"
+              / "y9-summative-a-what-you-are-marked-on.pdf",
+        "Criterion A — what you are marked on · written Wed 7 Oct")],
+}
+
+
+def copy_summatives(name, cdir):
+    """Copy this class's summative sheets into files/; return their filenames.
+
+    A missing source is reported and skipped rather than raised -- one absent
+    PDF must not take the whole class page down.
+    """
+    out = []
+    for src, _lbl in SUMMATIVES.get(slug(name), []):
+        if not src.exists():
+            print(f"  ! summative source missing for {name}: {src.name}")
+            continue
+        (cdir / "files").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, cdir / "files" / src.name)
+        out.append(src.name)
+    return out
+
+
+# A single sheet of paper with a tick on it -- the assessment, not the diary.
+# Inline SVG for the same reasons as ICON_CALENDAR: crisp on retina, and no
+# extra asset for the injector to copy. Same bronze palette as the calendar
+# icon so the two lines read as one family.
+ICON_SUMMATIVE = (
+    '<svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" '
+    'aria-hidden="true" focusable="false">'
+    # The sheet.
+    '<path d="M5.6 2.8h9.1l4.1 4.1v14.3H5.6z" fill="#b9a765" '
+    'stroke="#7d6d3a" stroke-width="1.4" stroke-linejoin="round"/>'
+    # Folded corner, so it reads as paper rather than a plain block.
+    '<path d="M14.7 2.8v4.1h4.1" fill="none" stroke="#7d6d3a" '
+    'stroke-width="1.4" stroke-linejoin="round"/>'
+    # The tick -- red, matching the picked-out date square on the calendar icon.
+    '<path d="M8.3 13.9l2.5 2.6 5-5.4" fill="none" stroke="#c0392b" '
+    'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+    '</svg>')
+
+
+def summative_bar(name):
+    """An always-visible line linking this class's upcoming summative sheets."""
+    hits = SUMMATIVES.get(slug(name))
+    if not hits:
+        return ""
+    links = "\n          ".join(
+        f'<a class="vocab-link" href="files/{src.name}">{html.escape(lbl)}</a>'
+        for src, lbl in hits if src.exists())
+    if not links:
+        return ""
+    return ('\n        <div class="vocab-bar summative-bar">'
+            '\n          <span class="vocab-label">'
+            + ICON_SUMMATIVE + 'Upcoming Summatives</span>'
+            f'\n          {links}'
+            '\n        </div>')
+
+
 def vocab_bar(name):
     if not (OUT / slug(name) / "vocab" / "index.html").exists():
         return ""
@@ -513,7 +601,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}
+        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{summative_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
@@ -592,6 +680,7 @@ def main():
         cal_fn = copy_calendar(name, cdir)
         if cal_fn:
             wanted.add(cal_fn)
+        wanted.update(copy_summatives(name, cdir))
         for _, ens in weeks:
             for en in ens:
                 for pdf, _lbl, _n in en["docs"]:
