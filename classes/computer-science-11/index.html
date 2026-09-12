@@ -67,6 +67,18 @@
       .calendar-bar .vocab-link:hover { background: #fff;
         color: var(--bronze-deep); border-color: var(--bronze-deep); }
       .cal-ico { vertical-align: -2px; margin-right: 0.35rem; }
+      /* Upcoming summatives sit beside the calendar as standing information,
+         so they copy its shape exactly -- tinted strip, lifted buttons. The
+         tint is a shade cooler and the left rule darker, because a summative
+         is the one thing on this page with a deadline attached and it should
+         not read as just another calendar. */
+      .summative-bar { margin-top: 0.5rem; background: #e6d3bb;
+        border-left: 3px solid var(--bronze-rich);
+        padding: 0.5rem 0.9rem; border-radius: 2px; }
+      .summative-bar .vocab-link { background: #fdfbf3;
+        border-color: var(--bronze-core); color: var(--bronze-dark); }
+      .summative-bar .vocab-link:hover { background: #fff;
+        color: var(--bronze-deep); border-color: var(--bronze-deep); }
     </style>
 </head>
 <body>
