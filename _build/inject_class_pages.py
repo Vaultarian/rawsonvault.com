@@ -101,6 +101,23 @@ ICON_KEY = _svg(
 # sheet, a reference page. The pencil would tell a student to write on it.
 ICON_DOC = _svg()
 
+# Video support. Same tag, a red play triangle where the pencil and the tick go,
+# so a video reads as a member of the same family rather than a foreign object
+# dropped on the row. Drawn twice like the others: a thick page-coloured stroke
+# knocks a gap out of the tag behind it, then the colour goes on top.
+_PLAY_D = "M14.4 14.9l8.0 4.3-8.0 4.3z"
+ICON_VIDEO = _svg(
+    f'<path d="{_PLAY_D}" fill="#fdfbf3" stroke="#fdfbf3" stroke-width="2.6"'
+    ' stroke-linejoin="round"/>',
+    f'<path d="{_PLAY_D}" fill="#c0392b" stroke="#c0392b" stroke-width="0.6"'
+    ' stroke-linejoin="round"/>')
+
+# A video gets an icon row next to the handout; every other external link stays
+# a pill below. The split is deliberate -- a video is lesson material a student
+# opens the way they open the worksheet, whereas a simulation or a reference
+# site is a place to go, and the two should not look identical.
+VIDEO_URL = re.compile(r"(youtube\.com/|youtu\.be/|vimeo\.com/)", re.I)
+
 # Reference material -- read, not written on. Everything else gets the pencil,
 # because listing what a student writes on turns out to be the longer and
 # leakier list: it missed "Colour Perception -- Beau Lotto worksheet" and
@@ -604,7 +621,11 @@ def render_class(name, subtitle, weeks):
     for monday, entries in weeks:
         rows = []
         for en in entries:
-            if en["docs"]:
+            vids = [(u, lbl) for u, lbl in en.get("links", [])
+                    if VIDEO_URL.search(u)]
+            webs = [(u, lbl) for u, lbl in en.get("links", [])
+                    if not VIDEO_URL.search(u)]
+            if en["docs"] or vids:
                 parts = []
                 for lbl, sheet, key in pair_docs(en["docs"]):
                     icons = ""
@@ -627,14 +648,23 @@ def render_class(name, subtitle, weeks):
                     parts.append(f'<div class="doc-row">'
                                  f'<span class="doc-name">{e(lbl)}</span>'
                                  f'<span class="doc-icons">{icons}</span></div>')
+                for u, lbl in vids:
+                    parts.append(
+                        f'<div class="doc-row">'
+                        f'<span class="doc-name">{e(lbl)}</span>'
+                        f'<span class="doc-icons">'
+                        f'<a class="doc-link" href="{e(u)}" target="_blank"'
+                        f' rel="noopener noreferrer" title="Video"'
+                        f' aria-label="{e(lbl)} — video">{ICON_VIDEO}</a>'
+                        f'</span></div>')
                 docs = "".join(parts)
             else:
                 docs = ""
-            if en.get("links"):
+            if webs:
                 docs += '<div class="lesson-links">' + "".join(
                     f'<a class="web-link" href="{e(u)}" target="_blank"'
                     f' rel="noopener noreferrer">{e(lbl)}</a>'
-                    for u, lbl in en["links"]) + "</div>"
+                    for u, lbl in webs) + "</div>"
             if not docs:
                 docs = '<span class="lesson-none">No handout</span>'
             rows.append(f"""          <div class="lesson">
