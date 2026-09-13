@@ -292,6 +292,11 @@ STYLE = """    <style>
         border-color: var(--bronze-core); color: var(--bronze-dark); }}
       .summative-bar .vocab-link:hover {{ background: #fff;
         color: var(--bronze-deep); border-color: var(--bronze-deep); }}
+      /* The name and date of the test, which is the part that is always
+         true. Set as text rather than a button so a student does not click at
+         it expecting a sheet that may not exist. */
+      .summative-what {{ font-family: var(--font-ui); font-size: 0.82rem;
+        color: var(--bronze-deep); font-weight: 500; margin-right: 0.2rem; }}
     </style>"""
 
 
@@ -442,27 +447,56 @@ def calendar_bar(name):
             '\n        </div>')
 
 
-# Upcoming summatives. Same treatment as CALENDARS and for the same reason: a
-# summative sheet is standing information a student returns to for weeks, so it
-# must not scroll away inside the dated lesson row it happened to be handed out
-# in. Config here rather than a `Publish:` line, deliberately -- see the note
-# above CALENDARS.
+# Upcoming summatives. Read from the Class Log, not from config here.
 #
-# ⚠ Drop a class's entry once the summative has been written. The label says
-# "Upcoming", so a sheet left here after the date has passed tells a student
-# something untrue.
+# The first version of this was a hardcoded dict, because the calendars are one
+# and the two lines look the same on the page. That was the wrong model. A
+# calendar is one file per course that changes once a term; a summative changes
+# every few weeks, across sixteen classes, and Alex is the only person who
+# knows what is next. Putting it in the Class Log means he writes it where he
+# already writes everything else, in Obsidian, and it needs no code change.
 #
-# slug -> [(source PDF in the vault, label on the button)]
-SUMMATIVES = {
-    "design-9a": [(
-        VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Lessons"
-              / "y9-summative-a-what-you-are-marked-on.pdf",
-        "Criterion A — what you are marked on · written Wed 7 Oct")],
-    "design-9b": [(
-        VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Lessons"
-              / "y9-summative-a-what-you-are-marked-on.pdf",
-        "Criterion A — what you are marked on · written Wed 7 Oct")],
-}
+# The field is standing information, so it lives in the header block at the top
+# of the file -- above the first dated `###` entry, beside the year/group line:
+#
+#     # Physics 10 P — Class Log
+#
+#     **Year 10 (GCSE)** · Group P
+#     **Upcoming summative:** Forces 1 unit test · Wed 30 Sep, P4
+#       - [[01-Teaching/.../f1-revision-checklist.pdf|What the test covers]]
+#
+# The text after the colon is the label. Any PDF wikilinks beneath it become
+# buttons -- so a class with no sheet built yet still gets the line, carrying
+# the name and the date. That is the common case, and the reason this is not
+# document-driven: a student needs to know a test is coming weeks before any
+# document for it exists.
+#
+# ⚠ Delete the field once the summative has been written. The line says
+# "Upcoming", so one left standing tells a student something untrue. Nothing
+# expires it automatically -- the date is prose, not a machine-read field,
+# deliberately, so "Wed 30 Sep, P6" and "the week after half term" are both
+# sayable.
+
+SUMMATIVE_FIELD = re.compile(
+    r"^\*\*Upcoming summative:?\*\*[ \t]*(.*(?:\n(?![ \t]*$)(?![ \t]*###).*)*)",
+    re.M)
+
+
+def read_summative(path):
+    """(label, [(pdf, link label)]) from a Class Log's header block.
+
+    Only the header is searched -- everything above the first dated entry --
+    so the word "summative" inside a lesson's Notes can never be mistaken for
+    the standing field.
+    """
+    head = path.read_text().split("\n### ", 1)[0]
+    m = SUMMATIVE_FIELD.search(head)
+    if not m:
+        return "", []
+    chunk = m.group(1)
+    lines = chunk.splitlines()
+    # The label is the field's own line, with any wikilinks stripped out of it.
+    return (strip_md(lines[0]) if lines else ""), pdf_links(chunk)
 
 
 def copy_summatives(name, cdir):
@@ -471,8 +505,11 @@ def copy_summatives(name, cdir):
     A missing source is reported and skipped rather than raised -- one absent
     PDF must not take the whole class page down.
     """
+    log = LOGS / f"{name}.md"
+    if not log.exists():
+        return []
     out = []
-    for src, _lbl in SUMMATIVES.get(slug(name), []):
+    for src, _lbl in read_summative(log)[1]:
         if not src.exists():
             print(f"  ! summative source missing for {name}: {src.name}")
             continue
@@ -482,39 +519,46 @@ def copy_summatives(name, cdir):
     return out
 
 
-# A single sheet of paper with a tick on it -- the assessment, not the diary.
-# Inline SVG for the same reasons as ICON_CALENDAR: crisp on retina, and no
-# extra asset for the injector to copy. Same bronze palette as the calendar
-# icon so the two lines read as one family.
+# A circled exclamation mark rather than the sheet-and-tick this started as.
+# The paper icon said "a document exists"; what the line actually means is "a
+# deadline is coming", and many entries will carry no document at all. Inline
+# SVG for the same reasons as ICON_CALENDAR: crisp on retina, and no extra
+# asset for the injector to copy.
 ICON_SUMMATIVE = (
     '<svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" '
     'aria-hidden="true" focusable="false">'
-    # The sheet.
-    '<path d="M5.6 2.8h9.1l4.1 4.1v14.3H5.6z" fill="#b9a765" '
-    'stroke="#7d6d3a" stroke-width="1.4" stroke-linejoin="round"/>'
-    # Folded corner, so it reads as paper rather than a plain block.
-    '<path d="M14.7 2.8v4.1h4.1" fill="none" stroke="#7d6d3a" '
-    'stroke-width="1.4" stroke-linejoin="round"/>'
-    # The tick -- red, matching the picked-out date square on the calendar icon.
-    '<path d="M8.3 13.9l2.5 2.6 5-5.4" fill="none" stroke="#c0392b" '
-    'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+    # A solid disc rather than an outlined one. At 16px an outline-only warning
+    # sign loses its shape against the tinted strip; a filled circle holds.
+    '<circle cx="12" cy="12" r="9.4" fill="#c0392b" stroke="#8e2b20" '
+    'stroke-width="1.4"/>'
+    # The bar and the dot are drawn in the same cream as the calendar page, so
+    # the two icons still read as one family despite the colour change.
+    '<path d="M12 6.6v7.2" stroke="#fdfbf3" stroke-width="2.6" '
+    'stroke-linecap="round"/>'
+    '<circle cx="12" cy="17.4" r="1.5" fill="#fdfbf3"/>'
     '</svg>')
 
 
 def summative_bar(name):
-    """An always-visible line linking this class's upcoming summative sheets."""
-    hits = SUMMATIVES.get(slug(name))
-    if not hits:
+    """The standing line naming this class's next summative."""
+    log = LOGS / f"{name}.md"
+    if not log.exists():
         return ""
-    links = "\n          ".join(
-        f'<a class="vocab-link" href="files/{src.name}">{html.escape(lbl)}</a>'
-        for src, lbl in hits if src.exists())
-    if not links:
+    label, docs = read_summative(log)
+    if not label and not docs:
         return ""
+    parts = []
+    if label:
+        # Not a link: the name and the date of the test are the point, and they
+        # are true whether or not a sheet exists to click through to.
+        parts.append(f'<span class="summative-what">{html.escape(label)}</span>')
+    parts += [f'<a class="vocab-link" href="files/{src.name}">'
+              f'{html.escape(lbl or src.stem)}</a>'
+              for src, lbl in docs if src.exists()]
     return ('\n        <div class="vocab-bar summative-bar">'
             '\n          <span class="vocab-label">'
-            + ICON_SUMMATIVE + 'Upcoming Summatives</span>'
-            f'\n          {links}'
+            + ICON_SUMMATIVE + 'Upcoming Summative</span>'
+            '\n          ' + "\n          ".join(parts) +
             '\n        </div>')
 
 
