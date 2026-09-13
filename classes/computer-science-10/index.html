@@ -72,18 +72,32 @@
          tint is a shade cooler and the left rule darker, because a summative
          is the one thing on this page with a deadline attached and it should
          not read as just another calendar. */
-      .summative-bar { margin-top: 0.5rem; background: #e6d3bb;
-        border-left: 3px solid var(--bronze-rich);
-        padding: 0.5rem 0.9rem; border-radius: 2px; }
+      .summative-bar { margin-top: 0.5rem; background: #ece4f0;
+        border-left: 3px solid #8b7aa8;
+        padding: 0.5rem 0.9rem; border-radius: 2px;
+        /* Never two lines. The label is a short content title, so nowrap
+           holds on any sensible width; overflow-x is the safety valve on a
+           narrow phone, where scrolling one strip beats wrapping it. */
+        flex-wrap: nowrap; overflow-x: auto; }
+      .summative-bar > * { flex: 0 0 auto; white-space: nowrap; }
       .summative-bar .vocab-link { background: #fdfbf3;
-        border-color: var(--bronze-core); color: var(--bronze-dark); }
+        border-color: #b5a6c6; color: #5b4c74; }
       .summative-bar .vocab-link:hover { background: #fff;
-        color: var(--bronze-deep); border-color: var(--bronze-deep); }
+        color: #3f3253; border-color: #6d5d88; }
+      .summative-bar .vocab-label { color: #6d5d88; }
+      /* Pinning the strip to one line costs width, and on a phone the word
+         "Upcoming" is what gets sacrificed -- the topic is the half a student
+         needs. Drops the tag from ~150px to ~85px, which is the difference
+         between "Greeting Card Design Brie…" and the whole title. */
+      @media (max-width: 560px) {
+        .summative-bar { padding: 0.5rem 0.6rem; }
+        .summative-bar .sm-upcoming { display: none; }
+      }
       /* The name and date of the test, which is the part that is always
          true. Set as text rather than a button so a student does not click at
          it expecting a sheet that may not exist. */
       .summative-what { font-family: var(--font-ui); font-size: 0.82rem;
-        color: var(--bronze-deep); font-weight: 500; margin-right: 0.2rem; }
+        color: #4a3d5e; font-weight: 500; margin-right: 0.2rem; }
     </style>
 </head>
 <body>
@@ -110,8 +124,8 @@
           <a class="vocab-link" href="files/y10-cs-calendar-autumn-1.pdf">§1.2 Data Representation, to the October break</a>
         </div>
         <div class="vocab-bar summative-bar">
-          <span class="vocab-label"><svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="#c0392b" stroke="#8e2b20" stroke-width="1.4"/><path d="M12 6.6v7.2" stroke="#fdfbf3" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.5" fill="#fdfbf3"/></svg>Upcoming Summative</span>
-          <span class="summative-what">1.2 Memory and Storage unit test · Tue 6 Oct, P6 — 37 marks, 40 minutes, the whole unit</span>
+          <span class="vocab-label"><svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="#8b7aa8" stroke="#6d5d88" stroke-width="1.4"/><path d="M12 6.6v7.2" stroke="#fdfbf3" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.5" fill="#fdfbf3"/></svg><span class="sm-upcoming">Upcoming </span>Summative</span>
+          <span class="summative-what">Memory and Storage</span>
         </div>
         <p class="wk">Week A · 7–11 September</p>
           <div class="lesson">
