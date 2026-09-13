@@ -285,18 +285,32 @@ STYLE = """    <style>
          tint is a shade cooler and the left rule darker, because a summative
          is the one thing on this page with a deadline attached and it should
          not read as just another calendar. */
-      .summative-bar {{ margin-top: 0.5rem; background: #e6d3bb;
-        border-left: 3px solid var(--bronze-rich);
-        padding: 0.5rem 0.9rem; border-radius: 2px; }}
+      .summative-bar {{ margin-top: 0.5rem; background: #ece4f0;
+        border-left: 3px solid #8b7aa8;
+        padding: 0.5rem 0.9rem; border-radius: 2px;
+        /* Never two lines. The label is a short content title, so nowrap
+           holds on any sensible width; overflow-x is the safety valve on a
+           narrow phone, where scrolling one strip beats wrapping it. */
+        flex-wrap: nowrap; overflow-x: auto; }}
+      .summative-bar > * {{ flex: 0 0 auto; white-space: nowrap; }}
       .summative-bar .vocab-link {{ background: #fdfbf3;
-        border-color: var(--bronze-core); color: var(--bronze-dark); }}
+        border-color: #b5a6c6; color: #5b4c74; }}
       .summative-bar .vocab-link:hover {{ background: #fff;
-        color: var(--bronze-deep); border-color: var(--bronze-deep); }}
+        color: #3f3253; border-color: #6d5d88; }}
+      .summative-bar .vocab-label {{ color: #6d5d88; }}
+      /* Pinning the strip to one line costs width, and on a phone the word
+         "Upcoming" is what gets sacrificed -- the topic is the half a student
+         needs. Drops the tag from ~150px to ~85px, which is the difference
+         between "Greeting Card Design Brie…" and the whole title. */
+      @media (max-width: 560px) {{
+        .summative-bar {{ padding: 0.5rem 0.6rem; }}
+        .summative-bar .sm-upcoming {{ display: none; }}
+      }}
       /* The name and date of the test, which is the part that is always
          true. Set as text rather than a button so a student does not click at
          it expecting a sheet that may not exist. */
       .summative-what {{ font-family: var(--font-ui); font-size: 0.82rem;
-        color: var(--bronze-deep); font-weight: 500; margin-right: 0.2rem; }}
+        color: #4a3d5e; font-weight: 500; margin-right: 0.2rem; }}
     </style>"""
 
 
@@ -462,20 +476,25 @@ def calendar_bar(name):
 #     # Physics 10 P — Class Log
 #
 #     **Year 10 (GCSE)** · Group P
-#     **Upcoming summative:** Forces 1 unit test · Wed 30 Sep, P4
+#     **Upcoming summative:** Motion and Kinematics
 #       - [[01-Teaching/.../f1-revision-checklist.pdf|What the test covers]]
 #
 # The text after the colon is the label. Any PDF wikilinks beneath it become
 # buttons -- so a class with no sheet built yet still gets the line, carrying
-# the name and the date. That is the common case, and the reason this is not
-# document-driven: a student needs to know a test is coming weeks before any
+# the topic. That is the common case, and the reason this is not
+# document-driven: a student needs to know what is coming weeks before any
 # document for it exists.
 #
+# ⚠ The label is the TOPIC, not the date -- "Greeting Card Design Brief", not
+# "Criterion A · Wed 7 Oct". Two reasons, both Alex's. A date beside the word
+# summative is a countdown, and these are fourteen-year-olds who are already
+# anxious about the word; the topic tells them what to revise instead, which is
+# the actionable half. And the strip is pinned to one line, so a label long
+# enough to carry a date is a label that scrolls.
+#
 # ⚠ Delete the field once the summative has been written. The line says
-# "Upcoming", so one left standing tells a student something untrue. Nothing
-# expires it automatically -- the date is prose, not a machine-read field,
-# deliberately, so "Wed 30 Sep, P6" and "the week after half term" are both
-# sayable.
+# "Upcoming", so one left standing tells a student something untrue, and
+# nothing expires it automatically.
 
 SUMMATIVE_FIELD = re.compile(
     r"^\*\*Upcoming summative:?\*\*[ \t]*(.*(?:\n(?![ \t]*$)(?![ \t]*###).*)*)",
@@ -519,20 +538,24 @@ def copy_summatives(name, cdir):
     return out
 
 
-# A circled exclamation mark rather than the sheet-and-tick this started as.
-# The paper icon said "a document exists"; what the line actually means is "a
-# deadline is coming", and many entries will carry no document at all. Inline
-# SVG for the same reasons as ICON_CALENDAR: crisp on retina, and no extra
-# asset for the injector to copy.
+# A circled exclamation in a soft violet. It began as a sheet with a tick, then
+# a red disc -- and red was wrong for the audience. These are the words a
+# fourteen-year-old reads when they open the page to find a handout, and a
+# warning-red badge beside "summative" adds a jolt to a thing that is already
+# the most stressful word on the page. The mark still has to say "attend to
+# this", so the shape is unchanged and only the temperature drops.
+#
+# The stop sign was considered and rejected for the same reason: an octagon
+# carries more alarm than a disc, not less.
 ICON_SUMMATIVE = (
     '<svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" '
     'aria-hidden="true" focusable="false">'
-    # A solid disc rather than an outlined one. At 16px an outline-only warning
-    # sign loses its shape against the tinted strip; a filled circle holds.
-    '<circle cx="12" cy="12" r="9.4" fill="#c0392b" stroke="#8e2b20" '
+    # A solid disc rather than an outlined one. At 16px an outline-only badge
+    # loses its shape against the tinted strip; a filled circle holds.
+    '<circle cx="12" cy="12" r="9.4" fill="#8b7aa8" stroke="#6d5d88" '
     'stroke-width="1.4"/>'
-    # The bar and the dot are drawn in the same cream as the calendar page, so
-    # the two icons still read as one family despite the colour change.
+    # Bar and dot in the same cream as the calendar page, so the two icons
+    # still read as one family despite the colour change.
     '<path d="M12 6.6v7.2" stroke="#fdfbf3" stroke-width="2.6" '
     'stroke-linecap="round"/>'
     '<circle cx="12" cy="17.4" r="1.5" fill="#fdfbf3"/>'
@@ -557,7 +580,8 @@ def summative_bar(name):
               for src, lbl in docs if src.exists()]
     return ('\n        <div class="vocab-bar summative-bar">'
             '\n          <span class="vocab-label">'
-            + ICON_SUMMATIVE + 'Upcoming Summative</span>'
+            + ICON_SUMMATIVE
+            + '<span class="sm-upcoming">Upcoming </span>Summative</span>'
             '\n          ' + "\n          ".join(parts) +
             '\n        </div>')
 
