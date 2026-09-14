@@ -30,6 +30,48 @@
             <p class="subtitle">How is data stored and represented in a computer — from binary to images, and from RAM to hard drives?</p>
         </div>
         <div class="rule--full"></div>
+<!-- PROGRESS:START -->
+        <div class="progress-panel">
+            <span class="progress-eyebrow">Where we are &middot; Year 10 &middot; updated 15 September 2026</span>
+            <div class="progress-grid">
+                <div class="progress-col progress-col--done">
+                    <h4>Covered so far</h4>
+                    <ul>
+                        <li>Why data must be binary &mdash; bit, nibble, byte</li>
+                        <li>The kB &rarr; PB ladder and capacity calculations</li>
+                        <li>Place value: denary &harr; binary, up to 8 bits</li>
+                        <li>Hexadecimal: base 16, and the binary &harr; hex nibble trick</li>
+                        <li>Hex in practice &mdash; including hex colour codes</li>
+                    </ul>
+                </div>
+                <div class="progress-col progress-col--now">
+                    <h4>This week</h4>
+                    <ul>
+                        <li>Binary addition</li>
+                        <li>Overflow</li>
+                        <li>Binary shifts &mdash; left multiplies, right divides</li>
+                    </ul>
+                </div>
+                <div class="progress-col progress-col--next">
+                    <h4>Still to come</h4>
+                    <ul>
+                        <li>Characters: character sets, ASCII, Unicode</li>
+                        <li>Images: pixels, colour depth, resolution, metadata</li>
+                        <li>Sound: sample rate, bit depth, duration</li>
+                        <li>Compression: lossy and lossless</li>
+                        <li>Primary storage: RAM, ROM, cache, virtual memory</li>
+                        <li>Secondary storage: optical, magnetic, solid-state</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="progress-dates">
+                <strong>Quiz &mdash; Thursday 17 September.</strong> Booklet pp. 2&ndash;16, 20 minutes, self-marked.
+                &nbsp;&middot;&nbsp;
+                <strong>Unit test &mdash; Tuesday 6 October.</strong> The whole of &sect;1.2, 37 marks.
+            </p>
+        </div>
+<!-- PROGRESS:END -->
+        <div class="rule--full"></div>
         <div class="article">
             <p>All data inside a computer is ultimately stored as binary — sequences of 0s and 1s. A bit is the smallest unit; 8 bits make a byte; units scale by 1,000 from there (kilobyte → megabyte → gigabyte → terabyte → petabyte). The same binary digits can represent different things — a number, a character, part of an image — depending on context and encoding. ASCII and Unicode define how characters are encoded; image and sound files are binary sequences whose file size can be calculated from colour depth × resolution and sample rate × duration × bit depth respectively.</p>
             <p>Memory sits in a hierarchy. Cache (tiny, very fast) feeds the CPU first; RAM (fast, volatile) holds running programs and data; secondary storage (slow, non-volatile — magnetic, optical, solid-state) holds everything else when the power is off. When RAM is full, the OS moves data to a virtual memory area on secondary storage — slower, but it prevents crashes. The choice of secondary storage type depends on the application: SSDs are fast but expensive; HDDs are slow but cheap and large; optical media (CD/DVD/Blu-ray) is portable but slow.</p>
@@ -44,18 +86,18 @@
         <div class="eq-box">Units: 1 KB = 1,000 B · 1 MB = 1,000 KB · 1 GB = 1,000 MB · 1 TB = 1,000 GB</div>
         <h2>What students must understand</h2>
         <ul class="understanding-list">
-            <li>Primary storage: RAM (volatile, fast, holds running programs) vs ROM (non-volatile, holds boot instructions)</li>
-            <li>Virtual memory: overflow from RAM to secondary storage when RAM is full; slower but prevents crashes</li>
-            <li>Cache: very fast memory between CPU and RAM; hit/miss; larger cache → fewer slow RAM accesses</li>
-            <li>Secondary storage: optical (CD/DVD/Blu-ray), magnetic (HDD), solid-state (SSD) — compare on capacity, speed, portability, durability, reliability, cost</li>
-            <li>Units: bit, nibble (4 bits), byte (8 bits), KB, MB, GB, TB, PB (each 1,000 × previous)</li>
+            <li>Units: bit, nibble (4 bits), byte (8 bits), KB, MB, GB, TB, PB (each 1,000 &times; previous)</li>
             <li>Binary to denary and back (up to 8 bits); binary addition including overflow</li>
-            <li>Hexadecimal: base-16; convert denary ↔ hex (2 digits, 00–FF); convert binary ↔ hex</li>
+            <li>Hexadecimal: base-16; convert denary &harr; hex (2 digits, 00&ndash;FF); convert binary &harr; hex</li>
             <li>Binary shifts: left shift multiplies by 2; right shift divides by 2</li>
             <li>Characters: character sets; ASCII (8-bit, 256 characters); Unicode (up to 32-bit, covers all languages)</li>
             <li>Images: pixels; colour depth and resolution affect quality and file size; metadata</li>
-            <li>Sound: sample rate (Hz), bit depth, duration; higher values → better quality, larger files</li>
+            <li>Sound: sample rate (Hz), bit depth, duration; higher values &rarr; better quality, larger files</li>
             <li>Compression: lossy (some data removed permanently, e.g. MP3, JPEG) vs lossless (data fully recoverable, e.g. PNG, ZIP)</li>
+            <li>Primary storage: RAM (volatile, fast, holds running programs) vs ROM (non-volatile, holds boot instructions)</li>
+            <li>Cache: very fast memory between CPU and RAM; hit/miss; larger cache &rarr; fewer slow RAM accesses</li>
+            <li>Virtual memory: overflow from RAM to secondary storage when RAM is full; slower but prevents crashes</li>
+            <li>Secondary storage: optical (CD/DVD/Blu-ray), magnetic (HDD), solid-state (SSD) &mdash; compare on capacity, speed, portability, durability, reliability, cost</li>
         </ul>
 <!-- TEXTBOOK-DIAGRAMS:START -->
 <div class="rule--full"></div>

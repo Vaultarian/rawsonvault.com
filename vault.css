@@ -490,3 +490,83 @@ a:hover { color: var(--bronze-dark); }
   line-height: 1.35;
   padding: 4px 2px 0;
 }
+
+/* ── Topic progress panel ──────────────────────────────────
+   "Where we are" block at the head of a topic page: what the
+   class has covered, what is running now, what is still to come.
+   Added 2026-09-14 for §1.2 Memory and Storage.
+   ─────────────────────────────────────────────────────────── */
+.progress-panel {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-left: 3px solid var(--bronze-core);
+  border-radius: var(--radius);
+  padding: var(--gap-md);
+  margin-bottom: var(--gap-lg);
+}
+
+.progress-panel .progress-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bronze-core);
+  display: block;
+  margin-bottom: var(--gap-sm);
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--gap-md);
+}
+
+.progress-col h4 {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  margin: 0 0 var(--gap-xs);
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #f0ece4;
+}
+
+.progress-col ul { list-style: none; padding: 0; margin: 0; }
+
+.progress-col li {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--gray-dark);
+  padding-left: 1.1rem;
+  margin-bottom: var(--gap-xs);
+  position: relative;
+}
+
+.progress-col li::before {
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+
+.progress-col--done li::before { content: "\2713"; color: #3f8f2c; }
+.progress-col--now  li::before { content: "\25B8"; color: var(--bronze-core); }
+.progress-col--now  li        { color: var(--ink-black); font-weight: 500; }
+.progress-col--next li::before { content: "\00B7"; color: var(--gray-silver); }
+.progress-col--next li        { color: var(--gray-mid); }
+
+.progress-dates {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--gray-mid);
+  margin: var(--gap-md) 0 0;
+  padding-top: var(--gap-sm);
+  border-top: 1px solid #f0ece4;
+}
+
+.progress-dates strong { color: var(--ink-black); }
+
+@media (max-width: 480px) {
+  .progress-panel { padding: var(--gap-sm); }
+}
