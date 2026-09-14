@@ -570,3 +570,102 @@ a:hover { color: var(--bronze-dark); }
 @media (max-width: 480px) {
   .progress-panel { padding: var(--gap-sm); }
 }
+
+/* ── Revision section ──────────────────────────────────────
+   Per-sub-topic revision on a CS topic page: three videos from
+   three channels, then the practice links. Added 2026-09-14.
+   ─────────────────────────────────────────────────────────── */
+.revise-intro {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--gray-dark);
+  margin: 0 0 var(--gap-lg);
+}
+
+.revise-block {
+  margin-bottom: var(--gap-lg);
+  padding-bottom: var(--gap-md);
+  border-bottom: 1px solid #f0ece4;
+}
+
+.revise-block:last-of-type { border-bottom: none; }
+
+.revise-block h3 {
+  font-family: var(--font-heading);
+  margin: 0 0 var(--gap-xs);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.revise-spec {
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bronze-core);
+  border: 1px solid var(--bronze-cream);
+  border-radius: var(--radius);
+  padding: 0.1rem 0.4rem;
+}
+
+.revise-blurb {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--gray-mid);
+  margin: 0 0 var(--gap-sm);
+}
+
+.video-cell figcaption .video-author {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-silver);
+  margin-top: 2px;
+}
+
+.video-grid--single { grid-template-columns: minmax(0, 420px); }
+
+.revise-links {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  line-height: 2;
+  color: var(--gray-mid);
+  margin: var(--gap-xs) 0 0;
+}
+
+.revise-practise {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bronze-dark);
+  margin-right: 0.6rem;
+}
+
+.revise-links a {
+  color: var(--bronze-dark);
+  text-decoration: none;
+  border-bottom: 1px solid var(--bronze-cream);
+}
+
+.revise-links a:hover {
+  color: var(--bronze-deep);
+  border-bottom-color: var(--bronze-core);
+}
+
+.revise-source {
+  font-size: 0.68rem;
+  color: var(--gray-silver);
+  margin-left: 0.2rem;
+}
+
+.revise-credit {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--gray-silver);
+  margin-top: var(--gap-md);
+}

@@ -1,37 +1,312 @@
 {
-  "_note": "All IDs verified 2026-06-12 via YouTube oEmbed (HTTP 200 + author_name == Craig'n'Dave).",
-  "playlists": {
-    "1-1-systems-architecture": [{"list": "PLCiOXwirraUCvYFmgaS_gQ4eKe1GJqIJa", "title": "1.1 Systems architecture — unit playlist"}],
-    "1-2-memory-storage": [{"list": "PLCiOXwirraUCaJP5LxCsFXWgX1_S-liGM", "title": "1.2 Memory and storage — unit playlist"}],
-    "1-3-networks": [{"list": "PLCiOXwirraUBnOLZCIxrLTSuIfgvYeWj-", "title": "1.3 Computer networks, connections and protocols — unit playlist"}],
-    "1-6-impacts": [{"list": "PLCiOXwirraUCJmKc7xDNgrKdUNIxIeQbi", "title": "1.6 Ethical, legal, cultural and environmental concerns — unit playlist"}],
-    "2-1-algorithms": [{"list": "PLCiOXwirraUAzsy9tacd98LBTbj7cyFQV", "title": "2.1 Algorithms — unit playlist"}],
-    "2-2-programming": [{"list": "PLCiOXwirraUAujkBVyzSh-LjjTCDwMU8v", "title": "2.2 Programming fundamentals — unit playlist"}],
-    "2-3-robust-programs": [{"list": "PLCiOXwirraUBb_Y1hsCHRgbvq0wXFVnj2", "title": "2.3 Producing robust programs — unit playlist"}]
-  },
-  "videos": {
-    "1-4-network-security": [
-      {"id": "4f05t8ppJfk", "title": "Forms of attack"},
-      {"id": "jlvvek8n5g8", "title": "Threats to networks"},
-      {"id": "XJEjQN-CEDk", "title": "Preventing vulnerabilities"}
+ "_note": "All IDs verified 2026-06-12 via YouTube oEmbed (HTTP 200 + author_name == Craig'n'Dave).",
+ "playlists": {
+  "1-1-systems-architecture": [
+   {
+    "list": "PLCiOXwirraUCvYFmgaS_gQ4eKe1GJqIJa",
+    "title": "1.1 Systems architecture — unit playlist"
+   }
+  ],
+  "1-2-memory-storage": [
+   {
+    "list": "PLCiOXwirraUCaJP5LxCsFXWgX1_S-liGM",
+    "title": "1.2 Memory and storage — unit playlist"
+   }
+  ],
+  "1-3-networks": [
+   {
+    "list": "PLCiOXwirraUBnOLZCIxrLTSuIfgvYeWj-",
+    "title": "1.3 Computer networks, connections and protocols — unit playlist"
+   }
+  ],
+  "1-6-impacts": [
+   {
+    "list": "PLCiOXwirraUCJmKc7xDNgrKdUNIxIeQbi",
+    "title": "1.6 Ethical, legal, cultural and environmental concerns — unit playlist"
+   }
+  ],
+  "2-1-algorithms": [
+   {
+    "list": "PLCiOXwirraUAzsy9tacd98LBTbj7cyFQV",
+    "title": "2.1 Algorithms — unit playlist"
+   }
+  ],
+  "2-2-programming": [
+   {
+    "list": "PLCiOXwirraUAujkBVyzSh-LjjTCDwMU8v",
+    "title": "2.2 Programming fundamentals — unit playlist"
+   }
+  ],
+  "2-3-robust-programs": [
+   {
+    "list": "PLCiOXwirraUBb_Y1hsCHRgbvq0wXFVnj2",
+    "title": "2.3 Producing robust programs — unit playlist"
+   }
+  ]
+ },
+ "videos": {
+  "1-4-network-security": [
+   {
+    "id": "4f05t8ppJfk",
+    "title": "Forms of attack"
+   },
+   {
+    "id": "jlvvek8n5g8",
+    "title": "Threats to networks"
+   },
+   {
+    "id": "XJEjQN-CEDk",
+    "title": "Preventing vulnerabilities"
+   }
+  ],
+  "1-5-systems-software": [
+   {
+    "id": "tArQQD4SZ7Q",
+    "title": "The purpose of operating systems"
+   },
+   {
+    "id": "dX9zhaBLJ7w",
+    "title": "Operating systems 1"
+   },
+   {
+    "id": "feECP9Q21Ow",
+    "title": "Operating systems 2"
+   },
+   {
+    "id": "PW_T3UtaMgw",
+    "title": "Utility system software"
+   }
+  ],
+  "2-4-boolean-logic": [
+   {
+    "id": "jN9WtjyjXf4",
+    "title": "Simple logic diagrams"
+   },
+   {
+    "id": "U7dbx9fllLc",
+    "title": "Truth tables"
+   },
+   {
+    "id": "M7h8XBjp0-s",
+    "title": "Combining Boolean operators"
+   },
+   {
+    "id": "vPG5c-RJtog",
+    "title": "Applying logical operators in truth tables"
+   }
+  ],
+  "2-5-languages-ides": [
+   {
+    "id": "4qNj8zIQzWw",
+    "title": "Characteristics and purpose of different languages"
+   },
+   {
+    "id": "BYFXtpIUPpY",
+    "title": "The purpose of translators"
+   },
+   {
+    "id": "-uaeVcs2XFs",
+    "title": "Compilers & interpreters"
+   },
+   {
+    "id": "QPMrXhx784Y",
+    "title": "IDE"
+   }
+  ]
+ },
+ "_note_revision": "Revision blocks: 3 videos per sub-topic from three channels (Craig'n'Dave, Mr Moore, CSNewbs). Every ID verified 2026-09-14 via YouTube oEmbed (HTTP 200 + author_name recorded below). Every practice link verified HTTP 200 the same evening. All sources are free to view with no login or paywall.",
+ "revision": {
+  "1-2-memory-storage": [
+   {
+    "title": "Units of data storage",
+    "spec": "1.2.3",
+    "blurb": "Bit, nibble, byte, and the kB → PB ladder — then using it to work out how big a file is.",
+    "videos": [
+     {
+      "id": "jBXWZbHPLWI",
+      "author": "Craig'n'Dave",
+      "title": "Units of data storage"
+     },
+     {
+      "id": "W5ELoBtppGY",
+      "author": "Mr Moore",
+      "title": "How to convert between file sizes"
+     },
+     {
+      "id": "_M49hw0cljc",
+      "author": "CSNewbs",
+      "title": "Data capacity requirements"
+     }
     ],
-    "1-5-systems-software": [
-      {"id": "tArQQD4SZ7Q", "title": "The purpose of operating systems"},
-      {"id": "dX9zhaBLJ7w", "title": "Operating systems 1"},
-      {"id": "feECP9Q21Ow", "title": "Operating systems 2"},
-      {"id": "PW_T3UtaMgw", "title": "Utility system software"}
-    ],
-    "2-4-boolean-logic": [
-      {"id": "jN9WtjyjXf4", "title": "Simple logic diagrams"},
-      {"id": "U7dbx9fllLc", "title": "Truth tables"},
-      {"id": "M7h8XBjp0-s", "title": "Combining Boolean operators"},
-      {"id": "vPG5c-RJtog", "title": "Applying logical operators in truth tables"}
-    ],
-    "2-5-languages-ides": [
-      {"id": "4qNj8zIQzWw", "title": "Characteristics and purpose of different languages"},
-      {"id": "BYFXtpIUPpY", "title": "The purpose of translators"},
-      {"id": "-uaeVcs2XFs", "title": "Compilers & interpreters"},
-      {"id": "QPMrXhx784Y", "title": "IDE"}
+    "links": [
+     {
+      "url": "https://www.csnewbs.com/ocr2020-2-3-dataunits",
+      "title": "2.3 Units — notes and questions",
+      "source": "CSNewbs"
+     }
     ]
+   },
+   {
+    "title": "Binary and denary",
+    "spec": "1.2.4",
+    "blurb": "Place value both ways: denary → 8-bit binary, and 8-bit binary → denary.",
+    "videos": [
+     {
+      "id": "pCIUh20mNlA",
+      "author": "Craig'n'Dave",
+      "title": "Converting between denary and 8-bit binary"
+     },
+     {
+      "id": "byCLDVmAJRY",
+      "author": "Mr Moore",
+      "title": "How to convert between denary and binary"
+     },
+     {
+      "id": "7m5N4GnhczU",
+      "author": "CSNewbs",
+      "title": "Denary to binary"
+     }
+    ],
+    "links": [
+     {
+      "url": "https://www.101computing.net/binary-logic/denary-binary.html",
+      "title": "Denary → binary drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.101computing.net/binary-logic/binary-denary.html",
+      "title": "Binary → denary drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.csnewbs.com/ocr2020-2-4a-numbersystems",
+      "title": "2.4a Number systems",
+      "source": "CSNewbs"
+     }
+    ]
+   },
+   {
+    "title": "Hexadecimal",
+    "spec": "1.2.4",
+    "blurb": "Base 16, and the nibble trick — split eight bits down the middle and read each half.",
+    "videos": [
+     {
+      "id": "nmbr7GxN6TA",
+      "author": "Craig'n'Dave",
+      "title": "Converting between denary and 2-digit hexadecimal"
+     },
+     {
+      "id": "Uvj6PJoJeoY",
+      "author": "Mr Moore",
+      "title": "Hexadecimal conversions"
+     },
+     {
+      "id": "ZPiiZg6mCho",
+      "author": "CSNewbs",
+      "title": "Binary to hexadecimal"
+     }
+    ],
+    "links": [
+     {
+      "url": "https://www.101computing.net/binary-logic/denary-hexa.html",
+      "title": "Denary → hex drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.101computing.net/binary-logic/hexa-denary.html",
+      "title": "Hex → denary drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.101computing.net/binary-logic/binary-hexa.html",
+      "title": "Binary → hex drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.101computing.net/binary-logic/hexa-binary.html",
+      "title": "Hex → binary drill",
+      "source": "101 Computing"
+     }
+    ]
+   },
+   {
+    "title": "Binary addition and overflow",
+    "spec": "1.2.4",
+    "blurb": "Adding two 8-bit numbers, carrying, and what happens when the answer will not fit in eight bits.",
+    "videos": [
+     {
+      "id": "3K_Nw_pDzUQ",
+      "author": "Craig'n'Dave",
+      "title": "Adding two 8-bit binary integers"
+     },
+     {
+      "id": "DXBWcAsLNcU",
+      "author": "Mr Moore",
+      "title": "Binary addition"
+     },
+     {
+      "id": "Bs17TtlSBKM",
+      "author": "CSNewbs",
+      "title": "Overflow errors"
+     }
+    ],
+    "links": [
+     {
+      "url": "https://www.101computing.net/binary-logic/binary-additions.html",
+      "title": "Binary addition drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.csnewbs.com/ocr2020-2-4b-binaryadditionshifts",
+      "title": "2.4b Binary addition and shifts",
+      "source": "CSNewbs"
+     }
+    ]
+   },
+   {
+    "title": "Binary shifts",
+    "spec": "1.2.4",
+    "blurb": "Left shift multiplies by two, right shift divides by two — and bits fall off the end.",
+    "videos": [
+     {
+      "id": "B_3W5C7ppE4",
+      "author": "Craig'n'Dave",
+      "title": "Binary shifts"
+     },
+     {
+      "id": "mQEgSWWoTF0",
+      "author": "Mr Moore",
+      "title": "Performing a binary shift"
+     },
+     {
+      "id": "cTg-mx40-jE",
+      "author": "CSNewbs",
+      "title": "Binary shifts"
+     }
+    ],
+    "links": [
+     {
+      "url": "https://www.101computing.net/binary-logic/binary-shifts.html",
+      "title": "Binary shift drill",
+      "source": "101 Computing"
+     },
+     {
+      "url": "https://www.csnewbs.com/ocr2020-2-4b-binaryadditionshifts",
+      "title": "2.4b Binary addition and shifts",
+      "source": "CSNewbs"
+     }
+    ]
+   }
+  ]
+ },
+ "revision_footer": {
+  "1-2-memory-storage": {
+   "title": "If you only watch one",
+   "video": {
+    "id": "SEFESAv4g_I",
+    "author": "Mr Moore",
+    "title": "1.2 Memory and Storage — full topic revision"
+   }
   }
+ }
 }
