@@ -138,8 +138,17 @@ def pair_docs(docs):
     """
     rows, seen = [], {}
     for p, lbl, n in docs:
-        is_key = p.stem.endswith("-answers")
-        base = p.stem[:-len("-answers")] if is_key else p.stem
+        # The house "-web" build convention (one source, three outputs) puts
+        # the suffix AFTER "-answers", so "<stem>-answers-web" is the key for
+        # "<stem>-web". Without this the key never pairs and lands on a row of
+        # its own -- which is how the Data Representation booklet's answers
+        # ended up two lesson-rows from the booklet. Fixed 2026-09-14.
+        if p.stem.endswith("-answers-web"):
+            is_key, base = True, p.stem[:-len("-answers-web")] + "-web"
+        elif p.stem.endswith("-answers"):
+            is_key, base = True, p.stem[:-len("-answers")]
+        else:
+            is_key, base = False, p.stem
         if base not in seen:
             seen[base] = {"label": None, "sheet": None, "key": None}
             rows.append(base)
