@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  AI LITERACY COURSE — CANONICAL EPISODE TEMPLATE            v1.0 · 2026-09-19
+================================================================================
+  Copy this file to  ai/students/season-N/sNeM-slug/index.html  and fill it in.
+  It is not published: _build/ is the build system, never the site.
+
+  It shows every shared component in its correct order. Blocks marked
+  [OPTIONAL] can be deleted outright; blocks marked [REQUIRED] appear on every
+  episode page without exception.
+
+  The design reference is S4E2 (the Environmentalist Debate) — the richest page
+  in the section. The lesson-writing reference is S2E3 (MetaPrompting). Two
+  different exemplars for two different jobs.
+
+  THREE THINGS THAT BREAK A PAGE SILENTLY IF YOU GET THEM WRONG
+  -------------------------------------------------------------------------
+  1. <body class="ai-page">  — every component rule in vault.css is scoped to
+     it. Drop the class and the page renders unstyled. It is scoped because
+     .article, .question-box and .doc-icon are also used by ~60 Physics/CS
+     topic pages where they are deliberately plain.
+  2. ../ depth — an episode page is four levels down, so vault.css and every
+     site-relative link take ../../../../. A season hub is three.
+  3. The objectives <h2>+<ul> live INSIDE .article. Closing .article, emitting
+     them bare, and re-opening it was a bug replicated across eight pages and
+     fixed on 2026-09-19. Do not reintroduce it.
+
+  CONVENTIONS THAT ARE NOT VISIBLE IN THE MARKUP
+  -------------------------------------------------------------------------
+  · Page-specific CSS goes in the inline <style> below, and must carry the
+    .ai-page prefix or it loses to vault.css on specificity.
+  · Positive instruction: say what to do, then give a check that confirms
+    success. No "watch out", "don't forget", "a common mistake".
+  · Present tense. This is a live course. Nothing claims Perth.
+  · Student-safe only — no teacher notes, answer keys, mark schemes, timings
+    or reflection answers. Every page is a deliberate extraction from the
+    curriculum file, never a conversion of the whole lesson.
+  · A Gem link only works for a signed-in St Leonards reader. The page stays
+    public, so it must teach the lesson to someone who cannot click it.
+  · Every external embed is live-verified before it ships; youtube-nocookie
+    only. Third-party material ships with a credit line naming authors and
+    publisher.
+
+  Full component vocabulary: ai/AI-PAGES.md
+  Publishing contract:       AGENTS.md
+================================================================================
+-->
+<html lang="en">
+<head>
+    <!-- [REQUIRED] head block — identical on every page but the <title> -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEM · Episode Title — AI Literacy — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+
+    <!-- [OPTIONAL] page-specific styles only. Anything reusable belongs in the
+         AI Literacy Course section of vault.css, not here. Note the .ai-page
+         prefix — without it this rule loses to the hoisted component. -->
+    <style>
+        .ai-page .documents { margin-top: 0; }
+    </style>
+</head>
+
+<body class="ai-page">
+    <div class="container">
+
+        <!-- [REQUIRED] breadcrumb + corner logo.
+             .page-top puts them on one line; without the logo, use a bare
+             <nav class="breadcrumb"> and drop the wrapper. -->
+        <div class="page-top">
+            <nav class="breadcrumb">
+                <a href="../../../../">The Vault</a><span>·</span>
+                <a href="../../../">AI</a><span>·</span>
+                <a href="../../">Students</a><span>·</span>
+                <a href="../">Season N</a><span>·</span>
+                Episode Title
+            </nav>
+            <a href="../../../../" aria-label="The Vault — home"><img class="corner-logo" src="../../../../images/brand/vault-icon.svg" alt="The Vault"></a>
+        </div>
+
+        <!-- [OPTIONAL] hero image, full width, above the title. S4E1 uses one.
+             Alt text carries the poster's words so the image is not the only
+             place they exist. -->
+        <img class="hero-banner" src="banner.png" alt="Describe the banner, including any text printed on it.">
+
+        <!-- [REQUIRED] section header. The .ep-big span sets the episode code
+             as an oversized display line above the title — optional; drop the
+             span and the h1 is a single line. -->
+        <div class="section-header">
+            <span class="eyebrow">Season N · Season Name · Episode M</span>
+            <h1><span class="ep-big">SNEM</span> Episode Title</h1>
+            <p class="subtitle">One line saying what the lesson actually does</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <!-- [OPTIONAL] documents block — handouts, core reading, the Gem.
+             Three row shapes:
+               plain <li><a>      one link, one format
+               <li class="doc-dual">  one document, several formats
+               <li class="doc-soon">  announced, not yet linked
+             Add `documents--flush` when the block sits straight under a hero
+             banner or rule with no body copy above it.
+             Icons live in images/third-party/ — pdf.svg, microsoft-word.svg,
+             google-docs.svg. -->
+        <div class="documents">
+            <h2>Documents &amp; links</h2>
+            <ul class="doc-list">
+                <li>
+                    <a href="handout.pdf" target="_blank" rel="noopener">
+                        <img class="doc-icon" src="../../../../images/third-party/pdf.svg" alt="">
+                        <span><strong>Core reading:</strong> Title, by Author</span>
+                        <span class="doc-meta">PDF</span>
+                    </a>
+                </li>
+                <li class="doc-dual">
+                    <span class="doc-label">The lesson handout</span>
+                    <span class="doc-actions">
+                        <a class="fmt-btn" href="snem-handout.docx" target="_blank" rel="noopener" title="Download the Word version">
+                            <img src="../../../../images/third-party/microsoft-word.svg" alt=""><span>Word</span>
+                        </a>
+                        <a class="fmt-btn" href="https://docs.google.com/document/d/FILE_ID/edit?usp=sharing" target="_blank" rel="noopener" title="Open in Google Docs">
+                            <img src="../../../../images/third-party/google-docs.svg" alt=""><span>Docs</span>
+                        </a>
+                    </span>
+                </li>
+                <li class="doc-soon">
+                    <img class="doc-icon" src="../../../../images/third-party/pdf.svg" alt="">
+                    <span>Worked example — coming soon</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- [REQUIRED] the article. ONE .article per page, and the objectives
+             list sits inside it. Closing it early and re-opening it is the bug
+             that was fixed across eight pages on 2026-09-19. -->
+        <div class="article">
+            <h2>What this lesson is about</h2>
+            <p>A paragraph in the student's second person, present tense: what they will do in this session and why it is worth doing. Written so it still makes sense to a reader who cannot open the Gem.</p>
+
+            <h2>What you'll be able to do</h2>
+            <ul>
+                <li>I can … (the first objective, in the student's own voice).</li>
+                <li>I can … (the second).</li>
+            </ul>
+
+            <h2>A little background</h2>
+            <p>The idea underneath the activity, stated plainly. Give the correct move, then a check that confirms it landed.</p>
+        </div>
+
+        <!-- [OPTIONAL] the one question the lesson turns on. One sentence. -->
+        <div class="question-box">
+            The single question this episode exists to argue about.
+        </div>
+
+        <!-- [OPTIONAL] the Gem link. Chipp is being retired; .gem-link and
+             .gem-btn are the forward names, and .chipp-wrap / .chipp-btn are
+             working aliases on pages not yet rebuilt. Use the new names.
+             A Gem is tenant-bound, so say who it is for — the page is public
+             and most readers cannot open it. -->
+        <div class="gem-link">
+            <a class="gem-btn" href="https://gemini.google.com/gem/GEM_ID" target="_blank" rel="noopener">Open the Gem →</a>
+            <p class="gem-note">Sign in with your St Leonards account to open this one.</p>
+        </div>
+
+        <!-- [OPTIONAL] sources. `.readings` is the retired name for this block
+             — do not use it. `.trust-note` is the check-it-yourself line, and
+             it is the habit the whole course is about. Tags are free text:
+             Core, Counter, Journal, Data, Explainer, Frame. -->
+        <div class="sources">
+            <h2>Where these facts come from</h2>
+            <p class="trust-note">Every figure on this page was checked against the real source before it went here. Click through and check anything you are about to rely on.</p>
+
+            <h3>Grouping heading</h3>
+            <ul>
+                <li><span class="tag">Core</span><a href="https://example.org/" target="_blank" rel="noopener">Author (Year). Title.</a> <em>Publication</em>. What this source supplies to the page.</li>
+            </ul>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <!-- [OPTIONAL] vocabulary. A <dl>, term then plain-English definition.
+             Naming a real difference is a definition, not a warning — so a
+             false-friend note is fine here. -->
+        <h2>Key words</h2>
+        <dl class="vocab">
+            <dt>Term</dt>
+            <dd>What it means, in a sentence a student would actually say.</dd>
+        </dl>
+
+        <!-- [REQUIRED] prev / next. New in the 2026-09-19 refactor; no page
+             carried it before. On the first episode of a season, point prev at
+             the previous season's last episode, or use the empty <span> shown
+             below to keep next aligned right. Same on the last episode. -->
+        <nav class="ep-nav">
+            <a class="ep-nav-prev" href="../sNe(M-1)-slug/">
+                <span class="ep-nav-dir">← Previous</span>
+                <span class="ep-nav-name">Previous Episode Title</span>
+            </a>
+            <a class="ep-nav-next" href="../sNe(M+1)-slug/">
+                <span class="ep-nav-dir">Next →</span>
+                <span class="ep-nav-name">Next Episode Title</span>
+            </a>
+            <!-- no neighbour on one side? replace that <a> with: <span></span> -->
+        </nav>
+
+        <!-- [REQUIRED] footer. The course is live and it is at St Leonards.
+             Nothing here says Perth. -->
+        <footer class="site-footer">AI Literacy Course · Season N · 2026</footer>
+
+    </div>
+</body>
+</html>
