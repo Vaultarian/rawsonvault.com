@@ -9,15 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../../vault.css">
     <style>
-        .hero-banner {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: var(--radius);
-            margin-bottom: var(--gap-lg);
-            box-shadow: 0 2px 14px rgba(26,16,8,0.12);
-        }
-        .article p { margin-bottom: var(--gap-md); }
         .article p:first-of-type::first-letter {
             font-family: var(--font-display);
             font-size: 3rem;
@@ -26,105 +17,9 @@
             padding: 0.1em 0.12em 0 0;
             color: var(--bronze-core);
         }
-        .question-box {
-            border-left: 3px solid var(--bronze-core);
-            background: #fdf9f4;
-            padding: var(--gap-md) var(--gap-lg);
-            margin: var(--gap-lg) 0;
-            font-family: var(--font-heading);
-            font-style: italic;
-            font-size: 1.1rem;
-            color: var(--ink-black);
-        }
-        .vocab { margin: var(--gap-lg) 0; }
-        .vocab dt {
-            font-family: var(--font-display);
-            font-size: 0.8rem;
-            letter-spacing: 0.08em;
-            color: var(--ink-black);
-            margin-top: var(--gap-sm);
-        }
-        .vocab dd {
-            font-family: var(--font-body);
-            font-size: 0.92rem;
-            color: var(--gray-dark);
-            margin: 0 0 var(--gap-xs) 0;
-            line-height: 1.6;
-        }
-        .sources h3 { margin: var(--gap-md) 0 var(--gap-xs); }
-        .sources ul { list-style: none; }
-        .sources li {
-            padding: var(--gap-xs) 0;
-            border-bottom: 1px solid #f0ece4;
-            font-size: 0.9rem;
-        }
-        .sources .tag {
-            font-family: var(--font-display);
-            font-size: 0.55rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--bronze-dark);
-            border: 1px solid var(--bronze-light);
-            border-radius: var(--radius);
-            padding: 1px 6px;
-            margin-right: 6px;
-        }
-        .trust-note {
-            font-family: var(--font-body);
-            font-style: italic;
-            font-size: 0.88rem;
-            color: var(--gray-dark);
-            background: #faf6ef;
-            border-radius: var(--radius);
-            padding: var(--gap-md);
-            margin: var(--gap-lg) 0;
-        }
-        .documents {
-            background: #fdf9f4;
-            border: 1px solid #f0ece4;
-            border-radius: var(--radius);
-            padding: var(--gap-md) var(--gap-lg);
-            margin: 0 0 var(--gap-lg);
-        }
-        .documents h2 {
-            font-family: var(--font-display);
-            font-size: 0.72rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--bronze-dark);
-            margin: 0 0 var(--gap-xs);
-        }
-        .doc-list { list-style: none; margin: 0; padding: 0; }
-        .doc-list li { border-bottom: 1px solid #f0ece4; }
-        .doc-list li:last-child { border-bottom: none; }
-        .doc-list a {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            padding: 0.55rem 0;
-            text-decoration: none;
-            color: var(--ink-black);
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            transition: color 0.15s ease;
-        }
-        .doc-list a:hover { color: var(--bronze-dark); }
-        .doc-icon { width: 22px; height: 22px; object-fit: contain; flex: none; }
-        .doc-list .doc-meta {
-            margin-left: auto;
-            font-family: var(--font-display);
-            font-size: 0.55rem;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: var(--gray-mid, #707070);
-            border: 1px solid var(--bronze-light);
-            border-radius: var(--radius);
-            padding: 1px 7px;
-            white-space: nowrap;
-        }
     </style>
 </head>
-<body>
+<body class="ai-page">
     <div class="container">
 
         <nav class="breadcrumb">
@@ -146,7 +41,7 @@
 
         <div class="rule--full"></div>
 
-        <div class="documents">
+        <div class="documents documents--flush">
             <h2>Documents</h2>
             <ul class="doc-list">
                 <li>
