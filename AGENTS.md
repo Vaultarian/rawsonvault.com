@@ -125,6 +125,16 @@ that publishes **unattended, on a schedule, with no human in the loop.**
 - **Never hand-edit `daily_print/index.html` or anything in `daily_print/files/`.** Both are
   generated wholesale by `_build/inject_daily_print.py`, which owns that directory and
   deletes anything it did not put there. Change the *source*, then re-run.
+- **Never run `_build/inject_daily_print.py` (or any `_build/inject_*.py`/`build_*.py`)
+  directly.** The injector only writes files — it has no git awareness at all, no pull, no
+  commit, no push. `publisher.py`'s `publish()` is what wraps it with those. Run an injector
+  standalone and its wholesale rewrite of `daily_print/files/` (deletions included) is left
+  sitting uncommitted in the working tree for the *next* run to trip over. Found 2026-09-20:
+  Friday 18 Sep's scheduled run committed and pushed cleanly (confirmed from its own
+  `kubectl logs`), but a later bare run of the injector — outside `publisher.py` — silently
+  deleted that run's 14 files locally and left them, plus new untracked ones, uncommitted.
+  **To preview what a run would change, call `publisher.py`'s `publish(dry_run=True)`** —
+  never the bare script.
 - **The source is the Class Log, not this repo.** For each period the injector reads
   `~/vault/01-Teaching/Class Logs/<Subject> <Class>.md`, finds the `### YYYY-MM-DD` block for
   the date, and follows its `[[wikilinks]]` to the PDFs. **No log entry means no documents on
@@ -291,6 +301,17 @@ touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary p
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.7 — 2026-09-20. **Canon Check.** Added a rule to the Daily Print section: **never run
+an injector script directly**, always through `publisher.py`'s `publish()`. Found tonight
+when 14 PDFs turned up deleted-but-uncommitted in the working tree — traced via `kubectl
+logs` on the CronJob's last pod to confirm Friday 18 Sep's *scheduled* run had committed and
+pushed cleanly, so the uncommitted deletion had to be a later, separate bare run of
+`inject_daily_print.py` that rewrote the directory (it owns and wholesale-regenerates
+`daily_print/files/`) with no git step to follow it. Nothing was lost — the class pages
+remain the source of truth and all 27 affected files were confirmed live and byte-matched —
+but the gap that let a mutation sit uncommitted for an unrelated later run to inherit is
+real, and this closes it.*
 
 *v1.6 — 2026-09-20. **Canon Check.** Added **"Brand icons — the Vault mark and the
 favicon"**, a short pointer to `images/brand/LOGO-PROVENANCE.md` (the Möbius logo and
