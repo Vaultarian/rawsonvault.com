@@ -267,6 +267,20 @@ it the identical label (e.g. `Lesson 8`), see Design 9A's Class Log for the patt
 > Python and diff it character-for-character against the source SVG, and render it with
 > `rsvg-convert` to look at it** — don't trust a hand-copied bezier path by eye.
 
+### Brand icons — the Vault mark and the favicon
+
+Separate from the four doc-row icons above: the **Möbius logo** and the **favicon** are
+website assets with their own dedicated provenance file. **Read
+`images/brand/LOGO-PROVENANCE.md` before touching either — don't re-derive where they live.**
+
+- `images/brand/vault-icon.svg` / `vault-icon.png` — canonical Möbius mark, vector + raster.
+- `favicon.ico`, `apple-touch-icon.png` (repo root) — the favicon; byte-identical copies also
+  live at `~/AlfredOS/agents/alfred-web/web/`.
+
+That provenance file predates this canon check, is Alex's own, and already tracks every
+consumer (LaTeX templates, this site, Mrs L, Alfred's web front door) — it is not duplicated
+here, only pointed to.
+
 ## Where content comes from
 
 Tim reads the **vault** (`~/vault/`) to source page content, plus `~/AlfredOS/scripts`
@@ -277,6 +291,12 @@ touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary p
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.6 — 2026-09-20. **Canon Check.** Added **"Brand icons — the Vault mark and the
+favicon"**, a short pointer to `images/brand/LOGO-PROVENANCE.md` (the Möbius logo and
+favicon already have a full provenance file — this just makes it findable from the icons
+section rather than requiring a filesystem search). Not a rewrite: that file remains the
+source of truth and is not duplicated here.*
 
 *v1.5 — 2026-09-20. **Canon Check.** Added **"Document icons — four exist, reuse them"**.
 Tonight's Design 9A build added `ICON_VIDEO` (YouTube) and `ICON_SLIDES`, plus a same-label
