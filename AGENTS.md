@@ -233,6 +233,40 @@ actually commit. Never hand-edit a generated page; change the Class Log and re-r
 Both injectors run together in the 05:30 job, because they read the same logs and would
 otherwise drift out of step with each other.
 
+## Document icons — four exist, reuse them
+
+Every class-page doc-row icon is inline SVG defined in `_build/inject_class_pages.py`
+(`ICON_SHEET`, `ICON_KEY`, `ICON_VIDEO`, `ICON_SLIDES`) — there is no separate icon-image
+folder for these. **When something new is published — a worksheet, an answer key, a video, or
+a slide deck — it gets one of these four icons. Do not invent a fifth.**
+
+| Icon | For | How it's selected |
+|---|---|---|
+| `ICON_SHEET` | Worksheet (student writes on it) | Filename/label doesn't match `REFERENCE` (expectations, overview, syllabus, reference, guide, glossary, vocab, …) |
+| `ICON_DOC` | Reference document (read, not written on) | Filename/label matches `REFERENCE` |
+| `ICON_KEY` | Answer key | Filename ends `-answers` or `-answers-web`, paired to its sheet by stem |
+| `ICON_VIDEO` | YouTube/Vimeo link | `VIDEO_URL` auto-detects the URL — no filename convention needed |
+| `ICON_SLIDES` | Slide deck | Filename ends `-slides` (`SLIDES_SUFFIX`) |
+
+`ICON_VIDEO` and `ICON_SLIDES` render **unwrapped** — no folder-tag badge — on purpose: the
+other two are Vault documents wearing a tag, these are an external platform, and looking
+different says so.
+
+**One `Publish:` entry, one row, potentially several icons.** Since 2026-09-20, items that
+share the *exact same label text* — docs and video links alike — merge onto a single
+`doc-row` with all their icons concatenated in listed order, instead of one row per item.
+A label used once still gets its own row exactly as before. This is how a lesson gets a
+resource icon, a slides icon and a video icon on one line: give every `Publish:` entry for
+it the identical label (e.g. `Lesson 8`), see Design 9A's Class Log for the pattern.
+
+> ⚠️ **Both `ICON_VIDEO` and `ICON_SLIDES` shipped broken once, from the same mistake.**
+> Hand-wrapping a copied SVG path string across several Python lines silently dropped a
+> required space at the join, merging two path-data numbers into one malformed one — invisible
+> in the source, but it corrupted the rendered shape (a diagonal cut through the icon, or half
+> of it missing). **Before shipping a new or edited icon path: reconstruct the string in
+> Python and diff it character-for-character against the source SVG, and render it with
+> `rsvg-convert` to look at it** — don't trust a hand-copied bezier path by eye.
+
 ## Where content comes from
 
 Tim reads the **vault** (`~/vault/`) to source page content, plus `~/AlfredOS/scripts`
@@ -243,6 +277,14 @@ touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary p
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.5 — 2026-09-20. **Canon Check.** Added **"Document icons — four exist, reuse them"**.
+Tonight's Design 9A build added `ICON_VIDEO` (YouTube) and `ICON_SLIDES`, plus a same-label
+grouping rule so several icons can land on one `doc-row` — none of that was written down, so
+the next session had no way to know these icons exist rather than re-inventing one. Also
+recorded, because it cost real time twice: hand-wrapping a copied SVG path across Python
+string lines silently drops a required space and corrupts the shape, so a new icon path needs
+a byte-for-byte diff against its source and an `rsvg-convert` render before it ships.*
 
 *v1.4 — 2026-09-08. **The date gate is gone; `Publish:` is the only switch.** An entry now
 publishes as soon as it exists, so a handout finished tonight is live tonight under tomorrow's
