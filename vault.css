@@ -629,6 +629,46 @@ a:hover { color: var(--bronze-dark); }
 
 .video-grid--single { grid-template-columns: minmax(0, 420px); }
 
+/* ── Interactive simulations ───────────────────────────────
+   Third-party GeoGebra/JS applets, embedded live (not screenshotted).
+   Taller aspect ratio than a video — most physics applets run close to
+   square or 4:3, and 16:9 crops the control panel. Every cell carries a
+   credit line with a link to the source, per the third-party rule in
+   AGENTS.md. Added 2026-09-20 for oPhysics (Tom Walsh).
+   ─────────────────────────────────────────────────────────── */
+.sim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--gap-md);
+  margin: 0 0 var(--gap-md);
+}
+.sim-cell { margin: 0; }
+.sim-cell iframe {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  display: block;
+  background: #fff;
+}
+.sim-cell figcaption {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 300;
+  color: var(--gray-dark);
+  line-height: 1.35;
+  padding: 4px 2px 0;
+}
+.sim-cell figcaption .sim-credit {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-silver);
+  margin-top: 2px;
+}
+.sim-cell figcaption .sim-credit a { color: inherit; }
+
 .revise-links {
   font-family: var(--font-ui);
   font-size: 0.82rem;
