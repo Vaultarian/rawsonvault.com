@@ -125,19 +125,26 @@ ICON_VIDEO = (
 # site is a place to go, and the two should not look identical.
 VIDEO_URL = re.compile(r"(youtube\.com/|youtu\.be/|vimeo\.com/)", re.I)
 
-# Slides: the real Google Slides mark (same path as images/third-party/
-# google-slides.svg) -- code.org's teacher decks are Slides ("Make a Copy"),
-# not PowerPoint, and a single-colour single-path icon has no gradient/id to
-# collide with itself when a page inlines it several times over. Unwrapped,
-# same reasoning as ICON_VIDEO: an external platform, not a Vault document.
-_SLIDES_D = ("M16.09 15.273H7.91v-4.637h8.18v4.637zm1.728-8.523h2.91v15.614"
-             "c0 .904-.733 1.636-1.637 1.636H4.909a1.636 1.636 0 0 1-1.636"
-             "-1.636V1.636C3.273.732 4.005 0 4.909 0h9.068v6.75h3.841zm-.363"
-             "2.523H6.545v7.363h10.91V9.273zm-2.728-5.979V6h6.001l-6-6v3.294z")
+# Slides: hand-built, not copied from images/third-party/google-slides.svg --
+# that swap (2026-09-20) turned out to have the exact same bug as the first
+# ICON_VIDEO attempt (a line-split silently dropped a required path-data
+# space, at "zm-.363" | "2.523" -> "zm-.3632.523", one malformed number).
+# This one reuses the page-plus-folded-corner outline from google-docs.svg
+# (already verified working elsewhere on the site) recoloured amber, with a
+# plain <rect>-built "screen" glyph in the centre -- no hand-typed bezier
+# curve to mistype, checked against Alex's reference (~/Downloads/slides.png)
+# with rsvg-convert before this went in.
+_PAGE_D = ("M14.727 6.727H14V0H4.91c-.905 0-1.637.732-1.637 1.636v20.728c0 "
+           ".904.732 1.636 1.636 1.636h14.182c.904 0 1.636-.732 1.636-1.636"
+           "V6.727h-6z")
+_FOLD_D = "M14.727 6h6l-6-6v6z"
 ICON_SLIDES = (
     '<svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" '
     'aria-hidden="true" focusable="false">'
-    f'<path fill="#FBBC04" d="{_SLIDES_D}"/>'
+    f'<path fill="#F4B400" d="{_PAGE_D}"/>'
+    f'<path fill="#F4B400" opacity="0.55" d="{_FOLD_D}"/>'
+    '<rect x="6.7" y="9.3" width="10.6" height="7.4" rx="0.6" fill="#FFFFFF"/>'
+    '<rect x="9.3" y="11.2" width="5.4" height="3.6" rx="0.4" fill="#F4B400"/>'
     '</svg>')
 SLIDES_SUFFIX = "-slides"
 
