@@ -1085,3 +1085,34 @@ a:hover { color: var(--bronze-dark); }
   .ai-page .ep-nav { flex-direction: column; }
   .ai-page .ep-nav .ep-nav-next { text-align: left; }
 }
+
+/* --- lesson stubs + intro copy · added 2026-09-20 ------------------------
+   .stub-badge marks a session that is deliberately shorter than a full
+   episode. It appears on the stub hub, the stub page and the Gem card, so a
+   stub is never mistaken for a thin episode.
+   .about-text is the italic intro paragraph, used by the students index and
+   the stub hub — two pages, so it belongs here rather than inline.         */
+
+.ai-page .stub-badge {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bronze-dark);
+  border: 1px solid var(--bronze-light);
+  border-radius: var(--radius);
+  padding: 3px 9px;
+  display: inline-block;
+  margin-top: var(--gap-sm);
+}
+
+.ai-page .about-text {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--gray-dark);
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 560px;
+  margin: 0 auto var(--gap-lg);
+  text-align: center;
+}

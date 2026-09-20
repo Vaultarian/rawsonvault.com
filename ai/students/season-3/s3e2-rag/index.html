@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3E2 &middot; RAG — AI Literacy — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+</head>
+
+<body class="ai-page">
+    <div class="container">
+
+        <div class="page-top">
+            <nav class="breadcrumb">
+                <a href="../../../../">The Vault</a><span>&middot;</span>
+                <a href="../../../">AI</a><span>&middot;</span>
+                <a href="../../">Students</a><span>&middot;</span>
+                <a href="../">Season 3</a><span>&middot;</span>
+                RAG
+            </nav>
+            <a href="../../../../" aria-label="The Vault — home"><img class="corner-logo" src="../../../../images/brand/vault-icon.svg" alt="The Vault"></a>
+        </div>
+
+        <div class="section-header">
+            <span class="eyebrow">Season 3 &middot; Context Engineering &middot; Episode 2</span>
+            <h1><span class="ep-big">S3E2</span> RAG</h1>
+            <p class="subtitle">Retrieval-Augmented Generation, demonstrated on you</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <h2>What this lesson is about</h2>
+            <p>RAG stands for Retrieval-Augmented Generation, and it is how an AI answers questions from documents it was never trained on. You ask something, it searches the files it has been given, pulls out the most relevant passage, and writes its answer using that passage alongside what it already knew. Today you take that process apart from the inside, because the Gem you are about to open <em>is</em> a RAG system and it knows it. The demonstration happens to you, live, rather than being described to you.</p>
+
+            <h2>What you'll be able to do</h2>
+            <ul>
+                <li>I can explain what RAG is, in my own words, to someone who has never heard the term.</li>
+                <li>I can tell the difference between a knowledge source, which gets searched when needed, and a system prompt, which is always switched on.</li>
+                <li>I can design a question that proves whether retrieval actually happened.</li>
+                <li>I can describe at least one way retrieval fails, and say what that failure looks like from the outside.</li>
+            </ul>
+
+            <h2>A little background</h2>
+            <p>The two halves of the name do the work. <strong>Retrieval</strong> is the search step: your files are cut into passages called chunks, and the ones closest in meaning to your question get pulled out. <strong>Generation</strong> is what happens next, when the model writes an answer with those chunks in front of it. Everything interesting about RAG lives in the seam between the two, because a model that retrieves the wrong chunk will still write a confident answer from it.</p>
+            <p>The Gem's corpus is invented on purpose. Nothing in it exists anywhere else, so if it can quote the document back to you, retrieval demonstrably happened — there is nowhere else the answer could have come from. That is the check that confirms the lesson landed, and it is the same check you can run on any RAG system you meet later.</p>
+        </div>
+
+        <div class="question-box">
+            How would you prove an AI is reading your file, rather than remembering something that sounds like it?
+        </div>
+
+        <div class="gem-link">
+            <a class="gem-btn" href="https://gemini.google.com/gem/1n4vU6eW1-yd-3jlj2lNNHqysFuX9mpG_" target="_blank" rel="noopener">Open the Gem &rarr;</a>
+            <p class="gem-note">Sign in with your St Leonards account to open this one.</p>
+        </div>
+
+        <div class="sources">
+            <h2>Where these facts come from</h2>
+            <p class="trust-note">Every source on this page was opened and checked before it went here. Click through and check anything you are about to rely on.</p>
+            <ul>
+                <li><a href="https://www.youtube.com/watch?v=xPMQ2cVbUTI" target="_blank" rel="noopener">What Is RAG? Retrieval-Augmented Generation Explained Simply</a> — 5-min video, no technical background needed.</li>
+                <li><a href="https://www.prompthub.us/blog/retrieval-augmented-generation-for-beginners" target="_blank" rel="noopener">Retrieval Augmented Generation for Beginners</a> — PromptHub, short and non-technical.</li>
+                <li><a href="https://michielh.medium.com/rag-for-dummies-a-beginners-guide-to-retrieval-augmented-generation-ac3348d31302" target="_blank" rel="noopener">RAG for Dummies</a> — Medium, plain-language overview with diagrams.</li>
+            </ul>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <h2>Key words</h2>
+        <dl class="vocab">
+            <dt>RAG</dt>
+            <dd>Retrieval-Augmented Generation. The AI searches documents you gave it, then answers using what it found.</dd>
+            <dt>Chunk</dt>
+            <dd>One passage of a document, cut to a size the search step can work with. Retrieval returns chunks, not files.</dd>
+            <dt>Knowledge source</dt>
+            <dd>A file the AI searches when a question calls for it.</dd>
+            <dt>System prompt</dt>
+            <dd>Instructions that are always active, every session, never searched for.</dd>
+            <dt>Retrieval</dt>
+            <dd>The search step. Get this wrong and the model writes a fluent answer from the wrong passage.</dd>
+        </dl>
+
+        <nav class="ep-nav">
+            <a class="ep-nav-prev" href="../s3e1-context-engineering-101/">
+                <span class="ep-nav-dir">&larr; Previous</span>
+                <span class="ep-nav-name">Context Engineering 101</span>
+            </a>
+            <a class="ep-nav-next" href="../s3e3-iterating-system-prompts/">
+                <span class="ep-nav-dir">Next &rarr;</span>
+                <span class="ep-nav-name">Iterating System Prompts</span>
+            </a>
+        </nav>
+
+        <footer class="site-footer">AI Literacy Course &middot; Season 3 &middot; 2026</footer>
+
+    </div>
+</body>
+</html>

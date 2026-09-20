@@ -205,6 +205,60 @@ for a token first.
 
 ---
 
+## The course shape, and where a page lives
+
+Nineteen pages: **17 numbered episodes across four seasons, plus 2 lesson stubs.**
+
+| Season | Name | Episodes |
+|---|---|---|
+| 1 | The Foundations | E1 Anthropomorphism · E2 How LLMs Work · E3 Limitations · E4 Rules and Regs |
+| 2 | Prompt Engineering | E1 Prompt Engineering 101 · E2 Set the Role · E3 MetaPrompting · E4 DRVR · E5 Brainstorming · E6 The Council |
+| 3 | Context Engineering | E1 Context Engineering 101 · E2 RAG · E3 Iterating System Prompts · E4 The Extractor |
+| 4 | Harkness Dialogues | E1 Post-Truth · E2 The Environmentalist Debate · E3 The Möbius Mind |
+
+Episodes live at `season-N/sNeM-slug/`. **Stubs live at `stubs/slug/`, not in a
+season**, because numbering them as episodes is what made them look like thin
+episodes rather than deliberately short ones.
+
+⚠️ **Season 3 was remapped on 2026-09-20 and the old slugs are gone.** The three
+pages published in June carried the wrong episode identities: `s3e1-personal-ai`
+was Context Engineering 101 under its other name, `s3e2-working-rules` taught
+RAG, and `s3e3-image-prompt-designer` was two lessons fused — the iteration cycle
+and image-prompt craft. They are now `s3e1-context-engineering-101`, `s3e2-rag`,
+`season-3/s3e3-iterating-system-prompts` and `stubs/image-prompt-designer`. The
+authority for the episode list is `INTENT.md` §C4, which takes it from Drive.
+
+**S4E3 has no Gem and must not be given one.** *The Möbius Mind* is AI
+Collaboration Level 0 — paper, scissors, no AI in the room, by design. Its
+`.gem-link` block carries a note saying so instead of a button.
+
+---
+
+## Two more components
+
+| Class | What it is |
+|---|---|
+| `.stub-badge` | The line under a stub's subtitle marking it as shorter than a full episode. It appears on the stub hub, the stub page **and** the Gem card — a stub that is not marked is just a thin page, which is the failure this section exists to fix |
+| `.about-text` | The centred italic intro paragraph. Used by the students index and the stub hub |
+
+## Building pages
+
+The 19 pages are generated rather than hand-written, from a manifest holding one
+row per page — title, subtitle, Gem id, the question, the key words, and the
+prev/next chain. The generator is `$CLAUDE_JOB_DIR/tmp/build_pages.py` from the
+2026-09-20 build; **the manifest is the part worth keeping**, because it is what
+makes "add a component to every page" a one-line change instead of nineteen
+edits. The two rich Season 4 pages are *patched* rather than regenerated, so
+their bespoke markup — the hero, the verified embed, the data chart, the debate
+machinery — survives.
+
+**Every page carries, in this order:** page-top with breadcrumb and corner logo ·
+section header · rule · [documents] · article · [question-box] · gem-link ·
+[sources] · [key words] · **ep-nav** · footer. The first four and the last two
+are on all nineteen without exception.
+
+---
+
 ## Verification before publishing
 
 ```bash
@@ -224,3 +278,12 @@ inline 13–17 times, so a style change was a fifteen-file edit. 141 inline rule
 copies were removed into one `.ai-page`-scoped section of `vault.css`, two
 duplicate names were settled, the bot component was given its forward name, and
 the `.article` close/re-open bug was fixed on the eight pages carrying it.*
+
+*v1.1 — 2026-09-20. Phase 1: the pages themselves. Records the course shape, the
+**Season 3 remap** (three June pages carried the wrong episode identities), the
+stub convention, `.stub-badge` and `.about-text`, and the manifest-driven build.
+The nineteen pages now differ only in content: all carry prev/next, the corner
+logo, a Gem link and a St Leonards footer. The 21 "Perth AI Club" footers under
+`/ai/students/` are gone; the one on `/ai/staff/` is deliberately kept, because
+that page is a dated record of a PD session that really was delivered at Perth
+High on 29 May 2026 and rewriting it would falsify it.*

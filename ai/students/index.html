@@ -3,34 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Club — The Vault</title>
+    <title>AI Literacy Course — The Vault</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../vault.css">
     <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 3rem 2rem;
-        }
-        .about-text {
-            font-family: var(--font-body);
-            font-style: italic;
-            color: var(--gray-dark);
-            font-size: 1rem;
-            line-height: 1.8;
-            max-width: 560px;
-            margin: 0 auto var(--gap-lg);
-            text-align: center;
-        }
-        .seasons {
-            width: 100%;
-            max-width: 560px;
-            margin: 0 auto var(--gap-xl);
-        }
-        .seasons-heading {
+        .ai-page .seasons { width: 100%; max-width: 620px; margin: 0 auto var(--gap-xl); }
+        .ai-page .seasons-heading {
             font-family: var(--font-display);
             font-size: 0.65rem;
             letter-spacing: 0.3em;
@@ -40,87 +20,81 @@
             display: block;
             text-align: center;
         }
-        .season-row {
-            display: flex;
-            align-items: center;
-            gap: var(--gap-sm);
-            padding: var(--gap-sm) 0;
-            border-bottom: 1px solid #f0ece4;
-        }
-        .season-label {
-            font-family: var(--font-display);
-            font-size: 0.8rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--ink-black);
-            flex: 1;
-        }
-        .badge-current {
-            font-family: var(--font-display);
-            font-size: 0.55rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--bronze-dark);
-            border: 1px solid var(--bronze-light);
-            border-radius: var(--radius);
-            padding: 2px 7px;
-        }
     </style>
 </head>
+
 <body class="ai-page">
-    <div class="container" style="text-align: center;">
+    <div class="container">
 
-        <nav class="breadcrumb">
-            <a href="../../">The Vault</a>
-            <span>·</span>
-            <a href="../">AI</a>
-            <span>·</span>
-            Students
-        </nav>
-
-        <img class="logo-banner" src="../../images/brand/vault-banner.png" alt="The Vault">
-
-        <div class="rule"></div>
+        <div class="page-top">
+            <nav class="breadcrumb">
+                <a href="../../">The Vault</a><span>&middot;</span>
+                <a href="../">AI</a><span>&middot;</span>
+                Students
+            </nav>
+            <a href="../../" aria-label="The Vault — home"><img class="corner-logo" src="../../images/brand/vault-icon.svg" alt="The Vault"></a>
+        </div>
 
         <div class="section-header">
-            <span class="eyebrow">AI Club</span>
-            <h1>Student Training</h1>
+            <span class="eyebrow">St Leonards School</span>
+            <h1>AI Literacy Course</h1>
+            <p class="subtitle">What AI actually is, how to think with it, and what it means for the decade you are growing up into</p>
         </div>
+
+        <div class="rule--full"></div>
 
         <p class="about-text">
-            An extracurricular programme running at Perth High School and St. John's Academy.
-            Students learn what AI actually is, how to think with it, and what it means
-            for the world they're growing up in.
+            Nineteen sessions across four seasons. Each one pairs a lesson you can read here
+            with a Gem &mdash; a St Leonards AI assistant built for that session alone. The
+            pages are open to anyone; the Gems open for pupils signed in with their school
+            account.
         </p>
-
-        <div class="rule"></div>
-
-        <div class="chipp-block">
-            <span class="chipp-label">Chipp HQ · AI Club Hub</span>
-            <img class="qr-code" src="../../images/brand/chipp-hq.png" alt="Chipp HQ QR Code">
-            <p class="chipp-sub">Scan to visit the AI Club hub — lessons, prompts, and resources</p>
-        </div>
-
-        <div class="rule"></div>
 
         <div class="seasons">
             <span class="seasons-heading">Seasons</span>
-            <a class="season-row" href="season-1/">
-                <span class="season-label">Season 1</span>
+
+            <a class="ep-row" href="season-1/">
+                <span class="ep-code">One</span>
+                <span>
+                    <span class="ep-title">The Foundations</span>
+                    <span class="ep-sub">How AI really works, where it falls short, and how to use it well.</span>
+                </span>
             </a>
-            <a class="season-row" href="season-2/">
-                <span class="season-label">Season 2</span>
+
+            <a class="ep-row" href="season-2/">
+                <span class="ep-code">Two</span>
+                <span>
+                    <span class="ep-title">Prompt Engineering</span>
+                    <span class="ep-sub">The way you ask is the answer you get &mdash; six patterns, one at a time.</span>
+                </span>
             </a>
-            <a class="season-row" href="season-3/">
-                <span class="season-label">Season 3</span>
+
+            <a class="ep-row" href="season-3/">
+                <span class="ep-code">Three</span>
+                <span>
+                    <span class="ep-title">Context Engineering</span>
+                    <span class="ep-sub">Stop writing better questions. Start building what the AI already knows.</span>
+                </span>
             </a>
-            <a class="season-row" href="season-4/">
-                <span class="season-label">Season 4 &middot; Truth &amp; Trust</span>
-                <span class="badge-current">Current</span>
+
+            <a class="ep-row" href="season-4/">
+                <span class="ep-code">Four</span>
+                <span>
+                    <span class="ep-title">Harkness Dialogues</span>
+                    <span class="ep-sub">Sit round one table, argue from evidence, and change your mind in public.</span>
+                </span>
+            </a>
+
+            <a class="ep-row" href="stubs/">
+                <span class="ep-code">Stubs</span>
+                <span>
+                    <span class="ep-title">Lesson stubs</span>
+                    <span class="ep-sub">Two shorter sessions, kept and labelled rather than padded out.</span>
+                </span>
             </a>
         </div>
 
-        <footer class="site-footer">2026</footer>
+        <footer class="site-footer">AI Literacy Course &middot; 2026</footer>
 
     </div>
 </body>

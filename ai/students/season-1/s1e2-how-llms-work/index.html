@@ -3,26 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1E2 · How LLMs Work — AI Club — The Vault</title>
+    <title>S1E2 &middot; How LLMs Work — AI Literacy — The Vault</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../../vault.css">
 </head>
+
 <body class="ai-page">
     <div class="container">
 
-        <nav class="breadcrumb">
-            <a href="../../../../">The Vault</a><span>·</span>
-            <a href="../../../">AI</a><span>·</span>
-            <a href="../../">Students</a><span>·</span>
-            <a href="../">Season 1</a><span>·</span>
-            How LLMs Work
-        </nav>
+        <div class="page-top">
+            <nav class="breadcrumb">
+                <a href="../../../../">The Vault</a><span>&middot;</span>
+                <a href="../../../">AI</a><span>&middot;</span>
+                <a href="../../">Students</a><span>&middot;</span>
+                <a href="../">Season 1</a><span>&middot;</span>
+                How LLMs Work
+            </nav>
+            <a href="../../../../" aria-label="The Vault — home"><img class="corner-logo" src="../../../../images/brand/vault-icon.svg" alt="The Vault"></a>
+        </div>
 
         <div class="section-header">
-            <span class="eyebrow">Season 1 · The Foundations · Episode 2</span>
-            <h1>How LLMs Work</h1>
+            <span class="eyebrow">Season 1 &middot; The Foundations &middot; Episode 2</span>
+            <h1><span class="ep-big">S1E2</span> How LLMs Work</h1>
             <p class="subtitle">A machine that does one thing, billions of times: guess the next word</p>
         </div>
 
@@ -35,28 +39,59 @@
             <h2>What you'll be able to do</h2>
             <ul>
                 <li>I can analyse how predictive-text systems generate next-word suggestions.</li>
-                <li>I can participate in a structured discussion using evidence from readings and my conversation with Chipp.</li>
+                <li>I can participate in a structured discussion using evidence from readings and my conversation with the Gem.</li>
             </ul>
 
             <h2>A little background</h2>
             <p>When you type a prompt, the model navigates its internal word map using an architecture called a transformer, paying attention to the parts of your input that matter most. It then uses probability to choose the most likely next token, one piece at a time. The key terms to get comfortable with are training data, tokens, embeddings, the transformer, and self-attention, and you will build your own definition of each.</p>
         </div>
 
-        <div class="rule--full"></div>
+        <div class="question-box">
+            If a model only ever predicts the next word, where does the meaning come from?
+        </div>
+
+        <div class="gem-link">
+            <a class="gem-btn" href="https://gemini.google.com/gem/1AvtkjD1dsxxSmY0Ym3Gaw-LzdsnwnS0r" target="_blank" rel="noopener">Open the Gem &rarr;</a>
+            <p class="gem-note">Sign in with your St Leonards account to open this one.</p>
+        </div>
 
         <div class="sources">
-            <h2>Readings</h2>
+            <h2>Where these facts come from</h2>
+            <p class="trust-note">Every source on this page was opened and checked before it went here. Click through and check anything you are about to rely on.</p>
             <ul>
                 <li><a href="https://ig.ft.com/generative-ai/" target="_blank" rel="noopener">How Generative AI Works</a> — Financial Times interactive visual explainer covering next-word prediction, tokens, and training.</li>
                 <li><a href="https://cset.georgetown.edu" target="_blank" rel="noopener">CSET AI Explainer Series</a> — In-depth series from the Center for Security and Emerging Technology on how AI language systems are built and deployed. (Optional further reading.)</li>
             </ul>
         </div>
 
-        <div class="chipp-wrap">
-            <a class="chipp-btn" href="https://bouncy-laughing-octopus-smmj.on.chipp.ai" target="_blank" rel="noopener">Open the bot →</a>
-        </div>
+        <div class="rule--full"></div>
 
-        <footer class="site-footer">Perth AI Club · Season 1 · 2026</footer>
+        <h2>Key words</h2>
+        <dl class="vocab">
+            <dt>Training data</dt>
+            <dd>The enormous body of text a model learned patterns from, long before it met you.</dd>
+            <dt>Token</dt>
+            <dd>The chunk of text a model actually works in — usually a word, sometimes part of one.</dd>
+            <dt>Embedding</dt>
+            <dd>A list of numbers recording where a token sits on the model's internal map of meaning.</dd>
+            <dt>Transformer</dt>
+            <dd>The architecture that lets a model weigh which parts of your input matter most.</dd>
+            <dt>Self-attention</dt>
+            <dd>The step where the model decides which earlier words bear on the word it is about to choose.</dd>
+        </dl>
+
+        <nav class="ep-nav">
+            <a class="ep-nav-prev" href="../s1e1-anthropomorphism/">
+                <span class="ep-nav-dir">&larr; Previous</span>
+                <span class="ep-nav-name">The Anthropomorphism Debate</span>
+            </a>
+            <a class="ep-nav-next" href="../s1e3-limitations/">
+                <span class="ep-nav-dir">Next &rarr;</span>
+                <span class="ep-nav-name">Limitations of AI</span>
+            </a>
+        </nav>
+
+        <footer class="site-footer">AI Literacy Course &middot; Season 1 &middot; 2026</footer>
 
     </div>
 </body>

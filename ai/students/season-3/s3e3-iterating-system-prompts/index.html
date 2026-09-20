@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3E3 &middot; Iterating System Prompts — AI Literacy — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+</head>
+
+<body class="ai-page">
+    <div class="container">
+
+        <div class="page-top">
+            <nav class="breadcrumb">
+                <a href="../../../../">The Vault</a><span>&middot;</span>
+                <a href="../../../">AI</a><span>&middot;</span>
+                <a href="../../">Students</a><span>&middot;</span>
+                <a href="../">Season 3</a><span>&middot;</span>
+                Iterating System Prompts
+            </nav>
+            <a href="../../../../" aria-label="The Vault — home"><img class="corner-logo" src="../../../../images/brand/vault-icon.svg" alt="The Vault"></a>
+        </div>
+
+        <div class="section-header">
+            <span class="eyebrow">Season 3 &middot; Context Engineering &middot; Episode 3</span>
+            <h1><span class="ep-big">S3E3</span> Iterating System Prompts</h1>
+            <p class="subtitle">Bring something you wrote, and leave with a version 2 that is genuinely better</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <div class="article">
+            <h2>What this lesson is about</h2>
+            <p>Building something is half the job. The other half is the cycle every developer, designer and engineer lives by: <strong>test → identify → fix → retest</strong>. Today you bring a system prompt you have already written, run it hard enough to find where it gives way, and rewrite it as a version 2. The coach you work with only asks questions. You find the gaps, and you write the new rules in your own words — which is the point, because a rule someone else wrote for you is one you cannot defend.</p>
+
+            <h2>What you'll be able to do</h2>
+            <ul>
+                <li>I can test my own system prompt and name at least three specific things it does not yet handle.</li>
+                <li>I can tell a specific improvement from a vague one — not "more detail" but exactly what is missing.</li>
+                <li>I can write a version 2 that addresses the gaps I found, and say what changed and why.</li>
+                <li>I can compare v1 and v2 on the same input and judge whether the change actually helped.</li>
+            </ul>
+
+            <h2>A little background</h2>
+            <p>The hard part is not rewriting. It is finding the gap worth rewriting for. "It could be better" is not a finding; "it never asks what format I want, so it always returns a paragraph when I wanted a list" is. A specific fault names the input that triggers it and the output it produces, which means you can check afterwards whether it is gone.</p>
+            <p>So the test that confirms your v2 is honest is simple: run v1 and v2 on the <em>same</em> input, and look at the two results side by side. If you cannot point at what changed, the rewrite was cosmetic. If you can, you have just done the thing this whole season is about — changing what the AI knows before it answers, rather than arguing with the answer afterwards.</p>
+        </div>
+
+        <div class="question-box">
+            What is the difference between an agent that is finished and one you have simply stopped improving?
+        </div>
+
+        <div class="gem-link">
+            <a class="gem-btn" href="https://gemini.google.com/gem/1-feUT8HEOu3tjkla8AinB5cRUOyjahcA" target="_blank" rel="noopener">Open the Gem &rarr;</a>
+            <p class="gem-note">Sign in with your St Leonards account to open this one.</p>
+        </div>
+
+        <div class="rule--full"></div>
+
+        <h2>Key words</h2>
+        <dl class="vocab">
+            <dt>System prompt</dt>
+            <dd>The standing instructions an assistant runs under, active before you type a word.</dd>
+            <dt>Iteration</dt>
+            <dd>One pass round the test-fix-retest loop. Version 2 is the artefact; iterating is the habit.</dd>
+            <dt>Specification</dt>
+            <dd>A description precise enough that you could check whether it was met.</dd>
+            <dt>Regression</dt>
+            <dd>When a fix for one thing quietly breaks another. Testing v1 and v2 on the same input is how you catch it.</dd>
+        </dl>
+
+        <nav class="ep-nav">
+            <a class="ep-nav-prev" href="../s3e2-rag/">
+                <span class="ep-nav-dir">&larr; Previous</span>
+                <span class="ep-nav-name">RAG</span>
+            </a>
+            <a class="ep-nav-next" href="../s3e4-the-extractor/">
+                <span class="ep-nav-dir">Next &rarr;</span>
+                <span class="ep-nav-name">The Extractor</span>
+            </a>
+        </nav>
+
+        <footer class="site-footer">AI Literacy Course &middot; Season 3 &middot; 2026</footer>
+
+    </div>
+</body>
+</html>
