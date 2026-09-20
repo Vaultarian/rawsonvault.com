@@ -101,16 +101,23 @@ ICON_KEY = _svg(
 # sheet, a reference page. The pencil would tell a student to write on it.
 ICON_DOC = _svg()
 
-# Video support. Same tag, a red play triangle where the pencil and the tick go,
-# so a video reads as a member of the same family rather than a foreign object
-# dropped on the row. Drawn twice like the others: a thick page-coloured stroke
-# knocks a gap out of the tag behind it, then the colour goes on top.
-_PLAY_D = "M14.4 14.9l8.0 4.3-8.0 4.3z"
-ICON_VIDEO = _svg(
-    f'<path d="{_PLAY_D}" fill="#fdfbf3" stroke="#fdfbf3" stroke-width="2.6"'
-    ' stroke-linejoin="round"/>',
-    f'<path d="{_PLAY_D}" fill="#c0392b" stroke="#c0392b" stroke-width="0.6"'
-    ' stroke-linejoin="round"/>')
+# Video support. The actual YouTube mark (same paths as images/third-party/
+# youtube.svg, used unwrapped by build_design_units.py's quick-start-video
+# column) rather than a play triangle inside the folder-tag -- a hand-drawn
+# triangle read as "unrelated red blob" more than it read as YouTube. No tag
+# badge here on purpose: the other icons are Vault documents wearing a
+# folder tag, a video is an external platform, and looking different says so.
+_YT_BODY_D = ("M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6"
+              "A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8"
+              "3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0"
+              "2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8z")
+_YT_PLAY_D = "M9.6 15.6 15.8 12 9.6 8.4z"
+ICON_VIDEO = (
+    '<svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" '
+    'aria-hidden="true" focusable="false">'
+    f'<path fill="#FF0000" d="{_YT_BODY_D}"/>'
+    f'<path fill="#FFFFFF" d="{_YT_PLAY_D}"/>'
+    '</svg>')
 
 # A video gets an icon row next to the handout; every other external link stays
 # a pill below. The split is deliberate -- a video is lesson material a student
@@ -118,17 +125,20 @@ ICON_VIDEO = _svg(
 # site is a place to go, and the two should not look identical.
 VIDEO_URL = re.compile(r"(youtube\.com/|youtu\.be/|vimeo\.com/)", re.I)
 
-# Slides: a small screen with two text bars, in violet so it doesn't collide
-# with the sheet/key/video red-green-red palette. For a <stem>-slides.pdf
-# published alongside that stem's worksheet -- see SLIDES_SUFFIX below.
-ICON_SLIDES = _svg(
-    '<rect x="12.8" y="13.7" width="8.4" height="6.4" rx="1" fill="#fdfbf3"'
-    ' stroke="#fdfbf3" stroke-width="2.4"/>',
-    '<rect x="12.8" y="13.7" width="8.4" height="6.4" rx="1" fill="#f4f0fb"'
-    ' stroke="#6a4fb0" stroke-width="1.3"/>',
-    '<rect x="14.2" y="15.3" width="5.6" height="1.15" rx="0.55" fill="#6a4fb0"/>',
-    '<rect x="14.2" y="17.2" width="3.7" height="0.95" rx="0.47" fill="#6a4fb0"'
-    ' opacity="0.55"/>')
+# Slides: the real Google Slides mark (same path as images/third-party/
+# google-slides.svg) -- code.org's teacher decks are Slides ("Make a Copy"),
+# not PowerPoint, and a single-colour single-path icon has no gradient/id to
+# collide with itself when a page inlines it several times over. Unwrapped,
+# same reasoning as ICON_VIDEO: an external platform, not a Vault document.
+_SLIDES_D = ("M16.09 15.273H7.91v-4.637h8.18v4.637zm1.728-8.523h2.91v15.614"
+             "c0 .904-.733 1.636-1.637 1.636H4.909a1.636 1.636 0 0 1-1.636"
+             "-1.636V1.636C3.273.732 4.005 0 4.909 0h9.068v6.75h3.841zm-.363"
+             "2.523H6.545v7.363h10.91V9.273zm-2.728-5.979V6h6.001l-6-6v3.294z")
+ICON_SLIDES = (
+    '<svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" '
+    'aria-hidden="true" focusable="false">'
+    f'<path fill="#FBBC04" d="{_SLIDES_D}"/>'
+    '</svg>')
 SLIDES_SUFFIX = "-slides"
 
 # Reference material -- read, not written on. Everything else gets the pencil,
