@@ -108,8 +108,8 @@ ICON_DOC = _svg()
 # badge here on purpose: the other icons are Vault documents wearing a
 # folder tag, a video is an external platform, and looking different says so.
 _YT_BODY_D = ("M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6"
-              "A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8"
-              "3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0"
+              "A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 "
+              "3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 "
               "2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8z")
 _YT_PLAY_D = "M9.6 15.6 15.8 12 9.6 8.4z"
 ICON_VIDEO = (
