@@ -118,6 +118,19 @@ ICON_VIDEO = _svg(
 # site is a place to go, and the two should not look identical.
 VIDEO_URL = re.compile(r"(youtube\.com/|youtu\.be/|vimeo\.com/)", re.I)
 
+# Slides: a small screen with two text bars, in violet so it doesn't collide
+# with the sheet/key/video red-green-red palette. For a <stem>-slides.pdf
+# published alongside that stem's worksheet -- see SLIDES_SUFFIX below.
+ICON_SLIDES = _svg(
+    '<rect x="12.8" y="13.7" width="8.4" height="6.4" rx="1" fill="#fdfbf3"'
+    ' stroke="#fdfbf3" stroke-width="2.4"/>',
+    '<rect x="12.8" y="13.7" width="8.4" height="6.4" rx="1" fill="#f4f0fb"'
+    ' stroke="#6a4fb0" stroke-width="1.3"/>',
+    '<rect x="14.2" y="15.3" width="5.6" height="1.15" rx="0.55" fill="#6a4fb0"/>',
+    '<rect x="14.2" y="17.2" width="3.7" height="0.95" rx="0.47" fill="#6a4fb0"'
+    ' opacity="0.55"/>')
+SLIDES_SUFFIX = "-slides"
+
 # Reference material -- read, not written on. Everything else gets the pencil,
 # because listing what a student writes on turns out to be the longer and
 # leakier list: it missed "Colour Perception -- Beau Lotto worksheet" and
@@ -635,38 +648,51 @@ def render_class(name, subtitle, weeks):
             webs = [(u, lbl) for u, lbl in en.get("links", [])
                     if not VIDEO_URL.search(u)]
             if en["docs"] or vids:
-                parts = []
+                # Group by label, not by item. Two Publish: entries that share
+                # the EXACT same label text land on one row with both icons,
+                # in the order they were listed -- this is how a lesson gets
+                # a worksheet, a slides, and a video icon on a single line
+                # instead of three. A label used only once still gets its own
+                # row exactly as before, so every existing class page renders
+                # unchanged. Added 2026-09-20 for the Design 9A L6-10 catch-up.
+                row_order, row_icons = [], {}
+
+                def _add(lbl, icon_html):
+                    if lbl not in row_icons:
+                        row_icons[lbl] = ""
+                        row_order.append(lbl)
+                    row_icons[lbl] += icon_html
+
                 for lbl, sheet, key in pair_docs(en["docs"]):
-                    icons = ""
                     # A row with an answer key is a worksheet by definition.
                     # Otherwise test the label AND the filename -- Alex's
                     # labels often say "worksheet" where the filename does not.
                     written = bool(key) or not REFERENCE.search(
                         f"{lbl} {sheet[0].name}" if sheet else lbl)
+                    sheet_icon, sheet_what = (
+                        (ICON_SLIDES, "Slides")
+                        if sheet and sheet[0].stem.endswith(SLIDES_SUFFIX) else
+                        (ICON_SHEET, "Worksheet") if written else
+                        (ICON_DOC, "Document"))
                     for slot, icon, what in (
-                            (sheet, ICON_SHEET if written else ICON_DOC,
-                             "Worksheet" if written else "Document"),
+                            (sheet, sheet_icon, sheet_what),
                             (key, ICON_KEY, "Answer key")):
                         if not slot:
                             continue
                         p, n = slot
                         tip = f"{what} — {n}pp" if n else what
-                        icons += (f'<a class="doc-link" href="files/{e(p.name)}"'
+                        _add(lbl, f'<a class="doc-link" href="files/{e(p.name)}"'
                                   f' title="{e(tip)}" aria-label="{e(lbl)} —'
                                   f' {e(tip)}">{icon}</a>')
-                    parts.append(f'<div class="doc-row">'
-                                 f'<span class="doc-name">{e(lbl)}</span>'
-                                 f'<span class="doc-icons">{icons}</span></div>')
                 for u, lbl in vids:
-                    parts.append(
-                        f'<div class="doc-row">'
-                        f'<span class="doc-name">{e(lbl)}</span>'
-                        f'<span class="doc-icons">'
-                        f'<a class="doc-link" href="{e(u)}" target="_blank"'
-                        f' rel="noopener noreferrer" title="Video"'
-                        f' aria-label="{e(lbl)} — video">{ICON_VIDEO}</a>'
-                        f'</span></div>')
-                docs = "".join(parts)
+                    _add(lbl, f'<a class="doc-link" href="{e(u)}" target="_blank"'
+                              f' rel="noopener noreferrer" title="Video"'
+                              f' aria-label="{e(lbl)} — video">{ICON_VIDEO}</a>')
+
+                docs = "".join(
+                    f'<div class="doc-row"><span class="doc-name">{e(lbl)}</span>'
+                    f'<span class="doc-icons">{row_icons[lbl]}</span></div>'
+                    for lbl in row_order)
             else:
                 docs = ""
             if webs:
