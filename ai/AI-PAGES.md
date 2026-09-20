@@ -245,8 +245,8 @@ Collaboration Level 0 — paper, scissors, no AI in the room, by design. Its
 
 The 19 pages are generated rather than hand-written, from a manifest holding one
 row per page — title, subtitle, Gem id, the question, the key words, and the
-prev/next chain. The generator is `$CLAUDE_JOB_DIR/tmp/build_pages.py` from the
-2026-09-20 build; **the manifest is the part worth keeping**, because it is what
+prev/next chain. The generator is `_build/ai/build_pages.py`, with the manifest
+beside it in `_build/ai/manifest.py`; **the manifest is the part worth keeping**, because it is what
 makes "add a component to every page" a one-line change instead of nineteen
 edits. The two rich Season 4 pages are *patched* rather than regenerated, so
 their bespoke markup — the hero, the verified embed, the data chart, the debate
