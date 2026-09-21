@@ -54,6 +54,16 @@ body {
   perspective: 900px;
 }
 
+/* --- the fal.ai clips: they fill the screen behind everything --- */
+.clip {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
 /* --- the orange orb that falls in --- */
 #orb {
   position: absolute;
@@ -98,6 +108,7 @@ body {
 
 /* --- RAWSON VAULT --- */
 #brand {
+  z-index: 5;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -154,25 +165,27 @@ body {
 
 /* the title */
 #title {
-  position: relative;
+  /* Size and position are worked out in JS from the video's real
+     rectangle — see placeTitle(). Guessing them in percentages went
+     wrong twice, because `object-fit: cover` crops the clip by an
+     amount that depends on the window shape. */
+  position: absolute;
   z-index: 5;
-  margin-bottom: 8%;
+  margin: 0;
+  white-space: nowrap;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: clamp(38px, 9vw, 104px);
+  line-height: 1;
   letter-spacing: .02em;
   color: #1f6b2a;
-  text-shadow: 0 4px 0 #145121, 0 6px 16px rgba(0,0,0,.28);
-}
-#title span {
-  display: inline-block;
   opacity: 0;
-  transform: translateY(70px) scale(.4);
-  transition: opacity 500ms ease, transform 620ms cubic-bezier(.2,1.5,.4,1);
+  transition: opacity 220ms ease;
 }
-#title span.up { opacity: 1; transform: translateY(0) scale(1); }
+#title.on { opacity: 1; }
 
 /* the play button */
 #play {
+  z-index: 5;          /* in front of the forest clip */
   position: absolute;
   bottom: 9%;
   padding: 16px 52px;
@@ -195,6 +208,7 @@ body {
 
 /* the little "click to skip" hint */
 #skip {
+  z-index: 9;
   position: absolute;
   right: 18px;
   bottom: 14px;
@@ -209,18 +223,18 @@ body {
 
 <!-- ============ SCREEN 1 ============ -->
 <div class="screen" id="screen1">
+  <video id="clip1" class="clip" src="video/intro-logo.mp4"
+         muted playsinline preload="auto"></video>
   <div class="stage">
-    <div id="orb"></div>
-    <div id="ring"></div>
-    <img id="logo" src="vault-icon.png" alt="Rawson Vault">
     <div id="brand"></div>
   </div>
 </div>
 
 <!-- ============ SCREEN 2 ============ -->
 <div class="screen" id="screen2">
-  <div id="soil"></div>
-  <h1 id="title"></h1>
+  <video id="clip2" class="clip" src="video/intro-forest.mp4"
+         muted playsinline preload="auto"></video>
+  <h1 id="title">SEASONALITY!</h1>
   <button id="play">PLAY</button>
 </div>
 
@@ -233,24 +247,18 @@ body {
    Every number is milliseconds from the start of the intro.
    ============================================================ */
 const T = {
-  screen1On:   200,
-  orbFall:     400,    // orb starts falling
-  orbLand:    1400,    // orb reaches the middle
-  morph:      1600,    // orb stretches into a ring
-  toLogo:     2500,    // ring turns into the real logo
-  brand:      2900,    // RAWSON VAULT letters come up
-  screen1Off: 5000,
-  screen2On:  5500,
-  trees:      5700,    // the forest starts growing
-  titleUp:    7100,    // SEASONALITY! rises out of the ground
-  playBtn:    8600
+  screen1On:   200,    /* the logo clip starts */
+  brand:      6100,    /* RAWSON VAULT comes up, drawn in code so it is sharp */
+  screen1Off: 8500,
+  screen2On:  9000     /* the forest clip starts */
+  /* titleUp and playBtn are gone: both now fire off the clip's own
+     'ended' event, so they cannot drift out of step with it. */
 };
 
-const orb   = document.getElementById('orb');
-const ring  = document.getElementById('ring');
-const logo  = document.getElementById('logo');
-const brand = document.getElementById('brand');
 const title = document.getElementById('title');
+const clip1 = document.getElementById('clip1');
+const clip2 = document.getElementById('clip2');
+const brand = document.getElementById('brand');
 const play  = document.getElementById('play');
 
 /* --- put each letter in its own <span> so we can animate them one by one --- */
@@ -264,7 +272,8 @@ function letters(box, text) {
   return box.querySelectorAll('span');
 }
 const brandLetters = letters(brand, 'RAWSON VAULT');
-const titleLetters = letters(title, 'SEASONALITY!');
+/* The title is one solid piece of text now, not separate letters — it has
+   to line up exactly with the one in the video, so it cannot animate in. */
 
 
 /* ============================================================
@@ -298,15 +307,9 @@ function makeTree(x, size, kind) {
   return el;
 }
 
-const forest = [
-  makeTree(8,  70,  'pine'),
-  makeTree(20, 100, 'round'),
-  makeTree(33, 62,  'round'),
-  makeTree(48, 120, 'pine'),   /* the big willow in the middle */
-  makeTree(63, 66,  'round'),
-  makeTree(76, 104, 'pine'),
-  makeTree(90, 74,  'round')
-];
+/* The trees used to be drawn here in CSS. They are inside
+   video/intro-forest.mp4 now, so this list is deliberately empty. */
+const forest = [];
 
 
 /* ============================================================
@@ -316,52 +319,12 @@ const timers = [];
 function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
 
 /* --- SCREEN 1 --- */
-at(T.screen1On, () => document.getElementById('screen1').classList.add('on'));
-
-at(T.orbFall, () => {
-  orb.style.transition = 'none';
-  orb.style.transform  = 'translateY(-46vh)';
-  orb.style.opacity    = '1';
-  /* next frame, let it fall */
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    orb.style.transition = `transform ${T.orbLand - T.orbFall}ms cubic-bezier(.5,0,.85,.4)`;
-    orb.style.transform  = 'translateY(0)';
-  }));
+at(T.screen1On, () => {
+  document.getElementById('screen1').classList.add('on');
+  clip1.currentTime = 0;
+  clip1.play();
 });
 
-/* squash when it lands */
-at(T.orbLand, () => {
-  orb.style.transition = 'transform 130ms ease-out';
-  orb.style.transform  = 'scale(1.35, .62)';
-});
-at(T.orbLand + 130, () => {
-  orb.style.transition = 'transform 120ms ease-in-out';
-  orb.style.transform  = 'scale(.9, 1.15)';
-});
-
-/* the orb stretches and spins out into a ring */
-at(T.morph, () => {
-  orb.style.transition = 'transform 500ms ease-in, opacity 500ms ease-in';
-  orb.style.transform  = 'scale(2.6, 2.6)';
-  orb.style.opacity    = '0';
-
-  ring.style.transition = 'transform 900ms cubic-bezier(.3,.9,.3,1), opacity 300ms ease';
-  ring.style.opacity    = '1';
-  ring.style.transform  = 'scale(1) rotateX(18deg) rotateZ(0deg)';
-});
-
-/* the ring becomes the real Mobius strip */
-at(T.toLogo, () => {
-  ring.style.transition = 'opacity 500ms ease, transform 700ms ease';
-  ring.style.opacity    = '0';
-  ring.style.transform  = 'scale(1.06) rotateX(14deg) rotateZ(6deg)';
-
-  logo.style.transition = 'opacity 600ms ease, transform 900ms cubic-bezier(.2,1.3,.4,1)';
-  logo.style.opacity    = '1';
-  logo.style.transform  = 'scale(1) rotateZ(0deg)';
-});
-
-/* RAWSON VAULT, one letter at a time */
 at(T.brand, () => {
   brandLetters.forEach((s, i) => {
     setTimeout(() => {
@@ -377,19 +340,54 @@ at(T.screen1Off, () => document.getElementById('screen1').classList.remove('on')
 at(T.screen2On,  () => document.getElementById('screen2').classList.add('on'));
 
 /* --- SCREEN 2 --- */
-at(T.trees, () => {
-  forest.forEach((tree, i) => {
-    setTimeout(() => tree.classList.add('grown'), i * 150);
-  });
+at(T.screen2On + 40, () => {
+  clip2.currentTime = 0;
+  clip2.play();
 });
 
-at(T.titleUp, () => {
-  titleLetters.forEach((s, i) => {
-    setTimeout(() => s.classList.add('up'), i * 90);
-  });
+/* ------------------------------------------------------------------
+   Put the crisp title exactly where the blurry one is.
+
+   frame5-title.png was drawn at 1280x720 with the text 104px tall and
+   its top edge 13% down. The clip is shown with `object-fit: cover`,
+   which scales it up and crops the overflow — so we work out that same
+   scale here and apply it, instead of guessing percentages.
+   ------------------------------------------------------------------ */
+const TITLE_PX   = 104;     /* font size in the original 1280x720 frame */
+const TITLE_TOP  = 0.13;    /* top edge, as a fraction of frame height  */
+
+function placeTitle() {
+  const vw = clip2.videoWidth  || 1280;
+  const vh = clip2.videoHeight || 720;
+  const r  = clip2.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+
+  const scale = Math.max(r.width / vw, r.height / vh);   /* object-fit: cover */
+  const drawnH = vh * scale;
+  const topOfFrame = r.top + (r.height - drawnH) / 2;
+
+  title.style.fontSize  = (TITLE_PX * scale) + 'px';
+  title.style.top       = (topOfFrame + TITLE_TOP * vh * scale) + 'px';
+  title.style.left      = '50%';
+  title.style.transform = 'translateX(-50%)';
+  title.style.textShadow =
+    `0 ${4 * scale}px 0 #145121, 0 ${6 * scale}px ${16 * scale}px rgba(0,0,0,.28)`;
+}
+
+clip2.addEventListener('loadedmetadata', placeTitle);
+window.addEventListener('resize', placeTitle);
+
+/* The clip's own title is still growing right up to the last frame, so
+   the sharp one waits for the video to actually finish. No guessed
+   timestamp — the video says when. */
+clip2.addEventListener('ended', () => {
+  placeTitle();
+  placeTitle();
+  title.classList.add('on');
 });
 
-at(T.playBtn, () => play.classList.add('on'));
+/* PLAY comes up just after the title settles. */
+clip2.addEventListener('ended', () => setTimeout(() => play.classList.add('on'), 700));
 
 
 /* ============================================================
@@ -399,8 +397,16 @@ function skipIntro() {
   timers.forEach(clearTimeout);
   document.getElementById('screen1').classList.remove('on');
   document.getElementById('screen2').classList.add('on');
-  forest.forEach(t => t.classList.add('grown'));
-  titleLetters.forEach(s => s.classList.add('up'));
+  clip1.pause();
+  clip2.play();
+  /* jump to the end so the finished forest is showing */
+  clip2.addEventListener('loadedmetadata', () => {
+    clip2.currentTime = Math.max(0, clip2.duration - 0.05);
+  }, { once: true });
+  if (clip2.readyState >= 1) clip2.currentTime = Math.max(0, clip2.duration - 0.05);
+  clip2.pause();
+  placeTitle();
+  title.classList.add('on');
   play.classList.add('on');
   document.getElementById('skip').style.display = 'none';
 }
