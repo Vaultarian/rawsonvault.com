@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Representation of Sound — §1.2 — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.95rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .lede, .steps li { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.6; }
+        .steps { margin: var(--gap-sm) 0 var(--gap-md) 1.2em; }
+        .snd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--gap-sm); margin: var(--gap-sm) 0; }
+        .snd-card { border: 1px solid #e4ddd0; background: #fffdf9; padding: var(--gap-sm); }
+        .snd-label { font-family: var(--font-ui, Inter, sans-serif); font-weight: 600; font-size: 0.88rem; color: var(--bronze-dark); margin-bottom: 0.4em; }
+        .snd-card audio { width: 100%; }
+        .snd-facts, .snd-note { font-family: var(--font-body); font-size: 0.82rem; color: var(--gray-dark); margin: 0.4em 0; line-height: 1.5; }
+        .snd-note { color: #8a8378; font-style: italic; }
+        .snd-check { font-family: var(--font-body); font-size: 0.82rem; margin: 0.4em 0; }
+        .snd-check summary { cursor: pointer; color: var(--bronze-dark); }
+        .snd-dl { font-family: var(--font-ui, Inter, sans-serif); font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Computer Science</a><span>·</span>
+            <a href="../../">GCSE CS</a><span>·</span>
+            <a href="../">§1.2 Memory and Storage</a><span>·</span>
+            Data Representation of Sound
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">OCR J277 · §1.2.4 · Sound</span>
+            <h1>Data Representation of Sound</h1>
+            <p class="subtitle">Real sound files you can hear, and whose size you can calculate to the exact byte.</p>
+        </div>
+        <div class="rule--full"></div>
+
+        <h2>The idea</h2>
+        <p class="lede">Every sound below is a real file, stored as a <strong>WAV</strong>. A WAV stores every
+        sample with no compression, plus a <strong>44-byte header</strong> at the front: the metadata that
+        records the sample rate, the bit depth and the length. That header is always 44 bytes.</p>
+        <div class="eq-box">file size (bytes) = sample rate × seconds × bit depth ÷ 8 + 44</div>
+
+        <h2>Check it yourself</h2>
+        <ol class="steps">
+            <li>Work out the file size in bytes with the formula, before you look.</li>
+            <li>Download the file with the link under the player (or the player's ⋮ menu, then <strong>Download</strong>).</li>
+            <li>Find the saved file. On Windows, right-click it and choose <strong>Properties</strong>: the <em>Size</em> line shows the exact number of bytes.</li>
+            <li>Open <strong>Check your answer</strong> and compare all three numbers.</li>
+        </ol>
+        <p class="lede">Use headphones if the room is busy.</p>
+
+        <h2>The tune: sample rate</h2>
+        <p class="lede">Ode to Joy, 6 seconds, 16 bits per sample every time. Only the sample rate changes. Listen from the top down: the notes lose their brightness, and at 4,000 Hz some of them come out wrong, because the wave is not being measured often enough to follow it.</p>
+        <div class="snd-grid">
+<div class="snd-card">
+  <div class="snd-label">44,100 Hz (CD quality)</div>
+  <audio controls preload="none" src="files/tune-44100hz-16bit.wav"></audio>
+  <div class="snd-facts">44,100 samples per second · 16 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>44,100 × 6 × 16 ÷ 8 = <strong>529,200</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>529,244 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-44100hz-16bit.wav" download>Download tune-44100hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">22,050 Hz</div>
+  <audio controls preload="none" src="files/tune-22050hz-16bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 16 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 6 × 16 ÷ 8 = <strong>264,600</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>264,644 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-22050hz-16bit.wav" download>Download tune-22050hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">11,025 Hz</div>
+  <audio controls preload="none" src="files/tune-11025hz-16bit.wav"></audio>
+  <div class="snd-facts">11,025 samples per second · 16 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>11,025 × 6 × 16 ÷ 8 = <strong>132,300</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>132,344 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-11025hz-16bit.wav" download>Download tune-11025hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">8,000 Hz</div>
+  <audio controls preload="none" src="files/tune-8000hz-16bit.wav"></audio>
+  <div class="snd-facts">8,000 samples per second · 16 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>8,000 × 6 × 16 ÷ 8 = <strong>96,000</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>96,044 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-8000hz-16bit.wav" download>Download tune-8000hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">4,000 Hz</div>
+  <audio controls preload="none" src="files/tune-4000hz-16bit.wav"></audio>
+  <div class="snd-facts">4,000 samples per second · 16 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>4,000 × 6 × 16 ÷ 8 = <strong>48,000</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>48,044 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-4000hz-16bit.wav" download>Download tune-4000hz-16bit.wav</a>
+</div>
+        </div>
+        <p class="diagram-credit">Ode to Joy, Ludwig van Beethoven (1824, public domain). Synthesised in code for this page by Mr Rawson.</p>
+        <h2>The tune: bit depth</h2>
+        <p class="lede">Now the sample rate stays at 22,050 Hz and the bit depth changes. Fewer bits means fewer heights to round each sample to. Listen for a hiss that grows as the notes fade away.</p>
+        <div class="snd-grid">
+<div class="snd-card">
+  <div class="snd-label">16-bit · 65,536 levels</div>
+  <audio controls preload="none" src="files/tune-22050hz-16bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 16 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 6 × 16 ÷ 8 = <strong>264,600</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>264,644 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-22050hz-16bit.wav" download>Download tune-22050hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">8-bit · 256 levels</div>
+  <audio controls preload="none" src="files/tune-22050hz-8bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 8 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 6 × 8 ÷ 8 = <strong>132,300</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>132,344 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-22050hz-8bit.wav" download>Download tune-22050hz-8bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">Sounds like 4-bit · 16 levels</div>
+  <audio controls preload="none" src="files/tune-22050hz-sounds-4bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 8 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div><div class="snd-note">Rounded to 16 levels, but stored with 8 bits per sample, because browsers only play 8- and 16-bit sound.</div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 6 × 8 ÷ 8 = <strong>132,300</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>132,344 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-22050hz-sounds-4bit.wav" download>Download tune-22050hz-sounds-4bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">Sounds like 2-bit · 4 levels</div>
+  <audio controls preload="none" src="files/tune-22050hz-sounds-2bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 8 bits per sample · 6 seconds<br>
+  <strong>Header: 44 bytes</strong></div><div class="snd-note">Rounded to 4 levels, but stored with 8 bits per sample, because browsers only play 8- and 16-bit sound.</div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 6 × 8 ÷ 8 = <strong>132,300</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>132,344 bytes</strong></p></details>
+  <a class="snd-dl" href="files/tune-22050hz-sounds-2bit.wav" download>Download tune-22050hz-sounds-2bit.wav</a>
+</div>
+        </div>
+        <p class="diagram-credit">Ode to Joy, Ludwig van Beethoven (1824, public domain). Synthesised in code for this page by Mr Rawson.</p>
+        <h2>A voice: sample rate</h2>
+        <p class="lede">The same sentence, 4 seconds, 16 bits per sample. Speech stays understandable a long way down, which is why phone calls use a low sample rate, but listen to how the s sounds disappear.</p>
+        <div class="snd-grid">
+<div class="snd-card">
+  <div class="snd-label">22,050 Hz</div>
+  <audio controls preload="none" src="files/voice-alfred-22050hz-16bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 16 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 4 × 16 ÷ 8 = <strong>176,400</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>176,444 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-22050hz-16bit.wav" download>Download voice-alfred-22050hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">11,025 Hz</div>
+  <audio controls preload="none" src="files/voice-alfred-11025hz-16bit.wav"></audio>
+  <div class="snd-facts">11,025 samples per second · 16 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>11,025 × 4 × 16 ÷ 8 = <strong>88,200</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>88,244 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-11025hz-16bit.wav" download>Download voice-alfred-11025hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">8,000 Hz (phone call)</div>
+  <audio controls preload="none" src="files/voice-alfred-8000hz-16bit.wav"></audio>
+  <div class="snd-facts">8,000 samples per second · 16 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>8,000 × 4 × 16 ÷ 8 = <strong>64,000</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>64,044 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-8000hz-16bit.wav" download>Download voice-alfred-8000hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">4,000 Hz</div>
+  <audio controls preload="none" src="files/voice-alfred-4000hz-16bit.wav"></audio>
+  <div class="snd-facts">4,000 samples per second · 16 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>4,000 × 4 × 16 ÷ 8 = <strong>32,000</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>32,044 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-4000hz-16bit.wav" download>Download voice-alfred-4000hz-16bit.wav</a>
+</div>
+        </div>
+        <p class="diagram-credit">Voice: speaker 76 of the <a href="https://datashare.ed.ac.uk/handle/10283/3443">VCTK corpus</a>, Centre for Speech Technology Research, University of Edinburgh, used under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Spoken by the open-source <a href="https://github.com/rhasspy/piper">Piper</a> text-to-speech on Mr Rawson's computer.</p>
+        <h2>A voice: bit depth</h2>
+        <p class="lede">The same sentence at 22,050 Hz, with the bit depth changing.</p>
+        <div class="snd-grid">
+<div class="snd-card">
+  <div class="snd-label">16-bit · 65,536 levels</div>
+  <audio controls preload="none" src="files/voice-alfred-22050hz-16bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 16 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 4 × 16 ÷ 8 = <strong>176,400</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>176,444 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-22050hz-16bit.wav" download>Download voice-alfred-22050hz-16bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">8-bit · 256 levels</div>
+  <audio controls preload="none" src="files/voice-alfred-22050hz-8bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 8 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 4 × 8 ÷ 8 = <strong>88,200</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>88,244 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-22050hz-8bit.wav" download>Download voice-alfred-22050hz-8bit.wav</a>
+</div>
+<div class="snd-card">
+  <div class="snd-label">Sounds like 4-bit · 16 levels</div>
+  <audio controls preload="none" src="files/voice-alfred-22050hz-sounds-4bit.wav"></audio>
+  <div class="snd-facts">22,050 samples per second · 8 bits per sample · 4 seconds<br>
+  <strong>Header: 44 bytes</strong></div><div class="snd-note">Rounded to 16 levels, but stored with 8 bits per sample, because browsers only play 8- and 16-bit sound.</div>
+  <details class="snd-check"><summary>Check your answer</summary>
+  <p>22,050 × 4 × 8 ÷ 8 = <strong>88,200</strong> bytes of samples<br>
+  + 44 bytes of header<br>= <strong>88,244 bytes</strong></p></details>
+  <a class="snd-dl" href="files/voice-alfred-22050hz-sounds-4bit.wav" download>Download voice-alfred-22050hz-sounds-4bit.wav</a>
+</div>
+        </div>
+        <p class="diagram-credit">Voice: speaker 76 of the <a href="https://datashare.ed.ac.uk/handle/10283/3443">VCTK corpus</a>, Centre for Speech Technology Research, University of Edinburgh, used under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Spoken by the open-source <a href="https://github.com/rhasspy/piper">Piper</a> text-to-speech on Mr Rawson's computer.</p>
+        <div class="rule--full"></div>
+        <p class="lede"><a href="../data-representation-images/">Data Representation of Images →</a></p>
+        <p class="lede"><a href="../">← Back to §1.2 Memory and Storage</a></p>
+    </div>
+</body>
+</html>
