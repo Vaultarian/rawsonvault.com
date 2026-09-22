@@ -14,6 +14,15 @@
         .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
         .hl-ext { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); border: 1px solid var(--gray-light); border-radius: var(--radius); padding: 1px 5px; margin-right: 4px; }
         .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        html { scroll-behavior: smooth; }
+        .review-item { scroll-margin-top: var(--gap-md); }
+        .toc { background: #fdf9f4; border: 1px solid #f0ece4; border-radius: var(--radius); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0 var(--gap-lg); }
+        .toc-label { font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); margin: 0 0 var(--gap-xs); }
+        .toc ol { list-style: none; margin: 0; padding: 0; }
+        .toc li { font-family: var(--font-body); font-size: 0.9rem; line-height: 1.5; padding: 3px 0; }
+        .toc a { color: var(--gray-dark); text-decoration: none; border-bottom: 1px solid transparent; }
+        .toc a:hover { color: var(--bronze-light); border-bottom-color: var(--bronze-light); }
+        .toc .hl-ext { margin-left: 6px; }
         .review-item { margin: var(--gap-lg) 0; }
         .review-item p { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65; margin: var(--gap-xs) 0; }
         .worked { background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; }
@@ -38,6 +47,21 @@
             <p class="subtitle">What makes the harmonic oscillator model applicable to such a wide range of phenomena?</p>
         </div>
         <div class="rule--full"></div>
+        <nav class="toc" aria-label="Review contents">
+            <p class="toc-label">Review · jump to a point</p>
+            <ol>
+                <li><a href="#review-1">1 · Conditions that lead to simple harmonic motion</a></li>
+                <li><a href="#review-2">2 · The defining equation: a = −ω²x</a></li>
+                <li><a href="#review-3">3 · Describing an oscillation</a></li>
+                <li><a href="#review-4">4 · T = 1/f = 2π/ω</a></li>
+                <li><a href="#review-5">5 · Mass–spring system: T = 2π√(m/k)</a></li>
+                <li><a href="#review-6">6 · Simple pendulum: T = 2π√(l/g)</a></li>
+                <li><a href="#review-7">7 · Energy changes during one cycle</a></li>
+                <li><a href="#review-8">8 · Phase angle <span class="hl-ext">HL</span></a></li>
+                <li><a href="#review-9">9 · Solving problems with the SHM equations <span class="hl-ext">HL</span></a></li>
+                <li><a href="#review-10">10 · Energy, calculated <span class="hl-ext">HL</span></a></li>
+            </ol>
+        </nav>
         <div class="article">
             <p>Simple harmonic motion (SHM) is the physics of restoring forces. Whenever a displaced body experiences a force directed back towards its equilibrium position, and that force is proportional to the displacement, the body will oscillate sinusoidally. The defining equation <em>a = −ω²x</em> encodes both conditions: the negative sign means restoring (back towards equilibrium), and the proportionality means the oscillation is mathematically simple enough to solve exactly.</p>
             <p>The model is powerful because it appears everywhere: a mass on a spring, a pendulum for small angles, a charged particle in a parabolic potential, an atom vibrating in a crystal lattice, a current oscillating in an LC circuit. Once you know SHM, you know the shape of all these motions.</p>
