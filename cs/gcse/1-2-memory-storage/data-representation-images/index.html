@@ -53,6 +53,11 @@
         <p class="lede">Every BMP starts with a <strong>54-byte header</strong> holding the width, height,
         colour depth and file size. Up to 8-bit, it also stores a <strong>colour table</strong>: the colour
         index, 4 bytes for every colour available. At 24-bit each pixel stores its own colour, so there is no table.</p>
+        <p class="lede">A colour table can be <strong>picked for the picture</strong>, choosing the best colours
+        for that image, or it can be a <strong>standard table</strong> shared by every picture. The emoji below
+        uses a picked table. The eye and the sunset use the standard 8-bit table, which has 8 reds × 8 greens ×
+        4 blues, as early computers and the early web did. Either way the table holds 256 colours, so the
+        metadata is the same size.</p>
         <table class="meta-table">
             <tr><th>Colour depth</th><th>Header</th><th>Colour table</th><th>Metadata</th></tr>
             <tr><td>1-bit (2 colours)</td><td>54</td><td>2 × 4 = 8</td><td><strong>62 bytes</strong></td></tr>
@@ -115,53 +120,53 @@
 </div>
         </div>
         <p class="diagram-credit">Drawn in code for this page by Mr Rawson.</p>
-        <h2>An eye, 32 × 32</h2>
-        <p class="lede">A photograph holds hundreds of different colours. At 4-bit there are only 16 to go round, so the green iris is lost; at 8-bit it comes back, and 24-bit adds the finest shading.</p>
+        <h2>An eye, 64 × 64</h2>
+        <p class="lede">A photograph holds thousands of different colours. At 4-bit there are only 16 to go round, so the green iris turns grey. The 8-bit version uses the standard 256-colour table, which brings the green back but turns the skin blotchy. At 24-bit every pixel stores its own exact colour, so the skin is smooth again.</p>
         <div class="depth-grid">
 <div class="depth-card">
   <div class="depth-label">1-bit · 2 colours</div>
-  <img class="exact" src="files/eye-32x32-1bit.bmp" width="32" height="32" alt="eye-32x32 at 1-bit colour depth">
-  <div class="depth-facts">32 × 32 pixels · 1 bit per pixel<br>
+  <img class="exact" src="files/eye-64x64-1bit.bmp" width="64" height="64" alt="eye-64x64 at 1-bit colour depth">
+  <div class="depth-facts">64 × 64 pixels · 1 bit per pixel<br>
   <strong>Metadata: 62 bytes</strong> <span class="muted">(54 header + 8 colour table)</span></div>
   <details class="depth-check"><summary>Check your answer</summary>
-  <p>32 × 32 × 1 ÷ 8 = <strong>128</strong> bytes of pixels<br>
-  + 62 bytes of metadata<br>= <strong>190 bytes</strong></p></details>
-  <a class="depth-dl" href="files/eye-32x32-1bit.bmp" download>Download eye-32x32-1bit.bmp</a>
+  <p>64 × 64 × 1 ÷ 8 = <strong>512</strong> bytes of pixels<br>
+  + 62 bytes of metadata<br>= <strong>574 bytes</strong></p></details>
+  <a class="depth-dl" href="files/eye-64x64-1bit.bmp" download>Download eye-64x64-1bit.bmp</a>
 </div>
 <div class="depth-card">
   <div class="depth-label">4-bit · 16 colours</div>
-  <img class="exact" src="files/eye-32x32-4bit.bmp" width="32" height="32" alt="eye-32x32 at 4-bit colour depth">
-  <div class="depth-facts">32 × 32 pixels · 4 bits per pixel<br>
+  <img class="exact" src="files/eye-64x64-4bit.bmp" width="64" height="64" alt="eye-64x64 at 4-bit colour depth">
+  <div class="depth-facts">64 × 64 pixels · 4 bits per pixel<br>
   <strong>Metadata: 118 bytes</strong> <span class="muted">(54 header + 64 colour table)</span></div>
   <details class="depth-check"><summary>Check your answer</summary>
-  <p>32 × 32 × 4 ÷ 8 = <strong>512</strong> bytes of pixels<br>
-  + 118 bytes of metadata<br>= <strong>630 bytes</strong></p></details>
-  <a class="depth-dl" href="files/eye-32x32-4bit.bmp" download>Download eye-32x32-4bit.bmp</a>
+  <p>64 × 64 × 4 ÷ 8 = <strong>2,048</strong> bytes of pixels<br>
+  + 118 bytes of metadata<br>= <strong>2,166 bytes</strong></p></details>
+  <a class="depth-dl" href="files/eye-64x64-4bit.bmp" download>Download eye-64x64-4bit.bmp</a>
 </div>
 <div class="depth-card">
   <div class="depth-label">8-bit · 256 colours</div>
-  <img class="exact" src="files/eye-32x32-8bit.bmp" width="32" height="32" alt="eye-32x32 at 8-bit colour depth">
-  <div class="depth-facts">32 × 32 pixels · 8 bits per pixel<br>
+  <img class="exact" src="files/eye-64x64-8bit.bmp" width="64" height="64" alt="eye-64x64 at 8-bit colour depth">
+  <div class="depth-facts">64 × 64 pixels · 8 bits per pixel<br>
   <strong>Metadata: 1,078 bytes</strong> <span class="muted">(54 header + 1,024 colour table)</span></div>
   <details class="depth-check"><summary>Check your answer</summary>
-  <p>32 × 32 × 8 ÷ 8 = <strong>1,024</strong> bytes of pixels<br>
-  + 1,078 bytes of metadata<br>= <strong>2,102 bytes</strong></p></details>
-  <a class="depth-dl" href="files/eye-32x32-8bit.bmp" download>Download eye-32x32-8bit.bmp</a>
+  <p>64 × 64 × 8 ÷ 8 = <strong>4,096</strong> bytes of pixels<br>
+  + 1,078 bytes of metadata<br>= <strong>5,174 bytes</strong></p></details>
+  <a class="depth-dl" href="files/eye-64x64-8bit.bmp" download>Download eye-64x64-8bit.bmp</a>
 </div>
 <div class="depth-card">
   <div class="depth-label">24-bit · 16.7M colours</div>
-  <img class="exact" src="files/eye-32x32-24bit.bmp" width="32" height="32" alt="eye-32x32 at 24-bit colour depth">
-  <div class="depth-facts">32 × 32 pixels · 24 bits per pixel<br>
+  <img class="exact" src="files/eye-64x64-24bit.bmp" width="64" height="64" alt="eye-64x64 at 24-bit colour depth">
+  <div class="depth-facts">64 × 64 pixels · 24 bits per pixel<br>
   <strong>Metadata: 54 bytes</strong> <span class="muted">(54 header only, no colour table)</span></div>
   <details class="depth-check"><summary>Check your answer</summary>
-  <p>32 × 32 × 24 ÷ 8 = <strong>3,072</strong> bytes of pixels<br>
-  + 54 bytes of metadata<br>= <strong>3,126 bytes</strong></p></details>
-  <a class="depth-dl" href="files/eye-32x32-24bit.bmp" download>Download eye-32x32-24bit.bmp</a>
+  <p>64 × 64 × 24 ÷ 8 = <strong>12,288</strong> bytes of pixels<br>
+  + 54 bytes of metadata<br>= <strong>12,342 bytes</strong></p></details>
+  <a class="depth-dl" href="files/eye-64x64-24bit.bmp" download>Download eye-64x64-24bit.bmp</a>
 </div>
         </div>
         <p class="diagram-credit">Generated for this page on Mr Rawson&#x27;s own computer with an open image model (Z-Image-Turbo, via mflux). It is not a photograph of a real person.</p>
         <h2>A sunset, 64 × 64</h2>
-        <p class="lede">Smooth blends of colour. Every extra bit of colour depth shows: watch the sky band into stripes at 4-bit and smooth out as the depth rises.</p>
+        <p class="lede">Long smooth blends of colour, from violet through orange to gold. At 4-bit and at 8-bit (the standard 256-colour table) the sky breaks into stripes. At 24-bit the blend is smooth, and the reflection of the sun appears in the water.</p>
         <div class="depth-grid">
 <div class="depth-card">
   <div class="depth-label">1-bit · 2 colours</div>
