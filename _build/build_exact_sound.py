@@ -224,8 +224,10 @@ def main():
         a, b = s.index(M_START), s.index(M_END) + len(M_END)
         s = s[:a] + block + s[b:]
     else:
-        anchor = "<!-- PRACTICE:START -->"
-        assert anchor in s, "no PRACTICE marker on the §1.2 page"
+        # Alex, 22 Sep: these pages and Practice sit at the TOP of the §1.2 page,
+        # above the progress tracker.
+        anchor = "<!-- PRACTICE:START -->" if "<!-- PRACTICE:START -->" in s else "<!-- PROGRESS:START -->"
+        assert anchor in s, "no PRACTICE or PROGRESS marker on the §1.2 page"
         s = s.replace(anchor, block + "\n" + anchor, 1)
     open(hub, "w").write(s)
     print(f"PUBLISH: {HUB}")
