@@ -186,6 +186,7 @@ def page():
         <p class="lede">The pictures are shown enlarged so you can see every pixel. The file you save is the real, tiny one.</p>
 {''.join(sections)}
         <div class="rule--full"></div>
+        <p class="lede"><a href="../data-representation-sound/">Data Representation of Sound →</a></p>
         <p class="lede"><a href="../">← Back to §1.2 Memory and Storage</a></p>
     </div>
 </body>
