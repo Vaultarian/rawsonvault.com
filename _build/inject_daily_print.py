@@ -97,11 +97,40 @@ def field(block, name):
     return m.group(1).strip() if m else ""
 
 
+# Inline LaTeX in a Topic line ($P=I^2R$) is written for Obsidian, which
+# renders it; a web page does not, so it showed as raw dollars. Converted to
+# plain Unicode text here -- no MathJax on the site, deliberately. 2026-09-22.
+_TEX_CMDS = {r"\times": "×", r"\Omega": "Ω", r"\rightarrow": "→",
+             r"\to": "→", r"\Delta": "Δ", r"\cdot": "·", r"\pm": "±",
+             r"\approx": "≈", r"\mu": "μ", r"\lambda": "λ", r"\rho": "ρ",
+             r"\theta": "θ", r"\degree": "°", r"\%": "%"}
+_SUP = str.maketrans("0123456789-+", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺")
+
+
+def tex_to_text(m):
+    t = m.group(1)
+    t = re.sub(r"\\(?:text|mathrm|mathbf|textbf|mathit)\{([^}]*)\}", r"\1", t)
+    for k, v in _TEX_CMDS.items():
+        t = t.replace(k, v)
+    t = re.sub(r"\^\{([-+0-9]+)\}", lambda n: n.group(1).translate(_SUP), t)
+    t = re.sub(r"\^([-+0-9])", lambda n: n.group(1).translate(_SUP), t)
+    t = re.sub(r"\\[,;:! ]", " ", t)
+    t = re.sub(r"\\[A-Za-z]+", "", t).replace("{", "").replace("}", "")
+    t = re.sub(r"\s*([=+×→≈])\s*", r" \1 ", t)
+    return t.strip()
+
+
+def tidy(s):
+    """Dashes and inline maths, for any text that reaches a web page."""
+    s = re.sub(r"\$([^$\n]+)\$", tex_to_text, s)
+    return s.replace("---", "—").replace("--", "–")
+
+
 def strip_md(s):
     s = re.sub(r"\[\[[^\]|]*\|([^\]]*)\]\]", r"\1", s)
     s = re.sub(r"\[\[([^\]]*)\]\]", r"\1", s)
     s = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", s)
-    s = re.sub(r"\*\*([^*]*)\*\*", r"\1", s).replace("---", "—")
+    s = tidy(re.sub(r"\*\*([^*]*)\*\*", r"\1", s))
     return re.sub(r"\s+", " ", s).strip()
 
 

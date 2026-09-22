@@ -47,7 +47,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from school_week import week_for, monday_of, term_for  # noqa: E402
 # Shared with the Daily Print injector on purpose: two parsers of the same log
 # format would drift, and the pages would quietly disagree with each other.
-from inject_daily_print import field, strip_md, pdf_links, page_count  # noqa: E402
+from inject_daily_print import field, strip_md, tidy, pdf_links, page_count  # noqa: E402
 
 VAULT = HOME / "vault"
 LOGS = VAULT / "01-Teaching/Class Logs"
@@ -244,8 +244,9 @@ def parse_log(path):
         entries.append(dict(
             date=cur[0], status=cur[1],
             topic=strip_md(field(block, "Topic")),
-            docs=pdf_links(pub),                      # whitelist, never Resources
-            links=web_links(pub),                     # external links, same whitelist
+            docs=[(p, tidy(l) if l else l)            # whitelist, never Resources
+                  for p, l in pdf_links(pub)],
+            links=[(u, tidy(l)) for u, l in web_links(pub)],  # same whitelist
         ))
 
     for ln in lines:
@@ -562,6 +563,21 @@ SUMMATIVE_FIELD = re.compile(
     re.M)
 
 
+# Per-class lookahead. A Class Log whose header carries
+#     **Show ahead:** next lesson
+# shows past lessons plus the NEXT one only -- anything dated after the next
+# lesson (counting today) is held until it becomes the next lesson, when the
+# 05:30 run releases it with its handouts. Added 2026-09-22 for 11 R, on
+# Alex's instruction: "I don't want anything other than tomorrow laid out on
+# the page." Classes without the line are unchanged: Publish: stays the only gate.
+SHOW_AHEAD_FIELD = re.compile(r"^\*\*Show ahead:?\*\*[ \t]*next lesson\b", re.I | re.M)
+
+
+def shows_next_only(path):
+    head = path.read_text().split("\n### ", 1)[0]
+    return bool(SHOW_AHEAD_FIELD.search(head))
+
+
 def read_summative(path):
     """(label, [(pdf, link label)]) from a Class Log's header block.
 
@@ -833,6 +849,13 @@ def main():
         published = [en for en in entries
                      if en["status"].strip().lower() != "did not run"]
         held += len(entries) - len(published)
+
+        if shows_next_only(path):
+            upcoming = [en["date"] for en in published if en["date"] >= date.today()]
+            if upcoming:
+                cut = min(upcoming)
+                held += sum(en["date"] > cut for en in published)
+                published = [en for en in published if en["date"] <= cut]
 
         # Newest first, all the way down: newest week at the top, and newest
         # day at the top inside each week. The common question is "what did we
