@@ -75,7 +75,7 @@ def card(stem, depth):
     fn = f"{stem}-{depth}bit.bmp"
     w, h, d, meta, size = read_bmp(os.path.join(SRC, fn))
     pix = w * h * d // 8
-    colours = "16.7 million" if d == 24 else n(2 ** d)
+    colours = "16.7M" if d == 24 else n(2 ** d)
     table = "54 header only, no colour table" if d == 24 else \
         f"54 header + {n(4 * 2 ** d)} colour table"
     return fn, f"""
