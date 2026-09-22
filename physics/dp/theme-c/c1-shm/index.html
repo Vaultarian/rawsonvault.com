@@ -14,6 +14,12 @@
         .understanding-list li::before { content: "–"; color: var(--bronze-light); margin-right: 0.5em; }
         .hl-ext { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); border: 1px solid var(--gray-light); border-radius: var(--radius); padding: 1px 5px; margin-right: 4px; }
         .eq-box { font-family: var(--font-body); font-style: italic; font-size: 0.9rem; color: var(--ink-black); background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-xs) 0; }
+        .review-item { margin: var(--gap-lg) 0; }
+        .review-item p { font-family: var(--font-body); font-size: 0.92rem; color: var(--gray-dark); line-height: 1.65; margin: var(--gap-xs) 0; }
+        .worked { background: #fdf9f4; border-left: 3px solid var(--bronze-light); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-md) 0; }
+        .worked-label { font-family: var(--font-display); font-size: 0.7rem !important; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid) !important; }
+        .check { border: 1px solid #f0ece4; border-radius: var(--radius); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-sm) 0; }
+        .check summary { font-family: var(--font-ui, Inter, sans-serif); font-size: 0.8rem; color: var(--bronze-light); cursor: pointer; margin-top: var(--gap-xs); }
         .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
     </style>
 </head>
@@ -46,17 +52,292 @@
         <div class="eq-box">Simple pendulum: T = 2π√(l/g)</div>
         <div class="eq-box"><span class="hl-ext">HL</span> x = x₀ sin(ωt + φ); v = ωx₀ cos(ωt + φ); v = ±ω√(x₀² − x²)</div>
         <div class="eq-box"><span class="hl-ext">HL</span> E<sub>T</sub> = ½mω²x₀²; E<sub>p</sub> = ½mω²x²</div>
-        <h2>What students must understand</h2>
+        <h2>What the syllabus requires</h2>
+        <h3>Standard level (SL and HL)</h3>
         <ul class="understanding-list">
-            <li>Conditions for SHM: restoring force proportional to displacement, directed towards equilibrium</li>
-            <li>Defining equation: a = −ω²x (minus sign is critical — restoring)</li>
-            <li>Descriptors: period T, frequency f, angular frequency ω, amplitude x₀, equilibrium, displacement x</li>
-            <li>T = 2π√(m/k) for mass-spring; T = 2π√(l/g) for pendulum</li>
-            <li>Qualitative energy description: KE maximum at equilibrium, PE maximum at amplitude, total mechanical energy constant</li>
-            <li><span class="hl-ext">HL</span> Phase angle φ; full sinusoidal equations for x, v, and a</li>
-            <li><span class="hl-ext">HL</span> Speed at any displacement: v = ±ω√(x₀² − x²)</li>
-            <li><span class="hl-ext">HL</span> Quantitative energy analysis: E<sub>T</sub> = ½mω²x₀²</li>
+            <li>Conditions that lead to simple harmonic motion</li>
+            <li>The defining equation of simple harmonic motion: a = −ω²x</li>
+            <li>Describing SHM using time period T, frequency f, angular frequency ω, amplitude, equilibrium position and displacement</li>
+            <li>Time period in terms of frequency and angular frequency: T = 1/f = 2π/ω</li>
+            <li>Time period of a mass–spring system: T = 2π√(m/k)</li>
+            <li>Time period of a simple pendulum: T = 2π√(l/g)</li>
+            <li>Energy changes during one cycle of an oscillation, described qualitatively</li>
         </ul>
+        <h3>Higher level only</h3>
+        <ul class="understanding-list">
+            <li><span class="hl-ext">HL</span> Describing SHM using phase angle φ, in radians</li>
+            <li><span class="hl-ext">HL</span> Solving problems with the SHM equations:
+                x = x₀ sin(ωt + φ) · v = ωx₀ cos(ωt + φ) · v = ±ω√(x₀² − x²) · E<sub>T</sub> = ½mω²x₀² · E<sub>p</sub> = ½mω²x²</li>
+            <li><span class="hl-ext">HL</span> Energy changes during SHM, calculated quantitatively</li>
+        </ul>
+        <div class="rule--full"></div>
+        <h2>Review, point by point</h2>
+
+        <section class="review-item" id="review-1">
+            <h3>1 · Conditions that lead to simple harmonic motion</h3>
+            <p>An object moves with simple harmonic motion when the resultant force on it meets two conditions at once:</p>
+            <ul class="understanding-list">
+                <li>it always points <strong>back towards the equilibrium position</strong> (a restoring force), and</li>
+                <li>its size is <strong>proportional to the displacement</strong> from equilibrium.</li>
+            </ul>
+            <p>Together these give <em>F = −kx</em>. The minus sign says the force points the opposite way to the displacement. A mass on a spring meets both conditions exactly. A pendulum meets them for small swings, below about 10°, where sin θ ≈ θ in radians.</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A mass hangs on a spring with k = 20 N m<sup>−1</sup>. It is pulled 0.05 m below equilibrium.</p>
+                <p>Restoring force = kx = 20 × 0.05 = <strong>1.0 N, upwards</strong>.</p>
+                <p>Pull it to 0.10 m instead: 20 × 0.10 = <strong>2.0 N, upwards</strong>. Push it 0.05 m <em>above</em> equilibrium: <strong>1.0 N, downwards</strong>.</p>
+                <p>Double the displacement and the force doubles; move to the other side and the force flips to point back. Both conditions hold, so the motion is SHM.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> A ball bounces up and down on a hard floor, again and again. Is this simple harmonic motion?</p>
+                <details><summary>Answer</summary>
+                    <p>No. While the ball is in the air the only force on it is its weight, which is constant. It does not grow with displacement, so the second condition fails. The motion repeats, but it is not simple harmonic.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> A block on a spring is pushed 3 cm to the left of equilibrium, and the restoring force is 0.6 N. What is the restoring force when the block is 6 cm to the <em>right</em> of equilibrium?</p>
+                <details><summary>Answer</summary>
+                    <p><strong>1.2 N, to the left.</strong> Twice the displacement gives twice the force, and it points back towards equilibrium.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-2">
+            <h3>2 · The defining equation: a = −ω²x</h3>
+            <p>Newton's second law turns the restoring force <em>F = −kx</em> into <em>ma = −kx</em>, so <em>a = −(k/m)x</em>. Writing <em>ω² = k/m</em> gives the defining equation <em>a = −ω²x</em>.</p>
+            <p>It says two things. The acceleration is <strong>proportional to the displacement</strong>, and the minus sign means it points <strong>towards equilibrium</strong>, the opposite way to the displacement. A graph of <em>a</em> against <em>x</em> is a straight line through the origin with gradient −ω².</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A 0.50 kg mass is on a spring with k = 18 N m<sup>−1</sup>.</p>
+                <p>ω² = k/m = 18 / 0.50 = 36 s<sup>−2</sup>, so ω = <strong>6.0 rad s<sup>−1</sup></strong>.</p>
+                <p>At x = +0.04 m: a = −36 × 0.04 = <strong>−1.4 m s<sup>−2</sup></strong>, i.e. 1.4 m s<sup>−2</sup> back towards equilibrium.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> Where in the oscillation is the acceleration zero, and where is it largest?</p>
+                <details><summary>Answer</summary>
+                    <p>Zero at the <strong>equilibrium position</strong> (x = 0). Largest at the <strong>two extremes</strong> (x = ±x₀), where the displacement is largest.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> A graph of acceleration against displacement for an oscillator is a straight line with gradient −25 s<sup>−2</sup>. Find ω and the period T.</p>
+                <details><summary>Answer</summary>
+                    <p>ω² = 25, so <strong>ω = 5.0 rad s<sup>−1</sup></strong>. T = 2π/ω = 2π/5.0 = <strong>1.3 s</strong>.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-3">
+            <h3>3 · Describing an oscillation</h3>
+            <ul class="understanding-list">
+                <li><strong>Equilibrium position</strong>: where the resultant force is zero. Left alone, the object rests here.</li>
+                <li><strong>Displacement x</strong>: distance <em>and direction</em> from equilibrium. It is a vector, so it can be negative.</li>
+                <li><strong>Amplitude x₀</strong>: the maximum displacement. Always positive.</li>
+                <li><strong>Time period T</strong>: the time for one complete oscillation, in s.</li>
+                <li><strong>Frequency f</strong>: the number of oscillations per second, in Hz.</li>
+                <li><strong>Angular frequency ω</strong>: 2πf, in rad s<sup>−1</sup>.</li>
+            </ul>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A pendulum bob swings from its far left to its far right in 0.80 s. The two extremes are 12 cm apart.</p>
+                <p>Amplitude = half the distance between extremes = <strong>6.0 cm</strong>.</p>
+                <p>Left to right is half an oscillation, so T = 2 × 0.80 = <strong>1.6 s</strong>, f = 1/1.6 = <strong>0.63 Hz</strong>, ω = 2πf = <strong>3.9 rad s<sup>−1</sup></strong>.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> A mass on a spring moves between 4 cm above and 4 cm below equilibrium. What is the amplitude, and how far does the mass travel in one period?</p>
+                <details><summary>Answer</summary>
+                    <p>Amplitude <strong>4 cm</strong>. In one period it goes down 8 cm and back up 8 cm: <strong>16 cm</strong>, which is 4x₀.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> A mass is released from rest at x = +5 cm. What is its displacement after half a period, and after one full period?</p>
+                <details><summary>Answer</summary>
+                    <p>After half a period: <strong>−5 cm</strong> (the other extreme). After one period: <strong>+5 cm</strong>, back where it started.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-4">
+            <h3>4 · T = 1/f = 2π/ω</h3>
+            <p>Frequency counts oscillations per second, so the time for one is <em>T = 1/f</em>. Angular frequency counts <strong>radians</strong> per second, and one full oscillation is 2π radians, so <em>ω = 2πf</em> and <em>T = 2π/ω</em>.</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A tuning fork vibrates at 256 Hz.</p>
+                <p>T = 1/f = 1/256 = <strong>3.9 × 10<sup>−3</sup> s</strong>.</p>
+                <p>ω = 2πf = 2π × 256 = <strong>1.6 × 10<sup>3</sup> rad s<sup>−1</sup></strong>.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> An oscillator has ω = 12 rad s<sup>−1</sup>. Find T and f.</p>
+                <details><summary>Answer</summary>
+                    <p>T = 2π/12 = <strong>0.52 s</strong>. f = 1/T = <strong>1.9 Hz</strong>.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> A mass completes 30 oscillations in 24 s. Find T, f and ω.</p>
+                <details><summary>Answer</summary>
+                    <p>T = 24/30 = <strong>0.80 s</strong>. f = 1/0.80 = <strong>1.25 Hz</strong>. ω = 2π/0.80 = <strong>7.9 rad s<sup>−1</sup></strong>.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-5">
+            <h3>5 · Mass–spring system: T = 2π√(m/k)</h3>
+            <p>For a spring, ω² = k/m, and T = 2π/ω gives <em>T = 2π√(m/k)</em>. A heavier mass gives a longer period; a stiffer spring gives a shorter one.</p>
+            <p>Two quantities are absent from the equation, and that is part of the physics: the period does not depend on the <strong>amplitude</strong>, and it does not depend on <strong>g</strong>, so the same spring has the same period on the Moon. Squaring gives <em>T² = (4π²/k) m</em>, which is why we graphed our 7 September spring data as T² against m: a straight line with gradient 4π²/k.</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A 0.40 kg mass hangs on a spring with k = 25 N m<sup>−1</sup>.</p>
+                <p>T = 2π√(0.40 / 25) = 2π√0.016 = 2π × 0.126 = <strong>0.79 s</strong>.</p>
+                <p>Replace it with a 1.60 kg mass (four times heavier) and T doubles to <strong>1.6 s</strong>, because T ∝ √m.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> The mass on a spring is doubled. By what factor does the period change?</p>
+                <details><summary>Answer</summary>
+                    <p>T ∝ √m, so the period increases by a factor of <strong>√2 ≈ 1.41</strong>.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> A graph of T² against m has gradient 0.20 s<sup>2</sup> kg<sup>−1</sup>. Find the spring constant.</p>
+                <details><summary>Answer</summary>
+                    <p>Gradient = 4π²/k, so k = 4π²/0.20 = <strong>2.0 × 10<sup>2</sup> N m<sup>−1</sup></strong>.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-6">
+            <h3>6 · Simple pendulum: T = 2π√(l/g)</h3>
+            <p><em>l</em> is the length from the pivot to the <strong>centre of the bob</strong>. The mass of the bob does not appear: a heavy bob and a light bob on the same string swing with the same period. The equation holds for small swings (see point 1).</p>
+            <p>Squaring gives <em>T² = (4π²/g) l</em>, which is why our 21 September lab plotted T² against l: a straight line with gradient 4π²/g, giving a value for g.</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A pendulum is 0.80 m long. Take g = 9.81 m s<sup>−2</sup>.</p>
+                <p>T = 2π√(0.80 / 9.81) = 2π × 0.286 = <strong>1.8 s</strong>.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> The bob is replaced with one twice as heavy, on the same string. What happens to the period?</p>
+                <details><summary>Answer</summary>
+                    <p><strong>Nothing</strong>. Mass does not appear in T = 2π√(l/g).</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> A pendulum has a period of exactly 2.00 s. How long is it?</p>
+                <details><summary>Answer</summary>
+                    <p>l = gT²/4π² = 9.81 × 4.00 / 39.5 = <strong>0.994 m</strong>, just under a metre.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-7">
+            <h3>7 · Energy changes during one cycle</h3>
+            <p>Energy moves back and forth between kinetic and potential energy.</p>
+            <ul class="understanding-list">
+                <li>At each <strong>extreme</strong>: the object is momentarily at rest. Kinetic energy is zero, potential energy is maximum.</li>
+                <li>At <strong>equilibrium</strong>: speed is maximum. Kinetic energy is maximum, potential energy is minimum.</li>
+                <li>With no friction or air resistance, the <strong>total energy stays constant</strong>.</li>
+            </ul>
+            <p>The object passes through equilibrium twice in every period, so kinetic energy peaks <strong>twice per cycle</strong>: the energy swaps at twice the frequency of the motion.</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A pendulum is released from rest at its far left.</p>
+                <p>At release: all gravitational potential energy. At the bottom: all kinetic energy. At the far right: all potential energy again. Back at the bottom: all kinetic. Back at the far left: one full period, and kinetic energy has peaked twice.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> A mass on a spring has a period of 1.0 s. How often does its kinetic energy reach a maximum?</p>
+                <details><summary>Answer</summary>
+                    <p><strong>Every 0.5 s</strong>, twice per period, each time it passes through equilibrium.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> Air resistance acts on a swinging pendulum. What happens to its total energy and its amplitude over time?</p>
+                <details><summary>Answer</summary>
+                    <p>Both <strong>decrease</strong>. Energy is transferred to thermal energy in the air, so each swing is a little smaller. This is damping, which you meet again in C.4.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-8">
+            <h3><span class="hl-ext">HL</span> 8 · Phase angle</h3>
+            <p>The phase angle <em>φ</em> says <strong>where in its cycle</strong> an oscillator is at t = 0. It is measured in <strong>radians</strong>, and one full cycle is 2π rad.</p>
+            <ul class="understanding-list">
+                <li>A phase difference of <strong>π rad</strong> (half a cycle): the two oscillators are in <em>antiphase</em>. One is at +x₀ when the other is at −x₀.</li>
+                <li>A phase difference of <strong>π/2 rad</strong> (a quarter cycle): one is at equilibrium when the other is at an extreme.</li>
+                <li>Phase difference from a time lag: φ = (Δt / T) × 2π.</li>
+            </ul>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>Using x = x₀ sin(ωt + φ):</p>
+                <p>Released from rest at +x₀ at t = 0: sin φ = 1, so <strong>φ = π/2</strong>, and x = x₀ sin(ωt + π/2) = x₀ cos ωt.</p>
+                <p>Passing through equilibrium, moving in the positive direction, at t = 0: sin φ = 0, so <strong>φ = 0</strong>, and x = x₀ sin ωt.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> Two identical pendulums: A is at +x₀ at the instant B is at −x₀. What is the phase difference?</p>
+                <details><summary>Answer</summary>
+                    <p><strong>π rad</strong>. They are in antiphase.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> Two pendulums both have T = 2.0 s. B reaches its extreme 0.50 s after A. What is the phase difference?</p>
+                <details><summary>Answer</summary>
+                    <p>φ = (0.50 / 2.0) × 2π = <strong>π/2 rad</strong>, a quarter of a cycle.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-9">
+            <h3><span class="hl-ext">HL</span> 9 · Solving problems with the SHM equations</h3>
+            <ul class="understanding-list">
+                <li><em>x = x₀ sin(ωt + φ)</em> and <em>v = ωx₀ cos(ωt + φ)</em>: position and velocity at a given <strong>time</strong>. Set your calculator to radians.</li>
+                <li><em>v = ±ω√(x₀² − x²)</em>: speed at a given <strong>displacement</strong>, with no time needed.</li>
+                <li>Maximum speed, at equilibrium (x = 0): <em>v<sub>max</sub> = ωx₀</em>.</li>
+            </ul>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>A 0.50 kg mass on a spring with k = 32 N m<sup>−1</sup> is released from rest at x₀ = 0.050 m.</p>
+                <p>ω = √(32 / 0.50) = <strong>8.0 rad s<sup>−1</sup></strong>. Maximum speed = ωx₀ = 8.0 × 0.050 = <strong>0.40 m s<sup>−1</sup></strong>.</p>
+                <p>Speed at x = 0.030 m: v = 8.0 √(0.050² − 0.030²) = 8.0 × 0.040 = <strong>0.32 m s<sup>−1</sup></strong>.</p>
+                <p>Released from +x₀, so φ = π/2 and x = 0.050 cos(8.0t). At t = 0.10 s: x = 0.050 cos(0.80) = <strong>0.035 m</strong>.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> An oscillator has ω = 4.0 rad s<sup>−1</sup> and amplitude 0.10 m. Find its maximum speed, and its speed at x = 0.060 m.</p>
+                <details><summary>Answer</summary>
+                    <p>v<sub>max</sub> = 4.0 × 0.10 = <strong>0.40 m s<sup>−1</sup></strong>. At x = 0.060 m: v = 4.0 √(0.010 − 0.0036) = 4.0 × 0.080 = <strong>0.32 m s<sup>−1</sup></strong>.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> An oscillator follows x = 0.20 sin(5.0t), in metres and seconds. Find x at t = 0.50 s.</p>
+                <details><summary>Answer</summary>
+                    <p>x = 0.20 sin(2.5 rad) = 0.20 × 0.598 = <strong>0.12 m</strong>.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="review-item" id="review-10">
+            <h3><span class="hl-ext">HL</span> 10 · Energy, calculated</h3>
+            <ul class="understanding-list">
+                <li>Total energy, constant throughout: <em>E<sub>T</sub> = ½mω²x₀²</em></li>
+                <li>Potential energy at displacement x: <em>E<sub>p</sub> = ½mω²x²</em></li>
+                <li>Kinetic energy is what is left: <em>E<sub>k</sub> = E<sub>T</sub> − E<sub>p</sub> = ½mω²(x₀² − x²)</em></li>
+            </ul>
+            <p>For a spring, mω² = k, so E<sub>p</sub> = ½kx², the elastic energy you already know.</p>
+            <div class="worked">
+                <p class="worked-label">Worked example</p>
+                <p>The oscillator from point 9: m = 0.50 kg, ω = 8.0 rad s<sup>−1</sup>, x₀ = 0.050 m.</p>
+                <p>E<sub>T</sub> = ½ × 0.50 × 8.0² × 0.050² = <strong>0.040 J</strong>.</p>
+                <p>At x = 0.030 m: E<sub>p</sub> = ½ × 0.50 × 64 × 0.030² = <strong>0.014 J</strong>, so E<sub>k</sub> = 0.040 − 0.014 = <strong>0.026 J</strong>.</p>
+                <p>Cross-check with point 9: ½mv² = ½ × 0.50 × 0.32² = 0.026 J. The two routes agree.</p>
+            </div>
+            <div class="check">
+                <p><strong>Check 1.</strong> The amplitude of an oscillator is doubled. By what factor does its total energy change?</p>
+                <details><summary>Answer</summary>
+                    <p>E<sub>T</sub> ∝ x₀², so it increases by a factor of <strong>4</strong>.</p>
+                </details>
+            </div>
+            <div class="check">
+                <p><strong>Check 2.</strong> At what displacement are the kinetic and potential energies equal?</p>
+                <details><summary>Answer</summary>
+                    <p>When E<sub>p</sub> = ½E<sub>T</sub>: ½mω²x² = ¼mω²x₀², so x² = x₀²/2 and <strong>x = x₀/√2 ≈ 0.71x₀</strong>.</p>
+                </details>
+            </div>
+        </section>
         <div class="rule--full"></div>
         <h2>Linking questions</h2>
         <ul class="linking">
