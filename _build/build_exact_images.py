@@ -41,14 +41,17 @@ SUBJECTS = [
      "does not change at all, but the file keeps growing. Extra colour depth is wasted on a "
      "picture that does not use it.",
      "Drawn in code for this page by Mr Rawson."),
-    ("eye-32x32", "An eye, 32 × 32",
-     "A photograph holds hundreds of different colours. At 4-bit there are only 16 to go round, "
-     "so the green iris is lost; at 8-bit it comes back, and 24-bit adds the finest shading.",
+    ("eye-64x64", "An eye, 64 × 64",
+     "A photograph holds thousands of different colours. At 4-bit there are only 16 to go round, "
+     "so the green iris turns grey. The 8-bit version uses the standard 256-colour table, which "
+     "brings the green back but turns the skin blotchy. At 24-bit every pixel stores its own exact "
+     "colour, so the skin is smooth again.",
      "Generated for this page on Mr Rawson's own computer with an open image model "
      "(Z-Image-Turbo, via mflux). It is not a photograph of a real person."),
     ("sunset-64x64", "A sunset, 64 × 64",
-     "Smooth blends of colour. Every extra bit of colour depth shows: watch the sky band into "
-     "stripes at 4-bit and smooth out as the depth rises.",
+     "Long smooth blends of colour, from violet through orange to gold. At 4-bit and at 8-bit "
+     "(the standard 256-colour table) the sky breaks into stripes. At 24-bit the blend is smooth, "
+     "and the reflection of the sun appears in the water.",
      "Drawn in code for this page by Mr Rawson."),
 ]
 
@@ -160,6 +163,11 @@ def page():
         <p class="lede">Every BMP starts with a <strong>54-byte header</strong> holding the width, height,
         colour depth and file size. Up to 8-bit, it also stores a <strong>colour table</strong>: the colour
         index, 4 bytes for every colour available. At 24-bit each pixel stores its own colour, so there is no table.</p>
+        <p class="lede">A colour table can be <strong>picked for the picture</strong>, choosing the best colours
+        for that image, or it can be a <strong>standard table</strong> shared by every picture. The emoji below
+        uses a picked table. The eye and the sunset use the standard 8-bit table, which has 8 reds × 8 greens ×
+        4 blues, as early computers and the early web did. Either way the table holds 256 colours, so the
+        metadata is the same size.</p>
         <table class="meta-table">
             <tr><th>Colour depth</th><th>Header</th><th>Colour table</th><th>Metadata</th></tr>
             <tr><td>1-bit (2 colours)</td><td>54</td><td>2 × 4 = 8</td><td><strong>62 bytes</strong></td></tr>
