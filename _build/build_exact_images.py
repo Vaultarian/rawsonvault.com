@@ -36,6 +36,16 @@ DEPTHS = (1, 4, 8, 24)
 
 # (file stem, heading, what it shows, credit)
 SUBJECTS = [
+    ("emoji-32x32", "A cool emoji, 32 × 32",
+     "Flat blocks of colour, only six of them. Look along the row: from 4-bit up the picture "
+     "does not change at all, but the file keeps growing. Extra colour depth is wasted on a "
+     "picture that does not use it.",
+     "Drawn in code for this page by Mr Rawson."),
+    ("eye-32x32", "An eye, 32 × 32",
+     "A photograph holds hundreds of different colours. At 4-bit there are only 16 to go round, "
+     "so the green iris is lost; at 8-bit it comes back, and 24-bit adds the finest shading.",
+     "Generated for this page on Mr Rawson's own computer with an open image model "
+     "(Z-Image-Turbo, via mflux). It is not a photograph of a real person."),
     ("sunset-64x64", "A sunset, 64 × 64",
      "Smooth blends of colour. Every extra bit of colour depth shows: watch the sky band into "
      "stripes at 4-bit and smooth out as the depth rises.",
