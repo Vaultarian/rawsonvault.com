@@ -200,6 +200,11 @@ def pair_docs(docs):
 WEB_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
 
 
+DRIVE_URL = re.compile(r"^https://(drive|docs)\.google\.com/")
+DRIVE_KEY_SUFFIX = re.compile(
+    r"\s*(?:---|—|–|-)\s*(?:answer key|mark ?scheme)\s*$", re.I)
+
+
 def web_links(block):
     """[(url, label)] for the external links in this block."""
     return [(m.group(2), m.group(1)) for m in WEB_LINK.finditer(block)]
@@ -664,7 +669,15 @@ def render_class(name, subtitle, weeks):
                     if VIDEO_URL.search(u)]
             webs = [(u, lbl) for u, lbl in en.get("links", [])
                     if not VIDEO_URL.search(u)]
-            if en["docs"] or vids:
+            # Google Drive links render as worksheet / answer-key ICONS, not
+            # text links. Added 2026-09-22 for licensed material (AQA past
+            # papers) that must stay inside the school tenant: only the URL
+            # reaches this public page, the file sits behind a St Leonards
+            # login. A label ending "--- answer key" or "--- mark scheme" is
+            # the key; the suffix is stripped so sheet and key share one row.
+            drives = [(u, lbl) for u, lbl in webs if DRIVE_URL.search(u)]
+            webs = [(u, lbl) for u, lbl in webs if not DRIVE_URL.search(u)]
+            if en["docs"] or vids or drives:
                 # Group by label, not by item. Two Publish: entries that share
                 # the EXACT same label text land on one row with both icons,
                 # in the order they were listed -- this is how a lesson gets
@@ -701,6 +714,15 @@ def render_class(name, subtitle, weeks):
                         _add(lbl, f'<a class="doc-link" href="files/{e(p.name)}"'
                                   f' title="{e(tip)}" aria-label="{e(lbl)} —'
                                   f' {e(tip)}">{icon}</a>')
+                for u, lbl in drives:
+                    base = DRIVE_KEY_SUFFIX.sub("", lbl)
+                    is_key = base != lbl
+                    icon, what = ((ICON_KEY, "Answer key") if is_key
+                                  else (ICON_SHEET, "Worksheet"))
+                    tip = f"{what} — school Drive, St Leonards login"
+                    _add(base, f'<a class="doc-link" href="{e(u)}" target="_blank"'
+                               f' rel="noopener noreferrer" title="{e(tip)}"'
+                               f' aria-label="{e(base)} — {e(tip)}">{icon}</a>')
                 for u, lbl in vids:
                     _add(lbl, f'<a class="doc-link" href="{e(u)}" target="_blank"'
                               f' rel="noopener noreferrer" title="Video"'
