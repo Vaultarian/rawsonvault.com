@@ -30,6 +30,16 @@
         .check { border: 1px solid #f0ece4; border-radius: var(--radius); padding: var(--gap-sm) var(--gap-md); margin: var(--gap-sm) 0; }
         .check summary { font-family: var(--font-ui, Inter, sans-serif); font-size: 0.8rem; color: var(--bronze-light); cursor: pointer; margin-top: var(--gap-xs); }
         .linking li { font-family: var(--font-body); font-size: 0.88rem; color: var(--gray-dark); padding: var(--gap-xs) 0; border-bottom: 1px solid #f0ece4; line-height: 1.6; }
+        .review-photo { margin: var(--gap-sm) 0 var(--gap-md); }
+        .review-photo img { max-height: 340px; width: auto; }
+        .review-photo figcaption { text-align: left; }
+        .photo-credit { display: block; color: var(--gray-mid); font-style: italic; margin-top: 2px; }
+        .photo-credit a { color: inherit; }
+        .quick-videos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; font-family: var(--font-body); font-size: 0.9rem; margin: var(--gap-md) 0 0; }
+        .quick-videos .qv-label { font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray-mid); }
+        .quick-videos a { display: inline-flex; align-items: center; gap: 6px; color: var(--gray-dark); text-decoration: none; border-bottom: 1px solid transparent; }
+        .quick-videos a:hover { color: var(--bronze-light); border-bottom-color: var(--bronze-light); }
+        .quick-videos .doc-ico { flex: none; }
     </style>
 </head>
 <body>
@@ -47,6 +57,7 @@
             <p class="subtitle">What makes the harmonic oscillator model applicable to such a wide range of phenomena?</p>
         </div>
         <div class="rule--full"></div>
+        <p class="quick-videos"><span class="qv-label">Review videos</span><a href="https://www.youtube.com/watch?v=z2CH7jGTh0E" target="_blank" rel="noopener"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#FF0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8z"/><path fill="#FFFFFF" d="M9.6 15.6 15.8 12 9.6 8.4z"/></svg>C.1 lecture · Elec2ric Learning</a><a href="https://www.youtube.com/watch?v=3InWZl99syw&amp;list=PL6LH0ngwf3HtDtvgaxFX1scr6KneFhhav" target="_blank" rel="noopener"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#FF0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8z"/><path fill="#FFFFFF" d="M9.6 15.6 15.8 12 9.6 8.4z"/></svg>Topic C playlist · Sirius Revision</a></p>
         <nav class="toc" aria-label="Review contents">
             <p class="toc-label">Review · jump to a point</p>
             <ol>
@@ -99,6 +110,7 @@
 
         <section class="review-item" id="review-1">
             <h3>1 · Conditions that lead to simple harmonic motion</h3>
+            <figure class="diagram-figure review-photo"><img src="img/swing.jpg" alt="Two empty swings hanging from a tree branch in a park" loading="lazy"><figcaption>A swing is a pendulum. Pulled back gently it moves with SHM; pushed up to a large angle the restoring force stops being proportional to displacement, and the model no longer fits. <span class="photo-credit">Photo: Brandon Couch bccreativemedia, <a href="http://creativecommons.org/publicdomain/zero/1.0/deed.en" target="_blank" rel="noopener">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Swingset_in_playground_(Unsplash).jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p>An object moves with simple harmonic motion when the resultant force on it meets two conditions at once:</p>
             <ul class="understanding-list">
                 <li>it always points <strong>back towards the equilibrium position</strong> (a restoring force), and</li>
@@ -128,6 +140,7 @@
 
         <section class="review-item" id="review-2">
             <h3>2 · The defining equation: a = −ω²x</h3>
+            <figure class="diagram-figure review-photo"><img src="img/tuning-fork.jpg" alt="A steel tuning fork marked 440 Hz lying beside a coin" loading="lazy"><figcaption>Each prong of a 440 Hz fork oscillates with ω = 2π × 440 ≈ 2760 rad s<sup>−1</sup>. At just 0.1 mm from equilibrium, a = ω²x ≈ 760 m s<sup>−2</sup>: large ω means enormous accelerations from tiny displacements. <span class="photo-credit">Photo: Édouard Hue (User:EdouardHue), <a href="https://creativecommons.org/licenses/by-sa/3.0" target="_blank" rel="noopener">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Diapason_Wittner_%C3%A0_branches_carr%C3%A9es_%C3%A0_440_Hz.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p>Newton's second law turns the restoring force <em>F = −kx</em> into <em>ma = −kx</em>, so <em>a = −(k/m)x</em>. Writing <em>ω² = k/m</em> gives the defining equation <em>a = −ω²x</em>.</p>
             <p>It says two things. The acceleration is <strong>proportional to the displacement</strong>, and the minus sign means it points <strong>towards equilibrium</strong>, the opposite way to the displacement. A graph of <em>a</em> against <em>x</em> is a straight line through the origin with gradient −ω².</p>
             <div class="worked">
@@ -152,6 +165,7 @@
 
         <section class="review-item" id="review-3">
             <h3>3 · Describing an oscillation</h3>
+            <figure class="diagram-figure review-photo"><img src="img/seismometer.jpg" alt="A seismometer pen resting on a rotating paper drum covered in fine traces" loading="lazy"><figcaption>A seismometer pen draws displacement against time as the drum turns. Amplitude, period and frequency can all be read straight off a trace like this. <span class="photo-credit">Photo: Petr Brož (Czech Academy of Science), <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Seismogram_on_historical_seismometer_at_Institute_of_Geophysis_of_the_Czech_Academy_of_Science_(12).jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <ul class="understanding-list">
                 <li><strong>Equilibrium position</strong>: where the resultant force is zero. Left alone, the object rests here.</li>
                 <li><strong>Displacement x</strong>: distance <em>and direction</em> from equilibrium. It is a vector, so it can be negative.</li>
@@ -182,6 +196,7 @@
 
         <section class="review-item" id="review-4">
             <h3>4 · T = 1/f = 2π/ω</h3>
+            <figure class="diagram-figure review-photo"><img src="img/metronome.jpg" alt="A wooden pyramid metronome with its pendulum arm swinging" loading="lazy"><figcaption>A metronome ticks once at each end of its swing. At 60 beats per minute the arm takes 2.0 s to go there and back, so T = 2.0 s and f = 0.50 Hz. <span class="photo-credit">Photo: Paco from Badajoz, España, <a href="https://creativecommons.org/licenses/by/2.0" target="_blank" rel="noopener">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Wittner_metronome.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p>Frequency counts oscillations per second, so the time for one is <em>T = 1/f</em>. Angular frequency counts <strong>radians</strong> per second, and one full oscillation is 2π radians, so <em>ω = 2πf</em> and <em>T = 2π/ω</em>.</p>
             <div class="worked">
                 <p class="worked-label">Worked example</p>
@@ -205,6 +220,7 @@
 
         <section class="review-item" id="review-5">
             <h3>5 · Mass–spring system: T = 2π√(m/k)</h3>
+            <figure class="diagram-figure review-photo"><img src="img/car-suspension.jpg" alt="Close-up of a car front wheel with a coil spring in the suspension" loading="lazy"><figcaption>A car sits on its springs as a mass–spring system. Taking a quarter of a 1200 kg car on a spring with k = 30 000 N m<sup>−1</sup>: T = 2π√(300 / 30 000) ≈ 0.63 s. Load the boot and the period grows. <span class="photo-credit">Photo: Trekphiler, <a href="https://creativecommons.org/licenses/by/3.0" target="_blank" rel="noopener">CC BY 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Deuce_front_suspension_detail.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p>For a spring, ω² = k/m, and T = 2π/ω gives <em>T = 2π√(m/k)</em>. A heavier mass gives a longer period; a stiffer spring gives a shorter one.</p>
             <p>Two quantities are absent from the equation, and that is part of the physics: the period does not depend on the <strong>amplitude</strong>, and it does not depend on <strong>g</strong>, so the same spring has the same period on the Moon. Squaring gives <em>T² = (4π²/k) m</em>, which is why we graphed our 7 September spring data as T² against m: a straight line with gradient 4π²/k.</p>
             <div class="worked">
@@ -229,6 +245,7 @@
 
         <section class="review-item" id="review-6">
             <h3>6 · Simple pendulum: T = 2π√(l/g)</h3>
+            <figure class="diagram-figure review-photo"><img src="img/foucault-pendulum.jpg" alt="A Foucault pendulum bob swinging over a compass rose on a museum floor" loading="lazy"><figcaption>Museum Foucault pendulums hang on very long wires, so their periods are long: a 10 m wire gives T = 2π√(10 / 9.81) ≈ 6.3 s. The mass of the bob makes no difference. <span class="photo-credit">Photo: Stephen Rahn, <a href="http://creativecommons.org/publicdomain/zero/1.0/deed.en" target="_blank" rel="noopener">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Foucault_pendulum_in_Tellus_Science_Museum,_2013.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p><em>l</em> is the length from the pivot to the <strong>centre of the bob</strong>. The mass of the bob does not appear: a heavy bob and a light bob on the same string swing with the same period. The equation holds for small swings (see point 1).</p>
             <p>Squaring gives <em>T² = (4π²/g) l</em>, which is why our 21 September lab plotted T² against l: a straight line with gradient 4π²/g, giving a value for g.</p>
             <div class="worked">
@@ -252,6 +269,7 @@
 
         <section class="review-item" id="review-7">
             <h3>7 · Energy changes during one cycle</h3>
+            <figure class="diagram-figure review-photo"><img src="img/big-swing.jpg" alt="A large wooden multi-seat swing frame in a woodland playground" loading="lazy"><figcaption>On every swing, kinetic energy is greatest at the bottom, where the speed is highest, and gravitational potential energy is greatest at each end, where the swing momentarily stops. The total stays the same. <span class="photo-credit">Photo: Oliver Dixon, <a href="https://creativecommons.org/licenses/by-sa/2.0" target="_blank" rel="noopener">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Giant_multi-child_swing_-_geograph.org.uk_-_6843085.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p>Energy moves back and forth between kinetic and potential energy.</p>
             <ul class="understanding-list">
                 <li>At each <strong>extreme</strong>: the object is momentarily at rest. Kinetic energy is zero, potential energy is maximum.</li>
@@ -280,6 +298,7 @@
 
         <section class="review-item" id="review-8">
             <h3><span class="hl-ext">HL</span> 8 · Phase angle</h3>
+            <figure class="diagram-figure review-photo"><img src="img/pendulum-wave.jpg" alt="A pendulum wave machine sculpture lit red at night in a park" loading="lazy"><figcaption>A pendulum wave machine hangs pendulums of slightly different lengths. They start in phase, drift out of phase as the phase differences grow, and some time later line up again. <span class="photo-credit">Photo: David Dixon, <a href="https://creativecommons.org/licenses/by-sa/2.0" target="_blank" rel="noopener">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Pendulum_Wave_Machine,_Brunswick_Park_-_geograph.org.uk_-_6999345.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <p>The phase angle <em>φ</em> says <strong>where in its cycle</strong> an oscillator is at t = 0. It is measured in <strong>radians</strong>, and one full cycle is 2π rad.</p>
             <ul class="understanding-list">
                 <li>A phase difference of <strong>π rad</strong> (half a cycle): the two oscillators are in <em>antiphase</em>. One is at +x₀ when the other is at −x₀.</li>
@@ -336,6 +355,7 @@
 
         <section class="review-item" id="review-10">
             <h3><span class="hl-ext">HL</span> 10 · Energy, calculated</h3>
+            <figure class="diagram-figure review-photo"><img src="img/taipei-101-damper.jpg" alt="The huge golden steel sphere of the Taipei 101 tuned mass damper, hanging on cables" loading="lazy"><figcaption>The tuned mass damper in Taipei 101 is a 660-tonne steel pendulum. Suppose it swings with ω = 1.0 rad s<sup>−1</sup> and amplitude 0.50 m: E = ½mω²x₀² = ½ × 660 000 × 1.0 × 0.25 ≈ 83 kJ. <span class="photo-credit">Photo: Armand du Plessis, <a href="https://creativecommons.org/licenses/by/3.0" target="_blank" rel="noopener">CC BY 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Taipei_101_Tuned_Mass_Damper_2010.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>.</span></figcaption></figure>
             <ul class="understanding-list">
                 <li>Total energy, constant throughout: <em>E<sub>T</sub> = ½mω²x₀²</em></li>
                 <li>Potential energy at displacement x: <em>E<sub>p</sub> = ½mω²x²</em></li>
