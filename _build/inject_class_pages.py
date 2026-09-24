@@ -368,6 +368,16 @@ STYLE = """    <style>
         .summative-bar {{ padding: 0.5rem 0.6rem; }}
         .summative-bar .sm-upcoming {{ display: none; }}
       }}
+      /* The PPQ review packet sits under the calendar and is ACCENTED, on
+         Alex's instruction: it is the one standing item a student should act
+         on before a test. Warm gold rather than the summative's violet, so the
+         two strips never read as the same thing. */
+      .review-bar {{ margin-top: 0.5rem; background: #f7e7b4;
+        border-left: 4px solid #b8860b; padding: 0.5rem 0.9rem;
+        border-radius: 2px; box-shadow: 0 1px 0 rgba(0,0,0,0.06); }}
+      .review-bar .vocab-label {{ color: #6b4e08; font-weight: 600; }}
+      .review-bar .doc-link {{ background: #fdfbf3; border-radius: 4px; }}
+      .review-bar .doc-link:hover {{ background: #fff; }}
       /* The name and date of the test, which is the part that is always
          true. Set as text rather than a button so a student does not click at
          it expecting a sheet that may not exist. */
@@ -639,6 +649,54 @@ ICON_SUMMATIVE = (
     '</svg>')
 
 
+# PPQ review packets. Read from the Class Log header, like the summative field:
+#
+#     **PPQ review packet:**
+#       - [Electricity Review Packet](https://drive.google.com/...)
+#       - [Electricity Review Packet --- answer key](https://drive.google.com/...)
+#
+# Links only, never wikilinks: every packet is past-paper material (AQA, OCR,
+# IB) and is licensed for the classroom, so the PDF itself never reaches this
+# repo. The Drive copy sits behind the St Leonards login. A link whose label
+# ends "answer key" gets the key icon; anything else gets the worksheet icon.
+# Added 2026-09-24 on Alex's instruction: under the calendar, accented,
+# labelled "Past Paper Questions PPQ Review Packet".
+# ⚠ Delete the field once the test has been sat, as with the summative.
+
+REVIEW_FIELD = re.compile(
+    r"^\*\*PPQ review packet:?\*\*[ \t]*(.*(?:\n(?![ \t]*$)(?![ \t]*###).*)*)",
+    re.M)
+MD_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+
+
+def review_bar(name):
+    """The accented standing line carrying this class's PPQ review packet."""
+    log = LOGS / f"{name}.md"
+    if not log.exists():
+        return ""
+    head = log.read_text().split("\n### ", 1)[0]
+    m = REVIEW_FIELD.search(head)
+    if not m:
+        return ""
+    links = MD_LINK.findall(m.group(1))
+    if not links:
+        return ""
+    icons = []
+    for lbl, url in links:
+        is_key = re.search(r"answer key\s*$", lbl, re.I) is not None
+        what = "Answer key" if is_key else "Worksheet"
+        tip = f"{what} — school Drive, St Leonards login"
+        icons.append(
+            f'<a class="doc-link" href="{html.escape(url)}" target="_blank" '
+            f'rel="noopener noreferrer" title="{tip}" '
+            f'aria-label="{html.escape(lbl)} — {tip}">'
+            + (ICON_KEY if is_key else ICON_SHEET) + '</a>')
+    return ('\n        <div class="vocab-bar review-bar">'
+            '\n          <span class="vocab-label">Past Paper Questions PPQ Review Packet</span>'
+            '\n          <span class="doc-icons">' + "".join(icons) + '</span>'
+            '\n        </div>')
+
+
 def summative_bar(name):
     """The standing line naming this class's next summative."""
     log = LOGS / f"{name}.md"
@@ -789,7 +847,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{summative_bar(name)}
+        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{review_bar(name)}{summative_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
