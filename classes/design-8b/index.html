@@ -93,6 +93,16 @@
         .summative-bar { padding: 0.5rem 0.6rem; }
         .summative-bar .sm-upcoming { display: none; }
       }
+      /* The PPQ review packet sits under the calendar and is ACCENTED, on
+         Alex's instruction: it is the one standing item a student should act
+         on before a test. Warm gold rather than the summative's violet, so the
+         two strips never read as the same thing. */
+      .review-bar { margin-top: 0.5rem; background: #f7e7b4;
+        border-left: 4px solid #b8860b; padding: 0.5rem 0.9rem;
+        border-radius: 2px; box-shadow: 0 1px 0 rgba(0,0,0,0.06); }
+      .review-bar .vocab-label { color: #6b4e08; font-weight: 600; }
+      .review-bar .doc-link { background: #fdfbf3; border-radius: 4px; }
+      .review-bar .doc-link:hover { background: #fff; }
       /* The name and date of the test, which is the part that is always
          true. Set as text rather than a button so a student does not click at
          it expecting a sheet that may not exist. */
