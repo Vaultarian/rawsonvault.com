@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<!-- ===================================================================
+     Jos's Feeling Train  --  THE TRAIN YOU SEE!
+     Made with Carl.  Colorful, fun, NOT grey!  🌈🚂
+     To play:  1) run  python3 engine.py   2) open this file.
+====================================================================== -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jos's Feeling Train 🚂</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Comic Sans MS", "Baloo 2", system-ui, sans-serif;
+    /* a happy sky that goes from blue at the top to soft green grass */
+    background: linear-gradient(#7ec8ff 0%, #a6e0ff 55%, #8ee36b 55%, #6fcf4d 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    margin-top: 18px;
+    font-size: 2.4rem;
+    color: #fff;
+    text-shadow: 3px 3px 0 #ff8a3d, 6px 6px 0 rgba(0,0,0,.12);
+    letter-spacing: 1px;
+  }
+
+  /* ---- the big scene with the track and the train ---- */
+  #scene { width: 100%; max-width: 920px; }
+  svg { width: 100%; height: auto; display: block; }
+
+  /* ---- the "how are you feeling" card ---- */
+  #panel {
+    background: #fffef7;
+    border: 4px solid #ff8a3d;
+    border-radius: 22px;
+    padding: 18px 20px;
+    margin: 6px 16px 30px;
+    width: min(640px, 92vw);
+    box-shadow: 0 8px 0 rgba(0,0,0,.12);
+    text-align: center;
+  }
+  #question { font-size: 1.5rem; color: #2b6cb0; margin-bottom: 12px; }
+
+  .input-row { display: flex; gap: 10px; align-items: stretch; }
+  textarea {
+    flex: 1;
+    resize: vertical;
+    min-height: 52px;
+    font-family: inherit;
+    font-size: 1.15rem;
+    padding: 12px 14px;
+    border: 3px solid #7ec8ff;
+    border-radius: 14px;
+    outline: none;
+  }
+  textarea:focus { border-color: #2b6cb0; }
+
+  /* the microphone button */
+  #micBtn {
+    font-size: 1.8rem;
+    width: 64px;
+    border: 3px solid #7ec8ff;
+    border-radius: 14px;
+    background: #eaf6ff;
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  #micBtn:active { transform: scale(.9); }
+  #micBtn.listening {
+    background: #ffd0d0;
+    border-color: #e53e3e;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(229,62,62,.25); } }
+
+  #goBtn {
+    margin-top: 14px;
+    font-family: inherit;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #fff;
+    background: #46c93a;
+    border: none;
+    border-radius: 16px;
+    padding: 12px 34px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #2f9e26;
+  }
+  #goBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 #2f9e26; }
+  #goBtn:disabled { background: #aaa; box-shadow: 0 5px 0 #888; cursor: wait; }
+
+  /* the AI's reply bubble that pops up when you're feeling sad */
+  #reply {
+    margin-top: 16px;
+    font-size: 1.25rem;
+    color: #444;
+    opacity: 0;
+    transition: opacity .5s;
+  }
+  #reply.show { opacity: 1; }
+  #replyAdvice { color: #2b6cb0; font-weight: bold; display: block; margin-top: 6px; }
+  #readBtn {
+    margin-top: 14px;
+    font-family: inherit;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background: #ff8a3d;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 26px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #d96f26;
+    display: none;
+  }
+  #readBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 #d96f26; }
+
+  /* the percentage score badge */
+  #score {
+    position: relative;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #2f9e26;
+    margin-top: 8px;
+  }
+
+  /* ---- the Home / School switch ---- */
+  #modeSwitch { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+  .modeBtn {
+    font-family: inherit; font-size: 1.05rem; font-weight: bold;
+    padding: 8px 18px; border-radius: 999px; cursor: pointer;
+    border: 3px solid #7ec8ff; background: #eaf6ff; color: #2b6cb0;
+  }
+  .modeBtn.on { background: #2b6cb0; border-color: #2b6cb0; color: #fff; }
+
+  /* ---- the School feelings wheel ---- */
+  #schoolBox { display: none; }
+  #wheel { width: 100%; height: auto; display: block; }
+  #wheel .seg { cursor: pointer; stroke: #fff; stroke-width: 2; transition: filter .15s; }
+  #wheel .seg:hover { filter: brightness(1.12) saturate(1.2); }
+  #wheel text { pointer-events: none; font-family: inherit; fill: #3a3a3a; }
+  #wheel .core { font-weight: bold; }
+  #panel.wide { width: min(900px, 96vw); }
+
+  /* ---- the bubbles that float up when you pick a feeling ---- */
+  .bubble {
+    position: fixed; bottom: -130px; z-index: 50; pointer-events: none;
+    width: 96px; height: 96px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 46px;
+    background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 10%,
+                rgba(190,225,255,.45) 30%, rgba(140,190,255,.25) 70%, rgba(255,190,240,.35));
+    border: 3px solid rgba(255,255,255,.85);
+    box-shadow: inset -8px -10px 18px rgba(255,255,255,.35), 0 4px 14px rgba(0,0,0,.08);
+  }
+  .drop {
+    position: fixed; z-index: 51; pointer-events: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(255,255,255,.95); border: 2px solid #9fd0ff;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Jos's Feeling Train 🚂</h1>
+
+  <!-- ============ THE SCENE: track + hump + train ============ -->
+  <div id="scene">
+    <svg viewBox="0 0 920 320" id="svg">
+      <!-- the hump branch (curves up and back down). Colour changes with mood. -->
+      <path id="humpRail" d="M 300 250 C 360 250, 380 90, 500 90 C 620 90, 640 250, 700 250"
+            fill="none" stroke="#9b8cff" stroke-width="10" stroke-linecap="round"/>
+      <!-- railway sleepers feel: dashed darker line on top -->
+      <path d="M 300 250 C 360 250, 380 90, 500 90 C 620 90, 640 250, 700 250"
+            fill="none" stroke="#6b5ce0" stroke-width="10" stroke-dasharray="2 16"
+            stroke-linecap="round" opacity=".5"/>
+
+      <!-- the main bottom line (the track we want to stay on) -->
+      <line x1="0" y1="250" x2="920" y2="250" stroke="#c98a3d" stroke-width="12" stroke-linecap="round"/>
+      <line x1="0" y1="250" x2="920" y2="250" stroke="#8a5a22" stroke-width="12"
+            stroke-dasharray="2 18" opacity=".5"/>
+
+      <!-- THE TRAIN (a colorful rectangle on wheels!) -->
+      <g id="train">
+        <rect x="-34" y="-40" width="68" height="40" rx="9" fill="#e53e3e" stroke="#a51d1d" stroke-width="3"/>
+        <rect x="-22" y="-32" width="20" height="16" rx="3" fill="#fff8c4"/>
+        <rect x="4"  y="-32" width="20" height="16" rx="3" fill="#fff8c4"/>
+        <rect x="-40" y="-54" width="22" height="18" rx="4" fill="#ffb03d" stroke="#a56a1d" stroke-width="2"/>
+        <circle cx="-18" cy="2" r="9" fill="#333" stroke="#fff" stroke-width="2"/>
+        <circle cx="18"  cy="2" r="9" fill="#333" stroke="#fff" stroke-width="2"/>
+        <text x="0" y="-14" text-anchor="middle" font-size="16">😊</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ============ THE FEELINGS CARD ============ -->
+  <div id="panel">
+    <!-- choose: Home (the AI reads your words) or School (tap a button) -->
+    <div id="modeSwitch">
+      <button class="modeBtn" data-mode="home">🏠 Home (AI)</button>
+      <button class="modeBtn" data-mode="school">🏫 School (wheel)</button>
+    </div>
+
+    <div id="question">How are you feeling? 🌈</div>
+
+    <div id="score"></div>
+    <div id="reply">
+      <span id="replyText"></span>
+      <span id="replyAdvice"></span>
+      <button id="readBtn">I've read it! ✅</button>
+    </div>
+
+    <div id="homeBox">
+    <div class="input-row">
+      <textarea id="feeling" placeholder="Type how you feel... or tap the mic and talk!"></textarea>
+      <button id="micBtn" title="Tap to talk, tap again to stop">🎤</button>
+    </div>
+
+    <button id="goBtn">Tell my train! 🚂</button>
+    </div>
+
+    <!-- School mode: no AI needed, works on any laptop -->
+    <div id="schoolBox">
+      <svg id="wheel" viewBox="0 0 1000 1000"></svg>
+    </div>
+
+  </div>
+
+<script>
+// =====================================================================
+//  THE BRAIN OF THE PAGE  --  moves the train and talks to the engine
+// =====================================================================
+
+const ENGINE = "http://127.0.0.1:7531/analyze";  // the engine's door
+
+// grab the bits of the page we need
+const svg       = document.getElementById("svg");
+const train     = document.getElementById("train");
+const humpRail  = document.getElementById("humpRail");
+const feeling   = document.getElementById("feeling");
+const micBtn    = document.getElementById("micBtn");
+const goBtn     = document.getElementById("goBtn");
+const scoreEl   = document.getElementById("score");
+const replyBox  = document.getElementById("reply");
+const replyText = document.getElementById("replyText");
+const replyAdv  = document.getElementById("replyAdvice");
+const readBtn   = document.getElementById("readBtn");
+
+// ---- the two paths the train can travel along --------------------
+// the flat bottom line...
+const mainLine = makePath("M 0 250 L 920 250");
+// ...and the hump branch (same shape as the purple curve above)
+const humpPath = makePath("M 300 250 C 360 250, 380 90, 500 90 C 620 90, 640 250, 700 250");
+
+function makePath(d) {
+  const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  p.setAttribute("d", d);
+  return p;
+}
+
+// put the train at a spot (0 to 1) along a path
+function placeOn(path, t) {
+  const len = path.getTotalLength();
+  const pt = path.getPointAtLength(len * t);
+  train.setAttribute("transform", `translate(${pt.x}, ${pt.y})`);
+}
+
+// =====================================================================
+//  1) THE HAPPY CRUISE  --  train rolls back and forth on the bottom
+// =====================================================================
+let cruiseT = 0, cruiseDir = 1, cruising = true, raf;
+
+function cruise() {
+  if (cruising) {
+    cruiseT += 0.0016 * cruiseDir;
+    if (cruiseT > 1) { cruiseT = 1; cruiseDir = -1; }
+    if (cruiseT < 0) { cruiseT = 0; cruiseDir = 1; }
+    placeOn(mainLine, cruiseT);
+  }
+  raf = requestAnimationFrame(cruise);
+}
+cruise();
+
+// =====================================================================
+//  2) THE MICROPHONE  --  tap to talk, tap again to stop
+// =====================================================================
+let recog = null, listening = false;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR) {
+  recog = new SR();
+  recog.lang = "en-GB";
+  recog.interimResults = true;
+  recog.continuous = true;
+  let base = "";
+  recog.onstart = () => { base = feeling.value ? feeling.value + " " : ""; };
+  recog.onresult = (e) => {
+    let words = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) words += e.results[i][0].transcript;
+    feeling.value = base + words;
+  };
+  recog.onend = () => { if (listening) recog.start(); }; // keep going till stopped
+} else {
+  micBtn.title = "Your browser can't do voice — but typing works great!";
+}
+
+micBtn.addEventListener("click", () => {
+  if (!recog) { alert("This browser can't listen, but you can type! 😊"); return; }
+  listening = !listening;
+  micBtn.classList.toggle("listening", listening);
+  if (listening) recog.start(); else recog.stop();
+});
+
+// =====================================================================
+//  3) THE BIG MOMENT  --  send the feeling to the AI engine
+// =====================================================================
+goBtn.addEventListener("click", async () => {
+  const text = feeling.value.trim();
+  if (!text) { feeling.focus(); return; }
+  if (locked) { nudge(); return; }
+
+  // stop the mic if it's still listening
+  if (listening) { listening = false; micBtn.classList.remove("listening"); recog.stop(); }
+
+  goBtn.disabled = true;
+  goBtn.textContent = "Thinking... 🤔";
+
+  let answer;
+  try {
+    const res = await fetch(ENGINE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    answer = await res.json();
+  } catch (err) {
+    // engine not running? be friendly about it
+    answer = { positive: true, drop_percent: 0,
+               advice: "I can't reach my home engine! Tap 🏫 School to use the wheel instead 😊" };
+  }
+
+  goBtn.disabled = false;
+  goBtn.textContent = "Tell my train! 🚂";
+
+  if (answer.positive) showHappy(answer);
+  else                 showSad(answer);
+});
+
+// ---- POSITIVE: "You're good!", words fade, train keeps cruising ----
+function showHappy(answer) {
+  ++run;
+  cruising = true;
+  setEmoji("😊");
+  paintHump("#9b8cff");
+  scoreEl.style.color = "#2f9e26";
+  scoreEl.textContent = "100% — You're good! 🎉";
+  replyText.textContent = (answer.picked ? `You picked ${answer.picked}. ` : "") + answer.advice;
+  replyAdv.textContent = "";
+  readBtn.style.display = "none";
+  replyBox.classList.add("show");
+  // after a moment, the words fade and everything restarts
+  later(restart, 3500);
+}
+
+// ---- NEGATIVE: climb the hump, STOP, wait for "I've read it!" ----
+let stoppedOnHump = false;
+let locked = false;        // true while the train waits on the hump for "I've read it!"
+let run = 0;               // goes up by 1 for every new feeling
+let restartTimer = null;   // only ever ONE restart waiting at a time
+function later(fn, ms) { clearTimeout(restartTimer); restartTimer = setTimeout(fn, ms); }
+
+function showSad(answer) {
+  clearTimeout(restartTimer);   // stop any old restart from wiping this one
+  locked = true;
+  const my = ++run;
+  cruising = false;          // pause the happy cruise
+  setEmoji("😟");
+  paintHump("#ff6b6b");      // hump turns red-ish when sad
+  const left = 100 - answer.drop_percent;
+  scoreEl.style.color = "#e53e3e";
+  scoreEl.textContent = `−${answer.drop_percent}%  (you're at ${left}%)`;
+  replyText.textContent = (answer.picked ? `You picked ${answer.picked}. ` : "") + "Your train climbed the hump.";
+  replyAdv.textContent = answer.advice;
+  readBtn.style.display = "inline-block";
+  replyBox.classList.add("show");
+
+  // animate the train UP to the top of the hump and stop
+  animateAlong(humpPath, 0, 0.5, 1400, () => { stoppedOnHump = true; }, my);
+}
+
+// when Jos presses "I've read it!" -> roll back DOWN, then restart
+readBtn.addEventListener("click", () => {
+  if (!stoppedOnHump) return;
+  stoppedOnHump = false;
+  locked = false;            // you can pick a new feeling straight away
+  const my = run;
+  readBtn.style.display = "none";
+  setEmoji("😊");
+  paintHump("#9b8cff");
+  scoreEl.style.color = "#2f9e26";
+  scoreEl.textContent = "100% — back on track! 💚";
+  // roll down the rest of the hump, back to the main line
+  animateAlong(humpPath, 0.5, 1, 1400, () => {
+    cruiseT = 700 / 920;     // drop the train back on the bottom line
+    cruising = true;
+    later(restart, 1200);
+  }, my);
+});
+
+// =====================================================================
+//  helpers
+// =====================================================================
+function animateAlong(path, fromT, toT, ms, done, my) {
+  const start = performance.now();
+  function step(now) {
+    if (my !== run) return;   // a newer feeling took over -- stop this one
+    const k = Math.min((now - start) / ms, 1);
+    placeOn(path, fromT + (toT - fromT) * k);
+    if (k < 1) requestAnimationFrame(step); else if (done) done();
+  }
+  requestAnimationFrame(step);
+}
+
+function nudge() {
+  readBtn.animate([{ transform: "rotate(0)" }, { transform: "rotate(-6deg) scale(1.1)" },
+                   { transform: "rotate(6deg) scale(1.1)" }, { transform: "rotate(0)" }],
+                  { duration: 400, iterations: 2 });
+}
+
+function setEmoji(e) {
+  const t = train.querySelector("text");
+  if (t) t.textContent = e;
+}
+function paintHump(color) { humpRail.setAttribute("stroke", color); }
+
+// fade the words away and start the whole thing fresh
+function restart() {
+  replyBox.classList.remove("show");
+  later(() => {
+    scoreEl.textContent = "";
+    replyText.textContent = "";
+    replyAdv.textContent = "";
+    feeling.value = "";
+    cruising = true;          // start cruising again
+  }, 600);
+}
+
+// =====================================================================
+//  4) HOME or SCHOOL?  --  the switch at the top of the card
+// =====================================================================
+// School mode needs no engine. The whole feelings wheel lives right here.
+// Each big feeling -> its middle feelings -> two outer feelings each.
+const WHEEL = [
+  { name: "Anger", emoji: "😠", color: [232,129,143], good: false, drop: 55, kids: [
+    ["Rage","🤬",[["Hate","👿"],["Hostile","😾"]]],
+    ["Exasperated","😤",[["Agitated","😖"],["Frustrated","😣"]]],
+    ["Irritable","😒",[["Annoyed","🙄"],["Aggravated","😠"]]],
+    ["Envy","🫤",[["Resentful","😑"],["Jealous","😒"]]],
+    ["Disgust","🤢",[["Contempt","😏"],["Revolted","🤮"]]] ]},
+  { name: "Sadness", emoji: "😢", color: [170,146,200], good: false, drop: 45, kids: [
+    ["Suffering","😣",[["Agony","😫"],["Hurt","🤕"]]],
+    ["Sadness","😢",[["Depressed","😞"],["Sorrow","😭"]]],
+    ["Disappointed","😞",[["Dismayed","😦"],["Displeased","🙁"]]],
+    ["Shameful","😳",[["Regretful","😔"],["Guilty","😬"]]],
+    ["Neglected","😶",[["Isolated","🏝️"],["Lonely","🥺"]]],
+    ["Despair","😩",[["Grief","💔"],["Powerless","🪫"]]] ]},
+  { name: "Surprise", emoji: "😲", color: [128,168,204], good: null, drop: 25, kids: [
+    ["Stunned","😵",[["Shocked","⚡"],["Dismayed","😦"]]],
+    ["Confused","😕",[["Disillusioned","😑"],["Perplexed","🤔"]]],
+    ["Amazed","🤩",[["Astonished","😮"],["Awe-struck","🌠"]]],
+    ["Overcome","🥹",[["Speechless","😶"],["Astounded","🤯"]]],
+    ["Moved","🥲",[["Stimulated","💡"],["Touched","💗"]]] ]},
+  { name: "Joy", emoji: "😄", color: [196,206,110], good: true, drop: 0, kids: [
+    ["Content","😌",[["Pleased","🙂"],["Satisfied","😊"]]],
+    ["Happy","😄",[["Amused","😆"],["Delighted","😁"]]],
+    ["Cheerful","😃",[["Jovial","😂"],["Blissful","😇"]]],
+    ["Proud","😎",[["Triumphant","🏆"],["Illustrious","🌟"]]],
+    ["Optimistic","🌈",[["Eager","🙋"],["Hopeful","🤞"]]],
+    ["Enthusiastic","🤗",[["Excited","🤩"],["Zeal","🔥"]]],
+    ["Elation","🥳",[["Euphoric","🎉"],["Jubilation","🎊"]]],
+    ["Enthralled","✨",[["Enchanted","🪄"],["Rapture","💫"]]] ]},
+  { name: "Love", emoji: "❤️", color: [242,196,107], good: true, drop: 0, kids: [
+    ["Affectionate","🤗",[["Romantic","🌹"],["Fondness","💕"]]],
+    ["Longing","🥺",[["Sentimental","🥲"],["Attracted","🧲"]]],
+    ["Desire","😍",[["Passion","❤️‍🔥"],["Infatuation","💘"]]],
+    ["Tenderness","🫶",[["Caring","💗"],["Compassionate","🤲"]]],
+    ["Peaceful","🕊️",[["Relieved","😮‍💨"],["Satisfied","😊"]]] ]},
+  { name: "Fear", emoji: "😨", color: [240,154,106], good: false, drop: 45, kids: [
+    ["Scared","😨",[["Helpless","😩"],["Frightened","😱"]]],
+    ["Terror","👻",[["Panic","😵"],["Hysterical","😫"]]],
+    ["Insecure","😟",[["Inferior","😞"],["Inadequate","😔"]]],
+    ["Nervous","😬",[["Worried","😟"],["Anxious","😰"]]],
+    ["Horror","😱",[["Mortified","😳"],["Dread","😧"]]] ]},
+];
+
+// the good bits of Surprise (the rest of Surprise is a wobble)
+const GOOD_SURPRISE = ["Amazed", "Overcome", "Moved"];
+// really big feelings -> a bigger drop, and always a grown-up
+const BIG = ["Hate","Rage","Agony","Despair","Depressed","Grief","Powerless",
+             "Terror","Panic","Hysterical","Dread","Helpless","Suffering"];
+
+const IDEAS = {
+  Anger:    ["Squeeze your fists tight for 5 seconds, then let go. Do it 3 times.",
+             "Count slowly to 10. Then walk away for a minute.",
+             "Do 10 jumping jacks to shake the angry out of your body."],
+  Sadness:  ["Go and find someone you love and ask for a hug.",
+             "Get a drink of water, then tell someone how you feel."],
+  Fear:     ["Take 3 slow breaths: in through your nose, out through your mouth.",
+             "Tell a grown-up what the worry is. Saying it out loud makes it smaller."],
+  Surprise: ["Take a moment. Stop, breathe, and look at what happened.",
+             "Ask someone to help you work out what's going on."],
+  good:     ["Brilliant! Keep that train rolling!", "Yes! Enjoy it, Jos!",
+             "Full steam ahead! Tell someone about it!"],
+  big:      "That is a really big feeling. Go and find a grown-up who loves you and tell them. You don't have to fix it on your own.",
+};
+
+function pickFeeling(core, middle, word, emoji) {
+  if (locked) { nudge(); return; }   // press "I've read it!" first
+  const good = core.good === true || (core.good === null && GOOD_SURPRISE.includes(middle));
+  const big  = BIG.includes(word) || BIG.includes(middle);
+  const list = good ? IDEAS.good : IDEAS[core.name];
+  const answer = {
+    positive: good,
+    drop_percent: good ? 0 : (big ? 70 : core.drop),
+    advice: big ? IDEAS.big : list[Math.floor(Math.random() * list.length)],
+    picked: `${emoji} ${word}`,
+  };
+  window.scrollTo({ top: 0, behavior: "smooth" });   // so you can see the train
+  locked = true;                                      // no new picks while bubbles fly
+  bubbleUp(emoji, answer, () => {
+    locked = false;
+    if (answer.positive) showHappy(answer); else showSad(answer);
+    // the words appear out of the splash: blurry and watery, then sharp
+    replyBox.animate([{ filter: "blur(10px)", transform: "scale(.92)", opacity: 0 },
+                      { filter: "blur(0)",    transform: "scale(1)",   opacity: 1 }],
+                     { duration: 650, easing: "ease-out" });
+  });
+}
+
+// ---- BUBBLES! lots of feeling bubbles float up, and yours POPS ----------
+const ALL_EMOJIS = [...new Set(WHEEL.flatMap(c =>
+  [c.emoji, ...c.kids.flatMap(([, e, outers]) => [e, ...outers.map(([, oe]) => oe)])]))];
+
+function makeBubble(emoji, xPercent) {
+  const b = document.createElement("div");
+  b.className = "bubble";
+  b.textContent = emoji;
+  b.style.left = `calc(${xPercent}vw - 48px)`;
+  document.body.appendChild(b);
+  return b;
+}
+
+function bubbleUp(picked, answer, done) {
+  const H = window.innerHeight, W = window.innerWidth;
+  const others = ALL_EMOJIS.filter(e => e !== picked).sort(() => Math.random() - 0.5).slice(0, 13);
+
+  // the other bubbles float all the way up and off the top
+  others.forEach((e, i) => {
+    const b = makeBubble(e, 5 + Math.random() * 90);
+    const size = 0.7 + Math.random() * 0.5;
+    const wob = (Math.random() - 0.5) * 120;
+    b.animate([
+      { transform: `translate(0, 0) scale(${size})` },
+      { transform: `translate(${wob}px, ${-(H * 0.6)}px) scale(${size})` },
+      { transform: `translate(${-wob}px, ${-(H + 260)}px) scale(${size})` },
+    ], { duration: 3200 + Math.random() * 1800, delay: i * 110, easing: "ease-in", fill: "forwards" });
+    setTimeout(() => b.remove(), 6000);
+  });
+
+  // YOUR bubble rises up the screen, then glides over to where the words will be
+  const mine = document.createElement("div");
+  mine.className = "bubble";
+  mine.textContent = picked;
+  document.body.appendChild(mine);
+  const startX = W * (0.4 + Math.random() * 0.2) - 48;
+  mine.style.left = startX + "px"; mine.style.top = (H + 20) + "px"; mine.style.bottom = "auto";
+
+  const rise = 1500, glide = 1100, total = 300 + rise + glide;
+  setTimeout(() => {
+    // put the words in (still invisible) so we know exactly where they will sit
+    replyText.textContent = (answer.positive ? `You picked ${answer.picked}. ${answer.advice}`
+                                             : `You picked ${answer.picked}. Your train climbed the hump.`);
+    replyAdv.textContent = answer.positive ? "" : answer.advice;
+    const t = replyBox.getBoundingClientRect();
+    const tx = t.left + t.width / 2 - 48, ty = t.top + t.height / 2 - 48;
+    mine.animate([
+      { left: startX + "px",      top: (H + 20) + "px",  transform: "scale(1.15)" },
+      { left: startX - 20 + "px", top: H * 0.45 + "px",  transform: "scale(1.15)", offset: rise / (rise + glide) },
+      { left: tx + "px",          top: ty + "px",        transform: "scale(1.4)" },
+    ], { duration: rise + glide, easing: "ease-in-out", fill: "forwards" });
+
+    // ...and POP! the water splashes out, then runs into the words
+    setTimeout(() => {
+      const cx = tx + 48, cy = ty + 48;
+      mine.animate([{ transform: "scale(1.4)", opacity: 1 }, { transform: "scale(2.1)", opacity: 0 }],
+                   { duration: 180, fill: "forwards" });
+      setTimeout(() => mine.remove(), 250);
+      for (let i = 0; i < 24; i++) {
+        const d = document.createElement("div");
+        d.className = "drop";
+        d.style.left = `${cx - 7}px`; d.style.top = `${cy - 7}px`;
+        document.body.appendChild(d);
+        const a = (i / 24) * Math.PI * 2, dist = 60 + Math.random() * 60;
+        // splash out...
+        const ox = Math.cos(a) * dist, oy = Math.sin(a) * dist;
+        // ...then land somewhere on the line of words
+        const lx = (t.left + Math.random() * t.width) - cx, ly = (t.top + Math.random() * t.height) - cy;
+        d.animate([
+          { transform: "translate(0,0) scale(1)",           opacity: 1 },
+          { transform: `translate(${ox}px, ${oy}px) scale(1)`, opacity: 1, offset: 0.35 },
+          { transform: `translate(${lx}px, ${ly}px) scale(.2)`, opacity: 0 },
+        ], { duration: 900, easing: "ease-in-out", fill: "forwards" });
+        setTimeout(() => d.remove(), 950);
+      }
+      setTimeout(done, 550);   // the words form as the drops land
+    }, rise + glide);
+  }, 300);
+}
+
+// ---- draw the wheel ------------------------------------------------
+const wheel = document.getElementById("wheel");
+const NS = "http://www.w3.org/2000/svg";
+const CX = 500, CY = 500, R0 = 55, R1 = 175, R2 = 320, R3 = 495;
+const leaves = WHEEL.reduce((n, c) => n + c.kids.length * 2, 0);
+const step = 360 / leaves;
+
+function pt(r, deg) { const a = (deg - 90) * Math.PI / 180; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; }
+function arc(r1, r2, d1, d2) {
+  const [a, b] = [pt(r2, d1), pt(r2, d2)], [c, d] = [pt(r1, d2), pt(r1, d1)];
+  const big = d2 - d1 > 180 ? 1 : 0;
+  return `M${a} A${r2},${r2} 0 ${big} 1 ${b} L${c} A${r1},${r1} 0 ${big} 0 ${d} Z`;
+}
+function tint([r, g, b], k) { return `rgb(${[r, g, b].map(v => Math.round(v + (255 - v) * k)).join(",")})`; }
+
+function seg(r1, r2, d1, d2, fill, label, size, cls, onClick) {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", arc(r1, r2, d1, d2));
+  p.setAttribute("fill", fill);
+  p.setAttribute("class", "seg");
+  p.addEventListener("click", onClick);
+  wheel.appendChild(p);
+  // words point out from the middle, flipped on the left so they're never upside down
+  const mid = (d1 + d2) / 2, [x, y] = pt((r1 + r2) / 2, mid);
+  const t = document.createElementNS(NS, "text");
+  let rot = mid - 90;
+  if (mid > 180) rot += 180;
+  t.setAttribute("x", x); t.setAttribute("y", y);
+  t.setAttribute("transform", `rotate(${rot} ${x} ${y})`);
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("dominant-baseline", "central");
+  t.setAttribute("font-size", size);
+  if (cls) t.setAttribute("class", cls);
+  t.textContent = label;
+  wheel.appendChild(t);
+}
+
+// start so Anger sits at the top, like the picture
+let deg = -(WHEEL[0].kids.length * 2 * step) / 2;
+WHEEL.forEach(core => {
+  const coreStart = deg;
+  core.kids.forEach(([middle, mEmoji, outers]) => {
+    const mStart = deg;
+    outers.forEach(([word, emoji]) => {
+      seg(R2, R3, deg, deg + step, tint(core.color, 0.55), `${emoji} ${word}`, 17, "",
+          () => pickFeeling(core, middle, word, emoji));
+      deg += step;
+    });
+    seg(R1, R2, mStart, deg, tint(core.color, 0.3), `${mEmoji} ${middle}`, 19, "",
+        () => pickFeeling(core, middle, middle, mEmoji));
+  });
+  seg(R0, R1, coreStart, deg, tint(core.color, 0), `${core.emoji} ${core.name}`, 24, "core",
+      () => pickFeeling(core, core.name, core.name, core.emoji));
+});
+// the little white hub with a train in it
+const hub = document.createElementNS(NS, "circle");
+hub.setAttribute("cx", CX); hub.setAttribute("cy", CY); hub.setAttribute("r", R0);
+hub.setAttribute("fill", "#fff"); wheel.appendChild(hub);
+const hubT = document.createElementNS(NS, "text");
+hubT.setAttribute("x", CX); hubT.setAttribute("y", CY);
+hubT.setAttribute("text-anchor", "middle"); hubT.setAttribute("dominant-baseline", "central");
+hubT.setAttribute("font-size", 44); hubT.textContent = "🚂"; wheel.appendChild(hubT);
+
+const homeBox   = document.getElementById("homeBox");
+const schoolBox = document.getElementById("schoolBox");
+const modeBtns  = document.querySelectorAll(".modeBtn");
+
+function setMode(mode) {
+  homeBox.style.display   = mode === "home"   ? "block" : "none";
+  schoolBox.style.display = mode === "school" ? "block" : "none";
+  modeBtns.forEach(b => b.classList.toggle("on", b.dataset.mode === mode));
+  document.getElementById("panel").classList.toggle("wide", mode === "school");
+  try { localStorage.setItem("feelingTrainMode", mode); } catch (e) {}
+}
+modeBtns.forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+
+// start in the mode you used last time (School if we don't know)
+let savedMode = "school";
+try { savedMode = localStorage.getItem("feelingTrainMode") || "school"; } catch (e) {}
+setMode(savedMode);
+</script>
+</body>
+</html>
