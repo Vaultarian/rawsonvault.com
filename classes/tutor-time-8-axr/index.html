@@ -103,6 +103,12 @@
       .review-bar .vocab-label { color: #6b4e08; font-weight: 600; }
       .review-bar .doc-link { background: #fdfbf3; border-radius: 4px; }
       .review-bar .doc-link:hover { background: #fff; }
+      /* More than one packet in the strip: each gets its name beside its
+         worksheet + key icons, so Packet 1 and Packet 2 can be told apart. */
+      .review-bar .review-items { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem;
+        align-items: center; }
+      .review-bar .review-item { display: inline-flex; align-items: center; gap: 0.4rem; }
+      .review-bar .review-name { color: #6b4e08; font-size: 0.9em; }
       /* The name and date of the test, which is the part that is always
          true. Set as text rather than a button so a student does not click at
          it expecting a sheet that may not exist. */
@@ -146,7 +152,7 @@
               <span class="lesson-none">No handout</span>
             </div>
           </div>
-        <footer class="site-footer">The Vault · Tutor Time 8 AxR · updated 2 October 2026</footer>
+        <footer class="site-footer">The Vault · Tutor Time 8 AxR · updated 4 October 2026</footer>
     </div>
 </body>
 </html>
