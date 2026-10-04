@@ -378,6 +378,12 @@ STYLE = """    <style>
       .review-bar .vocab-label {{ color: #6b4e08; font-weight: 600; }}
       .review-bar .doc-link {{ background: #fdfbf3; border-radius: 4px; }}
       .review-bar .doc-link:hover {{ background: #fff; }}
+      /* More than one packet in the strip: each gets its name beside its
+         worksheet + key icons, so Packet 1 and Packet 2 can be told apart. */
+      .review-bar .review-items {{ display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem;
+        align-items: center; }}
+      .review-bar .review-item {{ display: inline-flex; align-items: center; gap: 0.4rem; }}
+      .review-bar .review-name {{ color: #6b4e08; font-size: 0.9em; }}
       /* The name and date of the test, which is the part that is always
          true. Set as text rather than a button so a student does not click at
          it expecting a sheet that may not exist. */
@@ -681,19 +687,39 @@ def review_bar(name):
     links = MD_LINK.findall(m.group(1))
     if not links:
         return ""
-    icons = []
-    for lbl, url in links:
-        is_key = re.search(r"answer key\s*$", lbl, re.I) is not None
-        what = "Answer key" if is_key else "Worksheet"
+    def is_key(lbl):
+        return re.search(r"answer key\s*$", lbl, re.I) is not None
+
+    def icon(lbl, url):
+        what = "Answer key" if is_key(lbl) else "Worksheet"
         tip = f"{what} — school Drive, St Leonards login"
-        icons.append(
-            f'<a class="doc-link" href="{html.escape(url)}" target="_blank" '
-            f'rel="noopener noreferrer" title="{tip}" '
-            f'aria-label="{html.escape(lbl)} — {tip}">'
-            + (ICON_KEY if is_key else ICON_SHEET) + '</a>')
-    return ('\n        <div class="vocab-bar review-bar">'
-            '\n          <span class="vocab-label">Past Paper Questions PPQ Review Packet</span>'
-            '\n          <span class="doc-icons">' + "".join(icons) + '</span>'
+        return (f'<a class="doc-link" href="{html.escape(url)}" target="_blank" '
+                f'rel="noopener noreferrer" title="{tip}" '
+                f'aria-label="{html.escape(lbl)} — {tip}">'
+                + (ICON_KEY if is_key(lbl) else ICON_SHEET) + '</a>')
+
+    label = ('\n          <span class="vocab-label">'
+             'Past Paper Questions PPQ Review Packet</span>')
+    sheets = [lbl for lbl, _ in links if not is_key(lbl)]
+    if len(sheets) <= 1:
+        # One packet: icons only, exactly as before.
+        icons = "".join(icon(lbl, url) for lbl, url in links)
+        return ('\n        <div class="vocab-bar review-bar">' + label +
+                '\n          <span class="doc-icons">' + icons + '</span>'
+                '\n        </div>')
+    # Several packets (12 SH, 4 Oct): each worksheet starts a group carrying its
+    # visible name; the answer key after it joins that group.
+    groups = []
+    for lbl, url in links:
+        if not is_key(lbl) or not groups:
+            groups.append([html.escape(lbl), ""])
+        groups[-1][1] += icon(lbl, url)
+    items = "".join(
+        f'<span class="review-item"><span class="review-name">{name}</span>'
+        f'<span class="doc-icons">{icons}</span></span>'
+        for name, icons in groups)
+    return ('\n        <div class="vocab-bar review-bar">' + label +
+            '\n          <span class="review-items">' + items + '</span>'
             '\n        </div>')
 
 
