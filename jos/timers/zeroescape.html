@@ -327,6 +327,7 @@
   function escape() {
     if (escaped) return;
     escaped = true;
+    if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
     running = false;
     display.classList.remove('panic');
     flash.classList.add('on');
@@ -353,5 +354,6 @@
   resetAll();
   requestAnimationFrame(loop);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

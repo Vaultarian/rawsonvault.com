@@ -395,6 +395,7 @@
       const text = timeText(leftMs);
       if (text !== shownText) showTime(text);
       if (leftMs === 0) {
+        if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
         running = false;
         finished = true;
         startBtn.textContent = 'START';
@@ -605,5 +606,6 @@
     list.addEventListener('click', e => e.stopPropagation());
   })();
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

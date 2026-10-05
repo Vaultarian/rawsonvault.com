@@ -247,6 +247,7 @@
       100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
     }
   </style>
+<script src="../_intro/rawson-intro.js"></script>
 </head>
 <body>
 
@@ -459,6 +460,7 @@
   function pad4(n) { return String(n).padStart(4, '0'); }
 
   function triggerDone() {
+    if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
     // Flash
     const flash = document.createElement('div');
     flash.className = 'done-flash';
@@ -572,5 +574,6 @@
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', go); } else { go(); }
 })();
 </script>
+<script src="../timers/assets/alarm.js"></script>
 </body>
 </html>

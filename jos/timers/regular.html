@@ -251,6 +251,7 @@
       if (remainingMs <= 0) {
         running = false;
         doneMsg.classList.add('show');
+        if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
         startBtn.textContent = 'START';
         startBtn.classList.remove('pause-mode');
         colon.classList.remove('pulse');
@@ -262,5 +263,6 @@
   resetAll();
   requestAnimationFrame(loop);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

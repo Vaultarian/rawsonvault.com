@@ -549,6 +549,7 @@
       showTime(remainingMs);
       if (remainingMs <= 0) {
         // fully melted: the flame is out and only the goop is left
+        if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
         melt = 1;
         phase = 'goop';
         goopAt = now;
@@ -591,5 +592,6 @@
   resetAll();
   requestAnimationFrame(loop);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

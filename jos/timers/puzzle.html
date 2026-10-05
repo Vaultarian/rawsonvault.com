@@ -553,6 +553,7 @@
   }
 
   function finishUp() {
+    if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
     running = false;
     finished = true;
     startBtn.textContent = 'START';
@@ -570,5 +571,6 @@
   resetAll();
   requestAnimationFrame(loop);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

@@ -441,6 +441,7 @@
   let restBox = null;         // where the numbers were sitting before the wave took them
 
   function startTsunami(now) {
+    if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
     mode = 'tsunami';
     tsunamiStartedAt = now;
     grabbed = false;
@@ -751,5 +752,6 @@
   })();
 </script>
 
+<script src="assets/alarm.js"></script>
 </body>
 </html>

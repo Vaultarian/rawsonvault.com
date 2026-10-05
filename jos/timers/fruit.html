@@ -524,6 +524,7 @@
       showTime(remainingMs);
       if (remainingMs <= 0) {
         // ZERO. The lid opens.
+        if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
         phase = 'pour';
         phaseAt = now;
         document.body.classList.add('flooding');
@@ -572,5 +573,6 @@
   resetAll();
   requestAnimationFrame(loop);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

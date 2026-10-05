@@ -161,6 +161,8 @@
         .sm-nav button:hover { background: #d9643a; transform: scale(1.05); }
         .sm-hint { color: rgba(242,237,227,0.6); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; padding-bottom: 1rem; }
     </style>
+<script src="swirl.js" data-swirl-links></script>
+<script src="mods.js"></script>
 </head>
 <body>
 <script>
@@ -237,6 +239,7 @@
                         <div class="pill-row"><a class="pill" href="password-defender/">Password Defender</a><a class="pill" href="snake/">Snake</a></div>
                         <div class="pill-row"><a class="pill" href="flappy-bird/">Flappy Bird</a><a class="pill" href="marble_run.html">Marble Run</a></div>
                         <div class="pill-row"><a class="pill" href="simon-says-among-us/">Simon Says (Among Us)</a><a class="pill" href="2048/">2048</a></div>
+                        <div class="pill-row"><a class="pill" href="bouncy-spinner/">Bouncy Spinner</a></div>
                     </div>
                     <div class="snowman-grid">
                         <div class="snowman-col">
@@ -959,6 +962,8 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
           <button class="set-toggle" id="tSfx"><span class="ico">🔊</span>Sound Effects<span class="cross"></span></button>
         </div>
 
+        <p class="set-sub" id="nowPlaying" style="margin:-6px 0 0;min-height:1.15em;opacity:.75;"></p>
+
         <div class="set-foot">
           <button class="set-btn close" id="setClose">Close</button>
           <button class="set-btn reset" id="setReset">Reset everything</button>
@@ -1259,6 +1264,118 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
   }
 
   paint();
+})();
+</script>
+
+
+<!-- ===================== background music ===================== -->
+<audio id="bgm" preload="none"></audio>
+<script>
+(function () {
+  var SET_KEY = 'jos-settings';
+  var TRACKS = [
+    { file: 'music/coffee-shop.mp3',      name: 'Lofi Coffee Shop'      },
+    { file: 'music/midnight-club.mp3',    name: 'Lofi Midnight Club'    },
+    { file: 'music/chill-vlog-beats.mp3', name: 'Lofi Chill Vlog Beats' }
+  ];
+  var VOLUME = 0.35;          /* nice and quiet in the background */
+  var FADE_MS = 1500;
+
+  var bgm = document.getElementById('bgm');
+  var order = TRACKS.slice();
+  for (var i = order.length - 1; i > 0; i--) {      /* shuffle */
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = order[i]; order[i] = order[j]; order[j] = t;
+  }
+  var at = 0, started = false, fadeTimer = null;
+
+  function wantsMusic() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SET_KEY));
+      return !s || s.audio !== false;
+    } catch (e) { return true; }
+  }
+
+  function label() {
+    var el = document.getElementById('nowPlaying');
+    if (!el) return;
+    el.textContent = (started && !bgm.paused) ? '♪ ' + order[at].name : '';
+  }
+
+  function fadeTo(target, done) {
+    clearInterval(fadeTimer);
+    var steps = 30, step = (target - bgm.volume) / steps, n = 0;
+    fadeTimer = setInterval(function () {
+      n++;
+      bgm.volume = Math.min(1, Math.max(0, bgm.volume + step));
+      if (n >= steps) {
+        clearInterval(fadeTimer);
+        bgm.volume = target;
+        if (done) done();
+      }
+    }, FADE_MS / steps);
+  }
+
+  function play() {
+    bgm.src = order[at].file;
+    bgm.volume = 0;
+    var p = bgm.play();
+    if (p && p.catch) p.catch(function () {       /* blocked? try again on the next click */
+      started = false;
+      document.addEventListener('pointerdown', firstTouch);
+      document.addEventListener('keydown', firstTouch);
+    });
+    fadeTo(VOLUME);
+    label();
+  }
+
+  bgm.addEventListener('ended', function () {
+    at = (at + 1) % order.length;
+    play();
+  });
+
+  /* browsers only let music start after the person clicks something */
+  function firstTouch() {
+    if (started || !wantsMusic()) return;
+    started = true;
+    play();
+    document.removeEventListener('pointerdown', firstTouch);
+    document.removeEventListener('keydown', firstTouch);
+  }
+  document.addEventListener('pointerdown', firstTouch);
+  document.addEventListener('keydown', firstTouch);
+
+  /* a little click sound every time you click (only when Audio is on) */
+  var clickSound = new Audio('sounds/click.wav');
+  clickSound.volume = 0.6;
+  document.addEventListener('pointerdown', function () {
+    if (!wantsMusic()) return;
+    var c = clickSound.cloneNode();     /* a copy, so fast clicks don't cut each other off */
+    c.volume = clickSound.volume;
+    c.play().catch(function () {});
+  });
+
+  /* the Audio button in Settings turns it on and off */
+  var tAudio = document.getElementById('tAudio');
+  if (tAudio) {
+    tAudio.addEventListener('click', function () {
+      if (wantsMusic()) {
+        if (!started) { started = true; play(); }
+        else { bgm.play(); fadeTo(VOLUME); label(); }
+      } else {
+        fadeTo(0, function () { bgm.pause(); label(); });
+      }
+    });
+  }
+
+  /* "Reset everything" turns Audio back on, so bring the music back */
+  var askYes = document.getElementById('askYes');
+  if (askYes) {
+    askYes.addEventListener('click', function () {
+      if (!started) { started = true; play(); }
+      else if (bgm.paused) { bgm.play(); fadeTo(VOLUME); label(); }
+    });
+  }
 })();
 </script>
 

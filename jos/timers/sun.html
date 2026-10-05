@@ -451,6 +451,7 @@
   let chunks = [];                      // the flying bits of sun
 
   function startExplosion(now) {
+    if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
     mode = 'exploding';
     boomStartedAt = now;
     brightness = 1;
@@ -731,5 +732,6 @@
   })();
 </script>
 
+<script src="assets/alarm.js"></script>
 </body>
 </html>

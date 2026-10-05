@@ -413,6 +413,7 @@
       // (clamped to totalMs too: a frame's timestamp can be a whisker earlier than the moment we pressed start)
       remainingMs = Math.min(totalMs, Math.max(0, endMoment - now));
       if (remainingMs === 0) {
+        if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
         running = false;
         finished = true;
         startBtn.textContent = 'START';
@@ -723,5 +724,6 @@
   resetTimer();
   requestAnimationFrame(frame);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>

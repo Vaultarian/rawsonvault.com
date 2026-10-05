@@ -354,6 +354,7 @@
   let finaleAt = 0;
 
   function startFinale(now) {
+    if (window.JosAlarm) JosAlarm.ring();   // ring until STOP
     finishing = true;
     running = false;
     finaleAt = now;
@@ -442,5 +443,6 @@
   resetAll();
   requestAnimationFrame(loop);
 </script>
+<script src="assets/alarm.js"></script>
 </body>
 </html>
