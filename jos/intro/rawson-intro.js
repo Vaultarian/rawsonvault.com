@@ -3,7 +3,7 @@
 
    Put this ONE line in a game's <head> or at the top of <body>:
 
-       <script src="../_intro/rawson-intro.js"></script>
+       <script src="../intro/rawson-intro.js"></script>
 
    It drops a full-screen layer over the page, plays the orb clip,
    writes RAWSON VAULT, then fades out and deletes itself. The game
