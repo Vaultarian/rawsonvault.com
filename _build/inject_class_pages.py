@@ -342,6 +342,16 @@ STYLE = """    <style>
       .calendar-bar .vocab-link:hover {{ background: #fff;
         color: var(--bronze-deep); border-color: var(--bronze-deep); }}
       .cal-ico {{ vertical-align: -2px; margin-right: 0.35rem; }}
+      /* OneNote class notes: under the calendar, same strip shape, in OneNote
+         purple and bolder than the summative's lavender so the two never blur.
+         The icon is the button, lifted to paper like the review-packet icons. */
+      .notes-bar {{ margin-top: 0.5rem; background: #e6d4f0; align-items: center;
+        border-left: 3px solid #7719AA;
+        padding: 0.5rem 0.9rem; border-radius: 2px; }}
+      .notes-bar .vocab-label {{ color: #5c1485; font-weight: 700; }}
+      .notes-bar .doc-link {{ background: #fdfbf3; border-radius: 4px;
+        border: 1px solid #b48fcb; padding: 3px; }}
+      .notes-bar .doc-link:hover {{ background: #fff; border-color: #7719AA; }}
       /* Upcoming summatives sit beside the calendar as standing information,
          so they copy its shape exactly -- tinted strip, lifted buttons. The
          tint is a shade cooler and the left rule darker, because a summative
@@ -750,7 +760,7 @@ def notes_bar(name):
     url = html.escape(link.group(2))
     # The icon IS the link, like the worksheet icons in the lesson rows.
     tip = "Class notes — OneNote, St Leonards login"
-    return ('\n        <div class="vocab-bar">'
+    return ('\n        <div class="vocab-bar notes-bar">'
             '\n          <span class="vocab-label">Class notes</span>'
             f'\n          <span class="doc-icons"><a class="doc-link" href="{url}" '
             f'target="_blank" rel="noopener noreferrer" title="{tip}" '
@@ -908,7 +918,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>{vocab_bar(name)}{notes_bar(name)}{calendar_bar(name)}{review_bar(name)}{summative_bar(name)}
+        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{notes_bar(name)}{review_bar(name)}{summative_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
