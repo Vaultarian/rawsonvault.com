@@ -3,6 +3,7 @@
 import re, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from manifest import P, SEASONS
+from readings import R as READINGS
 
 ROOT = pathlib.Path(__file__).resolve().parents[2] / "ai/students"
 UP = "../../../../"
@@ -41,6 +42,49 @@ def upgrade_sources(inner, note):
         inner = re.sub(r'(<h2>.*?</h2>\n)',
                        r'\1            <p class="trust-note">%s</p>\n' % note, inner, count=1)
     return inner
+
+
+ICONS = {"pdf": "pdf.svg", "youtube": "youtube.svg", "google-docs": "google-docs.svg"}
+
+
+def readings_block(p):
+    """The Readings list for one page, from readings.py. Empty string if none.
+
+    Wrapped in READINGS markers so patch_s4.py can replace it in place, and
+    given an id so grab(old, "documents") never mistakes it for the page's
+    own documents block on a rebuild."""
+    items = READINGS.get(p["dir"]) or []
+    if not items:
+        return ""
+    rows, credits = [], []
+    for r in items:
+        if r.get("file"):
+            f = ROOT / p["dir"] / "readings" / r["file"]
+            if not f.exists():
+                raise SystemExit("readings.py names a missing file: %s" % f)
+            href = "readings/" + r["file"]
+            credits.append(r["credit"])
+        else:
+            href = r["url"]
+        rows.append(
+            '                <li>\n'
+            '                    <a href="%s" target="_blank" rel="noopener">\n'
+            '                        <img class="doc-icon" src="%simages/third-party/%s" alt="">\n'
+            '                        <span><strong>%s</strong> &middot; %s</span>\n'
+            '                        <span class="doc-meta">%s</span>\n'
+            '                    </a>\n'
+            '                </li>' % (href, UP, ICONS[r.get("icon", "pdf")],
+                                      r["title"], r["by"], r["meta"]))
+    credit = ""
+    if credits:
+        credit = ('\n            <p class="doc-credit">Copies hosted here, under their '
+                  'open licences: %s</p>' % " ".join(credits))
+    return ('        <!-- READINGS:START -->\n'
+            '        <div class="documents" id="readings">\n'
+            '            <h2>Readings</h2>\n'
+            '            <ul class="doc-list">\n%s\n            </ul>%s\n'
+            '        </div>\n'
+            '        <!-- READINGS:END -->' % ("\n".join(rows), credit))
 
 
 TRUST = ("Every source on this page was opened and checked before it went here. "
@@ -166,6 +210,8 @@ def build(p):
 
     gem = gemblock(p)
     gem = gem + "\n\n" if gem else ""
+    reads = readings_block(p)
+    reads = reads + "\n\n" if reads else ""
     src = sources + "\n\n" if sources else ""
 
     style = ""
@@ -218,7 +264,7 @@ def build(p):
 {article}
         </div>
 
-{question}{gem}{src}{vocab}{nav}
+{question}{reads}{gem}{src}{vocab}{nav}
 
         <footer class="site-footer">{foot}</footer>
 
@@ -228,18 +274,23 @@ def build(p):
 """.format(code=p["code"], title=p["title"], up=UP, style=style,
            crumb_parent=crumb_parent, crumb=p["crumb"], eyebrow=eyebrow, big=big,
            subtitle=p["subtitle"], badge=badge, docs=docs, article=article,
-           question=question, gem=gem, src=src, vocab=vocab, nav=navlinks(p), foot=foot)
+           question=question, reads=reads, gem=gem, src=src, vocab=vocab, nav=navlinks(p), foot=foot)
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(html, encoding="utf-8")
     return path
 
 
-built = []
-for p in P:
-    if p.get("patch"):
-        continue
-    built.append(build(p))
-print("rendered %d pages" % len(built))
-for b in built:
-    print("  ", b.relative_to(ROOT))
+def main():
+    built = []
+    for p in P:
+        if p.get("patch"):
+            continue
+        built.append(build(p))
+    print("rendered %d pages" % len(built))
+    for b in built:
+        print("  ", b.relative_to(ROOT))
+
+
+if __name__ == "__main__":     # patch_s4.py imports this module; importing must not rebuild
+    main()

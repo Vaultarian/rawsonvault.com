@@ -253,11 +253,28 @@ their bespoke markup — the hero, the verified embed, the data chart, the debat
 machinery — survives.
 
 **Every page carries, in this order:** page-top with breadcrumb and corner logo ·
-section header · rule · [documents] · article · [question-box] · gem-link ·
-[sources] · [key words] · **ep-nav** · footer. The first four and the last two
+section header · rule · [documents] · article · [question-box] · [readings] ·
+gem-link · [sources] · [key words] · **ep-nav** · footer. The first four and the last two
 are on all nineteen without exception.
 
 ---
+
+## Readings
+
+The **Readings** block is the pupil reading list for a lesson: a `.documents` block with
+`id="readings"`, one `.doc-list` row per article, PDF icon left, source pill right. It is
+generated, never hand-edited. **Edit `_build/ai/readings.py`**, one list per page, then
+rebuild (`build_pages.py`, `patch_s4.py`). A page with no entry gets no block.
+
+- **LINKED** rows (`url=`) point at the public original. This is the default, and the only
+  option for paywalled, login-only or unclear-provenance material.
+- **HOSTED** rows (`file=`) serve a PDF from `ai/students/<page>/readings/`, and only on one
+  of the two grounds in `AGENTS.md` (licensed, or published free for classroom use, e.g.
+  CC BY). Every hosted row adds its licence and source to the `.doc-credit` line. Check the
+  PDF's last page and its download stamps before committing it.
+
+`<!-- READINGS:START/END -->` markers let `patch_s4.py` replace the block in place, and the
+`id` keeps the generator from mistaking it for a page's own documents block on rebuild.
 
 ## Verification before publishing
 
@@ -278,6 +295,8 @@ inline 13–17 times, so a style change was a fifteen-file edit. 141 inline rule
 copies were removed into one `.ai-page`-scoped section of `vault.css`, two
 duplicate names were settled, the bot component was given its forward name, and
 the `.article` close/re-open bug was fixed on the eight pages carrying it.*
+
+*v1.2 — 2026-10-06. Added the generated **Readings** block and its data file, `_build/ai/readings.py`.*
 
 *v1.1 — 2026-09-20. Phase 1: the pages themselves. Records the course shape, the
 **Season 3 remap** (three June pages carried the wrong episode identities), the

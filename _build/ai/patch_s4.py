@@ -54,6 +54,14 @@ for slug in ("season-4/s4e1-post-truth", "season-4/s4e2-environmentalist-debate"
     h = re.sub(r'<footer class="site-footer">.*?</footer>',
                '<footer class="site-footer">AI Literacy Course &middot; Season 4 &middot; 2026</footer>', h)
 
+    # 9. Readings block from readings.py -- replaced between its markers, or
+    #    inserted just before the Gem call to action the first time.
+    block = B.readings_block(p)
+    h = re.sub(r'        <!-- READINGS:START -->.*?<!-- READINGS:END -->\n\n', '', h, flags=re.S)
+    if block:
+        h = h.replace('\n        <div class="gem-link">',
+                      '\n' + block + '\n\n        <div class="gem-link">', 1)
+
     f.write_text(h, encoding="utf-8")
     print("%-42s %s" % (slug, "patched" if h != before else "UNCHANGED"))
     for probe in ("chipp", "Perth", "ep-nav", "gem-link", "corner-logo", "ep-big"):

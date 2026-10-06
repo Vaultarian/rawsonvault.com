@@ -11,7 +11,7 @@ python3 build_hubs.py      # the four season hubs + the stub hub
 python3 ~/AlfredOS/agents/tim/name_audit.py ~/rawsonvault
 ```
 
-**`manifest.py` is the file you edit.** One row per page: title, subtitle, Gem
+**`manifest.py` is the file you edit** (and `readings.py` for each page's Readings list). One row per page: title, subtitle, Gem
 id, the question the episode turns on, the key words, and any page-specific
 prose. Everything else — the prev/next chain, the breadcrumb, the corner logo,
 the footer, the component order — is derived, so adding a component to all

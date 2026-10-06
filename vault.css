@@ -904,6 +904,18 @@ a:hover { color: var(--bronze-dark); }
   .ai-page .doc-dual .fmt-btn { padding: 0.32rem 0.46rem; }
 }
 
+/* Credit line under a Readings list: licence + source for every copy the
+   repo hosts (AGENTS.md third-party rule). Generated from _build/ai/readings.py. */
+.ai-page .documents .doc-credit {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--gray-dark);
+  margin: var(--gap-xs) 0 0;
+  padding-top: var(--gap-xs);
+  border-top: 1px solid #f0ece4;
+}
+.ai-page .documents .doc-credit a { color: var(--bronze-dark); }
+
 /* ── Core question ────────────────────────────────────────── */
 .ai-page .question-box {
   border-left: 3px solid var(--bronze-core);
