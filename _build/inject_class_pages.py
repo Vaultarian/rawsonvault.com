@@ -723,6 +723,39 @@ def review_bar(name):
             '\n        </div>')
 
 
+# OneNote class notes. Read from the Class Log header, like the PPQ field:
+#
+#     **Class notes:** [OneNote](https://stleonardsschool-my.sharepoint.com/...)
+#
+# One link per class, to that class's OneNote notebook. Students open it signed
+# in to their St Leonards Microsoft account; the notebook's own Share setting
+# decides who gets in, not this page. Icon is the OneNote mark from Simple
+# Icons (CC0), inlined like the others in OneNote purple. Added 2026-10-06.
+NOTES_FIELD = re.compile(r"^\*\*Class notes:?\*\*[ \t]*(.*)", re.M)
+ICON_ONENOTE = (
+    '<svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" '
+    'aria-hidden="true" focusable="false"><path fill="#7719AA" d="M23 1.5Q23.41 1.5 23.7 1.8 24 2.09 24 2.5V21.5Q24 21.91 23.7 22.2 23.41 22.5 23 22.5H7Q6.59 22.5 6.3 22.2 6 21.91 6 21.5V18H1Q0.59 18 0.3 17.7 0 17.41 0 17V7Q0 6.59 0.3 6.3 0.58 6 1 6H6V2.5Q6 2.09 6.3 1.8 6.59 1.5 7 1.5ZM4.56 11 7.39 15.93H9.18V8.07H7.44V13.1L4.71 8.07H2.82V15.93H4.56ZM22.5 21V18H19.5V21ZM22.5 16.5V13.5H19.5V16.5ZM22.5 12V9H19.5V12ZM22.5 7.5V3H7.5V6H11Q11.41 6 11.7 6.3 12 6.59 12 7V17Q12 17.41 11.7 17.7 11.41 18 11 18H7.5V21H18V7.5Z"/></svg>')
+
+
+def notes_bar(name):
+    """A standing line linking this class's OneNote class notes."""
+    log = LOGS / f"{name}.md"
+    if not log.exists():
+        return ""
+    head = log.read_text().split("\n### ", 1)[0]
+    m = NOTES_FIELD.search(head)
+    link = m and MD_LINK.search(m.group(1))
+    if not link:
+        return ""
+    url = html.escape(link.group(2))
+    return ('\n        <div class="vocab-bar">'
+            '\n          <span class="vocab-label">'
+            + ICON_ONENOTE + 'Class notes</span>'
+            f'\n          <a class="vocab-link" href="{url}" target="_blank" '
+            'rel="noopener noreferrer">Click here to access our class notes</a>'
+            '\n        </div>')
+
+
 def summative_bar(name):
     """The standing line naming this class's next summative."""
     log = LOGS / f"{name}.md"
@@ -873,7 +906,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{review_bar(name)}{summative_bar(name)}
+        <div class="rule--full"></div>{vocab_bar(name)}{notes_bar(name)}{calendar_bar(name)}{review_bar(name)}{summative_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
