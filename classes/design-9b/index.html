@@ -67,6 +67,16 @@
       .calendar-bar .vocab-link:hover { background: #fff;
         color: var(--bronze-deep); border-color: var(--bronze-deep); }
       .cal-ico { vertical-align: -2px; margin-right: 0.35rem; }
+      /* OneNote class notes: under the calendar, same strip shape, in OneNote
+         purple and bolder than the summative's lavender so the two never blur.
+         The icon is the button, lifted to paper like the review-packet icons. */
+      .notes-bar { margin-top: 0.5rem; background: #e6d4f0; align-items: center;
+        border-left: 3px solid #7719AA;
+        padding: 0.5rem 0.9rem; border-radius: 2px; }
+      .notes-bar .vocab-label { color: #5c1485; font-weight: 700; }
+      .notes-bar .doc-link { background: #fdfbf3; border-radius: 4px;
+        border: 1px solid #b48fcb; padding: 3px; }
+      .notes-bar .doc-link:hover { background: #fff; border-color: #7719AA; }
       /* Upcoming summatives sit beside the calendar as standing information,
          so they copy its shape exactly -- tinted strip, lifted buttons. The
          tint is a shade cooler and the left rule darker, because a summative
@@ -138,6 +148,10 @@
         <div class="vocab-bar calendar-bar">
           <span class="vocab-label"><svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M7.6 2.2v3.6M16.4 2.2v3.6" stroke="#7d6d3a" stroke-width="2.2" stroke-linecap="round"/><rect x="2.6" y="4.4" width="18.8" height="17" rx="2" fill="#fdfbf3" stroke="#7d6d3a" stroke-width="1.7"/><path d="M2.6 9.2V6.4a2 2 0 0 1 2-2h14.8a2 2 0 0 1 2 2v2.8z" fill="#7d6d3a"/><g fill="#b9a765"><rect x="5.4" y="11.6" width="3.4" height="3" rx="0.6"/><rect x="10.3" y="11.6" width="3.4" height="3" rx="0.6"/><rect x="15.2" y="11.6" width="3.4" height="3" rx="0.6"/><rect x="5.4" y="16.2" width="3.4" height="3" rx="0.6"/></g><rect x="10.3" y="16.2" width="3.4" height="3" rx="0.6" fill="#c0392b"/></svg>Calendar</span>
           <a class="vocab-link" href="files/y9b-design-calendar-autumn-1.pdf">Autumn term to the October break</a>
+        </div>
+        <div class="vocab-bar notes-bar">
+          <span class="vocab-label">Class notes</span>
+          <span class="doc-icons"><a class="doc-link" href="https://stleonardsschool-my.sharepoint.com/:o:/g/personal/a_rawson_stleonards-fife_org/IgAGtkX2FFE0SISBAYC3Upw5AdzH_2V_s9by-K5ZeZmic40?e=5PLodb" target="_blank" rel="noopener noreferrer" title="Class notes — OneNote, St Leonards login" aria-label="Class notes — OneNote, St Leonards login"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#7719AA" d="M23 1.5Q23.41 1.5 23.7 1.8 24 2.09 24 2.5V21.5Q24 21.91 23.7 22.2 23.41 22.5 23 22.5H7Q6.59 22.5 6.3 22.2 6 21.91 6 21.5V18H1Q0.59 18 0.3 17.7 0 17.41 0 17V7Q0 6.59 0.3 6.3 0.58 6 1 6H6V2.5Q6 2.09 6.3 1.8 6.59 1.5 7 1.5ZM4.56 11 7.39 15.93H9.18V8.07H7.44V13.1L4.71 8.07H2.82V15.93H4.56ZM22.5 21V18H19.5V21ZM22.5 16.5V13.5H19.5V16.5ZM22.5 12V9H19.5V12ZM22.5 7.5V3H7.5V6H11Q11.41 6 11.7 6.3 12 6.59 12 7V17Q12 17.41 11.7 17.7 11.41 18 11 18H7.5V21H18V7.5Z"/></svg></a></span>
         </div>
         <div class="vocab-bar summative-bar">
           <span class="vocab-label"><svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="#8b7aa8" stroke="#6d5d88" stroke-width="1.4"/><path d="M12 6.6v7.2" stroke="#fdfbf3" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.5" fill="#fdfbf3"/></svg><span class="sm-upcoming">Upcoming </span>Summative</span>
