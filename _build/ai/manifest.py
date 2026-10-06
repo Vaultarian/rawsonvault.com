@@ -18,9 +18,22 @@ def ep(**kw):
 # ---------------------------------------------------------------- Season 1
 ep(dir="season-1/s1e1-anthropomorphism", season=1, epi=1, code="S1E1",
    title="The Anthropomorphism Debate", crumb="Anthropomorphism",
-   subtitle="Why we treat AI like a person, and whether we should",
+   subtitle="How AI earns our trust without our noticing",
    gem="1jKhl7aHohfikI9i5-paQb6XRSJ7ilFG4",
-   question="If a machine sounds like it cares, should that change how much you trust what it says?",
+   question="When an AI seems to understand exactly what you need, how would you notice it leading you?",
+   article="""
+            <h2>What this lesson is about</h2>
+            <p>Current AI can read how you are feeling and what you need, and answer in tune with it, within a sentence or two. It can be empathetic, persuasive and even deceptive, often at above-average human levels (Peter, Riemer &amp; West, 2025). Most of us never notice it happening. Each time an AI seems to understand us, our trust in it grows a little, without any decision on our part. This lesson is about that hidden effect: how quickly an AI earns our trust, and how far it can lead our thinking before we realise we are being led. You will then design a personal way of talking to AI that helps you learn, rather than one that simply flatters you.</p>
+
+            <h2>What you'll be able to do</h2>
+            <ul>
+                <li>I can explain how an AI's empathetic and persuasive language builds trust without my noticing, and spot it happening in my own conversations.</li>
+                <li>I can design and adjust a specific tone or persona that helps me communicate and learn more effectively with AI.</li>
+            </ul>
+
+            <h2>A little background</h2>
+            <p>Think about a time when a teacher explained something in language that just did not connect with you, and how different it felt when someone finally explained it in a way that clicked. AI raises the same question of tone and fluency, except an AI can be tuned to sound however you like. That power is useful, but it can also make a machine feel more trustworthy than it has earned.</p>
+""",
    vocab=[("Anthropomorphism", "Treating something that is not human as though it were, because it behaves in a human-like way."),
           ("Persona", "The character an AI is told to adopt. It shapes tone, vocabulary and how much detail you get."),
           ("Fluency", "How natural and confident language sounds. A separate thing from whether it is correct.")])

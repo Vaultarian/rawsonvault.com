@@ -800,6 +800,14 @@ a:hover { color: var(--bronze-dark); }
   margin: var(--gap-lg) 0;
 }
 
+/* Core reading: the lesson's main text, set apart above Further Readings.
+   Same bronze left rule as .progress-panel. Added 2026-10-06. */
+.ai-page .documents--core {
+  background: var(--white);
+  border: 1px solid var(--bronze-cream);
+  border-left: 3px solid var(--bronze-core);
+}
+
 /* Modifier: no top margin, for a documents block that sits directly
    under a hero banner or rule rather than after body copy (S4E1). */
 .ai-page .documents--flush { margin-top: 0; }

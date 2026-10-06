@@ -13,6 +13,8 @@ Each reading is a dict:
     meta    the right-hand pill: "PDF" for hosted, else the source's name
     icon    pdf (default) | youtube | google-docs
     credit  HOSTED only: licence + source, printed in the credit line
+    core    True for the lesson's core reading(s): rendered in their own
+            highlighted "Core Reading" block above the "Further Readings"
 
 THE COPYRIGHT RULE (rawsonvault AGENTS.md): host a copy ONLY when it is licensed
 for redistribution or published free, publicly, for classroom use -- and credit
@@ -29,7 +31,7 @@ R = {}
 # ---------------------------------------------------------------- Season 1
 R["season-1/s1e1-anthropomorphism"] = [
     dict(title="The benefits and dangers of anthropomorphic conversational agents",
-         by="Sandra Peter, Kai Riemer &amp; Jevin D. West &middot; PNAS, 2025 &middot; core reading",
+         by="Sandra Peter, Kai Riemer &amp; Jevin D. West &middot; PNAS, 2025", core=True,
          url="https://doi.org/10.1073/pnas.2415898122", meta="PNAS"),
     dict(title="The pros and cons of saying &lsquo;thank you&rsquo; and &lsquo;good morning&rsquo; to AI",
          by="Daniel Soufi &middot; El Pa&iacute;s English, 2024",
@@ -64,7 +66,7 @@ R["season-1/s1e1-anthropomorphism"] = [
 
 R["season-1/s1e2-how-llms-work"] = [
     dict(title="Generative AI exists because of the transformer",
-         by="Financial Times, 2023 &middot; interactive explainer &middot; core reading",
+         by="Financial Times, 2023 &middot; interactive explainer", core=True,
          url="https://ig.ft.com/generative-ai/", meta="Financial Times"),
     dict(title="The surprising power of next-word prediction (Large language models explained, part 1)",
          by="Center for Security and Emerging Technology (CSET), Georgetown",
@@ -221,18 +223,18 @@ R["stubs/image-prompt-designer"] = [
 # ---------------------------------------------------------------- Season 4
 R["season-4/s4e1-post-truth"] = [
     dict(title="Deepfakes and the epistemic backstop",
-         by="Regina Rini &middot; Philosophers&rsquo; Imprint 20(24), 2020 &middot; core reading",
+         by="Regina Rini &middot; Philosophers&rsquo; Imprint 20(24), 2020", core=True,
          url="https://quod.lib.umich.edu/p/phimp/3521354.0020.024/--deepfakes-and-the-epistemic-backstop",
          meta="Philosophers&rsquo; Imprint"),
     dict(title="Chamberfakes: assessing threats posed by generative AI technologies to parliamentary democracy in Scotland",
-         by="Ben Collier, Morgan Currie &amp; Benedetta Catanzariti &middot; University of Edinburgh for the Scottish Parliament, 2024 &middot; core reading",
+         by="Ben Collier, Morgan Currie &amp; Benedetta Catanzariti &middot; University of Edinburgh for the Scottish Parliament, 2024", core=True,
          url="https://www.sccjr.ac.uk/publication/chamberfakes-assessing-the-threats-scotland/",
          meta="SCCJR"),
 ]
 
 R["season-4/s4e2-environmentalist-debate"] = [
     dict(title="The Bottleneck",
-         by="E.O. Wilson &middot; Scientific American, 2002 &middot; core reading",
+         by="E.O. Wilson &middot; Scientific American, 2002", core=True,
          url="https://www.scientificamerican.com/article/the-bottleneck/", meta="Scientific American"),
     dict(title="Energy and AI: executive summary",
          by="International Energy Agency (IEA), 2025",

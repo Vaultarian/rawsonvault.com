@@ -47,15 +47,8 @@ def upgrade_sources(inner, note):
 ICONS = {"pdf": "pdf.svg", "youtube": "youtube.svg", "google-docs": "google-docs.svg"}
 
 
-def readings_block(p):
-    """The Readings list for one page, from readings.py. Empty string if none.
-
-    Wrapped in READINGS markers so patch_s4.py can replace it in place, and
-    given an id so grab(old, "documents") never mistakes it for the page's
-    own documents block on a rebuild."""
-    items = READINGS.get(p["dir"]) or []
-    if not items:
-        return ""
+def reading_rows(items, p):
+    """<li> rows for a list of readings, plus the credit lines of any hosted ones."""
     rows, credits = [], []
     for r in items:
         if r.get("file"):
@@ -79,12 +72,41 @@ def readings_block(p):
     if credits:
         credit = ('\n            <p class="doc-credit">Copies hosted here, under their '
                   'open licences: %s</p>' % " ".join(credits))
-    return ('        <!-- READINGS:START -->\n'
-            '        <div class="documents" id="readings">\n'
-            '            <h2>Readings</h2>\n'
+    return "\n".join(rows), credit
+
+
+def readings_block(p):
+    """The Readings for one page, from readings.py. Empty string if none.
+
+    Readings flagged core=True get their own highlighted "Core Reading" block;
+    the rest follow under "Further Readings". A page with no core reading keeps
+    a single "Readings" block.
+
+    Wrapped in READINGS markers so patch_s4.py can replace it in place, and
+    given ids so grab(old, "documents") never mistakes them for the page's
+    own documents block on a rebuild."""
+    items = READINGS.get(p["dir"]) or []
+    if not items:
+        return ""
+    core = [r for r in items if r.get("core")]
+    rest = [r for r in items if not r.get("core")]
+    blocks = []
+    if core:
+        rows, credit = reading_rows(core, p)
+        blocks.append(
+            '        <div class="documents documents--core" id="core-reading">\n'
+            '            <h2>Core Reading%s</h2>\n'
             '            <ul class="doc-list">\n%s\n            </ul>%s\n'
-            '        </div>\n'
-            '        <!-- READINGS:END -->' % ("\n".join(rows), credit))
+            '        </div>' % ("s" if len(core) > 1 else "", rows, credit))
+    if rest:
+        rows, credit = reading_rows(rest, p)
+        blocks.append(
+            '        <div class="documents" id="readings">\n'
+            '            <h2>%s</h2>\n'
+            '            <ul class="doc-list">\n%s\n            </ul>%s\n'
+            '        </div>' % ("Further Readings" if core else "Readings", rows, credit))
+    return ('        <!-- READINGS:START -->\n%s\n        <!-- READINGS:END -->'
+            % "\n\n".join(blocks))
 
 
 TRUST = ("Every source on this page was opened and checked before it went here. "
