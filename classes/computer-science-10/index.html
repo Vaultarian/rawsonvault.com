@@ -77,6 +77,16 @@
       .notes-bar .doc-link { background: #fdfbf3; border-radius: 4px;
         border: 1px solid #b48fcb; padding: 3px; }
       .notes-bar .doc-link:hover { background: #fff; border-color: #7719AA; }
+      /* Holiday homework: a reading set over a break, from a licensed textbook
+         on the school Drive. Teal-green, so it never reads as the purple notes
+         strip or the gold PPQ strip. The book icon is the button. */
+      .homework-bar { margin-top: 0.5rem; background: #d9ece6; align-items: center;
+        border-left: 4px solid #1f7a63;
+        padding: 0.5rem 0.9rem; border-radius: 2px; }
+      .homework-bar .vocab-label { color: #15594a; font-weight: 700; }
+      .homework-bar .doc-link { background: #fdfbf3; border-radius: 4px;
+        border: 1px solid #8fc2b3; padding: 3px; }
+      .homework-bar .doc-link:hover { background: #fff; border-color: #1f7a63; }
       /* Upcoming summatives sit beside the calendar as standing information,
          so they copy its shape exactly -- tinted strip, lifted buttons. The
          tint is a shade cooler and the left rule darker, because a summative
@@ -153,15 +163,18 @@
           <span class="vocab-label">Class notes</span>
           <span class="doc-icons"><a class="doc-link" href="https://stleonardsschool-my.sharepoint.com/:o:/g/personal/a_rawson_stleonards-fife_org/IgDNIygQ4WIQQ42WchPj6aPIAZHW3iLMIdWIrLgdyWB_KOw?e=ibMtUw" target="_blank" rel="noopener noreferrer" title="Class notes — OneNote, St Leonards login" aria-label="Class notes — OneNote, St Leonards login"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#7719AA" d="M23 1.5Q23.41 1.5 23.7 1.8 24 2.09 24 2.5V21.5Q24 21.91 23.7 22.2 23.41 22.5 23 22.5H7Q6.59 22.5 6.3 22.2 6 21.91 6 21.5V18H1Q0.59 18 0.3 17.7 0 17.41 0 17V7Q0 6.59 0.3 6.3 0.58 6 1 6H6V2.5Q6 2.09 6.3 1.8 6.59 1.5 7 1.5ZM4.56 11 7.39 15.93H9.18V8.07H7.44V13.1L4.71 8.07H2.82V15.93H4.56ZM22.5 21V18H19.5V21ZM22.5 16.5V13.5H19.5V16.5ZM22.5 12V9H19.5V12ZM22.5 7.5V3H7.5V6H11Q11.41 6 11.7 6.3 12 6.59 12 7V17Q12 17.41 11.7 17.7 11.41 18 11 18H7.5V21H18V7.5Z"/></svg></a></span>
         </div>
-        <div class="vocab-bar review-bar">
-          <span class="vocab-label">Past Paper Questions PPQ Review Packet</span>
-          <span class="doc-icons"><a class="doc-link" href="https://drive.google.com/file/d/1QfWr_PoqTBgX-Hwcpc2M_jdx3qqX3Ttx/view?usp=drive_link" target="_blank" rel="noopener noreferrer" title="Worksheet — school Drive, St Leonards login" aria-label="Data Representation Review Packet — Worksheet — school Drive, St Leonards login"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="none" stroke="#fdfbf3" stroke-width="2.6" stroke-linejoin="round"/><path d="M12.4 21.6l5.3-5.3 2.5 2.5-5.3 5.3-3.3.8z" fill="#c0392b"/><path d="M17.7 16.3l1.2-1.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-1.2 1.2z" fill="#7e2d21" stroke="#fdfbf3" stroke-width="0.7"/></svg></a><a class="doc-link" href="https://drive.google.com/file/d/1WCBDLwdfsC7L6urDKrAv_cvkB2lVlFOh/view?usp=drive_link" target="_blank" rel="noopener noreferrer" title="Answer key — school Drive, St Leonards login" aria-label="Data Representation Review Packet --- answer key — Answer key — school Drive, St Leonards login"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><g transform="translate(-1,-1) scale(0.84)"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6.9" cy="6.9" r="1.55" fill="#fdfbf3" stroke="#9c8b4e" stroke-width="1.2"/></g><path d="M12.8 18.9l3 3 6.1-6.4" fill="none" stroke="#fdfbf3" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.8 18.9l3 3 6.1-6.4" fill="none" stroke="#3f8f2c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></span>
-        </div>
-        <div class="vocab-bar summative-bar">
-          <span class="vocab-label"><svg class="cal-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="#8b7aa8" stroke="#6d5d88" stroke-width="1.4"/><path d="M12 6.6v7.2" stroke="#fdfbf3" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.5" fill="#fdfbf3"/></svg><span class="sm-upcoming">Upcoming </span>Summative</span>
-          <span class="summative-what">Memory and Storage — Data Representation test Tue 6 Oct P6, 37 marks. Posted, ManageBac. Class calendar already correct (7 Sep build) and already live on the class page.</span>
+        <div class="vocab-bar homework-bar">
+          <span class="vocab-label">Homework over Half Term — Read and take notes on Sections 3 &amp; 4</span>
+          <span class="doc-icons"><a class="doc-link" href="https://drive.google.com/file/d/19h3Z2zmlAsJHOnybCmFkXN4oZ6kdpr-a/view?usp=drive_link" target="_blank" rel="noopener noreferrer" title="Paul Long, Chapter 1 — school Drive, St Leonards login" aria-label="Paul Long, Chapter 1 — school Drive, St Leonards login"><svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M12 6.2C9.6 4.6 6.4 4.1 2.6 4.6v14.1c3.8-.5 7-.0 9.4 1.6z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.3" stroke-linejoin="round"/><path d="M12 6.2c2.4-1.6 5.6-2.1 9.4-1.6v14.1c-3.8-.5-7-.0-9.4 1.6z" fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.8 8.4c1.9-.2 3.6 0 5.1.6M4.8 11.2c1.9-.2 3.6 0 5.1.6M4.8 14c1.9-.2 3.6 0 5.1.6M14.1 9c1.5-.6 3.2-.8 5.1-.6M14.1 11.8c1.5-.6 3.2-.8 5.1-.6M14.1 14.6c1.5-.6 3.2-.8 5.1-.6" fill="none" stroke="#1f7a63" stroke-width="1.1" stroke-linecap="round"/></svg></a></span>
         </div>
         <p class="wk">Week A · 5–9 October</p>
+          <div class="lesson">
+            <div class="lesson-date">Wed 7 Oct</div>
+            <div>
+              <p class="lesson-topic">Test feedback · holiday work · next: memory and storage.</p>
+              <span class="lesson-none">No handout</span>
+            </div>
+          </div>
           <div class="lesson">
             <div class="lesson-date">Tue 6 Oct</div>
             <div>
