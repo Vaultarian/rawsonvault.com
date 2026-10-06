@@ -352,6 +352,16 @@ STYLE = """    <style>
       .notes-bar .doc-link {{ background: #fdfbf3; border-radius: 4px;
         border: 1px solid #b48fcb; padding: 3px; }}
       .notes-bar .doc-link:hover {{ background: #fff; border-color: #7719AA; }}
+      /* Holiday homework: a reading set over a break, from a licensed textbook
+         on the school Drive. Teal-green, so it never reads as the purple notes
+         strip or the gold PPQ strip. The book icon is the button. */
+      .homework-bar {{ margin-top: 0.5rem; background: #d9ece6; align-items: center;
+        border-left: 4px solid #1f7a63;
+        padding: 0.5rem 0.9rem; border-radius: 2px; }}
+      .homework-bar .vocab-label {{ color: #15594a; font-weight: 700; }}
+      .homework-bar .doc-link {{ background: #fdfbf3; border-radius: 4px;
+        border: 1px solid #8fc2b3; padding: 3px; }}
+      .homework-bar .doc-link:hover {{ background: #fff; border-color: #1f7a63; }}
       /* Upcoming summatives sit beside the calendar as standing information,
          so they copy its shape exactly -- tinted strip, lifted buttons. The
          tint is a shade cooler and the left rule darker, because a summative
@@ -768,6 +778,57 @@ def notes_bar(name):
             '\n        </div>')
 
 
+# Holiday homework. Read from the Class Log header, like the Class notes field:
+#
+#     **Holiday homework:** Homework over Half Term --- Read and take notes on
+#       Sections 3 & 4 [Paul Long, Chapter 1](https://drive.google.com/...)
+#
+# The text before the link is the strip's label; the link is the textbook on the
+# school Drive (licensed, so a Drive link, never a PDF in this repo). Icon is an
+# open book drawn in the worksheet tag's palette. Added 2026-10-06 for CS 10's
+# October half term.
+# ⚠ Delete the field once the break is over, as with the summative.
+HOMEWORK_FIELD = re.compile(
+    r"^\*\*Holiday homework:?\*\*[ \t]*(.*(?:\n(?![ \t]*$)(?![ \t]*###).*)*)",
+    re.M)
+ICON_BOOK = (
+    '<svg class="doc-ico" viewBox="0 0 24 24" width="22" height="22" '
+    'aria-hidden="true" focusable="false">'
+    # two pages, open, meeting at a spine
+    '<path d="M12 6.2C9.6 4.6 6.4 4.1 2.6 4.6v14.1c3.8-.5 7-.0 9.4 1.6z" '
+    'fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.3" stroke-linejoin="round"/>'
+    '<path d="M12 6.2c2.4-1.6 5.6-2.1 9.4-1.6v14.1c-3.8-.5-7-.0-9.4 1.6z" '
+    'fill="#e0d3a4" stroke="#9c8b4e" stroke-width="1.3" stroke-linejoin="round"/>'
+    # lines of text on each page
+    '<path d="M4.8 8.4c1.9-.2 3.6 0 5.1.6M4.8 11.2c1.9-.2 3.6 0 5.1.6'
+    'M4.8 14c1.9-.2 3.6 0 5.1.6M14.1 9c1.5-.6 3.2-.8 5.1-.6'
+    'M14.1 11.8c1.5-.6 3.2-.8 5.1-.6M14.1 14.6c1.5-.6 3.2-.8 5.1-.6" '
+    'fill="none" stroke="#1f7a63" stroke-width="1.1" stroke-linecap="round"/>'
+    '</svg>')
+
+
+def homework_bar(name):
+    """A standing line linking holiday reading in a textbook on the school Drive."""
+    log = LOGS / f"{name}.md"
+    if not log.exists():
+        return ""
+    head = log.read_text().split("\n### ", 1)[0]
+    m = HOMEWORK_FIELD.search(head)
+    link = m and MD_LINK.search(m.group(1))
+    if not link:
+        return ""
+    label = " ".join(m.group(1)[:link.start()].split()).rstrip(" :-—")
+    label = label.replace("---", "—") or "Holiday homework"
+    book, url = html.escape(link.group(1)), html.escape(link.group(2))
+    tip = f"{book} — school Drive, St Leonards login"
+    return ('\n        <div class="vocab-bar homework-bar">'
+            f'\n          <span class="vocab-label">{html.escape(label)}</span>'
+            f'\n          <span class="doc-icons"><a class="doc-link" href="{url}" '
+            f'target="_blank" rel="noopener noreferrer" title="{tip}" '
+            f'aria-label="{tip}">' + ICON_BOOK + '</a></span>'
+            '\n        </div>')
+
+
 def summative_bar(name):
     """The standing line naming this class's next summative."""
     log = LOGS / f"{name}.md"
@@ -918,7 +979,7 @@ def render_class(name, subtitle, weeks):
             <h1>{e(name)}</h1>
             <p class="subtitle">{e(subtitle)}</p>
         </div>
-        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{notes_bar(name)}{review_bar(name)}{summative_bar(name)}
+        <div class="rule--full"></div>{vocab_bar(name)}{calendar_bar(name)}{notes_bar(name)}{homework_bar(name)}{review_bar(name)}{summative_bar(name)}
 {body}
         <footer class="site-footer">The Vault · {e(name)} · updated {datetime.now().strftime('%-d %B %Y')}</footer>
     </div>
