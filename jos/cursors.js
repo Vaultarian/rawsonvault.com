@@ -25,14 +25,33 @@
     try { var v = sessionStorage.getItem(k); if (!v) { v = make(); sessionStorage.setItem(k, v); } return v; }
     catch (e) { return make(); }
   }
-  var me = pick('jos-cursor-id', function () { return Math.random().toString(36).slice(2, 12); });
-  var colour = pick('jos-cursor-colour', function () {
+  function newId() { return Math.random().toString(36).slice(2, 12); }
+  function newColour() {
     /* a bright colour: any hue, strong and not too dark */
     var h = Math.random() * 360, s = 0.85, l = 0.55;
     function f(n) { var k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
       return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, '0'); }
     return '#' + f(0) + f(8) + f(4);
-  });
+  }
+  var me = pick('jos-cursor-id', newId);
+  var colour = pick('jos-cursor-colour', newColour);
+
+  /* A COPIED tab gets a copy of the id as well, and then the two tabs think they are the
+     same person and hide each other. So when a page opens it asks the other open tabs
+     "is anyone using my id?" — if one answers, this tab takes a new id and colour. */
+  try {
+    var tabs = new BroadcastChannel('jos-cursor-ids'), checking = true;
+    tabs.onmessage = function (e) {
+      var d = e.data || {};
+      if (d.ask === me) tabs.postMessage({ taken: me });
+      else if (d.taken === me && checking) {
+        me = newId(); colour = newColour(); checking = false;
+        try { sessionStorage.setItem('jos-cursor-id', me); sessionStorage.setItem('jos-cursor-colour', colour); } catch (er) {}
+      }
+    };
+    tabs.postMessage({ ask: me });
+    setTimeout(function () { checking = false; }, 400);
+  } catch (e) {}
 
   /* this page's name for the Cursors box: the page title, tidied up */
   function pageName() {
@@ -198,7 +217,7 @@
       if (v) start(); else stop();
     });
     paint();
-    if (load()) start();
+    if (load()) setTimeout(start, 450);   /* after the copied-tab check above */
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
   else setup();
