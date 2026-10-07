@@ -942,15 +942,34 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
 .pass-shake { animation:passShake 0.4s ease; }
 @keyframes passShake { 20% { transform:translateX(-10px); } 40% { transform:translateX(10px); } 60% { transform:translateX(-6px); } 80% { transform:translateX(6px); } }
 
-/* 🔒 the lock screen: the whole website goes dark and grey behind a "Please enter password" box */
-#passLock { position:fixed; inset:0; z-index:2147480000; display:flex; align-items:center; justify-content:center; padding:1rem;
-            background:rgba(30,30,30,0.5); backdrop-filter:grayscale(1) brightness(0.55) blur(2px); -webkit-backdrop-filter:grayscale(1) brightness(0.55) blur(2px);
-            transition:opacity 0.5s ease; }
+/* 🔒 the lock screen. It plays in steps (the class on #passLock says which step):
+   .grey  - the website turns dark and grey
+   .shown - a big open padlock pops in
+   .shut  - the top of the padlock snaps down, and the screen shakes
+   .ask   - "Please enter password" and the text box fade in */
+#passLock { position:fixed; inset:0; z-index:2147480000; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            gap:1.1rem; padding:1rem; transition:opacity 0.5s ease; }
 #passLock[hidden] { display:none; }
 #passLock.open { opacity:0; pointer-events:none; }
+#passLock .lock-shade { position:absolute; inset:0; z-index:-1; background:rgba(30,30,30,0.5);
+            backdrop-filter:grayscale(1) brightness(0.55) blur(2px); -webkit-backdrop-filter:grayscale(1) brightness(0.55) blur(2px);
+            opacity:0; transition:opacity 0.6s ease; }
+#passLock.grey .lock-shade { opacity:1; }
 #passLock .lock-card { width:100%; max-width:340px; text-align:center; background:#f2ede3; border:5px solid #2a7070; border-radius:22px;
-            padding:1.5rem 1.4rem 1.2rem; box-shadow:0 22px 50px rgba(0,0,0,0.5); }
-#passLock .lock-ico { font-size:2.6rem; line-height:1; margin-bottom:0.4rem; }
+            padding:1.4rem 1.4rem 1.2rem; box-shadow:0 22px 50px rgba(0,0,0,0.5);
+            opacity:0; transform:translateY(14px); pointer-events:none; transition:opacity 0.6s ease, transform 0.6s ease; }
+#passLock.ask .lock-card { opacity:1; transform:none; pointer-events:auto; }
+/* the padlock */
+#passLock .padlock { width:110px; height:132px; overflow:visible; opacity:0; transform:scale(0.4);
+            transition:opacity 0.3s ease, transform 0.4s cubic-bezier(.3,1.6,.5,1); filter:drop-shadow(0 10px 18px rgba(0,0,0,0.5)); }
+#passLock.shown .padlock { opacity:1; transform:scale(1); }
+#passLock .shackle { transform:translateY(-22px); transition:transform 0.18s cubic-bezier(.6,0,1,.6); }   /* up = open */
+#passLock.shut .shackle { transform:translateY(0); }                                                       /* snaps down = locked */
+#passLock.shut .padlock { animation:lockClunk 0.35s ease 0.18s; }
+@keyframes lockClunk { 30% { transform:scale(1.12, 0.9); } 60% { transform:scale(0.96, 1.05); } }
+html.pass-quake { animation:passQuake 0.45s linear; }
+@keyframes passQuake { 15% { translate:-9px 4px; } 30% { translate:8px -5px; } 45% { translate:-6px 3px; }
+                       60% { translate:5px -2px; } 75% { translate:-3px 1px; } 90% { translate:2px 0; } }
 #passLock h2 { font-family:'Fredoka One',cursive; color:#d9643a; font-size:1.5rem; margin:0 0 0.9rem; }
 #passLock .pass-msg { color:#c0392b; }
 #passLock button { border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:1rem; color:#fff; background:#3d9595;
@@ -1514,8 +1533,14 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
 
 <!-- 🔒 the lock screen (only shown when a password is switched on) -->
 <div id="passLock" hidden>
+  <div class="lock-shade"></div>
+  <svg class="padlock" viewBox="0 0 100 120" aria-hidden="true">
+    <path class="shackle" d="M28 58 V36 a22 22 0 0 1 44 0 V58" fill="none" stroke="#9aa7ad" stroke-width="11" stroke-linecap="round"/>
+    <rect x="12" y="52" width="76" height="60" rx="12" fill="#f2b134" stroke="#b07a12" stroke-width="4"/>
+    <circle cx="50" cy="76" r="8" fill="#5a3a06"/>
+    <rect x="46.5" y="78" width="7" height="18" rx="3" fill="#5a3a06"/>
+  </svg>
   <div class="lock-card">
-    <div class="lock-ico">🔒</div>
     <h2>Please enter password</h2>
     <input type="password" id="lockIn" autocomplete="current-password" aria-label="Password">
     <p class="pass-msg" id="lockMsg"></p>
@@ -1626,12 +1651,23 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
   /* wait for the loader to finish, then lock */
   (function wait() {
     const loader = document.getElementById('canvasContainer');
-    const gone = !loader || !document.contains(loader) || getComputedStyle(loader).display === 'none' ||
-                 loader.classList.contains('fade-out-content');
+    const gone = !loader || !document.contains(loader) || getComputedStyle(loader).display === 'none';
     if (!gone) return setTimeout(wait, 100);
-    lock.hidden = false;
-    setTimeout(() => input.focus(), 100);
+    lockUp();
   })();
+
+  /* the lock-up, one step after another (times in milliseconds) */
+  function lockUp() {
+    setTimeout(() => { lock.hidden = false; void lock.offsetWidth; lock.classList.add('grey'); }, 500);   /* normal for 0.5 s, then grey */
+    setTimeout(() => lock.classList.add('shown'), 1000);                                                 /* open padlock pops in */
+    setTimeout(() => lock.classList.add('shut'), 1900);                                                  /* the top snaps down... */
+    setTimeout(() => {                                                                                   /* ...clunk: the screen shakes */
+      const h = document.documentElement;
+      h.classList.remove('pass-quake'); void h.offsetWidth; h.classList.add('pass-quake');
+      setTimeout(() => h.classList.remove('pass-quake'), 500);
+    }, 2080);
+    setTimeout(() => { lock.classList.add('ask'); setTimeout(() => input.focus(), 300); }, 2700);        /* words and box fade in */
+  }
 })();
 </script>
 </body>
