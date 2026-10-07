@@ -174,7 +174,7 @@
     '@keyframes modFall{from{transform:translate(0,0) rotate(0)}to{transform:translate(var(--sway),calc(100vh + 100px)) rotate(var(--spin))}}',
 
     /* MOD: click fireworks */
-    '.mod-fw{position:fixed;z-index:1000002;pointer-events:none;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;',
+    '.mod-fwdot{position:fixed;z-index:1000002;pointer-events:none;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;',
     '  animation:modFw .7s ease-out forwards}',
     '@keyframes modFw{to{transform:translate(var(--dx),var(--dy));opacity:0}}',
 
@@ -188,7 +188,7 @@
     '@keyframes modSpinE{to{rotate:360deg}}',
 
     /* MOD: jelly buttons */
-    '.mod-jelly{animation:modJelly .5s ease}',
+    '.mod-wobble{animation:modJelly .5s ease}',
     '@keyframes modJelly{0%,100%{scale:1}25%{scale:1.15 .85}50%{scale:.9 1.1}75%{scale:1.05 .95}}',
 
     /* MOD: star cursor */
@@ -264,7 +264,7 @@
       var col = FW_COLOURS[Math.floor(Math.random() * FW_COLOURS.length)];
       for (var i = 0; i < 14; i++) {
         var d = document.createElement('div'), ang = i / 14 * Math.PI * 2, dist = 35 + Math.random() * 25;
-        d.className = 'mod-fw';
+        d.className = 'mod-fwdot';
         d.style.left = at(e.clientX, e.clientY)[0] + 'px';
         d.style.top = at(e.clientX, e.clientY)[1] + 'px';
         d.style.background = i % 3 ? col : '#fff3b0';
@@ -277,10 +277,10 @@
     if (isOn('jelly')) {
       var b = clickable(e.target);
       if (b) {
-        b.classList.remove('mod-jelly');
+        b.classList.remove('mod-wobble');
         void b.offsetWidth;            /* restart the wobble even if it is still going */
-        b.classList.add('mod-jelly');
-        setTimeout(function () { b.classList.remove('mod-jelly'); }, 550);
+        b.classList.add('mod-wobble');
+        setTimeout(function () { b.classList.remove('mod-wobble'); }, 550);
       }
     }
     if (isOn('shake') && !e.target.closest('#modsPanel')) {
