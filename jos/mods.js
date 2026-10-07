@@ -1,7 +1,7 @@
 /* ============ MODS ============
    The 🧪 Mods button (top right, under Easy Mode) opens a panel of
    mod buttons. Click one to switch that effect on or off — GREEN means on.
-   Your choices are remembered for next time.
+   Every mod starts OFF for a first-time visitor. Your choices are remembered for next time.
 
    To add a new mod: add it to MODS below, then write what it does. */
 (function () {
@@ -20,20 +20,20 @@
     { id: 'bubbles', name: '🫧 Floating bubbles', about: 'Soft bubbles drift up behind everything' },
     { id: 'pop',     name: '🎈 Buttons pop in', about: 'Buttons bounce in one by one when the page opens' },
     { id: 'secret',  name: '🤫 Secret code',    about: 'Type the secret word and something happens…' },
-    /* the new mods start OFF (off: true) — switch on the ones you want */
-    { id: 'rainbow', name: '🌈 Rainbow writing', about: 'Big titles slowly change colour', off: true },
-    { id: 'snow',    name: '❄️ Snow',            about: 'Snowflakes fall down the screen', off: true },
-    { id: 'fw',      name: '🎆 Click fireworks', about: 'Every click makes a tiny firework', off: true },
-    { id: 'buddy',   name: '🐱 Mouse buddy',     about: 'A little cat follows your mouse around', off: true },
-    { id: 'spin',    name: '🌀 Spinning emojis', about: 'Emojis on buttons spin when your mouse is on them', off: true },
-    { id: 'jelly',   name: '🫨 Jelly buttons',   about: 'Buttons wobble like jelly when you click them', off: true },
-    { id: 'star',    name: '🌟 Star cursor',     about: 'Your mouse pointer becomes a star', off: true },
-    { id: 'leaves',  name: '🍂 Falling leaves',  about: 'Autumn leaves drift down the screen', off: true },
-    { id: 'shake',   name: '💥 Screen shake',    about: 'The page shakes a tiny bit when you click', off: true },
-    { id: 'colour',  name: '🎨 Colour swap',     about: 'The whole site changes to different colours', off: true },
-    { id: 'torch',   name: '🔦 Torch mode',      about: 'The screen goes dark and your mouse is a torch', off: true },
-    { id: 'flip',    name: '🙃 Upside down',     about: 'The whole page flips upside down! Press Esc to flip back', off: true },
-    { id: 'magnet',  name: '🧲 Magnet buttons',  about: 'Buttons lean towards your mouse', off: true }
+    /* the newer mods */
+    { id: 'rainbow', name: '🌈 Rainbow writing', about: 'Big titles slowly change colour' },
+    { id: 'snow',    name: '❄️ Snow',            about: 'Snowflakes fall down the screen' },
+    { id: 'fw',      name: '🎆 Click fireworks', about: 'Every click makes a tiny firework' },
+    { id: 'buddy',   name: '🐱 Mouse buddy',     about: 'A little cat follows your mouse around' },
+    { id: 'spin',    name: '🌀 Spinning emojis', about: 'Emojis on buttons spin when your mouse is on them' },
+    { id: 'jelly',   name: '🫨 Jelly buttons',   about: 'Buttons wobble like jelly when you click them' },
+    { id: 'star',    name: '🌟 Star cursor',     about: 'Your mouse pointer becomes a star' },
+    { id: 'leaves',  name: '🍂 Falling leaves',  about: 'Autumn leaves drift down the screen' },
+    { id: 'shake',   name: '💥 Screen shake',    about: 'The page shakes a tiny bit when you click' },
+    { id: 'colour',  name: '🎨 Colour swap',     about: 'The whole site changes to different colours' },
+    { id: 'torch',   name: '🔦 Torch mode',      about: 'The screen goes dark and your mouse is a torch' },
+    { id: 'flip',    name: '🙃 Upside down',     about: 'The whole page flips upside down! Press Esc to flip back' },
+    { id: 'magnet',  name: '🧲 Magnet buttons',  about: 'Buttons lean towards your mouse' }
   ];
   if (GAME) MODS = MODS.filter(function (m) { return HOME_ONLY.indexOf(m.id) < 0; });
 
@@ -47,8 +47,7 @@
   function isOn(id) {
     if (GAME && HOME_ONLY.indexOf(id) >= 0) return false;
     if (state[id] !== undefined) return state[id] !== false;
-    for (var i = 0; i < MODS.length; i++) if (MODS[i].id === id) return !MODS[i].off;   /* the first mods start ON, the new ones OFF */
-    return false;
+    return false;    /* a first-time visitor starts with every mod OFF, and switches on the ones they want */
   }
   function hell() { return document.body.classList.contains('hell'); }
 
