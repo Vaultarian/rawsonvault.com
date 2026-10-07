@@ -1528,14 +1528,13 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
    Settings has a Password switch. Turning it on asks "are you sure?", then asks for
    the new password twice. After that, every time the website opens, the loader plays
    and then the page goes dark and grey until the right password is typed.
-   Once it is unlocked it stays unlocked until that browser tab is closed.
+   It asks every single time the home page opens, even after a reload.
 
    This is a pretend lock, for fun: it lives in this browser only, so someone who
    knows computers can get round it. The password is scrambled (hashed) before it is
    saved, so it can't be read back out. */
 (function () {
   const KEY = 'jos-password';          /* the scrambled password, saved for good */
-  const OPEN_KEY = 'jos-unlocked';     /* unlocked in this tab already */
 
   function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
 
@@ -1585,7 +1584,6 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
     if (!new1.value) { newMsg.textContent = 'Type a password first'; shake(steps.new); return; }
     if (new1.value !== new2.value) { newMsg.textContent = 'The two passwords are different. Try again'; new2.value = ''; new2.focus(); shake(steps.new); return; }
     try { localStorage.setItem(KEY, await scramble(new1.value)); } catch (e) {}
-    try { sessionStorage.setItem(OPEN_KEY, '1'); } catch (e) {}   /* you just set it, so you are already in */
     hide(); paint();
   }
   async function turnOff() {
@@ -1607,9 +1605,8 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
   paint();
 
   /* ---------- the lock screen ---------- */
-  let unlocked = false;
-  try { unlocked = sessionStorage.getItem(OPEN_KEY) === '1'; } catch (e) {}
-  if (!saved() || unlocked) return;
+
+  if (!saved()) return;
 
   const lock = document.getElementById('passLock'), input = document.getElementById('lockIn');
   const msg = document.getElementById('lockMsg'), lockCard = lock.querySelector('.lock-card');
@@ -1620,7 +1617,6 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
       input.value = ''; input.focus(); shake(lockCard);
       return;
     }
-    try { sessionStorage.setItem(OPEN_KEY, '1'); } catch (e) {}
     lock.classList.add('open');                 /* fade away */
     setTimeout(() => { lock.hidden = true; }, 500);
   }
