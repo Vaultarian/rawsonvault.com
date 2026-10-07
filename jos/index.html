@@ -10,6 +10,15 @@
     <style>
         #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; }
         #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; }
+        /* "Website best in Safari" — bounces in over the circle at 100% */
+        #bestSafari { position: absolute; left: 50%; top: calc(50% - 110px); transform: translateX(-50%); z-index: 2; pointer-events: none;
+                      display: flex; gap: 0.5em; white-space: nowrap; font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 5vw, 3.2rem);
+                      color: #fff; text-shadow: 0 0 18px rgba(0, 85, 255, 0.9), 0 4px 0 #0033aa; }
+        #bestSafari span { display: inline-block; opacity: 0; animation: bsBounce 0.7s cubic-bezier(.3, 1.6, .5, 1) forwards; }
+        body.hell #bestSafari { text-shadow: 0 0 18px rgba(255, 110, 20, 0.95), 0 4px 0 #7a1d00; }
+        @keyframes bsBounce { 0% { opacity: 0; transform: translateY(-120px) scale(.6); }
+                              60% { opacity: 1; transform: translateY(12px) scale(1.08); }
+                              100% { opacity: 1; transform: translateY(0) scale(1); } }
         #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; }
         @keyframes hmGlitch {
             0%, 100% { transform: translate(0,0) skewX(0deg); text-shadow: 2px 0 #ff2d00, -2px 0 #00e5ff, 0 0 14px rgba(255,110,20,0.95); }
@@ -319,7 +328,7 @@
                 if (currentPercent > 100) currentPercent = 100;
                 textElement.innerText = currentPercent + "%";
                 if (currentPercent === 100) {
-                    isFullyLoaded = true; setTimeout(triggerWhiteout, 2000);
+                    isFullyLoaded = true; bestInSafari(); setTimeout(triggerWhiteout, 3800);
                 } else {
                     for (let i = 0; i < percentJump; i++) { particles.push(new RacingCircle(emitterAngle + (i * 0.04), currentPercent)); }
                     setTimeout(increasePercentageRandomly, Math.random() * 400 + 100);
@@ -361,6 +370,20 @@
                 }
             }
             if (container.isConnected) requestAnimationFrame(drawLoop);   /* stop once the loading screen is gone */
+        }
+
+        /* at 100% the words "Website best in Safari" bounce in, one word at a time,
+           on top of the loading circle (the site runs smoothest in Safari) */
+        function bestInSafari() {
+            const msg = document.createElement('div');
+            msg.id = 'bestSafari';
+            ['Website', 'best', 'in', 'Safari'].forEach((word, i) => {
+                const w = document.createElement('span');
+                w.textContent = word;
+                w.style.animationDelay = (0.25 + i * 0.3) + 's';
+                msg.appendChild(w);
+            });
+            container.appendChild(msg);
         }
 
         function triggerWhiteout() {
