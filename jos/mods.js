@@ -44,6 +44,16 @@
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
   }
   var state = load();
+  /* testing switch: open any page with ?modsoff on the end of the address and
+     every mod is switched OFF and saved that way */
+  if (/[?&]modsoff\b/.test(location.search)) {
+    MODS.concat(HOME_ONLY.map(function (id) { return { id: id }; })).forEach(function (m) { state[m.id] = false; });
+    save(state);
+    try {      /* tidy the address, keeping anything else that was in it */
+      var rest = location.search.replace(/[?&]modsoff\b/, '').replace(/^&/, '?');
+      history.replaceState(null, '', location.pathname + rest + location.hash);
+    } catch (e) {}
+  }
   function isOn(id) {
     if (GAME && HOME_ONLY.indexOf(id) >= 0) return false;
     if (state[id] !== undefined) return state[id] !== false;
