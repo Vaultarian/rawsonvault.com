@@ -207,7 +207,8 @@
 
     /* MOD: torch mode — the menus stay on top so you can always switch it off */
     '#modTorch{position:fixed;inset:0;z-index:1000000;pointer-events:none;display:none;',
-    '  background:radial-gradient(circle 150px at var(--x,50%) var(--y,50%),transparent 55%,rgba(0,0,0,.94) 100%)}',
+    '  background:radial-gradient(circle 150px at var(--x,50%) var(--y,50%),transparent 55%,#000 100%)}',
+    'body.mod-torch #cursorFire{z-index:1000002!important}',
     'body.mod-torch #modTorch{display:block}',
     'body.mod-torch #modsBtn,body.mod-torch #modsPanel,body.mod-torch #langBtn,body.mod-torch #langPanel{z-index:1000003!important}',
 
