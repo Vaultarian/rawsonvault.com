@@ -171,6 +171,7 @@
 <script src="swirl.js" data-swirl-links></script>
 <script src="mods.js"></script>
 <script src="lang.js"></script>
+<script src="cursors.js"></script>
 </head>
 <body>
 <script>
@@ -911,8 +912,6 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
 .set-toggle .cross::before { transform:translateY(-50%) rotate(28deg); }
 .set-toggle .cross::after  { transform:translateY(-50%) rotate(-28deg); }
 .set-toggle.off .cross { opacity:1; }
-/* the Password button is twice as wide, so its X is drawn half as wide to match the others */
-#tPass .cross::before, #tPass .cross::after { left:29%; width:42%; height:7px; }
 
 .set-progress { background:#eee8db; border-radius:14px; padding:0.7rem 0.9rem; margin-bottom:0.9rem; text-align:center; }
 .set-progress b { font-family:'Fredoka One',cursive; color:#2a5f7a; font-size:1.05rem; }
@@ -1081,7 +1080,9 @@ html.pass-quake { animation:passQuake 0.45s linear; }
 
         <div class="set-row">
           <button class="set-toggle off" id="tPass"><span class="ico">🔒</span>Password<span class="cross"></span></button>
+          <button class="set-toggle off" id="tCursors"><span class="ico">👀</span>Show other cursors<span class="cross"></span></button>
         </div>
+        <p class="set-sub" id="cursorMsg" style="margin:-0.5rem 0 0.6rem;text-transform:none;letter-spacing:0;color:#c0392b;"></p>
 
         <p class="set-sub" id="nowPlaying" style="margin:-6px 0 0;min-height:1.15em;opacity:.75;"></p>
 
