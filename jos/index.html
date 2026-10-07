@@ -10,17 +10,13 @@
     <style>
         #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; }
         #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; }
-        /* "Website best in Safari" — at 100% it is thrown in from just past the top-right corner
-           and falls onto its spot above the circle, with real gravity: it moves sideways at a
-           steady speed (bsAcross) while falling faster and faster (bsFall), then stops. No bounce. */
+        /* "Website best in Safari" — at 100% it drops in from just past the top-right corner
+           and bounces on its spot above the circle like a ball (see bestInSafari) */
         #bestSafari { position: absolute; left: 50%; top: calc(50% - 250px); transform: translateX(-50%); z-index: 2; pointer-events: none;
                       white-space: nowrap; font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 5vw, 3.2rem);
                       color: #fff; text-shadow: 0 0 18px rgba(0, 85, 255, 0.9), 0 4px 0 #0033aa; }
         body.hell #bestSafari { text-shadow: 0 0 18px rgba(255, 110, 20, 0.95), 0 4px 0 #7a1d00; }
-        #bestSafari .bs-across { display: block; animation: bsAcross 1.1s linear both; }
-        #bestSafari .bs-fall   { display: block; animation: bsFall 1.1s cubic-bezier(0.333, 0, 0.667, 0.333) both; }   /* distance grows with time squared, like gravity */
-        @keyframes bsAcross { from { transform: translateX(calc(50vw + 50%)); } to { transform: translateX(0); } }
-        @keyframes bsFall   { from { transform: translateY(calc(-50vh + 150px)); } to { transform: translateY(0); } }
+        #bestSafari span { display: inline-block; transform-origin: 50% 100%; visibility: hidden; }
         #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; }
         @keyframes hmGlitch {
             0%, 100% { transform: translate(0,0) skewX(0deg); text-shadow: 2px 0 #ff2d00, -2px 0 #00e5ff, 0 0 14px rgba(255,110,20,0.95); }
@@ -330,7 +326,7 @@
                 if (currentPercent > 100) currentPercent = 100;
                 textElement.innerText = currentPercent + "%";
                 if (currentPercent === 100) {
-                    isFullyLoaded = true; bestInSafari(); setTimeout(triggerWhiteout, 2500);   /* 1.1 s to land, then it stays for a moment */
+                    isFullyLoaded = true; bestInSafari(triggerWhiteout);   /* bounces in, stays a second, then the site opens */
                 } else {
                     for (let i = 0; i < percentJump; i++) { particles.push(new RacingCircle(emitterAngle + (i * 0.04), currentPercent)); }
                     setTimeout(increasePercentageRandomly, Math.random() * 400 + 100);
@@ -374,13 +370,59 @@
             if (container.isConnected) requestAnimationFrame(drawLoop);   /* stop once the loading screen is gone */
         }
 
-        /* at 100% the sentence "Website best in Safari" is thrown in from the top-right corner
-           and lands above the loading circle (the site runs smoothest in Safari) */
-        function bestInSafari() {
+        /* at 100% the sentence "Website best in Safari" drops in from just past the top-right
+           corner and BOUNCES on its spot above the circle, like a ball:
+           - it falls faster and faster (gravity)
+           - each bounce goes up half as high as the last one
+           - it squashes a little each time it hits the floor
+           - it drifts left at a steady speed and stops exactly in the middle
+           When it has stopped, it waits a second, then `done` runs. */
+        function bestInSafari(done) {
             const msg = document.createElement('div');
             msg.id = 'bestSafari';
-            msg.innerHTML = '<span class="bs-across"><span class="bs-fall">Website best in Safari</span></span>';
+            const word = document.createElement('span');
+            word.textContent = 'Website best in Safari';
+            msg.appendChild(word);
             container.appendChild(msg);
+
+            const box = msg.getBoundingClientRect();
+            const startX = window.innerWidth - box.left;        /* just past the right edge */
+            const height = box.bottom;                          /* just above the top edge  */
+            const fallTime = 0.6;                               /* seconds for the first drop */
+            const g = 2 * height / (fallTime * fallTime);       /* gravity, in pixels per second per second */
+            const bounciness = 0.7;                             /* speed kept after a bounce (0.7 -> half the height) */
+
+            /* work out every bounce first, so we know how long the whole thing takes */
+            const hits = [fallTime];                            /* times it touches the floor */
+            let speed = g * fallTime;
+            while (speed * bounciness > 100) {                   /* stop when the bounces get tiny */
+                speed *= bounciness;
+                hits.push(hits[hits.length - 1] + 2 * speed / g);
+            }
+            const total = hits[hits.length - 1];
+
+            const t0 = performance.now();
+            word.style.visibility = 'visible';
+            (function frame(now) {
+                const t = Math.min((now - t0) / 1000, total);
+                let y, sinceHit = Infinity, bounceNo = 0;
+                if (t < fallTime) {
+                    y = -height + 0.5 * g * t * t;             /* the first drop */
+                } else {
+                    let i = 0;
+                    while (i < hits.length - 1 && t >= hits[i + 1]) i++;
+                    const up = g * fallTime * Math.pow(bounciness, i + 1);   /* speed leaving the floor */
+                    sinceHit = t - hits[i];
+                    bounceNo = i;
+                    y = i < hits.length - 1 ? -(up * sinceHit - 0.5 * g * sinceHit * sinceHit) : 0;
+                }
+                const x = startX * (1 - t / total);            /* steady drift to the middle */
+                /* a quick squash just after each hit */
+                const squash = sinceHit < 0.12 ? Math.sin(sinceHit / 0.12 * Math.PI) * 0.18 * Math.pow(bounciness, bounceNo) : 0;   /* softer each time */
+                word.style.transform = `translate(${x}px, ${Math.min(0, y)}px) scale(${1 + squash}, ${1 - squash})`;
+                if (t < total) requestAnimationFrame(frame);
+                else { word.style.transform = 'none'; setTimeout(done, 1000); }
+            })(t0);
         }
 
         function triggerWhiteout() {
