@@ -924,6 +924,39 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
 .set-btn.close { background:#2a5f7a; }
 .set-btn.reset { background:#c0392b; }
 
+/* 🔒 password cards - same look as the reset card */
+#passAsk { position:absolute; inset:0; z-index:7; display:flex; align-items:center; justify-content:center;
+           background:rgba(20,45,45,0.94); border-radius:18px; opacity:0; pointer-events:none; transition:opacity 0.35s ease; padding:1rem; }
+#passAsk.show { opacity:1; pointer-events:auto; }
+#passAsk .ask-card { text-align:center; width:100%; max-width:300px; }
+#passAsk h3, #passAsk label { display:block; font-family:'Fredoka One',cursive; color:#fff; font-size:1.1rem; line-height:1.35; margin-bottom:0.45rem; }
+#passAsk input, #passLock input { display:block; width:100%; box-sizing:border-box; margin:0 0 0.9rem; padding:0.6rem 0.9rem;
+           border:3px solid #3d9595; border-radius:12px; font:700 1.05rem Nunito,sans-serif; color:#234; background:#fff; outline:none; }
+#passAsk input:focus, #passLock input:focus { border-color:#25f4ff; }
+.pass-msg { min-height:1.2em; margin:-0.4rem 0 0.7rem; color:#ffd166; font-weight:700; font-size:0.85rem; }
+#passAsk .ask-row { display:flex; gap:0.7rem; justify-content:center; }
+#passAsk button { border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:0.95rem; color:#fff; padding:0.7rem 1.5rem; border-radius:50px; transition:transform 0.12s, filter 0.12s; }
+#passAsk button:hover { transform:scale(1.05); filter:brightness(1.1); }
+#passAsk .yes { background:#2f9e5c; }
+#passAsk .no  { background:#3d9595; }
+.pass-shake { animation:passShake 0.4s ease; }
+@keyframes passShake { 20% { transform:translateX(-10px); } 40% { transform:translateX(10px); } 60% { transform:translateX(-6px); } 80% { transform:translateX(6px); } }
+
+/* 🔒 the lock screen: the whole website goes dark and grey behind a "Please enter password" box */
+#passLock { position:fixed; inset:0; z-index:2147480000; display:flex; align-items:center; justify-content:center; padding:1rem;
+            background:rgba(30,30,30,0.5); backdrop-filter:grayscale(1) brightness(0.55) blur(2px); -webkit-backdrop-filter:grayscale(1) brightness(0.55) blur(2px);
+            transition:opacity 0.5s ease; }
+#passLock[hidden] { display:none; }
+#passLock.open { opacity:0; pointer-events:none; }
+#passLock .lock-card { width:100%; max-width:340px; text-align:center; background:#f2ede3; border:5px solid #2a7070; border-radius:22px;
+            padding:1.5rem 1.4rem 1.2rem; box-shadow:0 22px 50px rgba(0,0,0,0.5); }
+#passLock .lock-ico { font-size:2.6rem; line-height:1; margin-bottom:0.4rem; }
+#passLock h2 { font-family:'Fredoka One',cursive; color:#d9643a; font-size:1.5rem; margin:0 0 0.9rem; }
+#passLock .pass-msg { color:#c0392b; }
+#passLock button { border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:1rem; color:#fff; background:#3d9595;
+            padding:0.7rem 2rem; border-radius:50px; transition:transform 0.12s, filter 0.12s; }
+#passLock button:hover { transform:scale(1.05); filter:brightness(1.1); }
+
 /* are you sure? */
 #resetAsk { position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
             background:rgba(20,45,45,0.9); border-radius:18px; opacity:0; pointer-events:none; transition:opacity 0.35s ease; padding:1rem; }
@@ -1025,6 +1058,10 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
           <button class="set-toggle" id="tSfx"><span class="ico">🔊</span>Sound Effects<span class="cross"></span></button>
         </div>
 
+        <div class="set-row">
+          <button class="set-toggle off" id="tPass"><span class="ico">🔒</span>Password<span class="cross"></span></button>
+        </div>
+
         <p class="set-sub" id="nowPlaying" style="margin:-6px 0 0;min-height:1.15em;opacity:.75;"></p>
 
         <div class="set-foot">
@@ -1044,6 +1081,39 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
             <div class="ask-row">
               <button class="yes" id="caYes">Yes</button>
               <button class="no"  id="caNo">No</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔒 password: are you sure? -> enter it twice -> confirm.  Or, to turn it off, type it once. -->
+        <div id="passAsk">
+          <div class="ask-card">
+            <div id="psSure">
+              <h3>Are you sure you want to turn on password?</h3>
+              <div class="ask-row">
+                <button class="yes" id="psYes">Yes</button>
+                <button class="no" id="psNo">No</button>
+              </div>
+            </div>
+            <div id="psNew" hidden>
+              <label for="psNew1">Enter new password</label>
+              <input type="password" id="psNew1" autocomplete="new-password">
+              <label for="psNew2">Re-enter new password</label>
+              <input type="password" id="psNew2" autocomplete="new-password">
+              <p class="pass-msg" id="psNewMsg"></p>
+              <div class="ask-row">
+                <button class="yes" id="psConfirm">Confirm</button>
+                <button class="no" id="psCancel">Cancel</button>
+              </div>
+            </div>
+            <div id="psOff" hidden>
+              <label for="psOld">Enter your password to turn it off</label>
+              <input type="password" id="psOld" autocomplete="current-password">
+              <p class="pass-msg" id="psOffMsg"></p>
+              <div class="ask-row">
+                <button class="yes" id="psOffYes">Turn off</button>
+                <button class="no" id="psOffNo">Cancel</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1442,5 +1512,131 @@ body.sm-open #gearBtn, body.set-open #gearBtn { display:none; }
 })();
 </script>
 
+<!-- 🔒 the lock screen (only shown when a password is switched on) -->
+<div id="passLock" hidden>
+  <div class="lock-card">
+    <div class="lock-ico">🔒</div>
+    <h2>Please enter password</h2>
+    <input type="password" id="lockIn" autocomplete="current-password" aria-label="Password">
+    <p class="pass-msg" id="lockMsg"></p>
+    <button id="lockGo">Enter</button>
+  </div>
+</div>
+
+<script>
+/* ================= 🔒 PASSWORD =================
+   Settings has a Password switch. Turning it on asks "are you sure?", then asks for
+   the new password twice. After that, every time the website opens, the loader plays
+   and then the page goes dark and grey until the right password is typed.
+   Once it is unlocked it stays unlocked until that browser tab is closed.
+
+   This is a pretend lock, for fun: it lives in this browser only, so someone who
+   knows computers can get round it. The password is scrambled (hashed) before it is
+   saved, so it can't be read back out. */
+(function () {
+  const KEY = 'jos-password';          /* the scrambled password, saved for good */
+  const OPEN_KEY = 'jos-unlocked';     /* unlocked in this tab already */
+
+  function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+
+  /* scramble a password so the real one is never saved */
+  async function scramble(text) {
+    const data = new TextEncoder().encode('jos-site:' + text);
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+    }
+    let h = 5381;                       /* backup for old browsers */
+    for (const b of data) h = ((h * 33) ^ b) >>> 0;
+    return 'x' + h.toString(16);
+  }
+
+  function shake(el) {
+    el.classList.remove('pass-shake');
+    void el.offsetWidth;
+    el.classList.add('pass-shake');
+  }
+
+  /* ---------- the switch in Settings ---------- */
+  const tPass = document.getElementById('tPass');
+  const card = document.getElementById('passAsk');
+  const steps = { sure: document.getElementById('psSure'), new: document.getElementById('psNew'), off: document.getElementById('psOff') };
+  const new1 = document.getElementById('psNew1'), new2 = document.getElementById('psNew2'), old = document.getElementById('psOld');
+  const newMsg = document.getElementById('psNewMsg'), offMsg = document.getElementById('psOffMsg');
+
+  function paint() { tPass.classList.toggle('off', !saved()); }
+  function show(step) {
+    Object.keys(steps).forEach(k => { steps[k].hidden = k !== step; });
+    new1.value = new2.value = old.value = '';
+    newMsg.textContent = offMsg.textContent = '';
+    card.classList.add('show');
+    const first = { new: new1, off: old }[step];
+    if (first) setTimeout(() => first.focus(), 50);
+  }
+  function hide() { card.classList.remove('show'); }
+
+  tPass.addEventListener('click', () => show(saved() ? 'off' : 'sure'));
+  document.getElementById('psNo').addEventListener('click', hide);
+  document.getElementById('psYes').addEventListener('click', () => show('new'));
+  document.getElementById('psCancel').addEventListener('click', hide);
+  document.getElementById('psOffNo').addEventListener('click', hide);
+
+  async function confirmNew() {
+    if (!new1.value) { newMsg.textContent = 'Type a password first'; shake(steps.new); return; }
+    if (new1.value !== new2.value) { newMsg.textContent = 'The two passwords are different. Try again'; new2.value = ''; new2.focus(); shake(steps.new); return; }
+    try { localStorage.setItem(KEY, await scramble(new1.value)); } catch (e) {}
+    try { sessionStorage.setItem(OPEN_KEY, '1'); } catch (e) {}   /* you just set it, so you are already in */
+    hide(); paint();
+  }
+  async function turnOff() {
+    if ((await scramble(old.value)) !== saved()) { offMsg.textContent = 'Wrong password, try again'; old.value = ''; old.focus(); shake(steps.off); return; }
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    hide(); paint();
+  }
+  document.getElementById('psConfirm').addEventListener('click', confirmNew);
+  document.getElementById('psOffYes').addEventListener('click', turnOff);
+  new1.addEventListener('keydown', e => { if (e.key === 'Enter') new2.focus(); });
+  new2.addEventListener('keydown', e => { if (e.key === 'Enter') confirmNew(); });
+  old.addEventListener('keydown', e => { if (e.key === 'Enter') turnOff(); });
+
+  /* Esc closes this card first, before it closes Settings */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && card.classList.contains('show')) { hide(); e.stopImmediatePropagation(); }
+  }, true);
+  document.getElementById('gearBtn').addEventListener('click', () => { hide(); paint(); });
+  paint();
+
+  /* ---------- the lock screen ---------- */
+  let unlocked = false;
+  try { unlocked = sessionStorage.getItem(OPEN_KEY) === '1'; } catch (e) {}
+  if (!saved() || unlocked) return;
+
+  const lock = document.getElementById('passLock'), input = document.getElementById('lockIn');
+  const msg = document.getElementById('lockMsg'), lockCard = lock.querySelector('.lock-card');
+
+  async function tryIt() {
+    if ((await scramble(input.value)) !== saved()) {
+      msg.textContent = 'Wrong password, try again';
+      input.value = ''; input.focus(); shake(lockCard);
+      return;
+    }
+    try { sessionStorage.setItem(OPEN_KEY, '1'); } catch (e) {}
+    lock.classList.add('open');                 /* fade away */
+    setTimeout(() => { lock.hidden = true; }, 500);
+  }
+  document.getElementById('lockGo').addEventListener('click', tryIt);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryIt(); });
+
+  /* wait for the loader to finish, then lock */
+  (function wait() {
+    const loader = document.getElementById('canvasContainer');
+    const gone = !loader || !document.contains(loader) || getComputedStyle(loader).display === 'none' ||
+                 loader.classList.contains('fade-out-content');
+    if (!gone) return setTimeout(wait, 100);
+    lock.hidden = false;
+    setTimeout(() => input.focus(), 100);
+  })();
+})();
+</script>
 </body>
 </html>
