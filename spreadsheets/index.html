@@ -48,6 +48,14 @@
             color: var(--gray-mid);
             margin: var(--gap-xs) 0 var(--gap-md);
         }
+        .clip .equation-figure {
+            display: block;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            margin: 0 auto var(--gap-md);
+            background: var(--white);
+        }
         .clip ol { margin: 0; padding-left: 1.4rem; }
         .clip li { margin-bottom: 0.3rem; }
         .clip code {
@@ -232,6 +240,20 @@
                 <li>Under <strong>Label</strong>, choose <strong>Use equation</strong>.</li>
                 <li>Open <strong>Legend</strong> and set the font size to 14 so the equation is easy to read.</li>
                 <li>Check: the line and its equation appear on your graph.</li>
+            </ol>
+        </section>
+
+        <section class="clip" id="trendline-equation">
+            <h2>Analyse your trendline equation</h2>
+            <p class="clip-purpose">Google Sheets writes the equation of a straight line in its own shorthand. Match it to <em>y</em> = <em>mx</em> + <em>c</em> to find the gradient and the <em>y</em>-intercept.</p>
+            <img class="equation-figure" src="trendline-equation.svg" width="600" height="569" loading="lazy"
+                 alt="Step 1: Google Sheets shows -2.03E-04*x + 1.48. The number before x, -2.03E-04, is the gradient m. The number on its own, 1.48, is the y-intercept c. Step 2: E-04 means times ten to the minus four, so -2.03E-04 equals -2.03 times ten to the minus four, which is -0.000203. E-04 moves the decimal point 4 places left; E+03 moves it 3 places right. Step 3: m = -0.000203 seconds per gram, which is approximately 0. A gradient of almost zero means a flat line: the period of a pendulum does not depend on the mass of its bob.">
+            <ol>
+                <li>Find <strong>m</strong>: the number in front of <code>*x</code>.</li>
+                <li>Find <strong>c</strong>: the number on its own at the end.</li>
+                <li>Rewrite any <code>E</code> number as × 10 to that power, then as an ordinary decimal.</li>
+                <li>Give <strong>m</strong> its units: the <em>y</em>-axis unit over the <em>x</em>-axis unit, here s/g.</li>
+                <li>Check: the size of <strong>m</strong> matches the slope you can see on your graph.</li>
             </ol>
         </section>
 
