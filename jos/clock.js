@@ -29,12 +29,13 @@
     '#clockStage.on{opacity:1}',
     /* the gooey trick: blurry blobs + a very high contrast = blobs that melt into each other like lava */
     '#clockStage .lava{position:absolute;inset:-10%;background:#1d0730;filter:contrast(16)}',
-    '#clockStage .blob{position:absolute;border-radius:50%;background:#ff5e3a;filter:blur(22px);',
-    '  animation:lavaFloat linear infinite alternate}',
+    '#clockStage .blob{position:absolute;left:0;top:0;border-radius:50%;background:#ff4a2a;filter:blur(22px);will-change:transform}',
+    /* the pool of lava that always sits at the bottom, gently breathing */
+    '#clockStage .pool{position:absolute;border-radius:50%;background:#ff4a2a;filter:blur(22px);animation:poolBreathe 5s ease-in-out infinite alternate}',
+    '@keyframes poolBreathe{from{transform:scaleY(1)}to{transform:scaleY(1.18)}}',
     '#clockStage .glow{position:absolute;inset:0;pointer-events:none;',
     '  background:radial-gradient(ellipse at 50% 120%,rgba(255,140,60,.35),transparent 60%),',
     '  radial-gradient(ellipse at 50% -20%,rgba(160,60,255,.35),transparent 60%)}',
-    '@keyframes lavaFloat{from{transform:translateY(0) scale(1)}to{transform:translateY(var(--rise)) scale(var(--grow))}}',
 
     /* the 1s and 0s */
     '.clock-bit{position:fixed;left:0;top:0;z-index:2147470001;pointer-events:none;font:700 18px/1 Menlo,Consolas,monospace;',
@@ -47,7 +48,7 @@
     '#clockBig .t{display:block;font-size:clamp(4rem,15vw,11rem);line-height:1;letter-spacing:.03em}',
     /* the roll (from Jos's stopwatch): the old number slides up and fades out while the
        new one rises from below and fades in. Only the group that changed moves. */
-    '#clockBig .grp{display:inline-block;position:relative}',
+    '#clockBig .grp{display:inline-block;position:relative;white-space:pre}',   /* pre: keeps a space on its own from vanishing */
     '#clockBig .grp .num{display:inline-block}',
     '#clockBig .grp .old{position:absolute;left:0;top:0;pointer-events:none}',
     '#clockBig .d{display:block;font-family:Nunito,sans-serif;font-weight:800;font-size:clamp(1rem,3vw,2rem);opacity:.9;margin-top:.6rem}',
@@ -130,21 +131,6 @@
     stage.id = 'clockStage';
     var lava = document.createElement('div');
     lava.className = 'lava';
-    var colours = ['#ff5e3a', '#ff7b2e', '#ff3d6e', '#ff9a3c'];
-    for (var i = 0; i < 9; i++) {
-      var b = document.createElement('div');
-      b.className = 'blob';
-      var size = 120 + Math.random() * 200;
-      b.style.width = b.style.height = size + 'px';
-      b.style.left = (Math.random() * 90) + '%';
-      b.style.top = (20 + Math.random() * 70) + '%';
-      b.style.background = colours[i % colours.length];
-      b.style.setProperty('--rise', -(25 + Math.random() * 45) + 'vh');
-      b.style.setProperty('--grow', (0.7 + Math.random() * 0.6).toFixed(2));
-      b.style.animationDuration = (7 + Math.random() * 8) + 's';
-      b.style.animationDelay = (-Math.random() * 10) + 's';
-      lava.appendChild(b);
-    }
     var glow = document.createElement('div');
     glow.className = 'glow';
     var hint = document.createElement('div');
@@ -155,6 +141,7 @@
     void stage.offsetWidth;
     stage.classList.add('on');
     stage.addEventListener('click', close);
+    lavaLamp(lava);
 
     /* 2. the 1s and 0s come in like TERMINAL text: a terminal can only put letters in boxes
           on a grid, so nothing can glide. Each 1 or 0 jumps one box at a time — across, up,
@@ -248,6 +235,67 @@
         timers.push(iv);
       }, 850);
     }
+  }
+
+  /* ---------- 🌋 a real lava lamp ----------
+     Each blob has a temperature. In the pool at the bottom it slowly heats up; when it is
+     hot enough it stretches off the pool and rises. At the top it cools, rests a moment,
+     then sinks back down and melts into the pool again. Blobs that touch melt together
+     (that is the blur + high-contrast trick in the CSS). */
+  function lavaLamp(lava) {
+    var mine = stage;
+    var box = lava.getBoundingClientRect();
+    var top = -box.top, bottom = top + innerHeight;      /* the part of the lava you can see */
+    var W = box.width;
+
+    var pool = document.createElement('div');
+    pool.className = 'pool';
+    pool.style.width = (W * 0.9) + 'px'; pool.style.height = '170px';
+    pool.style.left = (W * 0.05) + 'px'; pool.style.top = (bottom - 75) + 'px';
+    lava.appendChild(pool);
+
+    var blobs = [];
+    for (var i = 0; i < 8; i++) {
+      var r = 40 + Math.random() * 50;
+      var el = document.createElement('div');
+      el.className = 'blob';
+      el.style.width = el.style.height = (2 * r) + 'px';
+      lava.appendChild(el);
+      var b = { el: el, r: r, x: W * (0.12 + Math.random() * 0.76), y: bottom - r * 0.5, vy: 0,
+                phase: Math.random() * 6.3, speed: 1.1 + Math.random() * 1.1,
+                state: 'heating', wait: 30 + Math.random() * 420 };   /* frames until hot enough */
+      if (i < 2) { b.state = 'rising'; b.y = bottom - innerHeight * (0.3 + 0.3 * i); }   /* two already on the way up */
+      blobs.push(b);
+    }
+
+    var frame = 0;
+    (function step() {
+      if (stage !== mine) return;                        /* closed: stop */
+      frame++;
+      blobs.forEach(function (b) {
+        var rest = bottom - b.r * 0.5, ceiling = top + b.r * 0.7, want = 0;
+        if (b.state === 'heating') {                     /* sitting in the pool, warming up */
+          b.y = rest;
+          if (--b.wait <= 0) b.state = 'rising';
+        } else if (b.state === 'rising') {               /* hot: floats up */
+          want = -b.speed;
+          if (b.y <= ceiling) { b.y = ceiling; b.vy = 0; b.state = 'cooling'; b.wait = 60 + Math.random() * 150; }
+        } else if (b.state === 'cooling') {              /* at the top, cooling down */
+          if (--b.wait <= 0) b.state = 'sinking';
+        } else if (b.state === 'sinking') {              /* cold: sinks back to the pool */
+          want = b.speed * 0.8;
+          if (b.y >= rest) { b.y = rest; b.vy = 0; b.state = 'heating'; b.wait = 150 + Math.random() * 450; }
+        }
+        b.vy += (want - b.vy) * 0.025;                   /* lava is heavy: it speeds up and slows down gently */
+        b.y += b.vy;
+        b.x += Math.sin(frame * 0.012 + b.phase) * 0.25; /* a little sideways wander */
+        /* stretch tall when moving fast, squash when resting */
+        var stretch = Math.min(0.4, Math.abs(b.vy) * 0.18);
+        var sy = b.state === 'heating' ? 0.8 : 1 + stretch, sx = 1 / sy;
+        b.el.style.transform = 'translate(' + (b.x - b.r) + 'px,' + (b.y - b.r) + 'px) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+      });
+      requestAnimationFrame(step);
+    })();
   }
 
   /* ---------- click again or Esc: back to normal ---------- */
