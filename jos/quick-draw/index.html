@@ -18,9 +18,10 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { height:100%; }
     body { font-family:'Nunito',sans-serif; color:#223; background:#ffd54f; overflow:hidden; user-select:none; }
-    .back-link { position:fixed; top:16px; left:20px; z-index:20; font-family:'Fredoka One',cursive;
-                 color:#22334499; text-decoration:none; font-size:1rem; }
-    .back-link:hover { color:#223; }
+    /* the Back button sits above everything, even the start and end cards */
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.12); }
+    .back-link:hover { background:#223; color:#fff; }
 
     /* the bar along the top */
     #bar { position:fixed; left:0; right:0; top:0; height:64px; display:flex; align-items:center; justify-content:center;
@@ -56,8 +57,18 @@
              box-shadow:0 3px 0 rgba(0,0,0,.12); flex:none; }
 
     /* cards: the start, each round's "draw this", and the end */
-    .card-wrap { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:rgba(255,213,79,.96); }
-    .card-wrap[hidden] { display:none; }
+    /* the cards fade in and out, they don't pop */
+    .card-wrap { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:rgba(255,213,79,.96);
+                 opacity:0; visibility:hidden; pointer-events:none; transition:opacity .6s ease, visibility .6s; }
+    .card-wrap.shown { opacity:1; visibility:visible; pointer-events:auto; }
+    .card-wrap .card { transform:translateY(14px); transition:transform .6s ease; }
+    .card-wrap.shown .card { transform:none; }
+    /* the big tick on top of your drawing when the robot gets it */
+    #tick { position:fixed; left:50%; top:calc(64px + (100% - 182px) / 2); width:min(42vh,320px); height:min(42vh,320px);
+            transform:translate(-50%,-50%) scale(.6); opacity:0; pointer-events:none; z-index:7; transition:opacity .35s ease, transform .5s cubic-bezier(.3,1.5,.5,1); }
+    #tick.on { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    #tick path { stroke-dasharray:200; stroke-dashoffset:200; }
+    #tick.on path { stroke-dashoffset:0; transition:stroke-dashoffset .5s ease .15s; }
     .card { text-align:center; padding:1.5rem; max-width:900px; }
     .card h1 { font-family:'Fredoka One',cursive; font-weight:400; font-size:clamp(2.4rem,7vw,4.5rem); line-height:1.05; }
     .card h2 { font-family:'Fredoka One',cursive; font-weight:400; font-size:clamp(1.6rem,4.5vw,3rem); line-height:1.1; margin:.3rem 0 .6rem; }
@@ -81,6 +92,10 @@
   <div id="bar"><span class="round" id="round"></span><span class="what" id="what"></span><span class="clock" id="clock">0:20</span></div>
   <canvas id="paper"></canvas>
   <button id="clear">🧽 Clear</button>
+  <svg id="tick" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="46" fill="rgba(67,160,71,.9)" stroke="#fff" stroke-width="5"/>
+    <path d="M28 52 L44 67 L73 35" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
 
   <div id="robotBox">
     <svg id="robot" viewBox="0 0 92 100" aria-hidden="true">
@@ -100,7 +115,7 @@
     <button id="voice" title="Robot voice on/off">🔊</button>
   </div>
 
-  <div class="card-wrap" id="startCard">
+  <div class="card-wrap shown" id="startCard">
     <div class="card">
       <div class="big">🤖✏️</div>
       <h1>Quick, Draw!</h1>
@@ -111,7 +126,7 @@
         It runs inside this page, so your drawings never leave your computer.</p>
     </div>
   </div>
-  <div class="card-wrap" id="roundCard" hidden>
+  <div class="card-wrap" id="roundCard">
     <div class="card">
       <p id="rcRound"></p>
       <div class="big" id="rcEmoji"></div>
@@ -120,7 +135,7 @@
       <button class="go" id="rcGo">Got it!</button>
     </div>
   </div>
-  <div class="card-wrap" id="endCard" hidden>
+  <div class="card-wrap" id="endCard">
     <div class="card">
       <h2 id="endTitle"></h2>
       <div class="results" id="results"></div>
@@ -280,8 +295,8 @@
      THE ROBOT TALKING
      --------------------------------------------------------------- */
   var robot = document.getElementById('robot'), say = document.getElementById('say');
-  var voiceOn = true;
-  try { voiceOn = localStorage.getItem('jos-quickdraw-voice') !== 'off'; } catch (e) {}
+  var voiceOn = false;                                          /* the voice starts OFF; 🔇 turns it on */
+  try { voiceOn = localStorage.getItem('jos-quickdraw-voice') === 'on'; } catch (e) {}
   var voiceBtn = document.getElementById('voice');
   function paintVoice() { voiceBtn.textContent = voiceOn ? '🔊' : '🔇'; }
   voiceBtn.addEventListener('click', function () {
@@ -310,7 +325,8 @@
      THE GAME
      --------------------------------------------------------------- */
   var ROUNDS = 6, order = [], round = 0, target = 0, timeLeft = 0, tickTimer = 0, guessTimer = 0, results = [], live = false;
-  var show = function (id, on) { document.getElementById(id).hidden = !on; };
+  var show = function (id, on) { document.getElementById(id).classList.toggle('shown', on); };
+  var tick = document.getElementById('tick');
 
   function start() {
     order = B.things.map(function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; }).slice(0, ROUNDS);
@@ -322,6 +338,7 @@
     if (round >= ROUNDS) return finish();
     target = order[round];
     strokes = []; redraw(); canDraw = false; lastSaid = '';
+    tick.classList.remove('on');
     document.getElementById('rcRound').textContent = 'Drawing ' + (round + 1) + ' of ' + ROUNDS;
     document.getElementById('rcEmoji').textContent = '✏️';
     document.getElementById('rcWhat').textContent = 'Draw ' + name(target);
@@ -357,16 +374,28 @@
   function guess() {
     lastThink = Date.now();
     if (!live || !strokes.length) return;
+    /* how much has been drawn: the length of all the lines, and how big the whole drawing is */
+    var length = 0, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    strokes.forEach(function (st) { st.forEach(function (q, i) {
+      if (i) length += Math.hypot(q[0] - st[i - 1][0], q[1] - st[i - 1][1]);
+      minX = Math.min(minX, q[0]); maxX = Math.max(maxX, q[0]); minY = Math.min(minY, q[1]); maxY = Math.max(maxY, q[1]); }); });
+    var size = Math.max(maxX - minX, maxY - minY);
+    /* the robot only knows 15 things, so it always picks one of them — even for a scribble.
+       So: no guessing at all until there is a proper amount of drawing */
+    if (length < 300 || size < 70) {
+      speak(size < 70 && length >= 300 ? 'I don\'t know… try drawing it bigger!' : 'I don\'t know what you\'re drawing…', length >= 150);
+      return;
+    }
     var p = think(toPicture(strokes));
     var ranked = p.map(function (v, i) { return [v, i]; }).sort(function (a, b) { return b[0] - a[0]; });
     var top = ranked[0], second = ranked[1];
-    if (top[1] === target && top[0] > 0.5) {                     /* got it! */
+    if (top[1] === target && top[0] > 0.8) {                     /* really sure, and right: got it! */
       speak('I get it, you\'re drawing ' + name(target) + '!', true);
       robot.classList.remove('happy'); void robot.offsetWidth; robot.classList.add('happy');
+      tick.classList.add('on');                                  /* a big ✓ on top of the drawing */
       return endRound(true);
     }
-    var ink = strokes.reduce(function (n, s) { return n + s.length; }, 0);
-    if (top[0] < 0.35 || ink < 8) speak('I don\'t know what you\'re drawing…', ink >= 8);
+    if (top[0] < 0.4) speak('I don\'t know what you\'re drawing…', true);
     else if (second[0] > 0.2) speak('I think you\'re drawing ' + name(top[1]) + '… or ' + name(second[1]) + '?', true);
     else speak('I think you\'re drawing ' + name(top[1]) + '…', true);
   }
