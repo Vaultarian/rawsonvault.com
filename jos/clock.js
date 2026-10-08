@@ -44,6 +44,11 @@
     '  font-family:"Fredoka One",cursive;text-shadow:0 0 30px rgba(255,170,90,.8),0 6px 0 rgba(0,0,0,.25);',
     '  transform-origin:50% 50%;white-space:nowrap}',
     '#clockBig .t{display:block;font-size:clamp(4rem,15vw,11rem);line-height:1;letter-spacing:.03em}',
+    /* the roll (from Jos's stopwatch): the old number slides up and fades out while the
+       new one rises from below and fades in. Only the group that changed moves. */
+    '#clockBig .grp{display:inline-block;position:relative}',
+    '#clockBig .grp .num{display:inline-block}',
+    '#clockBig .grp .old{position:absolute;left:0;top:0;pointer-events:none}',
     '#clockBig .d{display:block;font-family:Nunito,sans-serif;font-weight:800;font-size:clamp(1rem,3vw,2rem);opacity:.9;margin-top:.6rem}',
     '#clockStage .hint{position:absolute;left:0;right:0;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.55);',
     '  font:700 .85rem Nunito,sans-serif;letter-spacing:.06em}'
@@ -58,6 +63,42 @@
     return d.toLocaleDateString(undefined, long ? { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
                                                 : { weekday: 'short', day: 'numeric', month: 'short' });
   }
+  /* the time split into its parts: hour, ":", minute, ":", second (and am/pm if the computer uses it) */
+  var PARTS = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+
+  /* write the time into the big clock, rolling any group of numbers that changed */
+  function roll(box, now) {
+    var parts = PARTS.formatToParts(now);
+    if (box.dataset.mode !== 'roll' || box.children.length !== parts.length) {
+      box.dataset.mode = 'roll';                     /* first time: just build it, no roll */
+      box.textContent = '';
+      parts.forEach(function (p) {
+        var g = document.createElement('span');
+        g.className = 'grp';
+        g.innerHTML = '<span class="num"></span>';
+        g.firstChild.textContent = p.value;
+        box.appendChild(g);
+      });
+      return;
+    }
+    parts.forEach(function (p, i) {
+      var g = box.children[i], cur = g.querySelector('.num:not(.old)');
+      if (cur.textContent === p.value) return;
+      /* the old number: lift it out, slide it up and fade it */
+      cur.classList.add('old');
+      cur.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-60%)', opacity: 0 }],
+                  { duration: 300, easing: 'cubic-bezier(.3,0,.6,1)', fill: 'forwards' })
+         .finished.then(function () { cur.remove(); });
+      /* the new number: rise from below into its place */
+      var nu = document.createElement('span');
+      nu.className = 'num';
+      nu.textContent = p.value;
+      g.appendChild(nu);
+      nu.animate([{ transform: 'translateY(45%)', opacity: 0.3 }, { transform: 'translateY(0)', opacity: 1 }],
+                 { duration: 300, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    });
+  }
+
   function scramble(text) {           /* turn every letter and number into a 1 or a 0 */
     return text.replace(/[^\s]/g, function () { return Math.random() < 0.5 ? '0' : '1'; });
   }
@@ -73,7 +114,7 @@
       small.querySelector('.d').textContent = date(now);
     }
     if (big && !big.decoding) {
-      big.querySelector('.t').textContent = time(now, true);
+      roll(big.querySelector('.t'), now);
       big.querySelector('.d').textContent = date(now, true);
     }
   }
