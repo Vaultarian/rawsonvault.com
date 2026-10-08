@@ -3,9 +3,10 @@
 
    Click it and:
    1. the screen turns into a lava lamp (gooey bubbles floating up and down)
-   2. little 1s and 0s fly in from the edges and take over the clock, scrambling it
-   3. the clock flies to the middle of the screen and gets big
-      (a simple version for now — Jos has a better animation to show later)
+   2. little 1s and 0s jump in from the edges like terminal text (one grid box at a time:
+      across, up, across, up) and take over the clock, scrambling it
+   3. the clock flies to the middle of the screen and gets big: hours and minutes only,
+      and when a number changes it rolls, like Jos's stopwatch
    Click again, or press Esc, to go back.
 
    Jos's design, 8 Oct 2026. */
@@ -63,8 +64,8 @@
     return d.toLocaleDateString(undefined, long ? { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
                                                 : { weekday: 'short', day: 'numeric', month: 'short' });
   }
-  /* the time split into its parts: hour, ":", minute, ":", second (and am/pm if the computer uses it) */
-  var PARTS = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  /* the time split into its parts: hour, ":", minute (and am/pm if the computer uses it) */
+  var PARTS = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });   /* hours and minutes, no seconds (Jos) */
 
   /* write the time into the big clock, rolling any group of numbers that changed */
   function roll(box, now) {
@@ -155,49 +156,75 @@
     stage.classList.add('on');
     stage.addEventListener('click', close);
 
-    /* 2. the 1s and 0s fly in from the edges and land on the clock */
+    /* 2. the 1s and 0s come in like TERMINAL text: a terminal can only put letters in boxes
+          on a grid, so nothing can glide. Each 1 or 0 jumps one box at a time — across, up,
+          across, up, like a staircase — until it lands on the clock. */
     var r = small.getBoundingClientRect();
+    var CW = 20, CH = 28;                                /* the size of one grid box, in pixels */
+    var cols = Math.floor(innerWidth / CW), rows = Math.floor(innerHeight / CH);
+    var bits = [], landed = 0, started = false;
     later(function () {
-      for (var k = 0; k < 40; k++) {
-        var bit = document.createElement('div');
-        bit.className = 'clock-bit';
-        bit.textContent = Math.random() < 0.5 ? '0' : '1';
-        var side = k % 4, sx, sy;                       /* start just off one of the four edges */
-        if (side === 0) { sx = Math.random() * innerWidth; sy = -30; }
-        else if (side === 1) { sx = innerWidth + 30; sy = Math.random() * innerHeight; }
-        else if (side === 2) { sx = Math.random() * innerWidth; sy = innerHeight + 30; }
-        else { sx = -30; sy = Math.random() * innerHeight; }
-        var tx = r.left + Math.random() * r.width, ty = r.top + Math.random() * r.height;
-        document.body.appendChild(bit);
-        bit.animate([
-          { transform: 'translate(' + sx + 'px,' + sy + 'px) scale(1.6)', opacity: 0 },
-          { opacity: 1, offset: 0.2 },
-          { transform: 'translate(' + tx + 'px,' + ty + 'px) scale(.8)', opacity: 1 }
-        ], { duration: 650 + Math.random() * 450, delay: k * 12, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' })
-          .finished.then((function (el) { return function () { el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }); setTimeout(function () { el.remove(); }, 320); }; })(bit));
-      }
       small.style.zIndex = '2147470002';               /* the clock sits on top of the lava while it is taken over */
+      for (var k = 0; k < 40; k++) {
+        var el = document.createElement('div');
+        el.className = 'clock-bit';
+        el.textContent = Math.random() < 0.5 ? '0' : '1';
+        var side = k % 4, c, w;                          /* start on one of the four edges */
+        if (side === 0) { c = Math.floor(Math.random() * cols); w = 0; }
+        else if (side === 1) { c = cols - 1; w = Math.floor(Math.random() * rows); }
+        else if (side === 2) { c = Math.floor(Math.random() * cols); w = rows - 1; }
+        else { c = 0; w = Math.floor(Math.random() * rows); }
+        bits.push({ el: el, c: c, r: w, wait: Math.floor(Math.random() * 18), across: Math.random() < 0.5,
+                    tc: Math.floor((r.left + Math.random() * (r.width - CW)) / CW),
+                    tr: Math.floor((r.top + Math.random() * (r.height - CH / 2)) / CH) });
+        el.style.transform = 'translate(' + c * CW + 'px,' + w * CH + 'px)';
+        el.style.visibility = 'hidden';
+        document.body.appendChild(el);
+      }
+      var mine = stage;                                  /* one box per screen frame, until they have all landed */
+      (function step() {
+        if (stage !== mine) return;                      /* closed early: stop */
+        bits.forEach(function (b) {
+          if (b.done) return;
+          if (b.wait > 0) { if (--b.wait === 0) b.el.style.visibility = ''; return; }
+          var dc = b.tc - b.c, dr = b.tr - b.r;
+          if (!dc && !dr) {                              /* landed on the clock */
+            b.done = true; landed++;
+            b.el.style.transition = 'opacity .25s'; b.el.style.opacity = '0';
+            setTimeout(function () { b.el.remove(); }, 300);
+            if (!started) { started = true; takeOver(); }
+            if (landed === bits.length) { later(flyToMiddle, 150); }
+            return;
+          }
+          /* one box: across, then up, then across... (straight on once one way is finished) */
+          if (dc && (b.across || !dr)) b.c += dc > 0 ? 1 : -1;
+          else b.r += dr > 0 ? 1 : -1;
+          b.across = !b.across;
+          b.el.style.transform = 'translate(' + b.c * CW + 'px,' + b.r * CH + 'px)';
+        });
+        if (landed < bits.length) requestAnimationFrame(step);
+      })();
+
     }, 250);
 
     /* ...and as they land, the clock scrambles into code */
-    later(function () {
+    function takeOver() {
       scrambling = true;
       var t = small.querySelector('.t'), d = small.querySelector('.d');
-      var n = 0, iv = setInterval(function () {
+      var iv = setInterval(function () {
         t.textContent = scramble(time(new Date()));
         d.textContent = scramble(date(new Date()));
-        if (++n > 10) clearInterval(iv);
       }, 60);
       timers.push(iv);
-    }, 750);
+    }
 
     /* 3. the clock flies to the middle and gets big */
-    later(function () {
+    function flyToMiddle() {
       big = document.createElement('div');
       big.id = 'clockBig';
       big.innerHTML = '<span class="t"></span><span class="d"></span>';
       big.decoding = true;
-      big.querySelector('.t').textContent = scramble(time(new Date(), true));
+      big.querySelector('.t').textContent = scramble(time(new Date()));
       big.querySelector('.d').textContent = scramble(date(new Date(), true));
       stage.appendChild(big);
       var b = big.getBoundingClientRect(), s = r.width / b.width;
@@ -212,7 +239,7 @@
       /* the code turns back into the real time, one letter at a time */
       later(function () {
         var steps = 0, iv = setInterval(function () {
-          var real = time(new Date(), true), realD = date(new Date(), true);
+          var real = time(new Date()), realD = date(new Date(), true);
           var keep = Math.floor(real.length * steps / 12), keepD = Math.floor(realD.length * steps / 12);
           big.querySelector('.t').textContent = real.slice(0, keep) + scramble(real.slice(keep));
           big.querySelector('.d').textContent = realD.slice(0, keepD) + scramble(realD.slice(keepD));
@@ -220,7 +247,7 @@
         }, 55);
         timers.push(iv);
       }, 850);
-    }, 1450);
+    }
   }
 
   /* ---------- click again or Esc: back to normal ---------- */
