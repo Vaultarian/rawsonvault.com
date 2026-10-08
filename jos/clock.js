@@ -3,10 +3,10 @@
 
    Click it and:
    1. the screen turns into a lava lamp (gooey bubbles floating up and down)
-   2. little 1s and 0s jump in from the edges like terminal text (one grid box at a time:
-      across, up, across, up) and take over the clock, scrambling it
-   3. the clock flies to the middle of the screen and gets big: hours and minutes only,
-      and when a number changes it rolls, like Jos's stopwatch
+   2. a blinking typing bar appears in the middle, types the time, goes to the next
+      line (no Enter button) and types the date
+   3. the big clock shows hours and minutes only, and when a number changes it rolls,
+      like Jos's stopwatch
    Click again, or press Esc, to go back.
 
    Jos's design, 8 Oct 2026. */
@@ -20,7 +20,6 @@
     '#josClock:hover{transform:scale(1.05);box-shadow:0 8px 22px rgba(0,0,0,.3)}',
     '#josClock .t{display:block;font-size:1.35rem;line-height:1.1;letter-spacing:.03em}',
     '#josClock .d{display:block;font-family:Nunito,sans-serif;font-weight:700;font-size:.75rem;opacity:.9}',
-    '#josClock.taken{visibility:hidden}',
     'body.sm-open #josClock,body.set-open #josClock{display:none}',
     '@media (max-width:600px){#josClock{top:.6rem;left:.6rem;padding:.35rem .7rem}#josClock .t{font-size:1rem}}',
 
@@ -38,8 +37,12 @@
     '  radial-gradient(ellipse at 50% -20%,rgba(160,60,255,.35),transparent 60%)}',
 
     /* the 1s and 0s */
-    '.clock-bit{position:fixed;left:0;top:0;z-index:2147470001;pointer-events:none;font:700 18px/1 Menlo,Consolas,monospace;',
-    '  color:#7dffb0;text-shadow:0 0 8px #2bff88}',
+    /* the typing bar: blinks while waiting, stays solid while typing */
+    '#clockBig .caret{display:inline-block;width:.07em;height:.85em;margin-left:.05em;vertical-align:-.04em;background:#fff;',
+    '  box-shadow:0 0 14px rgba(255,170,90,.9);animation:caretBlink 1s steps(1) infinite}',
+    '#clockBig .caret.typing{animation:none}',
+    '@keyframes caretBlink{50%{opacity:0}}',
+    '#clockBig .typed{text-align:left;margin-left:auto;margin-right:auto}',
 
     /* the big clock */
     '#clockBig{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;',
@@ -101,30 +104,23 @@
     });
   }
 
-  function scramble(text) {           /* turn every letter and number into a 1 or a 0 */
-    return text.replace(/[^\s]/g, function () { return Math.random() < 0.5 ? '0' : '1'; });
-  }
-
-  var small, stage = null, big = null, busy = false, scrambling = false, timers = [];
+  var small, stage = null, big = null, timers = [];
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
   /* ---------- the small clock, ticking ---------- */
   function tick() {
     var now = new Date();
-    if (!scrambling) {
-      small.querySelector('.t').textContent = time(now);
-      small.querySelector('.d').textContent = date(now);
-    }
-    if (big && !big.decoding) {
+    small.querySelector('.t').textContent = time(now);
+    small.querySelector('.d').textContent = date(now);
+    if (big && big.ready) {
       roll(big.querySelector('.t'), now);
-      big.querySelector('.d').textContent = date(now, true);
+      big.querySelector('.d .words').textContent = date(now, true);
     }
   }
 
-  /* ---------- click: lava lamp, 1s and 0s, big clock ---------- */
+  /* ---------- click: lava lamp, then the time is typed out ---------- */
   function open() {
-    if (stage || busy) return;
-    busy = true;
+    if (stage) return;
 
     /* 1. the lava lamp */
     stage = document.createElement('div');
@@ -143,98 +139,51 @@
     stage.addEventListener('click', close);
     lavaLamp(lava);
 
-    /* 2. the 1s and 0s come in like TERMINAL text: a terminal can only put letters in boxes
-          on a grid, so nothing can glide. Each 1 or 0 jumps one box at a time — across, up,
-          across, up, like a staircase — until it lands on the clock. */
-    var r = small.getBoundingClientRect();
-    var CW = 20, CH = 28;                                /* the size of one grid box, in pixels */
-    var cols = Math.floor(innerWidth / CW), rows = Math.floor(innerHeight / CH);
-    var bits = [], landed = 0, started = false;
-    later(function () {
-      small.style.zIndex = '2147470002';               /* the clock sits on top of the lava while it is taken over */
-      for (var k = 0; k < 40; k++) {
-        var el = document.createElement('div');
-        el.className = 'clock-bit';
-        el.textContent = Math.random() < 0.5 ? '0' : '1';
-        var side = k % 4, c, w;                          /* start on one of the four edges */
-        if (side === 0) { c = Math.floor(Math.random() * cols); w = 0; }
-        else if (side === 1) { c = cols - 1; w = Math.floor(Math.random() * rows); }
-        else if (side === 2) { c = Math.floor(Math.random() * cols); w = rows - 1; }
-        else { c = 0; w = Math.floor(Math.random() * rows); }
-        bits.push({ el: el, c: c, r: w, wait: Math.floor(Math.random() * 18), across: Math.random() < 0.5,
-                    tc: Math.floor((r.left + Math.random() * (r.width - CW)) / CW),
-                    tr: Math.floor((r.top + Math.random() * (r.height - CH / 2)) / CH) });
-        el.style.transform = 'translate(' + c * CW + 'px,' + w * CH + 'px)';
-        el.style.visibility = 'hidden';
-        document.body.appendChild(el);
-      }
-      var mine = stage;                                  /* one box per screen frame, until they have all landed */
-      (function step() {
-        if (stage !== mine) return;                      /* closed early: stop */
-        bits.forEach(function (b) {
-          if (b.done) return;
-          if (b.wait > 0) { if (--b.wait === 0) b.el.style.visibility = ''; return; }
-          var dc = b.tc - b.c, dr = b.tr - b.r;
-          if (!dc && !dr) {                              /* landed on the clock */
-            b.done = true; landed++;
-            b.el.style.transition = 'opacity .25s'; b.el.style.opacity = '0';
-            setTimeout(function () { b.el.remove(); }, 300);
-            if (!started) { started = true; takeOver(); }
-            if (landed === bits.length) { later(flyToMiddle, 150); }
-            return;
-          }
-          /* one box: across, then up, then across... (straight on once one way is finished) */
-          if (dc && (b.across || !dr)) b.c += dc > 0 ? 1 : -1;
-          else b.r += dr > 0 ? 1 : -1;
-          b.across = !b.across;
-          b.el.style.transform = 'translate(' + b.c * CW + 'px,' + b.r * CH + 'px)';
-        });
-        if (landed < bits.length) requestAnimationFrame(step);
+    /* 2. a typing bar in the middle types the time, goes to the next line, types the date */
+    big = document.createElement('div');
+    big.id = 'clockBig';
+    big.innerHTML = '<span class="t typed"></span><span class="d typed"><span class="words"></span></span>';
+    stage.appendChild(big);
+    var t = big.querySelector('.t'), d = big.querySelector('.d'), words = d.querySelector('.words');
+    var caret = document.createElement('span');
+    caret.className = 'caret';
+
+    /* each line gets the width of its finished words, so the typing starts at the left of where
+       the words will end up and they finish in the middle */
+    var timeText = time(new Date()), dateText = date(new Date(), true);
+    t.textContent = timeText; d.firstChild.textContent = dateText;
+    t.style.width = (t.getBoundingClientRect().width + 20) + 'px';
+    d.style.width = (d.getBoundingClientRect().width + 12) + 'px';
+    t.textContent = ''; words.textContent = '';
+    t.appendChild(caret);                                /* the bar waits, blinking */
+
+    function typeOut(into, text, gap, then) {
+      var i = 0;
+      caret.classList.add('typing');
+      (function next() {
+        if (big === null) return;                        /* closed early */
+        into.textContent = text.slice(0, ++i);
+        into.parentNode.appendChild(caret);              /* the bar sits right after the last letter */
+        if (i < text.length) later(next, gap * (0.6 + Math.random() * 0.8));   /* a little uneven, like real typing */
+        else { caret.classList.remove('typing'); later(then, 450); }
       })();
-
-    }, 250);
-
-    /* ...and as they land, the clock scrambles into code */
-    function takeOver() {
-      scrambling = true;
-      var t = small.querySelector('.t'), d = small.querySelector('.d');
-      var iv = setInterval(function () {
-        t.textContent = scramble(time(new Date()));
-        d.textContent = scramble(date(new Date()));
-      }, 60);
-      timers.push(iv);
     }
-
-    /* 3. the clock flies to the middle and gets big */
-    function flyToMiddle() {
-      big = document.createElement('div');
-      big.id = 'clockBig';
-      big.innerHTML = '<span class="t"></span><span class="d"></span>';
-      big.decoding = true;
-      big.querySelector('.t').textContent = scramble(time(new Date()));
-      big.querySelector('.d').textContent = scramble(date(new Date(), true));
-      stage.appendChild(big);
-      var b = big.getBoundingClientRect(), s = r.width / b.width;
-      var dx = (r.left + r.width / 2) - (b.left + b.width / 2), dy = (r.top + r.height / 2) - (b.top + b.height / 2);
-      small.classList.add('taken');
-      small.style.zIndex = '';
-      big.animate([
-        { transform: 'translate(-50%,-50%) translate(' + dx + 'px,' + dy + 'px) scale(' + s + ')' },
-        { transform: 'translate(-50%,-50%)' }
-      ], { duration: 900, easing: 'cubic-bezier(.2,.8,.2,1)' });
-
-      /* the code turns back into the real time, one letter at a time */
-      later(function () {
-        var steps = 0, iv = setInterval(function () {
-          var real = time(new Date()), realD = date(new Date(), true);
-          var keep = Math.floor(real.length * steps / 12), keepD = Math.floor(realD.length * steps / 12);
-          big.querySelector('.t').textContent = real.slice(0, keep) + scramble(real.slice(keep));
-          big.querySelector('.d').textContent = realD.slice(0, keepD) + scramble(realD.slice(keepD));
-          if (++steps > 12) { clearInterval(iv); big.decoding = false; busy = false; tick(); }
-        }, 55);
-        timers.push(iv);
-      }, 850);
-    }
+    later(function () {
+      var tt = document.createElement('span');          /* the time is typed into its own span, then the bar follows it */
+      t.textContent = ''; t.appendChild(tt); t.appendChild(caret);
+      typeOut(tt, timeText, 150, function () {
+        d.appendChild(caret);                            /* "enter": the bar jumps to the next line */
+        later(function () {
+          typeOut(words, dateText, 70, function () {
+            /* finished: the clock keeps time from now on (and rolls when the minute changes) */
+            t.style.width = ''; d.style.width = '';
+            t.classList.remove('typed'); d.classList.remove('typed');
+            big.ready = true;
+            tick();
+          });
+        }, 350);
+      });
+    }, 1300);                                            /* the lava fades in, the bar blinks a couple of times */
   }
 
   /* ---------- 🌋 a real lava lamp ----------
@@ -300,14 +249,11 @@
 
   /* ---------- click again or Esc: back to normal ---------- */
   function close() {
-    if (!stage || busy) return;
+    if (!stage) return;
     var s = stage;
     stage = null; big = null;
     timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
     timers = [];
-    scrambling = false;
-    small.classList.remove('taken');
-    tick();
     s.classList.remove('on');
     setTimeout(function () { s.remove(); }, 650);
   }
