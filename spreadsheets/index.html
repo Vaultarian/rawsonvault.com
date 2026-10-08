@@ -246,27 +246,29 @@
         <section class="clip" id="trendline-equation">
             <h2>Analyse your trendline equation</h2>
             <p class="clip-purpose">Google Sheets writes the equation of a straight line in its own shorthand. Match it to <em>y</em> = <em>mx</em> + <em>c</em> to find the gradient and the <em>y</em>-intercept.</p>
-            <img class="equation-figure" src="trendline-equation.svg" width="600" height="569" loading="lazy"
-                 alt="Step 1: Google Sheets shows -2.03E-04*x + 1.48. The number before x, -2.03E-04, is the gradient m. The number on its own, 1.48, is the y-intercept c. Step 2: E-04 means times ten to the minus four, so -2.03E-04 equals -2.03 times ten to the minus four, which is -0.000203. E-04 moves the decimal point 4 places left; E+03 moves it 3 places right. Step 3: m = -0.000203 seconds per gram, which is approximately 0. A gradient of almost zero means a flat line: the period of a pendulum does not depend on the mass of its bob.">
+            <img class="equation-figure" src="trendline-equation.svg" width="600" height="595" loading="lazy"
+                 alt="Step 1: Google Sheets shows -2.03E-04*x + 1.48. The number before x, -2.03E-04, is the gradient m. The number on its own, 1.48, is the y-intercept c. Step 2: E-04 means times ten to the minus four, so -2.03E-04 equals -2.03 times ten to the minus four, which is -0.000203. E-04 moves the decimal point 4 places left; E+03 moves it 3 places right. Step 3: multiply the gradient by the range of x to see how much y changes: -0.000203 seconds per gram times 800 grams is -0.16 seconds. Across the whole range of masses the period fell by only 0.16 seconds, small next to a period of about 1.4 seconds, so changing the mass of the bob has little effect on the period of the pendulum.">
             <ol>
                 <li>Find <strong>m</strong>: the number in front of <code>*x</code>.</li>
                 <li>Find <strong>c</strong>: the number on its own at the end.</li>
                 <li>Rewrite any <code>E</code> number as × 10 to that power, then as an ordinary decimal.</li>
                 <li>Give <strong>m</strong> its units: the <em>y</em>-axis unit over the <em>x</em>-axis unit, here s/g.</li>
-                <li>Check: the size of <strong>m</strong> matches the slope you can see on your graph.</li>
+                <li>Multiply <strong>m</strong> by your range of <em>x</em> to find how much <em>y</em> changes: here −0.000203 s/g × 800 g = −0.16 s.</li>
+                <li>Compare that change with your values: 0.16 s is small next to a period of about 1.4 s.</li>
+                <li>Check: the change across your range matches how much your line rises or falls on the graph.</li>
             </ol>
         </section>
 
         <section class="clip" id="causation">
             <h2>Causation: does the independent variable cause a change?</h2>
-            <p class="clip-purpose">In a fair test you change one variable and keep the others the same. So if the dependent variable changes, the independent variable <strong>caused</strong> it. The gradient of your trendline tells you which way it went.</p>
+            <p class="clip-purpose">In a fair test you change one variable and keep the others the same. So if the dependent variable changes, the independent variable <strong>caused</strong> it. Multiply the gradient by your range to see how big that effect is.</p>
             <img class="equation-figure" src="causation.svg" width="600" height="613" loading="lazy"
-                 alt="Step 1: two graphs. A gradient far from 0 means changing the independent variable causes a change in the dependent variable. A gradient close to 0, like the pendulum, means it does not. Step 2: we changed only the mass, keeping length and release angle the same; the period hardly changed, m = -0.000203 s/g, approximately 0; so changing the mass does not cause a change in the period. Step 3: conclusion sentence: Changing the mass from 200 g to 1000 g did not cause a change in the period of the pendulum, because the gradient of the trendline is close to zero.">
+                 alt="Step 1: two graphs. A large change across the range means changing the independent variable causes a large change in the dependent variable. A small change across the range, like the pendulum, means it has little effect. Step 2: we changed only the mass, keeping length and release angle the same; the period fell by only 0.16 s, from -0.000203 s/g times 800 g; so changing the mass has little effect on the period. Step 3: conclusion sentence: Changing the mass from 200 g to 1000 g had little effect on the period of the pendulum: across the whole range the period fell by only 0.16 s, small next to a period of about 1.4 s.">
             <ol>
-                <li>Look at the gradient <strong>m</strong> of your trendline.</li>
-                <li>Gradient far from 0: changing the independent variable <strong>causes</strong> a change in the dependent variable.</li>
-                <li>Gradient close to 0: changing the independent variable <strong>does not cause</strong> a change in the dependent variable.</li>
-                <li>Write your conclusion: name both variables, the range you tested, and the gradient as your evidence.</li>
+                <li>Multiply the gradient <strong>m</strong> by your range of the independent variable to find the change in the dependent variable.</li>
+                <li>Large change next to your values: changing the independent variable <strong>causes</strong> a large change in the dependent variable.</li>
+                <li>Small change next to your values: changing the independent variable has <strong>little effect</strong> on the dependent variable.</li>
+                <li>Write your conclusion: name both variables, the range you tested, and the size of the change as your evidence.</li>
             </ol>
         </section>
 
