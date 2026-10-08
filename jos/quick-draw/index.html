@@ -121,7 +121,7 @@
       <h1>Quick, Draw!</h1>
       <p>You get 6 things to draw, 20 seconds each.<br>Can the robot guess what you're drawing?</p>
       <button class="go" id="startBtn">Let's draw!</button>
-      <p class="credit">The robot learned from 171,000 drawings by real people in Google's
+      <p class="credit">The robot learned from 243,000 drawings by real people in Google's
         <a href="https://quickdraw.withgoogle.com/data" target="_blank" rel="noopener">Quick, Draw! dataset</a> (CC BY 4.0).
         It runs inside this page, so your drawings never leave your computer.</p>
     </div>
@@ -223,7 +223,9 @@
     'bicycle': ['a bicycle', '🚲'], 'clock': ['a clock', '🕐'], 'umbrella': ['an umbrella', '☂️'],
     'snowman': ['a snowman', '⛄'], 'rainbow': ['a rainbow', '🌈'], 'ice cream': ['an ice cream', '🍦'],
     'airplane': ['an aeroplane', '✈️'] };
-  function name(i) { return NAMES[B.things[i]][0]; }
+  function name(i) { return NAMES[B.things[i]] ? NAMES[B.things[i]][0] : 'something else'; }
+  /* the robot's 16th answer: "it's not one of my 15 things" (a plain circle, a square, a squiggle…) */
+  var ELSE = B.things.indexOf('something else');
 
   /* ---------------------------------------------------------------
      DRAWING
@@ -289,7 +291,10 @@
     }
     return pic;
   }
-  window.robotGuessStrokes = function (list) { var p = think(toPicture(list)); return B.things[p.indexOf(Math.max.apply(null, p))]; };   /* for tests */
+  window.robotGuessStrokes = function (list, sure) {     /* for tests */
+    var p = think(toPicture(list)), i = p.indexOf(Math.max.apply(null, p));
+    return sure ? [B.things[i], Math.round(p[i] * 100)] : B.things[i];
+  };
 
   /* ---------------------------------------------------------------
      THE ROBOT TALKING
@@ -329,7 +334,7 @@
   var tick = document.getElementById('tick');
 
   function start() {
-    order = B.things.map(function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; }).slice(0, ROUNDS);
+    order = B.things.map(function (_, i) { return i; }).filter(function (i) { return i !== ELSE; }).sort(function () { return Math.random() - 0.5; }).slice(0, ROUNDS);
     round = 0; results = [];
     show('startCard', false); show('endCard', false);
     nextRound();
@@ -395,7 +400,8 @@
       tick.classList.add('on');                                  /* a big ✓ on top of the drawing */
       return endRound(true);
     }
-    if (top[0] < 0.4) speak('I don\'t know what you\'re drawing…', true);
+    if (second[1] === ELSE) second = ranked[2];                 /* never say "…or something else?" */
+    if (top[1] === ELSE || top[0] < 0.4) speak('I don\'t know what you\'re drawing…', true);
     else if (second[0] > 0.2) speak('I think you\'re drawing ' + name(top[1]) + '… or ' + name(second[1]) + '?', true);
     else speak('I think you\'re drawing ' + name(top[1]) + '…', true);
   }
@@ -428,7 +434,7 @@
         g.stroke();
       });
       cap.className = r.won ? 'yes' : 'no';
-      cap.textContent = NAMES[B.things[r.target]][1] + ' ' + name(r.target) + (r.won ? ' ✓' : ' ✗' + (r.thought >= 0 ? ' (it thought ' + name(r.thought) + ')' : ''));
+      cap.textContent = NAMES[B.things[r.target]][1] + ' ' + name(r.target) + (r.won ? ' ✓' : ' ✗' + (r.thought >= 0 && r.thought !== ELSE ? ' (it thought ' + name(r.thought) + ')' : ''));
       f.appendChild(c); f.appendChild(cap); box.appendChild(f);
     });
     speak(wins >= 4 ? 'That was fun! You\'re a great drawer!' : 'That was fun! Let\'s play again!', true);
