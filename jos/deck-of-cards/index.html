@@ -76,6 +76,15 @@
     .pile .slot .card { position:absolute; left:2px; top:2px; width:66px; height:100px; }
     @keyframes pop { from { transform:scale(.4); opacity:0; } to { transform:scale(1); opacity:1; } }
 
+    /* ---------- the hand cursor: open hand, fist when you click (for Snap!) ---------- */
+    #game, #game * { cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><text x='2' y='32' font-size='30'>🖐️</text></svg>") 16 14, pointer !important; }
+    body.slap #game, body.slap #game * { cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><text x='2' y='32' font-size='30'>✊</text></svg>") 16 14, pointer !important; }
+    .player .head .play { margin-left:0; background:#ffd54f; }
+    .player .head .snap { margin-left:0; background:#ff7043; color:#fff; }
+    .player .head .snap:hover { background:#fff; color:#123; }
+    .slot.snapped { animation:slapped .3s ease-out; }
+    @keyframes slapped { 0% { transform:scale(1); } 40% { transform:scale(.85) rotate(-4deg); } 100% { transform:scale(1); } }
+
     /* ---------- the card menu ---------- */
     #menu { position:fixed; z-index:60; display:none; flex-direction:column; gap:4px; background:#fff; color:#123; padding:8px;
             border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.4); min-width:220px; }
@@ -276,6 +285,22 @@ function draw() {
     const head = document.createElement('div');
     head.className = 'head';
     head.innerHTML = `<span class="name">${pi === now ? '👉 ' : ''}${p.name}</span><span class="n">${p.hand.length} ${p.hand.length === 1 ? 'card' : 'cards'}</span>`;
+    if (p.hand.length) {
+      const f = document.createElement('button');
+      f.className = 'play';
+      f.textContent = '🃏 Flip top card';
+      f.title = 'Turn your top card face up onto the discard pile';
+      f.onclick = () => flipTop(pi);
+      head.appendChild(f);
+    }
+    if (discard.length) {
+      const sn = document.createElement('button');
+      sn.className = 'snap';
+      sn.textContent = '✋ Snap! Take the pile';
+      sn.title = 'Grab the whole discard pile and put it under your cards';
+      sn.onclick = () => takePile(pi);
+      head.appendChild(sn);
+    }
     if (everyoneHasOne) {
       const b = document.createElement('button');
       b.textContent = p.show ? '🙈 Hide cards' : '👁️ Show cards';
@@ -343,6 +368,30 @@ function clickHandCard(e, pi, ci) {
   openMenu(e, known ? cardName(c) : p.name + "'s card", options);
 }
 function take(pi, ci) { players[pi].hand.splice(ci, 1); }
+
+/* ---------- Snap and Beggar My Neighbour ---------- */
+// your top card is the last one in your hand
+function flipTop(pi) {
+  const p = players[pi];
+  if (!p.hand.length) return;
+  const c = p.hand.pop();
+  c.flipped = false;
+  discard.push(c);
+  say(p.name + ' turned over ' + cardName(c) + '.');
+  draw();
+}
+// the whole discard pile goes underneath your cards
+function takePile(pi) {
+  const p = players[pi];
+  if (!discard.length) return;
+  const n = discard.length;
+  p.hand.unshift(...discard.splice(0).map(c => (c.flipped = false, c)));
+  $('discardSlot').classList.remove('snapped'); void $('discardSlot').offsetWidth; $('discardSlot').classList.add('snapped');
+  say('✋ SNAP! ' + p.name + ' took the pile: ' + n + (n === 1 ? ' card.' : ' cards.'));
+  draw();
+}
+document.addEventListener('mousedown', () => document.body.classList.add('slap'));
+document.addEventListener('mouseup', () => document.body.classList.remove('slap'));
 
 /* ---------- the little menu ---------- */
 function openMenu(e, title, options) {
