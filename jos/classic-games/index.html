@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classic Games — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Classic Games =====
+       All the old favourites in one room: board games and the deck of cards.
+       To add a game: put it in the GAMES list below with ready: true. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; color:#3e2723; min-height:100vh;
+           background:#8d5524 repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 3px, transparent 3px 60px); }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.2); }
+    .back-link:hover { background:#223; color:#fff; }
+    header { text-align:center; padding:70px 16px 24px; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; font-size:3.2rem; text-shadow:0 4px 0 rgba(0,0,0,.25); }
+    header p { font-weight:800; font-size:1.1rem; opacity:.9; }
+    #shelf { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:20px; max-width:1100px; margin:0 auto; padding:0 16px 40px; }
+    .game { background:#fff8e7; border-radius:18px; padding:20px 18px; text-decoration:none; color:inherit; text-align:center;
+            box-shadow:0 6px 0 rgba(0,0,0,.25); transition:transform .15s; display:flex; flex-direction:column; align-items:center; gap:.4rem; }
+    .game:hover { transform:translateY(-6px) rotate(-1deg); }
+    .game .e { font-size:3.6rem; line-height:1.1; }
+    .game .t { font-family:'Fredoka One',cursive; font-size:1.35rem; }
+    .game .i { font-size:.95rem; }
+    .game.soon { opacity:.55; filter:grayscale(.6); cursor:default; }
+    .game.soon:hover { transform:none; }
+    .game .tag { font-family:'Fredoka One',cursive; font-size:.8rem; background:#3e2723; color:#fff; padding:.15rem .7rem; border-radius:50px; }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../">← home</a>
+<header>
+  <h1>🎲 Classic Games</h1>
+  <p>All the old favourites in one place.</p>
+</header>
+<div id="shelf"></div>
+
+<script>
+const GAMES = [
+  { e: '🐍', t: 'Snakes and Ladders', u: '../snakes-and-ladders/', i: 'Climb the ladders, slide down the snakes. First to 100 wins.', ready: true },
+  { e: '🃏', t: 'Deck of Cards', u: '../deck-of-cards/', i: 'A real deck of 52 cards for any card game: Snap, Beggar My Neighbour and more.', ready: true },
+  { e: '❌', t: 'Noughts and Crosses', i: 'Three in a row wins.' },
+  { e: '🔴', t: 'Connect 4', i: 'Drop counters in. Four in a line wins.' },
+  { e: '⚫', t: 'Draughts', i: 'Jump over the other player\'s pieces.' },
+  { e: '♟️', t: 'Chess', i: 'The king of board games.' },
+  { e: '🎲', t: 'Ludo', i: 'Race your four counters home.' },
+  { e: '🚢', t: 'Battleships', i: 'Find and sink the hidden ships.' },
+  { e: '🔲', t: 'Dots and Boxes', i: 'Draw lines, finish boxes, win squares.' },
+];
+document.getElementById('shelf').innerHTML = GAMES.map(g => g.ready
+  ? `<a class="game" href="${g.u}"><span class="e">${g.e}</span><span class="t">${g.t}</span><span class="i">${g.i}</span></a>`
+  : `<div class="game soon"><span class="e">${g.e}</span><span class="t">${g.t}</span><span class="i">${g.i}</span><span class="tag">Coming soon</span></div>`
+).join('');
+</script>
+</body>
+</html>
