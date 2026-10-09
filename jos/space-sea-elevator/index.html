@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../swirl.js"></script>
+<title>Space &amp; Sea Elevator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: #000; font-family: Nunito, Arial, sans-serif; color: #fff; }
+
+#world { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
+.zone { position: absolute; left: 0; width: 100%; overflow: hidden; }
+.zone-name {
+  position: absolute; left: calc(50% + 70px);
+  top: 18px; font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+  opacity: 0.45; font-weight: 700; white-space: nowrap;
+}
+.border-line { position: absolute; left: 0; width: 100%; border-top: 2px dashed rgba(255,255,255,0.25); }
+.border-line span { position: absolute; right: 120px; top: -22px; font-size: 12px; opacity: 0.7; }
+
+.thing { position: absolute; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+.thing .e { display: block; line-height: 1; }
+.thing .l {
+  display: inline-block; margin-top: 4px; font-size: 13px; font-weight: 700;
+  background: rgba(0,0,0,0.55); padding: 3px 8px; border-radius: 8px; max-width: 210px; line-height: 1.25;
+}
+.sway { animation: sway 6s ease-in-out infinite alternate; }
+@keyframes sway { from { margin-left: -40px; } to { margin-left: 40px; } }
+.bob { animation: bob 3s ease-in-out infinite alternate; }
+@keyframes bob { from { margin-top: -8px; } to { margin-top: 8px; } }
+.flip .e { transform: scaleX(-1); }
+
+.star { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; animation: twinkle 3s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: 0.2; } to { opacity: 1; } }
+.meteor { position: absolute; width: 120px; height: 2px; background: linear-gradient(90deg, rgba(255,255,255,0), #fff); transform: rotate(-30deg); animation: streak 2.4s linear infinite; opacity: 0; }
+@keyframes streak { 0% { opacity: 0; translate: 0 0; } 10% { opacity: 1; } 60% { opacity: 0; translate: 260px 150px; } 100% { opacity: 0; translate: 260px 150px; } }
+.bubble { position: absolute; width: 8px; height: 8px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; animation: rise 7s linear infinite; }
+@keyframes rise { from { translate: 0 0; opacity: 0.8; } to { translate: 0 -500px; opacity: 0; } }
+.band { position: absolute; left: 0; width: 100%; }
+.glow { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: #fffbb0; box-shadow: 0 0 14px 6px #fff27a; animation: twinkle 1.5s ease-in-out infinite alternate; }
+
+/* the cable and the lift */
+.cable { position: fixed; top: 0; bottom: 0; width: 3px; background: linear-gradient(#bbb, #777); z-index: 5; }
+#cableL { left: calc(50% - 44px); }
+#cableR { left: calc(50% + 41px); }
+#lift {
+  position: fixed; left: 50%; top: 50%; width: 96px; height: 130px; transform: translate(-50%, -50%);
+  z-index: 6; border: 5px solid #c9ccd1; border-radius: 6px;
+  background: linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+  box-shadow: 0 0 0 2px #555, 0 6px 20px rgba(0,0,0,0.5);
+}
+#lift::before { content: ""; position: absolute; left: -5px; right: -5px; top: -16px; height: 10px; background: #c9ccd1; border-radius: 4px 4px 0 0; }
+#lift svg { position: absolute; left: 0; top: 4px; width: 100%; height: 100%; }
+#arrow { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); font-size: 18px; color: #7cf27c; text-shadow: 0 0 6px #7cf27c; opacity: 0; }
+#arm { transform-origin: 48px 58px; }
+.waving #arm { animation: wave 0.35s ease-in-out 4 alternate; }
+@keyframes wave { from { transform: rotate(0deg); } to { transform: rotate(-35deg); } }
+
+/* height meter */
+#meter {
+  position: fixed; left: 16px; top: 64px; z-index: 10; background: rgba(0,0,0,0.6);
+  border-radius: 14px; padding: 10px 16px; min-width: 190px;
+}
+#meter .big { font-size: 26px; font-weight: 800; }
+#meter .small { font-size: 13px; opacity: 0.8; }
+
+/* info card */
+#card {
+  position: fixed; left: 16px; bottom: 16px; z-index: 10; width: min(340px, calc(100% - 140px));
+  background: rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.25); border-radius: 16px; padding: 14px 16px;
+  transition: opacity 0.4s, transform 0.4s;
+}
+#card.hide { opacity: 0; transform: translateY(20px); }
+#card h2 { font-size: 22px; margin-bottom: 2px; }
+#card .range { font-size: 13px; opacity: 0.75; margin-bottom: 8px; }
+#card p { font-size: 15px; line-height: 1.35; }
+
+/* buttons */
+#controls { position: fixed; right: 70px; top: 50%; transform: translateY(-50%); z-index: 10; display: flex; flex-direction: column; gap: 14px; }
+#controls button {
+  width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; font-size: 30px; font-weight: 800;
+  background: #3d9595; color: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+#controls button:hover { background: #2d7575; }
+#controls button:disabled { opacity: 0.3; cursor: default; }
+
+/* mini map */
+#map { position: fixed; right: 16px; top: 50%; transform: translateY(-50%); width: 34px; height: 70vh; z-index: 10; border-radius: 10px; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); cursor: pointer; }
+#map div.seg { width: 100%; }
+#map #dot { position: absolute; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #ffeb3b; border: 2px solid #000; }
+#help { position: fixed; top: 14px; right: 16px; z-index: 10; font-size: 13px; background: rgba(0,0,0,0.55); padding: 6px 12px; border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<div id="world"></div>
+<div class="cable" id="cableL"></div>
+<div class="cable" id="cableR"></div>
+
+<div id="lift">
+  <div id="arrow">▲</div>
+  <svg viewBox="0 0 96 130" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none">
+    <circle cx="48" cy="40" r="11"/>
+    <line x1="48" y1="51" x2="48" y2="88"/>
+    <line x1="48" y1="60" x2="32" y2="76"/>
+    <line id="arm" x1="48" y1="60" x2="64" y2="76"/>
+    <line x1="48" y1="88" x2="36" y2="114"/>
+    <line x1="48" y1="88" x2="60" y2="114"/>
+  </svg>
+</div>
+
+<div id="meter"><div class="big" id="height">0 m</div><div class="small" id="where">Sea level</div></div>
+<div id="card" class="hide"><h2 id="cardName"></h2><div class="range" id="cardRange"></div><p id="cardFact"></p></div>
+<div id="controls"><button id="up" title="Go up (↑)">▲</button><button id="down" title="Go down (↓)">▼</button></div>
+<div id="map"><div id="dot"></div></div>
+<div id="help">↑ ↓ keys, or the buttons</div>
+
+<a href="../" style="position:fixed;top:12px;left:12px;background:#3d9595;color:white;font-family:Nunito,Arial,sans-serif;font-weight:700;font-size:0.85rem;padding:0.45rem 1.1rem;border-radius:50px;text-decoration:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.background='#2d7575'" onmouseout="this.style.background='#3d9595'">← home</a>
+
+<script>
+// Each zone, top to bottom. lo/hi are heights in metres (minus = under the sea).
+// log: true means the zone is so tall that its height scale is stretched (multiply, not add).
+const ZONES = [
+  { name: "Space", lo: 10e6, hi: 450e6, range: "10,000 km and up", log: true, top: "#000000", bot: "#02030a", stars: 140,
+    fact: "Real space. No air at all. Satellites up here go round the Earth. Keep going and you reach the Moon!" },
+  { name: "Exosphere", lo: 700e3, hi: 10e6, log: true, top: "#02030a", bot: "#050a1f", stars: 90,
+    fact: "The very edge of the air. The air is so thin that bits of it float off into space." },
+  { name: "Thermosphere", lo: 80e3, hi: 700e3, log: true, top: "#050a1f", bot: "#0b1a45", stars: 50,
+    fact: "Space officially starts in here, at 100 km. The Northern Lights glow here, and astronauts live here on the Space Station." },
+  { name: "Mesosphere", lo: 50e3, hi: 80e3, top: "#0b1a45", bot: "#1d3f8a", stars: 10,
+    fact: "The coldest layer, about −90 °C. Shooting stars are space rocks burning up in here." },
+  { name: "Stratosphere", lo: 12e3, hi: 50e3, top: "#1d3f8a", bot: "#3d7fd1",
+    fact: "Above the weather, so it's calm and clear. The ozone layer is here. It blocks the Sun's harmful rays." },
+  { name: "Troposphere", lo: 0, hi: 12e3, top: "#3d7fd1", bot: "#a8dcff",
+    fact: "The layer we live in. All the weather happens here: clouds, rain, snow and storms." },
+  { name: "Sunlight Zone", lo: -200, hi: 0, top: "#2a9fd6", bot: "#12608f", bubbles: 14,
+    fact: "Sunlight reaches down here, so plants can grow. Most sea animals live here." },
+  { name: "Twilight Zone", lo: -1000, hi: -200, top: "#12608f", bot: "#0a2a4a", bubbles: 8,
+    fact: "Only a tiny bit of light gets here. Lots of animals make their own light to see and be seen." },
+  { name: "Midnight Zone", lo: -4000, hi: -1000, top: "#0a2a4a", bot: "#040d1c", bubbles: 5,
+    fact: "Totally dark. No sunlight at all. Cold, and the water presses down really hard." },
+  { name: "Abyss", lo: -6000, hi: -4000, top: "#040d1c", bot: "#020611", bubbles: 3,
+    fact: "Near-freezing water and the flat, muddy sea floor. Most of the ocean floor is this deep." },
+  { name: "The Trenches", lo: -10935, hi: -6000, top: "#020611", bot: "#000000", bubbles: 2,
+    fact: "Deep cracks in the sea floor. The deepest is the Mariana Trench, 10,935 m down. That's deeper than Mount Everest is tall!" },
+];
+
+// Things to see. alt = height in metres. x = how far left (−) or right (+) of the lift, in pixels.
+const THINGS = [
+  // Space
+  { alt: 384.4e6, x: -230, e: "🌕", s: 110, l: "The Moon — 384,400 km", cls: "" },
+  { alt: 35.786e6, x: 200, e: "🛰️", s: 46, l: "TV and weather satellites — 35,786 km. They go round once a day, so they stay over the same spot", cls: "bob" },
+  { alt: 20.2e6, x: -210, e: "🛰️", s: 46, l: "GPS satellites — 20,200 km. They tell maps where you are", cls: "bob" },
+  { alt: 100e6, x: 230,   e: "🧑‍🚀", s: 46, l: "Apollo astronauts flew all this way to the Moon", cls: "bob" },
+  // Exosphere
+  { alt: 3e6, x: -220,  e: "☢️", s: 40, l: "Van Allen belts — a zone of fast space particles, trapped by Earth's magnetism", cls: "" },
+  { alt: 850e3, x: 210, e: "🛰️", s: 44, l: "Weather satellites — about 850 km. They go over the North and South Poles", cls: "bob" },
+  // Thermosphere
+  { alt: 540e3, x: -210, e: "🔭", s: 46, l: "Hubble Space Telescope — 540 km", cls: "bob" },
+  { alt: 550e3, x: 220,  e: "🛰️", s: 38, l: "Starlink internet satellites — 550 km", cls: "bob" },
+  { alt: 400e3, x: 220,  e: "🛰️", s: 60, l: "International Space Station — 400 km. Astronauts live here", cls: "bob" },
+  { alt: 200e3, x: -200, e: "🟢", s: 30, l: "Northern Lights (aurora) — 100 to 300 km", cls: "" },
+  // Mesosphere
+  { alt: 82e3, x: 200,  e: "☁️", s: 44, l: "Night-shining clouds — the highest clouds of all", cls: "sway" },
+  { alt: 72e3, x: -200, e: "🌠", s: 48, l: "Shooting stars burn up here", cls: "" },
+  // Stratosphere
+  { alt: 39e3, x: -210, e: "🪂", s: 46, l: "Felix Baumgartner jumped from 39 km in 2012", cls: "bob" },
+  { alt: 33e3, x: 210,  e: "🎈", s: 46, l: "Weather balloons — up to about 35 km", cls: "bob" },
+  { alt: 25e3, x: -220, e: "🛡️", s: 40, l: "The ozone layer — 15 to 35 km", cls: "" },
+  { alt: 18e3, x: 210,  e: "✈️", s: 44, l: "Concorde flew at 18 km, twice as fast as sound", cls: "sway" },
+  // Troposphere
+  { alt: 11e3, x: 220,  e: "✈️", s: 48, l: "Passenger planes — 10 to 12 km", cls: "sway" },
+  { alt: 8849, x: -230, e: "🏔️", s: 90, l: "Mount Everest — 8,849 m, the highest mountain", cls: "" },
+  { alt: 6000, x: 200,  e: "⛈️", s: 54, l: "Storm clouds can tower this high", cls: "sway" },
+  { alt: 2500, x: -200, e: "☁️", s: 60, l: "Fluffy clouds", cls: "sway" },
+  { alt: 1200, x: 210,  e: "🦅", s: 40, l: "Birds", cls: "sway" },
+  { alt: 150,  x: -210, e: "⛵", s: 48, l: "Boats", cls: "bob" },
+  { alt: 150,  x: 220,  e: "🏄", s: 44, l: "Surfers", cls: "bob" },
+  // Sunlight zone
+  { alt: -20,  x: -220, e: "🐬", s: 46, l: "Dolphins", cls: "sway" },
+  { alt: -35,  x: 220,  e: "🪸", s: 46, l: "Coral reefs", cls: "" },
+  { alt: -55,  x: -110, e: "🐠", s: 34, l: "", cls: "sway flip" },
+  { alt: -70,  x: 140,  e: "🤿", s: 40, l: "Scuba divers", cls: "bob" },
+  { alt: -100, x: -220, e: "🐢", s: 44, l: "Sea turtles", cls: "sway" },
+  { alt: -130, x: 220,  e: "🦈", s: 52, l: "Sharks", cls: "sway" },
+  { alt: -165, x: -200, e: "🐋", s: 64, l: "Blue whale — the biggest animal ever", cls: "sway" },
+  { alt: -185, x: 200,  e: "🪼", s: 40, l: "Jellyfish", cls: "bob" },
+  // Twilight zone
+  { alt: -350, x: 210,  e: "🐟", s: 40, l: "Swordfish", cls: "sway" },
+  { alt: -500, x: -210, e: "🦑", s: 48, l: "Squid", cls: "bob" },
+  { alt: -700, x: 200,  e: "🐟", s: 30, l: "Lanternfish — they glow!", cls: "sway glowfish" },
+  // Midnight zone
+  { alt: -1000, x: -200, e: "🦑", s: 64, l: "Giant squid — 13 m long, eyes as big as dinner plates", cls: "bob" },
+  { alt: -2000, x: 210,  e: "🐋", s: 60, l: "Sperm whales dive this deep to hunt giant squid", cls: "sway" },
+  { alt: -2400, x: -200, e: "🐡", s: 46, l: "Anglerfish — it has a glowing light on its head", cls: "bob anglerfish" },
+  { alt: -3800, x: 200,  e: "🚢", s: 60, l: "The Titanic shipwreck — 3,800 m", cls: "" },
+  // Abyss
+  { alt: -4500, x: -200, e: "🐙", s: 50, l: "Dumbo octopus — it flaps ear-like fins", cls: "bob" },
+  { alt: -5200, x: 210,  e: "🐟", s: 40, l: "Tripod fish — stands on the sea floor on three long fins", cls: "" },
+  { alt: -5800, x: -200, e: "🥒", s: 36, l: "Sea cucumbers creep along the mud", cls: "" },
+  // Trenches
+  { alt: -8336, x: 210,  e: "🐟", s: 40, l: "Snailfish — the deepest fish ever filmed, 8,336 m", cls: "sway" },
+  { alt: -10000, x: -210, e: "🦐", s: 40, l: "Amphipods — little shrimp-like animals", cls: "bob" },
+  { alt: -10800, x: 210, e: "🔦", s: 40, l: "1960: two people reached the bottom in a submarine called Trieste", cls: "" },
+];
+
+const H = 1100;               // height of each zone on screen, in pixels
+const world = document.getElementById('world');
+world.style.height = (ZONES.length * H) + 'px';
+
+// height (metres) -> how far up the zone it is (0 = bottom, 1 = top)
+function frac(z, alt) {
+  if (z.log) return Math.log(alt / z.lo) / Math.log(z.hi / z.lo);
+  return (alt - z.lo) / (z.hi - z.lo);
+}
+function unfrac(z, f) {
+  if (z.log) return z.lo * Math.pow(z.hi / z.lo, f);
+  return z.lo + f * (z.hi - z.lo);
+}
+function altToY(alt) {
+  for (let i = 0; i < ZONES.length; i++) {
+    const z = ZONES[i];
+    if (alt >= z.lo && alt <= z.hi) return i * H + (1 - frac(z, alt)) * H;
+  }
+  return alt > 0 ? 0 : ZONES.length * H;
+}
+function yToAlt(y) {
+  const i = Math.min(ZONES.length - 1, Math.max(0, Math.floor(y / H)));
+  const f = 1 - (y - i * H) / H;
+  return { alt: unfrac(ZONES[i], Math.min(1, Math.max(0, f))), zone: ZONES[i] };
+}
+
+// draw the zones
+ZONES.forEach((z, i) => {
+  const d = document.createElement('div');
+  d.className = 'zone';
+  d.style.top = (i * H) + 'px';
+  d.style.height = H + 'px';
+  d.style.background = `linear-gradient(${z.top}, ${z.bot})`;
+  d.innerHTML = `<div class="zone-name">${z.name}</div>`;
+  for (let s = 0; s < (z.stars || 0); s++) {
+    const st = document.createElement('div');
+    st.className = 'star';
+    st.style.left = (Math.random() * 100) + '%';
+    st.style.top = (Math.random() * H * (i === 2 ? 0.6 : 1)) + 'px';
+    st.style.animationDelay = (Math.random() * 3) + 's';
+    d.appendChild(st);
+  }
+  for (let b = 0; b < (z.bubbles || 0); b++) {
+    const bu = document.createElement('div');
+    bu.className = 'bubble';
+    bu.style.left = (10 + Math.random() * 80) + '%';
+    bu.style.top = (200 + Math.random() * (H - 200)) + 'px';
+    bu.style.animationDelay = (Math.random() * 7) + 's';
+    d.appendChild(bu);
+  }
+  world.appendChild(d);
+});
+
+// special bits: Kármán line, ozone band, aurora, shooting stars, the sea surface
+function line(alt, text) {
+  const l = document.createElement('div');
+  l.className = 'border-line';
+  l.style.top = altToY(alt) + 'px';
+  l.innerHTML = `<span>${text}</span>`;
+  world.appendChild(l);
+}
+function band(altLo, altHi, bg) {
+  const b = document.createElement('div');
+  b.className = 'band';
+  const yTop = altToY(altHi), yBot = altToY(altLo);
+  b.style.top = yTop + 'px';
+  b.style.height = (yBot - yTop) + 'px';
+  b.style.background = bg;
+  world.appendChild(b);
+}
+band(15e3, 35e3, 'linear-gradient(rgba(150,120,255,0), rgba(150,120,255,0.18), rgba(150,120,255,0))');
+band(100e3, 300e3, 'linear-gradient(rgba(60,255,140,0), rgba(60,255,140,0.22), rgba(60,255,140,0.05))');
+line(100e3, 'Kármán line, 100 km — space starts here');
+for (let m = 0; m < 6; m++) {
+  const me = document.createElement('div');
+  me.className = 'meteor';
+  me.style.left = (5 + Math.random() * 70) + '%';
+  me.style.top = (altToY(80e3) + 80 + Math.random() * 500) + 'px';
+  me.style.animationDelay = (Math.random() * 2.4) + 's';
+  world.appendChild(me);
+}
+// sea surface waves
+const sea = document.createElement('div');
+sea.style.cssText = `position:absolute;left:0;width:100%;height:24px;top:${altToY(0) - 12}px;` +
+  `background:radial-gradient(circle at 20px -6px, transparent 18px, #2a9fd6 19px) 0 0/40px 24px repeat-x;`;
+world.appendChild(sea);
+
+// the sea floor at the very bottom
+const floor = document.createElement('div');
+floor.style.cssText = `position:absolute;left:0;width:100%;height:40px;top:${ZONES.length * H - 40}px;background:linear-gradient(#3b2f22,#1a140e);`;
+world.appendChild(floor);
+
+// things
+THINGS.forEach(t => {
+  const d = document.createElement('div');
+  d.className = 'thing ' + t.cls;
+  d.style.left = `calc(50% + ${t.x}px)`;
+  d.style.top = altToY(t.alt) + 'px';
+  d.innerHTML = `<span class="e" style="font-size:${t.s}px">${t.e}</span>` + (t.l ? `<span class="l">${t.l}</span>` : '');
+  if (t.cls.includes('anglerfish') || t.cls.includes('glowfish')) {
+    const g = document.createElement('div');
+    g.className = 'glow';
+    g.style.left = t.cls.includes('anglerfish') ? 'calc(50% - 34px)' : 'calc(50% + 14px)';
+    g.style.top = t.cls.includes('anglerfish') ? '-10px' : '6px';
+    d.appendChild(g);
+  }
+  world.appendChild(d);
+});
+
+// the stops: sea level, then the middle of each zone
+const STOPS = [altToY(0)];
+ZONES.forEach((z, i) => STOPS.push(i * H + H / 2));
+STOPS[1] = altToY(330e6);                  // space: stop near the Moon
+STOPS[ZONES.length] = altToY(-10500);      // trenches: stop near the very bottom
+STOPS.sort((a, b) => a - b);               // top of the screen first
+
+// mini map
+const map = document.getElementById('map');
+ZONES.forEach(z => {
+  const s = document.createElement('div');
+  s.className = 'seg';
+  s.style.height = (100 / ZONES.length) + '%';
+  s.style.background = `linear-gradient(${z.top}, ${z.bot})`;
+  s.title = z.name;
+  map.appendChild(s);
+});
+const dot = document.getElementById('dot');
+map.appendChild(dot);
+
+// moving the lift
+let y = STOPS.find(s => Math.abs(s - altToY(0)) < 1);
+let target = y;
+let anim = null;
+
+function fmt(alt) {
+  const a = Math.abs(alt);
+  if (a >= 1000 && alt > 0) return Math.round(a / 1000).toLocaleString('en-GB') + ' km';
+  return Math.round(a).toLocaleString('en-GB') + ' m';
+}
+
+function draw() {
+  world.style.transform = `translateY(${window.innerHeight / 2 - y}px)`;
+  const { alt, zone } = yToAlt(y);
+  document.getElementById('height').textContent =
+    Math.abs(alt) < 1 ? '0 m' : (alt > 0 ? '▲ ' : '▼ ') + fmt(alt);
+  document.getElementById('where').textContent =
+    Math.abs(alt) < 1 ? 'Sea level' : (alt > 0 ? 'up  ·  ' : 'under the sea  ·  ') + zone.name;
+  dot.style.top = (y / (ZONES.length * H) * 100) + '%';
+  document.getElementById('up').disabled = target <= STOPS[0] + 1;
+  document.getElementById('down').disabled = target >= STOPS[STOPS.length - 1] - 1;
+}
+
+function showCard() {
+  const { alt, zone } = yToAlt(y);
+  const card = document.getElementById('card');
+  if (Math.abs(alt) < 1) {
+    document.getElementById('cardName').textContent = 'Sea level';
+    document.getElementById('cardRange').textContent = 'Where the sky meets the sea';
+    document.getElementById('cardFact').textContent = 'Press ▲ to go up into space, or ▼ to go down to the bottom of the sea.';
+  } else {
+    document.getElementById('cardName').textContent = zone.name;
+    const r = zone.range ? zone.range : zone.lo >= 0 ? `${fmt(zone.lo)} to ${fmt(zone.hi)} up` : `${fmt(zone.hi)} to ${fmt(zone.lo)} down`;
+    document.getElementById('cardRange').textContent = r;
+    document.getElementById('cardFact').textContent = zone.fact;
+  }
+  card.classList.remove('hide');
+}
+
+let audio;
+function ding() {
+  try {
+    audio = audio || new AudioContext();
+    [880, 660].forEach((f, i) => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.frequency.value = f; o.type = 'sine';
+      const t = audio.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.connect(g).connect(audio.destination);
+      o.start(t); o.stop(t + 0.65);
+    });
+  } catch (e) {}
+}
+
+function go(dir) {
+  const i = STOPS.findIndex(s => Math.abs(s - target) < 1);
+  const next = STOPS[i + (dir === 'up' ? -1 : 1)];
+  if (next !== undefined) moveTo(next);
+}
+
+function moveTo(next) {
+  const dir = next < y ? 'up' : 'down';
+  target = next;
+  document.getElementById('card').classList.add('hide');
+  const arrow = document.getElementById('arrow');
+  arrow.textContent = dir === 'up' ? '▲' : '▼';
+  arrow.style.opacity = 1;
+  const from = y, start = performance.now();
+  const dur = Math.min(3000, 1400 + Math.abs(target - from) / 4);
+  cancelAnimationFrame(anim);
+  (function step(now) {
+    const p = Math.min(1, (now - start) / dur);
+    const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    y = from + (target - from) * ease;
+    draw();
+    if (p < 1) { anim = requestAnimationFrame(step); return; }
+    arrow.style.opacity = 0;
+    ding();
+    showCard();
+    const lift = document.getElementById('lift');
+    lift.classList.remove('waving'); void lift.offsetWidth; lift.classList.add('waving');
+  })(start);
+}
+
+
+document.getElementById('up').onclick = () => go('up');
+document.getElementById('down').onclick = () => go('down');
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); go('up'); }
+  if (e.key === 'ArrowDown' || e.key === 's') { e.preventDefault(); go('down'); }
+});
+map.addEventListener('click', e => {
+  const r = map.getBoundingClientRect();
+  const wantY = (e.clientY - r.top) / r.height * ZONES.length * H;
+  let best = STOPS[0];
+  STOPS.forEach(s => { if (Math.abs(s - wantY) < Math.abs(best - wantY)) best = s; });
+  if (Math.abs(best - target) > 1) moveTo(best);
+});
+window.addEventListener('resize', draw);
+
+draw();
+showCard();
+</script>
+</body>
+</html>
