@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deck of Cards — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Deck of Cards =====
+       A real deck of 52 cards for any card game. Pick how many players, deal, then
+       click any card to play it, discard it, flip it or trade it. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#fff; background:radial-gradient(circle at 50% 30%, #1f8a4c, #0d4d29); user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.2); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1, .fred { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.5rem 1.1rem;
+             background:#fff; color:#123; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#ffd54f; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+    button:disabled { opacity:.35; cursor:default; transform:none; }
+    button.gold { background:#ffd54f; }
+    button.gold:hover { background:#fff; }
+
+    /* ---------- start screen ---------- */
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #num { font-family:'Fredoka One',cursive; font-size:4.5rem; min-width:90px; text-align:center; }
+    #setup .hint { opacity:.75; }
+
+    /* ---------- the table ---------- */
+    #game { display:none; padding:64px 16px 24px; max-width:1300px; margin:0 auto; }
+    #top { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.7rem; margin-bottom:1rem; }
+    #turn { font-family:'Fredoka One',cursive; font-size:1.5rem; background:rgba(0,0,0,.3); padding:.35rem 1.1rem; border-radius:50px; }
+    #dealN { width:64px; font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.5rem; text-align:center; }
+    #msg { text-align:center; min-height:1.6rem; font-weight:800; opacity:.9; margin-bottom:.6rem; }
+
+    #middle { display:flex; justify-content:center; gap:2rem; flex-wrap:wrap; margin-bottom:1.4rem; }
+    .pile { text-align:center; }
+    .pile .label { font-family:'Fredoka One',cursive; margin-bottom:.4rem; }
+    .pile .slot { width:76px; height:110px; border:3px dashed rgba(255,255,255,.4); border-radius:10px; position:relative; margin:0 auto; }
+    .pile .count { font-size:.85rem; margin-top:.3rem; opacity:.85; }
+    #tableArea { min-width:260px; max-width:560px; min-height:110px; border:3px dashed rgba(255,255,255,.4); border-radius:10px;
+                 display:flex; flex-wrap:wrap; gap:6px; padding:6px; align-items:flex-start; }
+
+    #players { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
+    .player { flex:1 1 380px; max-width:620px; background:rgba(0,0,0,.25); border:3px solid transparent; border-radius:16px; padding:10px 12px; }
+    .player.now { border-color:#ffd54f; box-shadow:0 0 18px rgba(255,213,79,.5); }
+    .player .head { display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem; flex-wrap:wrap; }
+    .player .name { font-family:'Fredoka One',cursive; font-size:1.25rem; }
+    .player .n { opacity:.8; font-size:.9rem; }
+    .player .head button { padding:.3rem .8rem; font-size:.85rem; margin-left:auto; }
+    .hand { display:flex; flex-wrap:nowrap; min-height:96px; }
+    .player.picking .card { outline:3px solid #ffd54f; animation:wobble .5s ease-in-out infinite alternate; }
+    @keyframes wobble { from { transform:rotate(-3deg); } to { transform:rotate(3deg); } }
+
+    /* ---------- a card ---------- */
+    .card { width:66px; height:96px; border-radius:8px; background:#fff; color:#111; position:relative; flex:none;
+            box-shadow:0 2px 4px rgba(0,0,0,.35); cursor:pointer; animation:pop .25s ease-out; transition:transform .12s; }
+    .card:hover { transform:translateY(-8px); z-index:2; }
+    .card.red { color:#d32f2f; }
+    .card .tl { position:absolute; top:4px; left:6px; font-family:'Fredoka One',cursive; font-size:1rem; line-height:1; text-align:center; }
+    .card .br { position:absolute; bottom:4px; right:6px; font-family:'Fredoka One',cursive; font-size:1rem; line-height:1; text-align:center; transform:rotate(180deg); }
+    .card .mid { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2rem; }
+    .card.back { background:repeating-linear-gradient(45deg, #1e4fa8 0 6px, #2a63c9 6px 12px); border:4px solid #fff; }
+    .card.back > * { display:none; }
+    .card.flipped::after { content:"👀"; position:absolute; top:-10px; right:-8px; font-size:.9rem; }
+    .pile .slot .card { position:absolute; left:2px; top:2px; width:66px; height:100px; }
+    @keyframes pop { from { transform:scale(.4); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+    /* ---------- the card menu ---------- */
+    #menu { position:fixed; z-index:60; display:none; flex-direction:column; gap:4px; background:#fff; color:#123; padding:8px;
+            border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.4); min-width:220px; }
+    #menu button { box-shadow:none; text-align:left; border-radius:10px; background:#f1f3f6; }
+    #menu button:hover { background:#ffd54f; }
+    #menu .title { font-family:'Fredoka One',cursive; padding:2px 6px 4px; }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../">← Back</a>
+
+<!-- ===== start screen ===== -->
+<div id="setup">
+  <h1>🃏 Deck of Cards</h1>
+  <div class="q">How many players?</div>
+  <div class="picker">
+    <button id="less" title="Fewer (←)">←</button>
+    <div id="num">2</div>
+    <button id="more" title="More (→)">→</button>
+  </div>
+  <button class="gold" id="start" style="font-size:1.4rem;padding:.7rem 2rem">Enter</button>
+  <div class="hint">Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<!-- ===== the table ===== -->
+<div id="game">
+  <div id="top">
+    <div id="turn"></div>
+    <button class="gold" id="next">Next person ➜</button>
+    <button id="deal1">Deal 1 card</button>
+    <button id="dealHalf">Deal half the deck</button>
+    <input id="dealN" type="number" min="1" max="52" placeholder="?" title="Type a number">
+    <button id="dealNbtn">Deal that many</button>
+    <button id="dealAll">Deal out the whole deck</button>
+    <button id="shuffle">🔀 Shuffle</button>
+    <button id="restart">New game</button>
+  </div>
+  <div id="msg"></div>
+  <div id="middle">
+    <div class="pile"><div class="label">Draw pile</div><div class="slot" id="deckSlot" title="Click to draw a card"></div><div class="count" id="deckCount"></div></div>
+    <div class="pile"><div class="label">Discard pile</div><div class="slot" id="discardSlot" title="Click to take the top card"></div><div class="count" id="discardCount"></div></div>
+    <div class="pile"><div class="label">The table</div><div id="tableArea"></div></div>
+  </div>
+  <div id="players"></div>
+</div>
+
+<div id="menu"></div>
+
+<script>
+const SUITS = [['♠', false], ['♥', true], ['♦', true], ['♣', false]];
+const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const NAMES = { A: 'Ace', J: 'Jack', Q: 'Queen', K: 'King' };
+const SUIT_NAMES = { '♠': 'Spades', '♥': 'Hearts', '♦': 'Diamonds', '♣': 'Clubs' };
+
+let howMany = 2;
+let players = [], deck = [], discard = [], table = [], now = 0;
+let picking = null;   // when trading: { from: player number, card } and we wait for a click on someone else's card
+
+const $ = id => document.getElementById(id);
+const cardName = c => (NAMES[c.r] || c.r) + ' of ' + SUIT_NAMES[c.s];
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function newDeck() {
+  const d = [];
+  SUITS.forEach(([s, red]) => RANKS.forEach(r => d.push({ r, s, red, flipped: false })));
+  return shuffle(d);
+}
+
+/* ---------- start screen ---------- */
+function setNum(n) { howMany = Math.max(1, Math.min(8, n)); $('num').textContent = howMany; }
+$('less').onclick = () => setNum(howMany - 1);
+$('more').onclick = () => setNum(howMany + 1);
+$('start').onclick = startGame;
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') { if (e.key === 'Escape') closeMenu(); return; }
+  if (e.key === 'ArrowLeft') setNum(howMany - 1);
+  if (e.key === 'ArrowRight') setNum(howMany + 1);
+  if (e.key === 'Enter') startGame();
+});
+
+function startGame() {
+  players = [];
+  for (let i = 0; i < howMany; i++) players.push({ name: 'Player ' + (i + 1), hand: [], show: false });
+  deck = newDeck(); discard = []; table = []; now = 0; picking = null;
+  $('setup').style.display = 'none';
+  $('game').style.display = 'block';
+  say('Shuffled! Deal some cards to ' + players[0].name + '.');
+  draw();
+}
+$('restart').onclick = () => { closeMenu(); $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+
+/* ---------- dealing ---------- */
+function say(t) { $('msg').textContent = t; }
+function deal(n) {
+  const p = players[now];
+  n = Math.min(n, deck.length);
+  if (n <= 0) { say('The draw pile is empty.'); return; }
+  for (let i = 0; i < n; i++) p.hand.push(deck.pop());
+  say(p.name + ' got ' + n + (n === 1 ? ' card.' : ' cards.'));
+  draw();
+}
+$('deal1').onclick = () => deal(1);
+$('dealHalf').onclick = () => deal(Math.floor(deck.length / 2));
+$('dealNbtn').onclick = () => {
+  const n = parseInt($('dealN').value, 10);
+  if (!n || n < 1) { say('Type a number in the box first.'); $('dealN').focus(); return; }
+  deal(n);
+};
+$('dealN').addEventListener('keydown', e => { if (e.key === 'Enter') $('dealNbtn').click(); });
+$('dealAll').onclick = () => {
+  if (!deck.length) { say('The draw pile is empty.'); return; }
+  let i = now;
+  while (deck.length) { players[i].hand.push(deck.pop()); i = (i + 1) % players.length; }
+  say('Dealt the whole deck out, one at a time, round the table.');
+  draw();
+};
+$('next').onclick = () => {
+  now = (now + 1) % players.length;     // after the last person it goes back to the first
+  say("It's " + players[now].name + "'s turn.");
+  draw();
+};
+$('shuffle').onclick = () => { shuffle(deck); say('Shuffled the draw pile.'); draw(); };
+
+$('deckSlot').onclick = () => { if (deck.length) { deal(1); } };
+$('discardSlot').onclick = e => {
+  if (!discard.length) return;
+  openMenu(e, 'Top of the discard pile', [
+    ['✋ Take it (' + players[now].name + ')', () => { players[now].hand.push(discard.pop()); say(players[now].name + ' took the top discard.'); }],
+    ['🔁 Put the discard pile back in the deck', () => { while (discard.length) { const c = discard.pop(); c.flipped = false; deck.push(c); } shuffle(deck); say('The discard pile was shuffled back into the draw pile.'); }],
+  ]);
+};
+
+/* ---------- drawing everything ---------- */
+function cardEl(c, faceUp) {
+  const d = document.createElement('div');
+  d.className = 'card' + (c.red ? ' red' : '') + (faceUp ? '' : ' back') + (c.flipped ? ' flipped' : '');
+  d.innerHTML = `<div class="tl">${c.r}<br>${c.s}</div><div class="mid">${c.s}</div><div class="br">${c.r}<br>${c.s}</div>`;
+  if (faceUp) d.title = cardName(c);
+  return d;
+}
+
+function draw() {
+  $('turn').textContent = "🎯 " + players[now].name + "'s turn";
+  ['deal1', 'dealHalf', 'dealNbtn', 'dealAll', 'shuffle'].forEach(id => $(id).disabled = deck.length === 0);
+
+  // piles
+  $('deckSlot').innerHTML = '';
+  if (deck.length) $('deckSlot').appendChild(cardEl(deck[deck.length - 1], false));
+  $('deckCount').textContent = deck.length + (deck.length === 1 ? ' card' : ' cards');
+  $('discardSlot').innerHTML = '';
+  if (discard.length) $('discardSlot').appendChild(cardEl(discard[discard.length - 1], true));
+  $('discardCount').textContent = discard.length + (discard.length === 1 ? ' card' : ' cards');
+
+  // the table
+  $('tableArea').innerHTML = '';
+  table.forEach((c, i) => {
+    const el = cardEl(c, !c.down);
+    el.onclick = e => openMenu(e, c.down ? 'A face-down card' : cardName(c), [
+      ['✋ Take it (' + players[now].name + ')', () => { table.splice(i, 1); c.down = false; players[now].hand.push(c); say(players[now].name + ' took a card from the table.'); }],
+      ['🔄 Flip over', () => { c.down = !c.down; }],
+      ['🗑️ Put in the discard pile', () => { table.splice(i, 1); c.down = false; discard.push(c); }],
+      ['📥 Put on the draw pile', () => { table.splice(i, 1); c.down = false; deck.push(c); }],
+    ]);
+    $('tableArea').appendChild(el);
+  });
+
+  // players
+  const everyoneHasOne = players.every(p => p.hand.length > 0);
+  $('players').innerHTML = '';
+  players.forEach((p, pi) => {
+    const box = document.createElement('div');
+    box.className = 'player' + (pi === now ? ' now' : '') + (picking && picking.from !== pi ? ' picking' : '');
+    const head = document.createElement('div');
+    head.className = 'head';
+    head.innerHTML = `<span class="name">${pi === now ? '👉 ' : ''}${p.name}</span><span class="n">${p.hand.length} ${p.hand.length === 1 ? 'card' : 'cards'}</span>`;
+    if (everyoneHasOne) {
+      const b = document.createElement('button');
+      b.textContent = p.show ? '🙈 Hide cards' : '👁️ Show cards';
+      b.onclick = () => { p.show = !p.show; draw(); };
+      head.appendChild(b);
+    }
+    box.appendChild(head);
+    const hand = document.createElement('div');
+    hand.className = 'hand';
+    p.hand.forEach((c, ci) => {
+      const el = cardEl(c, p.show || c.flipped);
+      el.onclick = e => clickHandCard(e, pi, ci);
+      hand.appendChild(el);
+    });
+    box.appendChild(hand);
+    $('players').appendChild(box);
+    squash(hand);
+  });
+}
+
+// lots of cards: overlap them so the whole hand fits in its box
+function squash(hand) {
+  const cards = hand.children, n = cards.length;
+  if (n < 2) return;
+  const step = Math.min(72, (hand.clientWidth - 66) / (n - 1));
+  for (let i = 1; i < n; i++) cards[i].style.marginLeft = (step - 66) + 'px';
+}
+window.addEventListener('resize', () => { if (players.length) draw(); });
+
+/* ---------- clicking a card in someone's hand ---------- */
+function clickHandCard(e, pi, ci) {
+  const p = players[pi], c = p.hand[ci];
+
+  // finishing a trade: this is the card being swapped for
+  if (picking) {
+    if (pi === picking.from) return;
+    const giver = players[picking.from];
+    const mine = giver.hand.indexOf(picking.card);
+    if (mine < 0) { picking = null; draw(); return; }
+    giver.hand[mine] = c;
+    p.hand[ci] = picking.card;
+    say(giver.name + ' traded a card with ' + p.name + '.');
+    picking = null;
+    draw();
+    return;
+  }
+
+  const known = p.show || c.flipped;
+  const others = players.map((q, i) => i).filter(i => i !== pi);
+  const options = [
+    ['📥 Put on the draw pile', () => { take(pi, ci); c.flipped = false; deck.push(c); say(p.name + ' put a card on the draw pile.'); }],
+    ['🗑️ Put in the discard pile', () => { take(pi, ci); c.flipped = false; discard.push(c); say(p.name + ' discarded ' + cardName(c) + '.'); }],
+    ['🃏 Play it on the table', () => { take(pi, ci); c.flipped = false; c.down = false; table.push(c); say(p.name + ' played ' + cardName(c) + '.'); }],
+    ['🂠 Play it face down', () => { take(pi, ci); c.flipped = false; c.down = true; table.push(c); say(p.name + ' played a card face down.'); }],
+    ['🔄 Flip over (everyone can see it)', () => { c.flipped = !c.flipped; }],
+  ];
+  if (others.length) {
+    options.push(['🔁 Trade for another card', () => {
+      picking = { from: pi, card: c };
+      say(p.name + ': click a card in someone else\'s hand to swap with it. (Esc to stop)');
+    }]);
+    others.forEach(o => options.push(['🎁 Give to ' + players[o].name, () => { take(pi, ci); players[o].hand.push(c); say(p.name + ' gave a card to ' + players[o].name + '.'); }]));
+  }
+  options.push(['↔️ Move to the end of the hand', () => { take(pi, ci); p.hand.push(c); }]);
+  openMenu(e, known ? cardName(c) : p.name + "'s card", options);
+}
+function take(pi, ci) { players[pi].hand.splice(ci, 1); }
+
+/* ---------- the little menu ---------- */
+function openMenu(e, title, options) {
+  e.stopPropagation();
+  const m = $('menu');
+  m.innerHTML = `<div class="title">${title}</div>`;
+  options.forEach(([label, fn]) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = ev => { ev.stopPropagation(); closeMenu(); fn(); draw(); };
+    m.appendChild(b);
+  });
+  m.style.display = 'flex';
+  const w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.max(8, Math.min(e.clientX + 8, innerWidth - w - 8)) + 'px';
+  m.style.top = Math.max(8, Math.min(e.clientY + 8, innerHeight - h - 8)) + 'px';
+}
+function closeMenu() {
+  $('menu').style.display = 'none';
+  if (picking) { picking = null; say('Trade stopped.'); draw(); }
+}
+document.addEventListener('click', e => {
+  if (!$('menu').contains(e.target) && $('menu').style.display === 'flex') { $('menu').style.display = 'none'; }
+});
+</script>
+</body>
+</html>
