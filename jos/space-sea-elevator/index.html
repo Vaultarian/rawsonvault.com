@@ -175,12 +175,12 @@ const THINGS = [
   { alt: 6000, x: 200,  e: "⛈️", s: 54, l: "Storm clouds can tower this high", cls: "sway" },
   { alt: 2500, x: -200, e: "☁️", s: 60, l: "Fluffy clouds", cls: "sway" },
   { alt: 1200, x: 210,  e: "🦅", s: 40, l: "Birds", cls: "sway" },
-  { alt: 150,  x: -210, e: "⛵", s: 48, l: "Boats", cls: "bob" },
-  { alt: 150,  x: 220,  e: "🏄", s: 44, l: "Surfers", cls: "bob" },
+  { alt: 0,    x: -210, e: "⛵", s: 48, l: "Boats", cls: "bob" },
+  { alt: 0,    x: 220,  e: "🏄", s: 44, l: "Surfers", cls: "bob" },
   // Sunlight zone
   { alt: -20,  x: -220, e: "🐬", s: 46, l: "Dolphins", cls: "sway" },
   { alt: -35,  x: 220,  e: "🪸", s: 46, l: "Coral reefs", cls: "" },
-  { alt: -55,  x: -110, e: "🐠", s: 34, l: "", cls: "sway flip" },
+  { alt: -55,  x: -110, e: "🐠", s: 34, l: "Tropical fish", cls: "sway flip" },
   { alt: -70,  x: 140,  e: "🤿", s: 40, l: "Scuba divers", cls: "bob" },
   { alt: -100, x: -220, e: "🐢", s: 44, l: "Sea turtles", cls: "sway" },
   { alt: -130, x: 220,  e: "🦈", s: 52, l: "Sharks", cls: "sway" },
@@ -314,12 +314,21 @@ THINGS.forEach(t => {
   world.appendChild(d);
 });
 
-// the stops: sea level, then the middle of each zone
-const STOPS = [altToY(0)];
-ZONES.forEach((z, i) => STOPS.push(i * H + H / 2));
-STOPS[1] = altToY(330e6);                  // space: stop near the Moon
-STOPS[ZONES.length] = altToY(-10500);      // trenches: stop near the very bottom
-STOPS.sort((a, b) => a - b);               // top of the screen first
+// the stops: sea level, then every thing. Things on the same line (closer than 40 px) are one stop.
+const STOPS = [];      // y positions, top of the screen first
+const STOP_NAMES = []; // what is at each stop
+[{ y: altToY(0), l: 'Sea level' }]
+  .concat(THINGS.map(t => ({ y: altToY(t.alt), l: t.l })))
+  .sort((a, b) => a.y - b.y)
+  .forEach(s => {
+    const last = STOPS.length - 1;
+    if (last >= 0 && s.y - STOPS[last] < 40) {
+      if (s.l && !STOP_NAMES[last].includes(s.l)) STOP_NAMES[last].push(s.l);
+    } else {
+      STOPS.push(s.y);
+      STOP_NAMES.push(s.l ? [s.l] : []);
+    }
+  });
 
 // mini map
 const map = document.getElementById('map');
@@ -365,9 +374,11 @@ function showCard() {
     document.getElementById('cardRange').textContent = 'Where the sky meets the sea';
     document.getElementById('cardFact').textContent = 'Press ▲ to go up into space, or ▼ to go down to the bottom of the sea.';
   } else {
-    document.getElementById('cardName').textContent = zone.name;
+    const i = STOPS.findIndex(s => Math.abs(s - y) < 1);
+    const here = i >= 0 ? STOP_NAMES[i].map(n => n.split(' — ')[0]).join(' + ') : '';
+    document.getElementById('cardName').textContent = here || zone.name;
     const r = zone.range ? zone.range : zone.lo >= 0 ? `${fmt(zone.lo)} to ${fmt(zone.hi)} up` : `${fmt(zone.hi)} to ${fmt(zone.lo)} down`;
-    document.getElementById('cardRange').textContent = r;
+    document.getElementById('cardRange').textContent = (here ? zone.name + '  ·  ' : '') + r;
     document.getElementById('cardFact').textContent = zone.fact;
   }
   card.classList.remove('hide');
@@ -404,7 +415,7 @@ function moveTo(next) {
   arrow.textContent = dir === 'up' ? '▲' : '▼';
   arrow.style.opacity = 1;
   const from = y, start = performance.now();
-  const dur = Math.min(3000, 1400 + Math.abs(target - from) / 4);
+  const dur = Math.min(2500, 700 + Math.abs(target - from) / 2);
   cancelAnimationFrame(anim);
   (function step(now) {
     const p = Math.min(1, (now - start) / dur);
