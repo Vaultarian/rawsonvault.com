@@ -111,6 +111,9 @@
     <button id="dealNbtn">Deal that many</button>
     <button id="dealAll">Deal out the whole deck</button>
     <button id="shuffle">🔀 Shuffle</button>
+    <button id="flipDeck">🔄 Flip over deck</button>
+    <button id="discardDeck">🗑️ Discard deck</button>
+    <button id="reset">♻️ Reset game</button>
     <button id="restart">New game</button>
   </div>
   <div id="msg"></div>
@@ -131,7 +134,7 @@ const NAMES = { A: 'Ace', J: 'Jack', Q: 'Queen', K: 'King' };
 const SUIT_NAMES = { '♠': 'Spades', '♥': 'Hearts', '♦': 'Diamonds', '♣': 'Clubs' };
 
 let howMany = 2;
-let players = [], deck = [], discard = [], table = [], now = 0;
+let players = [], deck = [], discard = [], table = [], now = 0, deckUp = false;
 let picking = null;   // when trading: { from: player number, card } and we wait for a click on someone else's card
 
 const $ = id => document.getElementById(id);
@@ -162,7 +165,7 @@ document.addEventListener('keydown', e => {
 function startGame() {
   players = [];
   for (let i = 0; i < howMany; i++) players.push({ name: 'Player ' + (i + 1), hand: [], show: false });
-  deck = newDeck(); discard = []; table = []; now = 0; picking = null;
+  deck = newDeck(); discard = []; table = []; now = 0; picking = null; deckUp = false;
   $('setup').style.display = 'none';
   $('game').style.display = 'block';
   say('Shuffled! Deal some cards to ' + players[0].name + '.');
@@ -201,6 +204,25 @@ $('next').onclick = () => {
   draw();
 };
 $('shuffle').onclick = () => { shuffle(deck); say('Shuffled the draw pile.'); draw(); };
+$('flipDeck').onclick = () => {
+  deckUp = !deckUp;
+  say(deckUp ? 'The draw pile is face up now.' : 'The draw pile is face down again.');
+  draw();
+};
+$('discardDeck').onclick = () => {
+  if (!deck.length) { say('The draw pile is empty.'); return; }
+  const n = deck.length;
+  while (deck.length) { const c = deck.pop(); c.flipped = false; discard.push(c); }
+  say('Moved all ' + n + ' cards from the draw pile to the discard pile.');
+  draw();
+};
+$('reset').onclick = () => {
+  closeMenu();
+  players.forEach(p => { p.hand = []; p.show = false; });
+  deck = newDeck(); discard = []; table = []; now = 0; picking = null; deckUp = false;
+  say('Reset! All 52 cards are back in the deck and shuffled.');
+  draw();
+};
 
 $('deckSlot').onclick = () => { if (deck.length) { deal(1); } };
 $('discardSlot').onclick = e => {
@@ -222,11 +244,11 @@ function cardEl(c, faceUp) {
 
 function draw() {
   $('turn').textContent = "🎯 " + players[now].name + "'s turn";
-  ['deal1', 'dealHalf', 'dealNbtn', 'dealAll', 'shuffle'].forEach(id => $(id).disabled = deck.length === 0);
+  ['deal1', 'dealHalf', 'dealNbtn', 'dealAll', 'shuffle', 'flipDeck', 'discardDeck'].forEach(id => $(id).disabled = deck.length === 0);
 
   // piles
   $('deckSlot').innerHTML = '';
-  if (deck.length) $('deckSlot').appendChild(cardEl(deck[deck.length - 1], false));
+  if (deck.length) $('deckSlot').appendChild(cardEl(deck[deck.length - 1], deckUp));
   $('deckCount').textContent = deck.length + (deck.length === 1 ? ' card' : ' cards');
   $('discardSlot').innerHTML = '';
   if (discard.length) $('discardSlot').appendChild(cardEl(discard[discard.length - 1], true));
