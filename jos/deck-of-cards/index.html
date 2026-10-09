@@ -184,7 +184,7 @@ function deal(n) {
   draw();
 }
 $('deal1').onclick = () => deal(1);
-$('dealHalf').onclick = () => deal(Math.floor(deck.length / 2));
+$('dealHalf').onclick = () => deal(26);   // half of a full deck, every time (or whatever is left)
 $('dealNbtn').onclick = () => {
   const n = parseInt($('dealN').value, 10);
   if (!n || n < 1) { say('Type a number in the box first.'); $('dealN').focus(); return; }
