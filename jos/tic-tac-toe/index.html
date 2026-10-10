@@ -50,6 +50,10 @@
     .cell svg { width:88%; height:88%; overflow:visible; }
     .cell.painted { animation:none; }
     .brush { font-size:30px; pointer-events:none; }
+    /* the big brush that flies in from the corner and crosses out the winning line */
+    .flybrush { position:fixed; left:0; top:0; font-size:56px; line-height:1; z-index:60; pointer-events:none;
+                transition:transform .8s cubic-bezier(.3,.1,.3,1), opacity .3s; }
+    .winline { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; overflow:visible; }
     .cell.win { background:#fff59d; animation:wiggle .5s ease-in-out 2; }
     @keyframes pop { 0% { transform:scale(.2); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
     @keyframes wiggle { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-8deg); } 75% { transform:rotate(8deg); } }
@@ -129,6 +133,7 @@ $('again').onclick = () => { starter = starter === 'X' ? 'O' : 'X'; newRound(); 
 /* ---------- the board ---------- */
 function newRound() {
   round++;
+  document.querySelectorAll('.flybrush').forEach(b => b.remove());
   board = Array(9).fill('');
   turn = starter;
   over = false;
@@ -176,6 +181,8 @@ function finish(line) {
   over = true;
   if (line) {
     line.forEach(i => document.querySelector(`.cell[data-i="${i}"]`).classList.add('win'));
+    const r = round;
+    setTimeout(() => { if (r === round) crossOut(line); }, 700);   // wait for the last mark to be painted
     score[turn]++;
     const name = mode === 0 ? turn : (turn === 'X' ? 'You' : 'The computer');
     $('turn').textContent = `🎉 ${name} ${name === 'You' ? 'win' : 'wins'}!`;
@@ -274,6 +281,58 @@ function animateStroke(svg, brush, main, streaks, len, ms) {
   requestAnimationFrame(step);
   // if the tab was hidden mid-stroke, make sure the mark still ends up finished
   setTimeout(() => { main.style.strokeDashoffset = 0; streaks.forEach(s => s.style.opacity = 1); }, ms + 50);
+}
+
+/* ---------- crossing out the winning line ---------- */
+// A big 🖌️ slides in from the top-right corner of the screen to the start of the line,
+// then paints a thick rough stroke through the three winning squares.
+function crossOut(line) {
+  const grid = $('grid'), g = grid.getBoundingClientRect();
+  const mid = i => { const c = document.querySelector(`.cell[data-i="${i}"]`).getBoundingClientRect();
+                     return { x: c.left + c.width / 2 - g.left, y: c.top + c.height / 2 - g.top }; };
+  const a = mid(line[0]), b = mid(line[2]);
+  // stretch the line a bit past the first and last squares
+  const dx = b.x - a.x, dy = b.y - a.y, k = 0.22;
+  const p1 = { x: a.x - dx * k, y: a.y - dy * k }, p2 = { x: b.x + dx * k, y: b.y + dy * k };
+
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'winline');
+  svg.setAttribute('viewBox', `0 0 ${g.width} ${g.height}`);
+  const stroke = document.createElementNS(NS, 'path');
+  stroke.setAttribute('d', `M${p1.x} ${p1.y} L${p2.x} ${p2.y}`);
+  Object.entries({ fill: 'none', stroke: '#223', 'stroke-width': g.width * 0.06, 'stroke-linecap': 'round',
+                   filter: 'url(#rough)', opacity: 0.9 }).forEach(([key, v]) => stroke.setAttribute(key, v));
+  svg.appendChild(stroke);
+  grid.appendChild(svg);
+  const len = stroke.getTotalLength();
+  stroke.style.strokeDasharray = len;
+  stroke.style.strokeDashoffset = len;
+
+  // the brush: its tip is its bottom-left corner, so place it there
+  const brush = document.createElement('div');
+  brush.className = 'flybrush';
+  brush.textContent = '🖌️';
+  document.body.appendChild(brush);
+  const size = 56;
+  const at = (x, y) => `translate(${x}px, ${y - size}px)`;
+  brush.style.transform = at(window.innerWidth + 20, -20);         // off the top-right corner
+  brush.getBoundingClientRect();                                  // let the browser see the start place
+  brush.style.transform = at(g.left + p1.x, g.top + p1.y);        // slide down to the start of the line
+
+  setTimeout(() => {
+    brush.style.transition = 'opacity .3s';
+    const start = performance.now(), ms = 450;
+    function step(now) {
+      const t = Math.min(1, (now - start) / ms);
+      stroke.style.strokeDashoffset = len * (1 - t);
+      const shake = Math.sin(now / 16) * 3;
+      brush.style.transform = at(g.left + p1.x + (p2.x - p1.x) * t + shake, g.top + p1.y + (p2.y - p1.y) * t + shake);
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    setTimeout(() => { stroke.style.strokeDashoffset = 0; brush.style.opacity = 0; }, ms + 150);
+    setTimeout(() => brush.remove(), ms + 600);
+  }, 850);
 }
 
 /* ---------- robot thinking ---------- */
