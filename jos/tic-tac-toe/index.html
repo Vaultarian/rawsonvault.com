@@ -32,7 +32,13 @@
     #mode { font-family:'Fredoka One',cursive; font-size:2.6rem; min-width:300px; text-align:center; }
 
     #game { display:none; min-height:100vh; padding:60px 16px 20px; flex-direction:column; align-items:center; gap:18px; }
-    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; }
+    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; display:flex; align-items:center; }
+    /* the robot's screen: white letters typed out, with the blinking typing bar from the lava lamp clock */
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
     #grid { position:relative; display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:repeat(3, 1fr); gap:10px; background:#223;
             padding:10px; border-radius:18px; width:min(420px, 92vw); aspect-ratio:1; }
     .cell { background:#fff; border-radius:10px; min-width:0; min-height:0; overflow:hidden; line-height:1; display:flex; align-items:center; justify-content:center;
@@ -94,7 +100,7 @@
 const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)'];
 const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 const $ = id => document.getElementById(id);
-let mode = 0, board, turn, over, score = { X: 0, O: 0, D: 0 }, starter = 'X';
+let round = 0, mode = 0, board, turn, over, score = { X: 0, O: 0, D: 0 }, starter = 'X';
 
 /* ---------- setup screen ---------- */
 function showMode() { $('mode').textContent = MODES[mode]; }
@@ -122,6 +128,7 @@ $('again').onclick = () => { starter = starter === 'X' ? 'O' : 'X'; newRound(); 
 
 /* ---------- the board ---------- */
 function newRound() {
+  round++;
   board = Array(9).fill('');
   turn = starter;
   over = false;
@@ -129,7 +136,7 @@ function newRound() {
   document.querySelectorAll('.cell').forEach(c => c.onclick = () => humanMove(+c.dataset.i));
   showScore();
   showTurn();
-  if (computerTurn()) setTimeout(computerMove, 600);
+  if (computerTurn()) robotThink();
 }
 
 function computerTurn() { return mode > 0 && turn === 'O' && !over; }
@@ -146,7 +153,7 @@ function showScore() { $('sx').textContent = score.X; $('so').textContent = scor
 function humanMove(i) {
   if (over || board[i] || computerTurn()) return;
   place(i);
-  if (computerTurn()) setTimeout(computerMove, 500);
+  if (computerTurn()) robotThink();
 }
 
 function place(i) {
@@ -267,6 +274,28 @@ function animateStroke(svg, brush, main, streaks, len, ms) {
   requestAnimationFrame(step);
   // if the tab was hidden mid-stroke, make sure the mark still ends up finished
   setTimeout(() => { main.style.strokeDashoffset = 0; streaks.forEach(s => s.style.opacity = 1); }, ms + 50);
+}
+
+/* ---------- robot thinking ---------- */
+// The typing bar blinks, types "Robot thinking...", blinks again, then after 2 seconds the robot moves.
+function robotThink() {
+  const r = round;
+  const still = () => r === round && computerTurn();      // stop if a new round started
+  $('turn').innerHTML = '<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>';
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  const text = 'Robot thinking...';
+  let i = 0;
+  function next() {
+    if (!still()) return;
+    caret.classList.add('typing');                         // solid while typing
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, 90 * (0.6 + Math.random() * 0.8));   // a little uneven, like real typing
+    else {
+      caret.classList.remove('typing');                    // blinking again
+      setTimeout(() => { if (still()) computerMove(); }, 2000);
+    }
+  }
+  setTimeout(next, 500);                                   // the bar blinks before the typing starts
 }
 
 /* ---------- the computer ---------- */
