@@ -43,15 +43,15 @@
 
 <script>
 const GAMES = [
-  { e: '🐍', t: 'Snakes and Ladders', u: '../snakes-and-ladders/', i: 'Climb the ladders, slide down the snakes. First to 100 wins.', ready: true },
+  { e: '🐍', t: 'Chutes and Ladders', u: '../snakes-and-ladders/', i: 'Climb the ladders, slide down the chutes. First to 100 wins.', ready: true },
   { e: '🃏', t: 'Deck of Cards', u: '../deck-of-cards/', i: 'A real deck of 52 cards for any card game: Snap, Beggar My Neighbour and more.', ready: true },
-  { e: '❌', t: 'Noughts and Crosses', i: 'Three in a row wins.' },
-  { e: '🔴', t: 'Connect 4', i: 'Drop counters in. Four in a line wins.' },
-  { e: '⚫', t: 'Draughts', i: 'Jump over the other player\'s pieces.' },
+  { e: '❌', t: 'Tic-Tac-Toe', i: 'Three in a row wins.' },
+  { e: '🔴', t: 'Connect 4', i: 'Drop checkers in. Four in a line wins.' },
+  { e: '⚫', t: 'Checkers', i: 'Jump over the other player\'s pieces.' },
   { e: '♟️', t: 'Chess', i: 'The king of board games.' },
-  { e: '🎲', t: 'Ludo', i: 'Race your four counters home.' },
-  { e: '🚢', t: 'Battleships', i: 'Find and sink the hidden ships.' },
-  { e: '🔲', t: 'Dots and Boxes', i: 'Draw lines, finish boxes, win squares.' },
+  { e: '🎲', t: 'Parcheesi', i: 'Race your four pawns home.' },
+  { e: '🚢', t: 'Battleship', i: 'Find and sink the hidden ships.' },
+  { e: '🔲', t: 'Caterpillar', i: 'Draw lines, finish boxes, win squares.' },
 ];
 document.getElementById('shelf').innerHTML = GAMES.map(g => g.ready
   ? `<a class="game" href="${g.u}"><span class="e">${g.e}</span><span class="t">${g.t}</span><span class="i">${g.i}</span></a>`
