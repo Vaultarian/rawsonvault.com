@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Chess =====
+       All the real rules: check, checkmate, stalemate, castling, en passant, and a pawn that
+       reaches the far end becomes a queen. Drag a piece, or click it and click a dot.
+       Play a friend, the computer, or watch robot vs robot. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#e8eef4; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.6rem; min-width:300px; text-align:center; }
+
+    #game { display:none; min-height:100vh; padding:56px 16px 20px; flex-direction:column; align-items:center; gap:10px; }
+    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; display:flex; align-items:center; }
+    #hint { height:1.4rem; font-weight:900; color:#c62828; }
+    #speedRow { display:none; align-items:center; gap:10px; font-family:'Fredoka One',cursive; font-size:1.1rem;
+                background:#fff; padding:6px 16px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
+    #speedRow input { width:180px; accent-color:#3d9595; }
+    #clock { display:none; font-family:'Fredoka One',cursive; font-size:1.3rem; color:#c62828; background:#fff;
+             padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); animation:tick 1s steps(1) infinite; }
+    @keyframes tick { 50% { transform:scale(1.08); } }
+    .tray { width:min(560px, 94vw); min-height:30px; display:flex; flex-wrap:wrap; gap:0 2px; align-items:center; font-size:1.6rem; line-height:1.1; }
+    .tray span { animation:drop .3s ease-out; }
+    @keyframes drop { from { transform:translateY(-14px) scale(1.4); opacity:0; } }
+
+    #board { position:relative; width:min(560px, 94vw); aspect-ratio:1; border-radius:8px; overflow:hidden;
+             box-shadow:0 0 0 10px #34495e, 0 10px 26px rgba(0,0,0,.35); touch-action:none; }
+    .sq { position:absolute; width:12.5%; height:12.5%; }
+    .sq.light { background:#eef2d6; }
+    .sq.dark { background:#6f9a5b; }
+    .sq.can::after { content:''; position:absolute; left:36%; top:36%; width:28%; height:28%; border-radius:50%; background:rgba(0,0,0,.25); }
+    .sq.can.hit::after { left:4%; top:4%; width:92%; height:92%; background:none; box-shadow:inset 0 0 0 5px rgba(0,0,0,.28); }
+    .sq.last { box-shadow:inset 0 0 0 100px rgba(255,235,59,.38); }
+    .sq.check { box-shadow:inset 0 0 18px 8px rgba(229,57,53,.9); }
+    .sq .coord { position:absolute; font-size:.7rem; font-weight:900; opacity:.55; }
+
+    .piece { position:absolute; width:12.5%; height:12.5%; display:flex; align-items:center; justify-content:center;
+             font-size:clamp(1.8rem, 9vw, 3.6rem); line-height:1; z-index:2;
+             transition:left var(--t,.28s) ease, top var(--t,.28s) ease, transform var(--t,.28s) ease, opacity var(--t,.28s); }
+    .piece.w { color:#fff; text-shadow:0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 2px #000, 0 3px 2px rgba(0,0,0,.35); }
+    .piece.b { color:#1d1d1d; text-shadow:0 0 1px #fff, 0 3px 2px rgba(0,0,0,.3); }
+    .piece.mine { cursor:grab; }
+    .piece.mine:hover { filter:brightness(1.1) drop-shadow(0 0 6px rgba(255,255,255,.8)); }
+    .piece.picked { z-index:10; transform:scale(1.15); }
+    .piece.dragging { transition:none; z-index:10; transform:scale(1.25); cursor:grabbing; }
+    .piece.gone { transform:scale(0) rotate(180deg); opacity:0; }
+    .piece.promoted { animation:crown .6s ease-out; }
+    @keyframes crown { 0% { transform:scale(1); } 40% { transform:scale(1.5) rotate(-12deg); } 100% { transform:scale(1); } }
+
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .row { display:flex; gap:12px; }
+    #banner { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(20,20,40,.55); z-index:20; }
+    #banner span { font-family:'Fredoka One',cursive; font-size:clamp(2.2rem, 9vw, 4rem); color:#fff; -webkit-text-stroke:2px #223;
+                   paint-order:stroke fill; animation:bannerPop .45s ease-out; }
+    #banner small { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#fff; margin-top:.3rem; }
+    @keyframes bannerPop { 0% { transform:scale(.3); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>♔ Chess ♚</h1>
+  <div class="q">Who are you playing?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">A friend</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#3d9595">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span></div>
+  <div id="clock"></div>
+  <div class="tray" id="trayTop"></div>
+  <div id="board"><div id="banner"><span></span><small></small></div></div>
+  <div class="tray" id="trayBottom"></div>
+  <div id="hint"></div>
+  <div id="score">
+    <div class="tally"><b id="sw">0</b><span id="nw">White</span></div>
+    <div class="tally"><b id="sd">0</b>Draws</div>
+    <div class="tally"><b id="sb">0</b><span id="nb">Black</span></div>
+  </div>
+  <div class="row">
+    <button id="again" style="background:#3d9595">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change players</button>
+  </div>
+</div>
+
+<script>
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)', 'Robot vs robot (watch)'];
+const WATCH = 3;
+// the ︎ stops the pawn turning into an emoji
+const GLYPH = { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟︎' };
+const VALUE = { P: 100, N: 320, B: 330, R: 500, Q: 900, K: 0 };
+const $ = id => document.getElementById(id);
+const boardEl = $('board');
+const other = c => c === 'w' ? 'b' : 'w';
+let mode = 0, round = 0, st, over, starter = 'w', score = { w: 0, b: 0, d: 0 };
+let picked = null, nextId = 0, ids = [], speed = 1, lastCapture = 0;
+const fast = ms => ms / speed;
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[mode]; }
+$('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+$('start').onclick = begin;
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') $('less').click();
+  if (e.key === 'ArrowRight') $('more').click();
+  if (e.key === 'Enter') begin();
+});
+$('speed').oninput = e => {
+  speed = +e.target.value;
+  $('speedVal').textContent = speed + '×';
+  boardEl.style.setProperty('--t', (0.28 / speed) + 's');
+};
+
+function begin() {
+  score = { w: 0, b: 0, d: 0 };
+  starter = 'w';
+  $('nw').textContent = mode === 0 ? 'White' : mode === WATCH ? 'White robot' : 'You (White)';
+  $('nb').textContent = mode === 0 ? 'Black' : mode === WATCH ? 'Black robot' : 'Computer (Black)';
+  $('speedRow').style.display = mode === WATCH ? 'flex' : 'none';
+  if (mode !== WATCH) { $('speed').value = 1; $('speed').oninput({ target: $('speed') }); }
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  newRound();
+}
+$('change').onclick = () => { round++; $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+$('again').onclick = () => newRound();
+
+/* ---------- the position ----------
+   The board is a list of 64 squares, 0 = top-left (a8), 63 = bottom-right (h1).
+   A piece is a 2-letter code: colour + type, like 'wK' (white king) or 'bP' (black pawn). */
+const rc = i => [i >> 3, i & 7];
+const at = (r, c) => r * 8 + c;
+const onBoard = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+
+function startPosition() {
+  const back = ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'];
+  const b = Array(64).fill(null);
+  for (let c = 0; c < 8; c++) {
+    b[at(0, c)] = 'b' + back[c]; b[at(1, c)] = 'bP';
+    b[at(6, c)] = 'wP'; b[at(7, c)] = 'w' + back[c];
+  }
+  return { b, turn: 'w', castle: { wK: true, wQ: true, bK: true, bQ: true }, ep: -1, quiet: 0 };
+}
+
+/* ---------- the rules ---------- */
+const KNIGHT = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+const KING = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+const ROOK = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+const BISHOP = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+
+// is square i attacked by colour `by`?
+function attacked(b, i, by) {
+  const [r, c] = rc(i);
+  const pr = by === 'w' ? r + 1 : r - 1;            // where an attacking pawn would stand
+  for (const dc of [-1, 1]) if (onBoard(pr, c + dc) && b[at(pr, c + dc)] === by + 'P') return true;
+  for (const [dr, dc] of KNIGHT) if (onBoard(r + dr, c + dc) && b[at(r + dr, c + dc)] === by + 'N') return true;
+  for (const [dr, dc] of KING) if (onBoard(r + dr, c + dc) && b[at(r + dr, c + dc)] === by + 'K') return true;
+  for (const [dirs, kinds] of [[ROOK, 'RQ'], [BISHOP, 'BQ']]) for (const [dr, dc] of dirs) {
+    let rr = r + dr, cc = c + dc;
+    while (onBoard(rr, cc)) {
+      const p = b[at(rr, cc)];
+      if (p) { if (p[0] === by && kinds.includes(p[1])) return true; break; }
+      rr += dr; cc += dc;
+    }
+  }
+  return false;
+}
+const kingAt = (b, col) => b.indexOf(col + 'K');
+const inCheck = (s, col) => attacked(s.b, kingAt(s.b, col), other(col));
+
+// every move that follows how the pieces move (before checking whether it leaves your king in check)
+function pseudo(s) {
+  const b = s.b, me = s.turn, out = [];
+  const add = (f, t, extra) => out.push({ f, t, piece: b[f], cap: b[t], ...extra });
+  for (let f = 0; f < 64; f++) {
+    const p = b[f]; if (!p || p[0] !== me) continue;
+    const [r, c] = rc(f), kind = p[1];
+    if (kind === 'P') {
+      const d = me === 'w' ? -1 : 1, startRow = me === 'w' ? 6 : 1, endRow = me === 'w' ? 0 : 7;
+      const promo = rr => rr === endRow ? { promo: 'Q' } : {};
+      if (onBoard(r + d, c) && !b[at(r + d, c)]) {
+        add(f, at(r + d, c), promo(r + d));
+        if (r === startRow && !b[at(r + 2 * d, c)]) add(f, at(r + 2 * d, c), { double: true });
+      }
+      for (const dc of [-1, 1]) {
+        if (!onBoard(r + d, c + dc)) continue;
+        const t = at(r + d, c + dc);
+        if (b[t] && b[t][0] !== me) add(f, t, promo(r + d));
+        if (t === s.ep) add(f, t, { enPassant: true, cap: other(me) + 'P' });
+      }
+    } else if (kind === 'N' || kind === 'K') {
+      for (const [dr, dc] of kind === 'N' ? KNIGHT : KING) {
+        if (!onBoard(r + dr, c + dc)) continue;
+        const t = at(r + dr, c + dc);
+        if (!b[t] || b[t][0] !== me) add(f, t);
+      }
+      if (kind === 'K') {                             // castling
+        const row = me === 'w' ? 7 : 0, them = other(me);
+        if (f === at(row, 4) && !attacked(b, f, them)) {
+          if (s.castle[me + 'K'] && !b[at(row, 5)] && !b[at(row, 6)] && b[at(row, 7)] === me + 'R'
+              && !attacked(b, at(row, 5), them) && !attacked(b, at(row, 6), them)) add(f, at(row, 6), { castle: 'K' });
+          if (s.castle[me + 'Q'] && !b[at(row, 3)] && !b[at(row, 2)] && !b[at(row, 1)] && b[at(row, 0)] === me + 'R'
+              && !attacked(b, at(row, 3), them) && !attacked(b, at(row, 2), them)) add(f, at(row, 2), { castle: 'Q' });
+        }
+      }
+    } else {
+      const dirs = kind === 'R' ? ROOK : kind === 'B' ? BISHOP : [...ROOK, ...BISHOP];
+      for (const [dr, dc] of dirs) {
+        let rr = r + dr, cc = c + dc;
+        while (onBoard(rr, cc)) {
+          const t = at(rr, cc);
+          if (b[t]) { if (b[t][0] !== me) add(f, t); break; }
+          add(f, t); rr += dr; cc += dc;
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function apply(s, m) {
+  const b = s.b.slice(), me = s.turn;
+  const castle = { ...s.castle };
+  b[m.t] = m.promo ? me + m.promo : b[m.f];
+  b[m.f] = null;
+  if (m.enPassant) b[m.t + (me === 'w' ? 8 : -8)] = null;
+  if (m.castle) {
+    const row = me === 'w' ? 7 : 0;
+    if (m.castle === 'K') { b[at(row, 5)] = b[at(row, 7)]; b[at(row, 7)] = null; }
+    else { b[at(row, 3)] = b[at(row, 0)]; b[at(row, 0)] = null; }
+  }
+  if (m.piece[1] === 'K') castle[me + 'K'] = castle[me + 'Q'] = false;
+  for (const [sq, key] of [[63, 'wK'], [56, 'wQ'], [7, 'bK'], [0, 'bQ']]) if (m.f === sq || m.t === sq) castle[key] = false;
+  return { b, turn: other(me), castle, ep: m.double ? (m.f + m.t) / 2 : -1,
+           quiet: m.cap || m.piece[1] === 'P' ? 0 : s.quiet + 1 };
+}
+
+const legal = s => pseudo(s).filter(m => !inCheck(apply(s, m), s.turn));
+
+// only kings, or king + one bishop/knight: nobody can ever checkmate
+function notEnough(b) {
+  const rest = b.filter(p => p && p[1] !== 'K');
+  return rest.length === 0 || (rest.length === 1 && 'BN'.includes(rest[0][1]));
+}
+
+/* ---------- drawing the board ---------- */
+function newRound() {
+  round++;
+  st = startPosition(); over = false; picked = null;
+  lastCapture = performance.now();
+  $('trayTop').innerHTML = ''; $('trayBottom').innerHTML = ''; $('clock').style.display = 'none';
+  $('banner').style.display = 'none';
+  boardEl.querySelectorAll('.sq, .piece').forEach(e => e.remove());
+  for (let i = 0; i < 64; i++) {
+    const [r, c] = rc(i), sq = document.createElement('div');
+    sq.className = 'sq ' + ((r + c) % 2 ? 'dark' : 'light');
+    sq.style.left = c * 12.5 + '%'; sq.style.top = r * 12.5 + '%';
+    sq.dataset.i = i;
+    if (c === 0) sq.innerHTML += `<span class="coord" style="left:3px;top:2px">${8 - r}</span>`;
+    if (r === 7) sq.innerHTML += `<span class="coord" style="right:4px;bottom:1px">${'abcdefgh'[c]}</span>`;
+    boardEl.appendChild(sq);
+  }
+  ids = Array(64).fill(null);
+  st.b.forEach((p, i) => { if (p) ids[i] = makePiece(p, i); });
+  showScore();
+  startTurn();
+}
+function makePiece(p, i) {
+  const el = document.createElement('div');
+  el.className = 'piece ' + p[0];
+  el.id = 'pc' + nextId;
+  el.textContent = GLYPH[p[1]];
+  placeEl(el, i);
+  boardEl.appendChild(el);
+  return nextId++;
+}
+function placeEl(el, i) { const [r, c] = rc(i); el.style.left = c * 12.5 + '%'; el.style.top = r * 12.5 + '%'; }
+const pieceEl = i => $('pc' + ids[i]);
+const sqEl = i => boardEl.querySelector(`.sq[data-i="${i}"]`);
+
+/* ---------- turns ---------- */
+const computerTurn = () => !over && (mode === WATCH || (mode > 0 && st.turn === 'b'));
+const name = col => mode === 0 ? (col === 'w' ? 'White' : 'Black') :
+                    mode === WATCH ? (col === 'w' ? 'White robot' : 'Black robot') : (col === 'w' ? 'You' : 'Robot');
+function showScore() { $('sw').textContent = score.w; $('sb').textContent = score.b; $('sd').textContent = score.d; }
+
+function startTurn() {
+  boardEl.querySelectorAll('.sq.check').forEach(s => s.classList.remove('check'));
+  const moves = legal(st), check = inCheck(st, st.turn);
+  if (check) sqEl(kingAt(st.b, st.turn)).classList.add('check');
+  if (!moves.length) return check ? finish(other(st.turn), 'Checkmate!') : finish(null, 'Stalemate!');
+  if (notEnough(st.b)) return finish(null, 'Not enough pieces to win');
+  if (st.quiet >= 100 && mode !== WATCH) return finish(null, '50 moves with no capture');
+  boardEl.querySelectorAll('.piece').forEach(e => e.classList.remove('mine'));
+  if (computerTurn()) { $('hint').textContent = check ? 'Check!' : ''; return robotThink(); }
+  new Set(moves.map(m => m.f)).forEach(f => pieceEl(f).classList.add('mine'));
+  $('turn').innerHTML = mode === 0 ? `${st.turn === 'w' ? '♔' : '♚'} ${name(st.turn)}'s turn` : 'Your turn';
+  $('hint').textContent = check ? 'Check! Save your king.' : '';
+}
+
+// move the pieces on screen to match a move, then update the position
+function play(m) {
+  return new Promise(done => {
+    clearPicked();
+    const el = pieceEl(m.f);
+    boardEl.querySelectorAll('.sq.last').forEach(s => s.classList.remove('last'));
+    sqEl(m.f).classList.add('last'); sqEl(m.t).classList.add('last');
+    // the captured piece (on the target square, or behind it for en passant)
+    const capSq = m.enPassant ? m.t + (st.turn === 'w' ? 8 : -8) : m.cap ? m.t : -1;
+    if (capSq >= 0) {
+      const vEl = pieceEl(capSq);
+      setTimeout(() => { vEl.classList.add('gone'); setTimeout(() => vEl.remove(), fast(300)); }, fast(150));
+      const s = document.createElement('span');
+      s.textContent = GLYPH[m.cap[1]];
+      s.style.color = m.cap[0] === 'w' ? '#fff' : '#1d1d1d';
+      s.style.textShadow = m.cap[0] === 'w' ? '0 0 1px #000, 0 0 1px #000' : 'none';
+      $(m.cap[0] === 'w' ? 'trayTop' : 'trayBottom').appendChild(s);   // into the pile of whoever took it
+      ids[capSq] = null;
+      lastCapture = performance.now();
+    }
+    placeEl(el, m.t);
+    ids[m.t] = ids[m.f]; ids[m.f] = null;
+    if (m.castle) {                                    // the rook jumps over the king
+      const row = st.turn === 'w' ? 7 : 0;
+      const [rf, rt] = m.castle === 'K' ? [at(row, 7), at(row, 5)] : [at(row, 0), at(row, 3)];
+      placeEl(pieceEl(rf), rt); ids[rt] = ids[rf]; ids[rf] = null;
+    }
+    st = apply(st, m);
+    setTimeout(() => {
+      if (m.promo) { el.textContent = GLYPH[m.promo]; el.classList.add('promoted'); }
+      done();
+    }, fast(300));
+  });
+}
+
+async function humanPlay(m) {
+  await play(m);
+  startTurn();
+}
+
+function finish(winner, why) {
+  if (over) return;
+  over = true;
+  $('clock').style.display = 'none';
+  boardEl.querySelectorAll('.piece').forEach(e => e.classList.remove('mine'));
+  $('hint').textContent = '';
+  const b = $('banner');
+  if (winner) {
+    score[winner]++;
+    $('turn').textContent = `🎉 ${name(winner)} ${name(winner) === 'You' ? 'win' : 'wins'}!`;
+    b.querySelector('span').textContent = `${name(winner)} winner!`;
+  } else {
+    score.d++;
+    $('turn').textContent = '🤝 It\'s a draw!';
+    b.querySelector('span').textContent = 'Draw!';
+  }
+  b.querySelector('small').textContent = why;
+  b.style.display = 'flex';
+  showScore();
+}
+
+/* ---------- clicking and dragging ---------- */
+let drag = null;
+const humanCanPlay = () => !over && !computerTurn() && $('game').style.display === 'flex';
+function squareAt(e) {
+  const b = boardEl.getBoundingClientRect();
+  const c = Math.floor((e.clientX - b.left) / b.width * 8), r = Math.floor((e.clientY - b.top) / b.height * 8);
+  return onBoard(r, c) ? at(r, c) : -1;
+}
+const movesFrom = f => legal(st).filter(m => m.f === f);
+function clearPicked() {
+  picked = null;
+  boardEl.querySelectorAll('.sq.can').forEach(s => s.classList.remove('can', 'hit'));
+  boardEl.querySelectorAll('.piece.picked').forEach(e => e.classList.remove('picked'));
+}
+function pick(f) {
+  clearPicked();
+  const ms = movesFrom(f);
+  if (!ms.length) return false;
+  picked = f;
+  pieceEl(f).classList.add('picked');
+  ms.forEach(m => { sqEl(m.t).classList.add('can'); if (m.cap) sqEl(m.t).classList.add('hit'); });
+  return true;
+}
+boardEl.addEventListener('pointerdown', e => {
+  if (!humanCanPlay()) return;
+  const i = squareAt(e); if (i < 0) return;
+  if (picked !== null) {
+    const m = movesFrom(picked).find(m => m.t === i);
+    if (m) return humanPlay(m);
+  }
+  if (st.b[i] && st.b[i][0] === st.turn && pick(i)) {
+    drag = { f: i, el: pieceEl(i), b: boardEl.getBoundingClientRect(), moved: false, x0: e.clientX, y0: e.clientY };
+    boardEl.setPointerCapture(e.pointerId);
+  } else clearPicked();
+});
+boardEl.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return;
+  drag.moved = true;
+  drag.el.classList.add('dragging');
+  const s = drag.b.width / 8;
+  drag.el.style.left = (e.clientX - drag.b.left - s / 2) + 'px';
+  drag.el.style.top = (e.clientY - drag.b.top - s / 2) + 'px';
+});
+boardEl.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.moved) return;
+  d.el.classList.remove('dragging');
+  const i = squareAt(e);
+  const m = movesFrom(d.f).find(m => m.t === i);
+  if (m) { d.el.style.transition = 'none'; placeEl(d.el, m.t); d.el.getBoundingClientRect(); d.el.style.transition = ''; humanPlay(m); }
+  else placeEl(d.el, d.f);
+});
+
+/* ---------- robot thinking ---------- */
+function robotThink() {
+  const r = round;
+  const still = () => r === round && computerTurn();
+  const face = mode === WATCH ? (st.turn === 'w' ? '♔🤖' : '♚🤖') : '🤖';
+  $('turn').innerHTML = `<span class="robot">${face} <span id="words"></span><span class="caret"></span></span>`;
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  const text = mode === WATCH ? `${name(st.turn)} thinking...` : 'Robot thinking...';
+  const typeGap = mode === WATCH ? 28 : 90, wait = mode === WATCH ? 400 : 1500;
+  let i = 0;
+  function next() {
+    if (!still()) return;
+    caret.classList.add('typing');
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, fast(typeGap * (0.6 + Math.random() * 0.8)));
+    else {
+      caret.classList.remove('typing');
+      setTimeout(async () => {
+        if (!still()) return;
+        const m = pickMove();
+        await play(m);
+        if (r !== round || over) return;
+        startTurn();
+      }, fast(wait));
+    }
+  }
+  setTimeout(next, fast(500));
+}
+
+// robot vs robot: 15 seconds with no capture, then a 15 second countdown to a draw
+setInterval(() => {
+  if (mode !== WATCH || over || $('game').style.display !== 'flex') return;
+  const quiet = (performance.now() - lastCapture) / 1000, left = Math.ceil(30 - quiet);
+  if (quiet < 15) { $('clock').style.display = 'none'; return; }
+  $('clock').style.display = 'block';
+  $('clock').textContent = `⏰ No captures! Draw in ${left}`;
+  if (left <= 0) finish(null, 'No captures for 30 seconds');
+}, 200);
+
+/* ---------- the computer's brain ----------
+   It scores a position by adding up the pieces (pawn 1, knight 3, bishop 3, rook 5, queen 9),
+   plus a little extra for good squares: knights and bishops in the middle, pawns pushed forward.
+   Then it looks ahead: "if I go here, what is their best reply, and my best reply to that..." */
+const CENTRE = [0, 1, 2, 3, 3, 2, 1, 0];
+function judge(s) {
+  let total = 0;
+  for (let i = 0; i < 64; i++) {
+    const p = s.b[i]; if (!p) continue;
+    const [r, c] = rc(i), kind = p[1];
+    let v = VALUE[kind];
+    if (kind === 'N' || kind === 'B') v += (CENTRE[r] + CENTRE[c]) * 5;
+    if (kind === 'P') v += (p[0] === 'w' ? 6 - r : r - 1) * 6 + (c >= 2 && c <= 5 ? 6 : 0);
+    if (kind === 'Q') v += (CENTRE[r] + CENTRE[c]) * 2;
+    if (kind === 'K' && s.b.filter(Boolean).length > 12) v += (p[0] === 'w' ? r - 6 : 1 - r) * 8 - CENTRE[c] * 6;   // stay home early on
+    total += p[0] === s.turn ? v : -v;
+  }
+  return total;
+}
+// try captures of big pieces by small pieces first: it makes the search much faster
+const order = ms => ms.sort((a, b) => (b.cap ? VALUE[b.cap[1]] * 10 - VALUE[b.piece[1]] : 0) + (b.promo ? 800 : 0)
+                                   - (a.cap ? VALUE[a.cap[1]] * 10 - VALUE[a.piece[1]] : 0) - (a.promo ? 800 : 0));
+
+function search(s, depth, a, beta, ply) {
+  if (depth <= 0) return captures(s, a, beta, 4);
+  const ms = legal(s);
+  if (!ms.length) return inCheck(s, s.turn) ? -100000 + ply : 0;
+  let best = -Infinity;
+  for (const m of order(ms)) {
+    const v = -search(apply(s, m), depth - 1, -beta, -a, ply + 1);
+    if (v > best) best = v;
+    if (v > a) a = v;
+    if (a >= beta) break;
+  }
+  return best;
+}
+// at the end of the look-ahead, keep following captures so it does not stop halfway through a swap
+function captures(s, a, beta, left) {
+  const standPat = judge(s);
+  if (left === 0 || standPat >= beta) return standPat;
+  if (standPat > a) a = standPat;
+  for (const m of order(pseudo(s).filter(m => m.cap))) {
+    const n = apply(s, m);
+    if (inCheck(n, s.turn)) continue;
+    const v = -captures(n, -beta, -a, left - 1);
+    if (v >= beta) return v;
+    if (v > a) a = v;
+  }
+  return a;
+}
+function pickMove() {
+  const ms = order(legal(st));
+  const depth = mode === 1 ? 1 : mode === WATCH ? 2 : 4;
+  const scored = ms.map(m => ({ m, v: -search(apply(st, m), depth - 1, -Infinity, Infinity, 1) }));
+  const top = Math.max(...scored.map(x => x.v));
+  // easy and robot vs robot pick from the nearly-best moves, so games are different every time
+  const slack = mode === 1 ? 120 : mode === WATCH ? 15 : 0;
+  const good = scored.filter(x => x.v >= top - slack);
+  return good[Math.floor(Math.random() * good.length)].m;
+}
+</script>
+</body>
+</html>
