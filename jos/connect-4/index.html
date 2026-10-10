@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect 4 — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Connect 4 =====
+       Move the mouse to slide the checker across, click to drop it.
+       It falls with real gravity and bounces on the pile. If it lands on the edge of a column
+       it hops sideways into the column you were over. Four in a line wins. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#fff3d6; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.6rem; min-width:300px; text-align:center; }
+
+    #game { display:none; min-height:100vh; padding:56px 16px 20px; flex-direction:column; align-items:center; gap:12px; }
+    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; display:flex; align-items:center; }
+    canvas { max-width:96vw; height:auto; touch-action:none; }
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .tally.r b { color:#e53935; } .tally.y b { color:#e0a800; }
+    .row { display:flex; gap:12px; }
+    /* the robot's screen, same as Tic-Tac-Toe: white letters and the lava lamp typing bar */
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>🔴 Connect 4 🟡</h1>
+  <div class="q">Who are you playing?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">A friend</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e53935">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <canvas id="board" width="560" height="620"></canvas>
+  <div id="score">
+    <div class="tally r"><b id="sr">0</b><span id="nr">Red</span></div>
+    <div class="tally"><b id="sd">0</b>Draws</div>
+    <div class="tally y"><b id="sy">0</b><span id="ny">Yellow</span></div>
+  </div>
+  <div class="row">
+    <button id="again" style="background:#e53935">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change players</button>
+  </div>
+  <div style="opacity:.6">Mouse: slide and click · Keys: ← → and Space</div>
+</div>
+
+<script>
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)'];
+const COLS = 7, ROWS = 6, CELL = 80, R = 33;
+const TOP = 130;                         // the empty space above the board where the checker floats
+const HOVER_Y = 52;                      // how high the checker floats
+const SLACK = 5;                         // how far off the middle a checker can be and still slide into a column
+const GRAVITY = 0.0042;                  // pixels per millisecond, per millisecond
+const COLOUR = { R: ['#ff6f61', '#e53935', '#a31f1c'], Y: ['#fff176', '#fdd835', '#c9a400'] };
+const $ = id => document.getElementById(id);
+const cv = $('board'), ctx = cv.getContext('2d');
+
+let mode = 0, round = 0, grid, turn, over, starter = 'R', score = { R: 0, Y: 0, D: 0 };
+let hoverX = cv.width / 2, aimX = cv.width / 2;   // where the floating checker is, and where it is heading
+let falling = null;                               // the checker in the air, or null
+let winLine = null, lockedForRobot = false;
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[mode]; }
+$('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+$('start').onclick = begin;
+
+function begin() {
+  score = { R: 0, Y: 0, D: 0 };
+  starter = 'R';
+  $('nr').textContent = mode === 0 ? 'Red' : 'You (Red)';
+  $('ny').textContent = mode === 0 ? 'Yellow' : 'Computer (Yellow)';
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  newRound();
+}
+$('change').onclick = () => { round++; $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+$('again').onclick = () => { starter = starter === 'R' ? 'Y' : 'R'; newRound(); };   // take turns going first
+
+function newRound() {
+  round++;
+  grid = Array.from({ length: ROWS }, () => Array(COLS).fill(''));
+  turn = starter; over = false; falling = null; winLine = null; lockedForRobot = false;
+  showScore(); showTurn();
+  if (computerTurn()) robotThink();
+}
+
+const computerTurn = () => mode > 0 && turn === 'Y' && !over;
+const name = p => mode === 0 ? (p === 'R' ? 'Red' : 'Yellow') : (p === 'R' ? 'You' : 'The computer');
+function showScore() { $('sr').textContent = score.R; $('sy').textContent = score.Y; $('sd').textContent = score.D; }
+function showTurn() {
+  if (computerTurn()) return;                   // the robot screen shows instead
+  const c = turn === 'R' ? '#e53935' : '#e0a800';
+  $('turn').innerHTML = mode === 0 ? `<span style="color:${c}">${name(turn)}</span>'s turn` : 'Your turn';
+}
+
+/* ---------- moving and dropping ---------- */
+function canvasX(e) { const b = cv.getBoundingClientRect(); return (e.clientX - b.left) * cv.width / b.width; }
+const clampX = x => Math.max(R, Math.min(cv.width - R, x));
+const humanCanPlay = () => !over && !falling && !computerTurn() && $('game').style.display === 'flex';
+
+cv.addEventListener('pointermove', e => { if (humanCanPlay()) aimX = clampX(canvasX(e)); });
+cv.addEventListener('pointerdown', e => {
+  if (!humanCanPlay()) return;
+  aimX = hoverX = clampX(canvasX(e));
+  drop();
+});
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display !== 'none') {
+    if (e.key === 'ArrowLeft') $('less').click();
+    if (e.key === 'ArrowRight') $('more').click();
+    if (e.key === 'Enter') begin();
+    return;
+  }
+  if (!humanCanPlay()) return;
+  const col = Math.floor(aimX / CELL);
+  if (e.key === 'ArrowLeft') aimX = Math.max(0, col - 1) * CELL + CELL / 2;
+  if (e.key === 'ArrowRight') aimX = Math.min(COLS - 1, col + 1) * CELL + CELL / 2;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); hoverX = aimX; drop(); }
+});
+
+const lowestEmpty = (g, c) => { for (let r = ROWS - 1; r >= 0; r--) if (!g[r][c]) return r; return -1; };
+
+function drop() {
+  const col = Math.floor(hoverX / CELL);
+  const row = lowestEmpty(grid, col);
+  if (row < 0) return;                          // that column is full
+  const cx = col * CELL + CELL / 2;
+  falling = {
+    p: turn, col, row, x: hoverX, y: HOVER_Y, vy: 0,
+    vx: (cx - hoverX) / 260,                    // drift towards the middle of the column
+    cx, landY: TOP + row * CELL + CELL / 2, squash: 0, bounces: 0,
+  };
+}
+
+/* ---------- the physics, in fixed 16 ms steps ---------- */
+function physics(dt) {
+  const f = falling;
+  f.vy += GRAVITY * dt;
+  f.y += f.vy * dt;
+  f.x += f.vx * dt;
+  const off = f.x - f.cx;
+  if (f.y + R > TOP) {
+    if (Math.abs(off) > SLACK && f.y + R < TOP + 14) {
+      // it hit the edge at the top of the column: a little hop sideways, towards the middle
+      f.y = TOP - R;
+      f.vy = -Math.min(0.35, Math.abs(f.vy) * 0.35);
+      f.vx = Math.sign(-off) * Math.max(0.12, Math.abs(f.vx));
+      f.squash = 0.12;
+    } else {
+      // inside the column: the walls keep it in, with a small bounce off the side
+      if (Math.abs(off) > SLACK) { f.x = f.cx + Math.sign(off) * SLACK; f.vx = -f.vx * 0.5; }
+      f.vx *= 0.92;
+      f.vx += (f.cx - f.x) * 0.0006 * dt;
+    }
+  }
+  if (f.y >= f.landY) {                         // hit the pile (or the bottom)
+    f.y = f.landY;
+    if (f.vy > 0.18 && f.bounces < 4) {
+      f.squash = Math.min(0.28, f.vy * 0.2);
+      f.vy = -f.vy * 0.34;                       // each bounce is smaller
+      f.bounces++;
+    } else {
+      land();
+      return;
+    }
+  }
+  f.squash *= 0.86;
+}
+
+function land() {
+  const f = falling;
+  grid[f.row][f.col] = f.p;
+  falling = null;
+  winLine = findWin(grid, f.p);
+  if (winLine) {
+    over = true; score[f.p]++;
+    $('turn').textContent = `🎉 ${name(f.p)} ${name(f.p) === 'You' ? 'win' : 'wins'}!`;
+  } else if (grid[0].every(Boolean)) {
+    over = true; score.D++;
+    $('turn').textContent = '🤝 It\'s a draw!';
+  } else {
+    turn = turn === 'R' ? 'Y' : 'R';
+    showTurn();
+    if (computerTurn()) robotThink();
+  }
+  showScore();
+}
+
+function findWin(g, p) {
+  const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) for (const [dr, dc] of dirs) {
+    const cells = [0, 1, 2, 3].map(k => [r + dr * k, c + dc * k]);
+    if (cells.every(([rr, cc]) => rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && g[rr][cc] === p)) return cells;
+  }
+  return null;
+}
+
+/* ---------- drawing ---------- */
+// The blue board is drawn once with holes cut out, then put on top of the checkers each frame.
+const boardImg = document.createElement('canvas');
+boardImg.width = cv.width; boardImg.height = cv.height;
+(function makeBoard() {
+  const b = boardImg.getContext('2d');
+  b.fillStyle = '#1565c0';
+  b.beginPath(); b.roundRect(0, TOP - 8, cv.width, ROWS * CELL + 16, 18); b.fill();
+  b.globalCompositeOperation = 'destination-out';
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    b.beginPath(); b.arc(c * CELL + CELL / 2, TOP + r * CELL + CELL / 2, R + 2, 0, Math.PI * 2); b.fill();
+  }
+  b.globalCompositeOperation = 'source-over';
+  b.strokeStyle = '#0d47a1'; b.lineWidth = 4;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    b.beginPath(); b.arc(c * CELL + CELL / 2, TOP + r * CELL + CELL / 2, R + 2, 0, Math.PI * 2); b.stroke();
+  }
+})();
+
+function checker(p, x, y, squash = 0, glow = false) {
+  const [light, mid, dark] = COLOUR[p];
+  ctx.save();
+  ctx.translate(x, y + R);                      // squash from the bottom, like it is hitting the floor
+  ctx.scale(1 + squash, 1 - squash);
+  ctx.translate(0, -R);
+  if (glow) { ctx.shadowColor = '#fff'; ctx.shadowBlur = 26; }
+  const g = ctx.createRadialGradient(-10, -12, 4, 0, 0, R);
+  g.addColorStop(0, light); g.addColorStop(0.55, mid); g.addColorStop(1, dark);
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = dark; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, R * 0.68, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+
+function draw(now) {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  const pulse = winLine ? Math.sin(now / 160) > 0 : false;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    if (!grid || !grid[r][c]) continue;
+    const isWin = winLine && winLine.some(([wr, wc]) => wr === r && wc === c);
+    checker(grid[r][c], c * CELL + CELL / 2, TOP + r * CELL + CELL / 2, 0, isWin && pulse);
+  }
+  if (falling) checker(falling.p, falling.x, falling.y, falling.squash);
+  ctx.drawImage(boardImg, 0, 0);
+  if (grid && !over && !falling && $('game').style.display === 'flex') {
+    hoverX += (aimX - hoverX) * 0.35;           // the floating checker follows smoothly
+    checker(turn, hoverX, HOVER_Y);
+    // a faint arrow showing which column it will go in
+    const cx = Math.floor(hoverX / CELL) * CELL + CELL / 2;
+    ctx.fillStyle = 'rgba(0,0,0,.18)';
+    ctx.beginPath(); ctx.moveTo(cx - 10, TOP - 22); ctx.lineTo(cx + 10, TOP - 22); ctx.lineTo(cx, TOP - 12); ctx.fill();
+  }
+}
+
+let last = performance.now(), spare = 0;
+function loop(now) {
+  spare += Math.min(100, now - last); last = now;
+  while (spare >= 16) { if (falling) physics(16); spare -= 16; }
+  draw(now);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------- robot thinking ---------- */
+// Same as Tic-Tac-Toe: type "Robot thinking...", wait 2 seconds, then slide over and drop.
+function robotThink() {
+  const r = round;
+  const still = () => r === round && computerTurn();
+  $('turn').innerHTML = '<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>';
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  const text = 'Robot thinking...';
+  let i = 0;
+  function next() {
+    if (!still()) return;
+    caret.classList.add('typing');
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, 90 * (0.6 + Math.random() * 0.8));
+    else {
+      caret.classList.remove('typing');
+      setTimeout(() => {
+        if (!still()) return;
+        const col = pickColumn();
+        aimX = col * CELL + CELL / 2;           // the checker slides across to the robot's column...
+        setTimeout(() => { if (still()) { hoverX = aimX; drop(); } }, 650);   // ...then drops
+      }, 2000);
+    }
+  }
+  setTimeout(next, 500);
+}
+
+/* ---------- the computer's brain ---------- */
+// Easy: wins if it can, blocks you half the time, otherwise picks near the middle at random.
+// Hard: looks 6 moves ahead (every possible game), scoring each board by how many lines it could still make.
+const ORDER = [3, 2, 4, 1, 5, 0, 6];
+const open = g => ORDER.filter(c => !g[0][c]);
+function tryMove(g, c, p) { const r = lowestEmpty(g, c); g[r][c] = p; const won = !!findWin(g, p); g[r][c] = ''; return won; }
+
+function pickColumn() {
+  const cols = open(grid);
+  if (mode === 1) {
+    const win = cols.find(c => tryMove(grid, c, 'Y'));
+    if (win !== undefined) return win;
+    const block = cols.find(c => tryMove(grid, c, 'R'));
+    if (block !== undefined && Math.random() < 0.5) return block;
+    const near = cols.slice(0, Math.max(2, Math.ceil(cols.length / 2)));
+    return near[Math.floor(Math.random() * near.length)];
+  }
+  let best = cols[0], top = -Infinity;
+  for (const c of cols) {
+    const r = lowestEmpty(grid, c); grid[r][c] = 'Y';
+    const s = -negamax(grid, 5, -Infinity, Infinity, 'R');
+    grid[r][c] = '';
+    if (s > top) { top = s; best = c; }
+  }
+  return best;
+}
+
+function negamax(g, depth, a, b, p) {
+  const q = p === 'R' ? 'Y' : 'R';
+  if (findWin(g, q)) return -100000 - depth;    // the other player just won: bad for p (sooner is worse)
+  const cols = open(g);
+  if (!cols.length) return 0;
+  if (depth === 0) return judge(g, p);
+  let best = -Infinity;
+  for (const c of cols) {
+    const r = lowestEmpty(g, c); g[r][c] = p;
+    const s = -negamax(g, depth - 1, -b, -a, q);
+    g[r][c] = '';
+    if (s > best) best = s;
+    if (s > a) a = s;
+    if (a >= b) break;
+  }
+  return best;
+}
+
+function judge(g, p) {
+  const q = p === 'R' ? 'Y' : 'R';
+  let s = 0;
+  for (let r = 0; r < ROWS; r++) { if (g[r][3] === p) s += 3; if (g[r][3] === q) s -= 3; }
+  const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) for (const [dr, dc] of dirs) {
+    const er = r + dr * 3, ec = c + dc * 3;
+    if (er < 0 || er >= ROWS || ec < 0 || ec >= COLS) continue;
+    let mine = 0, theirs = 0;
+    for (let k = 0; k < 4; k++) { const v = g[r + dr * k][c + dc * k]; if (v === p) mine++; else if (v === q) theirs++; }
+    if (theirs === 0) s += mine === 3 ? 5 : mine === 2 ? 2 : 0;
+    if (mine === 0) s -= theirs === 3 ? 4 : 0;
+  }
+  return s;
+}
+</script>
+</body>
+</html>
