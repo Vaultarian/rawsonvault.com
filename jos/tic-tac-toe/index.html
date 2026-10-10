@@ -41,6 +41,9 @@
     .cell.x { color:#e5533d; }
     .cell.o { color:#1e88e5; }
     .cell.pop { animation:pop .25s ease-out; }
+    .cell svg { width:88%; height:88%; overflow:visible; }
+    .cell.painted { animation:none; }
+    .brush { font-size:30px; pointer-events:none; }
     .cell.win { background:#fff59d; animation:wiggle .5s ease-in-out 2; }
     @keyframes pop { 0% { transform:scale(.2); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
     @keyframes wiggle { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-8deg); } 75% { transform:rotate(8deg); } }
@@ -69,6 +72,13 @@
 <div id="game">
   <div id="turn"></div>
   <div id="grid"></div>
+  <!-- the rough paint edge: wobbles the outline of every brush stroke -->
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </svg>
   <div id="score">
     <div class="tally x"><b id="sx">0</b><span id="nx">X</span></div>
     <div class="tally"><b id="sd">0</b>Draws</div>
@@ -142,8 +152,8 @@ function humanMove(i) {
 function place(i) {
   board[i] = turn;
   const c = document.querySelector(`.cell[data-i="${i}"]`);
-  c.textContent = turn;
-  c.classList.add(turn.toLowerCase(), 'pop');
+  c.classList.add(turn.toLowerCase(), 'painted');
+  paint(c, turn);
   const line = winner(board);
   if (line) return finish(line);
   if (board.every(Boolean)) return finish(null);
@@ -167,6 +177,96 @@ function finish(line) {
     $('turn').textContent = '🤝 It\'s a draw!';
   }
   showScore();
+}
+
+/* ---------- the paintbrush ---------- */
+// Each mark is made of brush strokes. A stroke = a thick red/blue line with a rough edge,
+// plus thin white streaks inside it (the dry bits of the brush).
+// The 🖌️ moves along the line while it is drawn.
+const RED = '#e53935', BLUE = '#1e88e5';
+const NS = 'http://www.w3.org/2000/svg';
+
+function oPath() {
+  // goes round 1.15 times, a little wonky, so the end overlaps the start like a real brush
+  const pts = [];
+  for (let k = 0; k <= 120; k++) {
+    const a = (-110 + k * 3.45) * Math.PI / 180;
+    const wob = 1 + 0.04 * Math.sin(k * 0.12);
+    pts.push(`${(50 + 30 * wob * Math.cos(a)).toFixed(1)} ${(52 + 34 * wob * Math.sin(a)).toFixed(1)}`);
+  }
+  return 'M' + pts.join(' L');
+}
+
+const STROKES = {
+  X: [ { d: 'M12 12 Q46 46 88 90', w: 21, ms: 260, streaks: false },
+       { d: 'M86 8 Q55 48 14 92', w: 21, ms: 260, streaks: false } ],
+  O: [ { d: oPath(), w: 19, ms: 520, streaks: true } ],
+};
+
+function line(svg, d, colour, width, extra) {
+  const el = document.createElementNS(NS, 'path');
+  el.setAttribute('d', d);
+  el.setAttribute('fill', 'none');
+  el.setAttribute('stroke', colour);
+  el.setAttribute('stroke-width', width);
+  el.setAttribute('stroke-linecap', 'butt');
+  el.setAttribute('stroke-linejoin', 'round');
+  Object.entries(extra || {}).forEach(([k, v]) => el.setAttribute(k, v));
+  svg.appendChild(el);
+  return el;
+}
+
+function paint(cell, mark) {
+  const colour = mark === 'X' ? RED : BLUE;
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('filter', 'url(#rough)');
+  svg.appendChild(g);
+  cell.innerHTML = '';
+  cell.appendChild(svg);
+
+  const brush = document.createElementNS(NS, 'text');
+  brush.setAttribute('class', 'brush');
+  brush.textContent = '🖌️';
+
+  let delay = 0;
+  STROKES[mark].forEach(st => {
+    const main = line(g, st.d, colour, st.w);
+    // white streaks, slightly off the middle, broken up into dashes
+    const streaks = !st.streaks ? [] : [
+      line(g, st.d, '#fff', 1.4, { transform: 'translate(3 -1)', 'stroke-dasharray': '0 60 70 300' }),
+      line(g, st.d, '#fff', 1.0, { transform: 'translate(5 -2)', 'stroke-dasharray': '0 70 55 300' }),
+    ];
+    const len = main.getTotalLength();
+    [main, ...streaks].forEach(el => { el.style.strokeDasharray = el === main ? len : el.getAttribute('stroke-dasharray');
+                                    el.style.opacity = 0; });
+    main.style.strokeDashoffset = len;
+    // white streaks use a mask-like trick: show them only once the paint has reached them
+    setTimeout(() => animateStroke(svg, brush, main, streaks, len, st.ms), delay);
+    delay += st.ms + 60;
+  });
+  setTimeout(() => brush.remove(), delay + 120);
+}
+
+function animateStroke(svg, brush, main, streaks, len, ms) {
+  svg.appendChild(brush);
+  main.style.opacity = 1;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - start) / ms);
+    const e = 1 - Math.pow(1 - t, 2);              // fast at the start, slows at the end
+    main.style.strokeDashoffset = len * (1 - e);
+    streaks.forEach(s => s.style.opacity = e > 0.85 ? 1 : 0);
+    const p = main.getPointAtLength(len * e);
+    const shake = Math.sin(now / 18) * 2;           // vigorous!
+    brush.setAttribute('x', p.x + shake);
+    brush.setAttribute('y', p.y + 4);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  // if the tab was hidden mid-stroke, make sure the mark still ends up finished
+  setTimeout(() => { main.style.strokeDashoffset = 0; streaks.forEach(s => s.style.opacity = 1); }, ms + 50);
 }
 
 /* ---------- the computer ---------- */
