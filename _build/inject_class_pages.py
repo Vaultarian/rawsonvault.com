@@ -44,7 +44,7 @@ HOME = Path.home()
 sys.path.insert(0, str(HOME / "AlfredOS/scripts"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from school_week import week_for, monday_of, term_for  # noqa: E402
+from school_week import week_for, monday_of, term_for, break_reason  # noqa: E402
 # Shared with the Daily Print injector on purpose: two parsers of the same log
 # format would drift, and the pages would quietly disagree with each other.
 from inject_daily_print import field, strip_md, tidy, pdf_links, page_count  # noqa: E402
@@ -125,6 +125,16 @@ ICON_VIDEO = (
 # site is a place to go, and the two should not look identical.
 VIDEO_URL = re.compile(r"(youtube\.com/|youtu\.be/|vimeo\.com/)", re.I)
 
+# Links to pages on THIS site (e.g. https://rawsonvault.com/spreadsheets/) are
+# internal, so they render as a document row whose icon is the Vault ring logo
+# rather than as a plain text link: students see at a glance that it stays on
+# rawsonvault.com. Inlined as a 44px PNG data URI (4 KB) so the class pages carry
+# it with no extra file to publish; the full SVG logo is 470 KB. Added
+# 2026-10-08 for the Google Spreadsheets clips beside the Y9 pendulum packet.
+INTERNAL_URL = re.compile(r"^https?://(www\.)?rawsonvault\.com/", re.I)
+ICON_VAULT = ('<img class="doc-ico" width="22" height="22" alt="" '
+              'src="data:image/png;base64,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">')
+
 # Slides: hand-built, not copied from images/third-party/google-slides.svg --
 # that swap (2026-09-20) turned out to have the exact same bug as the first
 # ICON_VIDEO attempt (a line-split silently dropped a required path-data
@@ -188,7 +198,30 @@ def pair_docs(docs):
         # it with "answer key" appended. Prefer the sheet's.
         if not is_key or slot["label"] is None:
             slot["label"] = lbl or base
+    # Second pass, by LABEL (Alex, 2026-10-10): a key whose filename does not
+    # follow <stem>-answers -- the Isaac challenge keys are "... - Alfred v2.pdf"
+    # -- still pairs when its Publish: label is the sheet's label plus
+    # ", ANSWER" / "--- answer key" / "answers". It joins that sheet's row as
+    # the key icon instead of taking a row of its own.
+    by_label = {(seen[b]["label"] or "").strip().lower(): b for b in rows
+                if seen[b]["sheet"] and not seen[b]["key"]}
+    for b in list(rows):
+        slot = seen[b]
+        if not slot["sheet"] or slot["key"]:
+            continue
+        m = LABEL_KEY_SUFFIX.search(slot["label"] or "")
+        if not m:
+            continue
+        target = by_label.get((slot["label"][:m.start()]).strip().lower())
+        if target and target != b:
+            seen[target]["key"] = slot["sheet"]
+            by_label.pop((seen[target]["label"] or "").strip().lower(), None)
+            rows.remove(b)
     return [(seen[b]["label"], seen[b]["sheet"], seen[b]["key"]) for b in rows]
+
+
+LABEL_KEY_SUFFIX = re.compile(
+    r"\s*(?:,|---|—|–|-)\s*(?:answer key|answers?|mark ?scheme)\s*$", re.I)
 
 # Markdown links in Publish: become links on the class page.
 #
@@ -265,6 +298,10 @@ def parse_log(path):
 def week_label(monday):
     """'Week A · 25–29 August' -- the range covers the teaching week only."""
     wk = week_for(monday)
+    # A dated entry inside a half-term break is holiday work, not a lesson, so
+    # its week is headed by what it is (Alex, 2026-10-10: the CS 11 Isaac set).
+    if not wk and "half term" in (break_reason(monday) or "").lower():
+        return "Half Term Homework"
     friday = monday + timedelta(days=4)
     if monday.month == friday.month:
         span = f"{monday.strftime('%-d')}–{friday.strftime(MONTHS)}"
@@ -883,7 +920,9 @@ def render_class(name, subtitle, weeks):
             # the key; the suffix is stripped so sheet and key share one row.
             drives = [(u, lbl) for u, lbl in webs if DRIVE_URL.search(u)]
             webs = [(u, lbl) for u, lbl in webs if not DRIVE_URL.search(u)]
-            if en["docs"] or vids or drives:
+            internal = [(u, lbl) for u, lbl in webs if INTERNAL_URL.search(u)]
+            webs = [(u, lbl) for u, lbl in webs if not INTERNAL_URL.search(u)]
+            if en["docs"] or vids or drives or internal:
                 # Group by label, not by item. Two Publish: entries that share
                 # the EXACT same label text land on one row with both icons,
                 # in the order they were listed -- this is how a lesson gets
@@ -929,6 +968,10 @@ def render_class(name, subtitle, weeks):
                     _add(base, f'<a class="doc-link" href="{e(u)}" target="_blank"'
                                f' rel="noopener noreferrer" title="{e(tip)}"'
                                f' aria-label="{e(base)} — {e(tip)}">{icon}</a>')
+                for u, lbl in internal:
+                    _add(lbl, f'<a class="doc-link" href="{e(u)}"'
+                              f' title="On rawsonvault.com"'
+                              f' aria-label="{e(lbl)} — on rawsonvault.com">{ICON_VAULT}</a>')
                 for u, lbl in vids:
                     _add(lbl, f'<a class="doc-link" href="{e(u)}" target="_blank"'
                               f' rel="noopener noreferrer" title="Video"'
