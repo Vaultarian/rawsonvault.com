@@ -33,9 +33,9 @@
 
     #game { display:none; min-height:100vh; padding:60px 16px 20px; flex-direction:column; align-items:center; gap:18px; }
     #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; }
-    #grid { position:relative; display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; background:#223;
+    #grid { position:relative; display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:repeat(3, 1fr); gap:10px; background:#223;
             padding:10px; border-radius:18px; width:min(420px, 92vw); aspect-ratio:1; }
-    .cell { background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    .cell { background:#fff; border-radius:10px; min-width:0; min-height:0; overflow:hidden; line-height:1; display:flex; align-items:center; justify-content:center;
             font-family:'Fredoka One',cursive; font-size:clamp(3rem, 16vw, 6.5rem); cursor:pointer; }
     .cell:hover:empty { background:#f3f8ff; }
     .cell.x { color:#e5533d; }
