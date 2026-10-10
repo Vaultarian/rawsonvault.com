@@ -39,6 +39,13 @@
                 background:#fff; padding:6px 16px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
     #speedRow input { width:180px; accent-color:#e53935; }
     #speedVal { min-width:3ch; }
+    #clock { display:none; font-family:'Fredoka One',cursive; font-size:1.3rem; color:#c62828; background:#fff;
+             padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); animation:tick 1s steps(1) infinite; }
+    @keyframes tick { 50% { transform:scale(1.08); } }
+    .nokings { position:relative; display:none; font-size:1.6rem; line-height:1; }
+    .nokings::before, .nokings::after { content:''; position:absolute; left:-10%; top:46%; width:120%; height:4px;
+                      background:#e53935; border-radius:2px; box-shadow:0 0 0 1px #fff; transform:rotate(45deg); }
+    .nokings::after { transform:rotate(-45deg); }
     #hint { height:1.4rem; font-weight:900; color:#c62828; }
     .tray { width:min(560px, 94vw); height:30px; display:flex; gap:3px; align-items:center; }
     .tray .mini { width:24px; height:24px; border-radius:50%; border:2px solid rgba(0,0,0,.35); animation:drop .3s ease-out; }
@@ -105,7 +112,8 @@
 
 <div id="game">
   <div id="turn"></div>
-  <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span></div>
+  <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span> <span class="nokings" id="noKings" title="5 or fewer checkers left: no more kings">🫅</span></div>
+  <div id="clock"></div>
   <div class="tray" id="trayTop"></div>
   <div id="board"><div id="banner"><span></span></div></div>
   <div class="tray" id="trayBottom"></div>
@@ -131,6 +139,9 @@ let chain = null;          // during a double jump: the checker that must keep j
 let picked = null;         // the checker you clicked on
 let quietMoves = 0;        // moves in a row with no jump and no king made: 80 = a draw
 let nextId = 0;
+let lastJump = 0;          // robot vs robot: when the last checker was taken
+let noKings = false;       // robot vs robot: 5 or fewer checkers left, so nobody can become a king
+const piecesLeft = b => b.flat().filter(Boolean).length;
 let speed = 1;             // robot vs robot: 1 = normal, 10 = super fast
 const fast = ms => ms / speed;
 $('speed').oninput = e => {
@@ -177,6 +188,7 @@ function newRound() {
     dark(r, c) && r < 3 ? { p: 'B', king: false, id: nextId++ } :
     dark(r, c) && r > 4 ? { p: 'R', king: false, id: nextId++ } : null));
   turn = starter; over = false; chain = null; picked = null; quietMoves = 0;
+  lastJump = performance.now(); noKings = false; updateNoKings(); $('clock').style.display = 'none';
   $('trayTop').innerHTML = ''; $('trayBottom').innerHTML = '';
   $('banner').style.display = 'none';
   boardEl.querySelectorAll('.sq, .piece').forEach(e => e.remove());
@@ -244,7 +256,7 @@ function showScore() { $('sr').textContent = score.R; $('sb').textContent = scor
 function startTurn() {
   const moves = movesFor(board, turn, chain);
   if (!moves.length) return finish(other(turn));          // stuck (or no checkers left): the other player wins
-  if (quietMoves >= 60) return finish(null);
+  if (quietMoves >= 60 && mode !== WATCH) return finish(null);   // robot vs robot uses the no-jump clock instead
   markMine(moves);
   if (computerTurn()) { $('hint').textContent = ''; return robotThink(); }
   const colour = turn === 'R' ? '#e53935' : '#223';
@@ -281,7 +293,8 @@ function doMove(m) {
         mini.style.background = victim.p === 'R' ? '#e53935' : '#222';
         $(victim.p === 'R' ? 'trayTop' : 'trayBottom').appendChild(mini);   // goes to the pile of the player who took it
       }
-      if (!pc.king && ((pc.p === 'R' && m.tr === 0) || (pc.p === 'B' && m.tr === 7))) {
+      if (m.cap) { lastJump = performance.now(); updateNoKings(); }
+      if (!pc.king && !noKings && ((pc.p === 'R' && m.tr === 0) || (pc.p === 'B' && m.tr === 7))) {
         pc.king = true; kinged = true;
         el.querySelector('.disc').textContent = '👑';
         el.classList.add('crowned');
@@ -302,8 +315,10 @@ async function play(m) {
   startTurn();
 }
 
-function finish(winner) {
+function finish(winner, why) {
+  if (over) return;
   over = true;
+  $('clock').style.display = 'none';
   boardEl.querySelectorAll('.piece').forEach(e => e.classList.remove('mine'));
   $('hint').textContent = '';
   const b = $('banner'), span = b.querySelector('span');
@@ -315,11 +330,27 @@ function finish(winner) {
   } else {
     score.D++;
     $('turn').textContent = '🤝 It\'s a draw!';
-    span.textContent = 'Draw!'; span.style.color = '#fff';
+    span.textContent = why || 'Draw!'; span.style.color = '#fff';
   }
   b.style.display = 'flex';
   showScore();
 }
+
+/* ---------- robot vs robot: no kings, and the no-jump clock ---------- */
+function updateNoKings() {
+  noKings = mode === WATCH && board && piecesLeft(board) <= 5;
+  $('noKings').style.display = noKings ? 'inline-block' : 'none';
+}
+// 15 seconds with no jump: a clock counts down 15 more. Still no jump at 0 = a draw.
+setInterval(() => {
+  if (mode !== WATCH || over || $('game').style.display !== 'flex') return;
+  const quiet = (performance.now() - lastJump) / 1000;
+  const left = Math.ceil(30 - quiet);
+  if (quiet < 15) { $('clock').style.display = 'none'; return; }
+  $('clock').style.display = 'block';
+  $('clock').textContent = `⏰ No jumps! Draw in ${left}`;
+  if (left <= 0) finish(null, 'No jumps: Draw!');
+}, 200);
 
 /* ---------- clicking and dragging ---------- */
 let drag = null;
@@ -405,13 +436,13 @@ function robotThink() {
         if (!still()) return;
         const plan = pickTurn();                            // the whole turn, every jump in it
         for (let k = 0; k < plan.length; k++) {
-          if (r !== round) return;
+          if (r !== round || over) return;
           const m = plan[k];
           const kinged = await doMove(m);
           if (k < plan.length - 1) await new Promise(ok => setTimeout(ok, fast(350)));
           if (kinged) break;
         }
-        if (r !== round) return;
+        if (r !== round || over) return;
         chain = null; turn = other(turn); startTurn();
       }, fast(wait));
     }
@@ -443,7 +474,7 @@ function apply(b, m) {
   const pc = n[m.fr][m.fc];
   n[m.tr][m.tc] = pc; n[m.fr][m.fc] = null;
   if (m.cap) n[m.cap[0]][m.cap[1]] = null;
-  if ((pc.p === 'R' && m.tr === 0) || (pc.p === 'B' && m.tr === 7)) pc.king = true;
+  if (!noKings && ((pc.p === 'R' && m.tr === 0) || (pc.p === 'B' && m.tr === 7))) pc.king = true;
   return n;
 }
 const applyTurn = (b, t) => t.reduce(apply, b);
@@ -455,11 +486,14 @@ function judge(b, p) {
   for (const pc of all) {
     let v = pc.king ? 170 : 100;
     if (pc.p === p) mine += v; else theirs += v;
-    if (!pc.king) v += (pc.p === 'R' ? 7 - pc.r : pc.r) * 4;   // closer to becoming a king
+    if (!pc.king && !noKings) v += (pc.p === 'R' ? 7 - pc.r : pc.r) * (mode === WATCH ? 1 : 4);   // closer to becoming a king
     if (pc.c >= 2 && pc.c <= 5 && pc.r >= 2 && pc.r <= 5) v += 5;   // the middle is strong
-    if (pc.king) {                                         // kings hunt: closer to the nearest enemy is better
+    // hunting: closer to the nearest enemy is better. Kings always hunt. In robot vs robot
+    // the side whose turn it is wants every checker in the fight, so they attack instead of running.
+    const hunts = pc.king || (mode === WATCH && pc.p === p);
+    if (hunts) {
       const near = Math.min(...all.filter(q => q.p !== pc.p).map(q => Math.max(Math.abs(q.r - pc.r), Math.abs(q.c - pc.c))), 8);
-      v -= near * 6;
+      v -= near * (noKings ? 10 : 6);
     }
     s += pc.p === p ? v : -v;
   }
