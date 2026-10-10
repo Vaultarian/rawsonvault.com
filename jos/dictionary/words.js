@@ -1,87 +1,52 @@
 const DICTIONARY_WORDS = [
-  {
-    "word": "paintbrush",
-    "def": "A tool with bristles that paints something onto a screen or a picture. Jos uses it for the \ud83d\udd8c\ufe0f that paints the X and O.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "diagonal",
-    "def": "A line that goes corner to corner, not straight up or straight across.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "physics",
-    "def": "The rules for how things move in real life \u2014 falling, bouncing, speeding up.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "bounce",
-    "def": "To hit something and spring back off it, smaller each time.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "robot",
-    "def": "A computer player that makes its own moves, so you can watch it play without playing yourself.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "checker",
-    "def": "A round piece you move around a board \u2014 in Checkers, or dropped into Connect 4.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "winner",
-    "def": "The player who finishes first or wins the game.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "blunder",
-    "def": "A chess move that is a big mistake and loses a lot of your advantage.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "brilliant",
-    "def": "The best kind of chess move \u2014 giving something up on purpose because it makes your position better.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "excellent",
-    "def": "A strong move that keeps your position solid.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "forced",
-    "def": "When there is only one move you are allowed to make.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "inaccuracy",
-    "def": "A move that is a little bit weak, not a full mistake.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "classic",
-    "def": "An old game that lots of people still play, like Chess or Checkers.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "elevator",
-    "def": "A lift that goes up and down \u2014 in Jos's game, from the deep sea to the Moon.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "dictionary",
-    "def": "A list of words, each one with what it means.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "transition",
-    "def": "The way one screen changes into the next one \u2014 a slide, a fade, a wipe.",
-    "date": "2026-10-10"
-  },
-  {
-    "word": "animation",
-    "def": "A picture that moves, made by showing lots of slightly different pictures very fast.",
-    "date": "2026-10-10"
-  }
+  { "word": "website", "def": "A page, or a set of pages, that lives on the internet.", "date": "2026-10-10" },
+  { "word": "rename", "def": "To give something a new name instead of its old one.", "date": "2026-10-10" },
+  { "word": "classic", "def": "An old game that lots of people still play, like Chess or Checkers.", "date": "2026-10-10" },
+  { "word": "American", "def": "From the United States — Jos asked for American names for some games, like Checkers instead of Draughts.", "date": "2026-10-10" },
+  { "word": "caterpillar", "def": "Jos's American name for the game Dots and Boxes.", "date": "2026-10-10" },
+  { "word": "animation", "def": "A picture that moves, made by showing lots of slightly different pictures very fast.", "date": "2026-10-10" },
+  { "word": "paintbrush", "def": "A tool with bristles that paints something — Jos uses a 🖌️ emoji that paints the X and O.", "date": "2026-10-10" },
+  { "word": "vigorously", "def": "With a lot of energy and force. Jos said the paintbrush should paint \"vigurusly.\"", "date": "2026-10-10" },
+  { "word": "diagonal", "def": "A line that goes corner to corner, not straight up or straight across.", "date": "2026-10-10" },
+  { "word": "physics", "def": "The rules for how things move in real life — falling, bouncing, speeding up.", "date": "2026-10-10" },
+  { "word": "checker", "def": "A round piece you move around a board — in Checkers, or dropped into Connect 4.", "date": "2026-10-10" },
+  { "word": "bounce", "def": "To hit something and spring back off it, smaller each time.", "date": "2026-10-10" },
+  { "word": "siding", "def": "The wall at the edge of a column. Jos said \"sighting\" when he meant the checker hitting the siding.", "date": "2026-10-10" },
+  { "word": "robot", "def": "A computer player that makes its own moves, so you can watch it play without playing yourself.", "date": "2026-10-10" },
+  { "word": "attack", "def": "To go after the other player's pieces, instead of just running for home.", "date": "2026-10-10" },
+  { "word": "clock", "def": "Something that counts down. Jos's games clock counts 15 seconds, then another 15, before a draw.", "date": "2026-10-10" },
+  { "word": "countdown", "def": "Numbers going down to zero before something happens.", "date": "2026-10-10" },
+  { "word": "draw", "def": "A game that ends with nobody winning.", "date": "2026-10-10" },
+  { "word": "king", "def": "The most important piece on a chess board. If it can't escape, that's checkmate.", "date": "2026-10-10" },
+  { "word": "queen", "def": "The most powerful piece on a chess board — it can move in any direction, any distance.", "date": "2026-10-10" },
+  { "word": "thinking", "def": "What the robot is doing before it moves — Jos's games type out \"Robot thinking...\" on screen.", "date": "2026-10-10" },
+  { "word": "typing", "def": "Pressing keys, or letters appearing one at a time like someone is pressing them.", "date": "2026-10-10" },
+  { "word": "winner", "def": "The player who finishes first or wins the game.", "date": "2026-10-10" },
+  { "word": "review", "def": "Going back through a finished game to see how good each move was.", "date": "2026-10-10" },
+  { "word": "symbol", "def": "A small picture or mark that stands for something, like ⭐ standing for \"Best move.\"", "date": "2026-10-10" },
+  { "word": "logo", "def": "A small picture that stands for a brand or a website, like chess.com's move icons.", "date": "2026-10-10" },
+  { "word": "brilliant", "def": "The best kind of chess move — giving something up on purpose because it makes your position better.", "date": "2026-10-10" },
+  { "word": "great", "def": "A chess move at a critical turning point — often the only good move there was.", "date": "2026-10-10" },
+  { "word": "best", "def": "The top move the computer can find in a position.", "date": "2026-10-10" },
+  { "word": "excellent", "def": "A strong chess move that keeps your position solid.", "date": "2026-10-10" },
+  { "word": "good", "def": "A decent chess move, even if it isn't the very best one.", "date": "2026-10-10" },
+  { "word": "book", "def": "A standard opening move that chess players already know well.", "date": "2026-10-10" },
+  { "word": "forced", "def": "When there is only one move you are allowed to make.", "date": "2026-10-10" },
+  { "word": "interesting", "def": "A sharp, risky chess move — exciting, but not always safe.", "date": "2026-10-10" },
+  { "word": "inaccuracy", "def": "A chess move that is a little bit weak, not a full mistake.", "date": "2026-10-10" },
+  { "word": "mistake", "def": "A clear chess error that costs you some of your advantage.", "date": "2026-10-10" },
+  { "word": "miss", "def": "Not taking a winning chance when it was there.", "date": "2026-10-10" },
+  { "word": "blunder", "def": "A chess move that is a big mistake and loses a lot of your advantage.", "date": "2026-10-10" },
+  { "word": "check", "def": "When the king is under direct attack and has to get out of it.", "date": "2026-10-10" },
+  { "word": "checkmate", "def": "When the king is trapped and cannot escape — the game is over.", "date": "2026-10-10" },
+  { "word": "capture", "def": "Taking an enemy piece or pawn.", "date": "2026-10-10" },
+  { "word": "castle", "def": "A special chess move where the king and a rook swap places to get the king safe.", "date": "2026-10-10" },
+  { "word": "promotion", "def": "When a pawn reaches the far end of the board and turns into a queen (or another piece).", "date": "2026-10-10" },
+  { "word": "stalemate", "def": "When a player has no legal move but their king isn't in check — the game is a draw.", "date": "2026-10-10" },
+  { "word": "dictionary", "def": "A list of words, each one with what it means.", "date": "2026-10-10" },
+  { "word": "transition", "def": "The way one screen changes into the next — a slide, a fade, a wipe. Jos said \"transaction\" when he meant this.", "date": "2026-10-10" },
+  { "word": "fade", "def": "To slowly appear or disappear instead of popping on or off suddenly.", "date": "2026-10-10" },
+  { "word": "ultrasonic", "def": "A word Jos used tonight — usually means a sound too high-pitched for humans to hear. He was describing an idea he found hard to put into words, so it may not be exactly what he meant.", "date": "2026-10-10" },
+  { "word": "elevator", "def": "A lift that goes up and down — in Jos's game, from the deep sea to the Moon.", "date": "2026-10-10" },
+  { "word": "gameover", "def": "Jos's own word for ending a session with Carl.", "date": "2026-10-10" }
 ];
