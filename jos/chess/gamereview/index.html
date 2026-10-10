@@ -36,8 +36,8 @@
              font-size:clamp(1.8rem, 8.5vw, 3.4rem); line-height:1; z-index:2; }
     .piece.w { color:#fff; text-shadow:0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 2px #000, 0 3px 2px rgba(0,0,0,.35); }
     .piece.b { color:#1d1d1d; text-shadow:0 0 1px #fff, 0 3px 2px rgba(0,0,0,.3); }
-    .badge { position:absolute; width:6%; height:6%; border-radius:50%; background:#fff; z-index:5; display:flex;
-             align-items:center; justify-content:center; font-size:clamp(.6rem, 2.4vw, 1rem); box-shadow:0 2px 6px rgba(0,0,0,.35);
+    .badge { position:absolute; width:6.5%; height:6.5%; z-index:5; display:flex;
+             align-items:center; justify-content:center; font-size:clamp(.6rem, 2.6vw, 1.15rem); filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));
              animation:pop .3s ease-out; }
     @keyframes pop { 0% { transform:scale(.3); } 70% { transform:scale(1.2); } 100% { transform:scale(1); } }
     #nav { display:flex; gap:10px; margin-top:10px; }
@@ -50,12 +50,20 @@
     #progress div { height:100%; width:0; background:#3d9595; transition:width .2s; }
     #counts { width:100%; border-collapse:collapse; margin:6px 0 10px; font-weight:800; }
     #counts td { padding:2px 6px; border-bottom:1px solid #eef1f4; }
-    #counts td:nth-child(2), #counts td:nth-child(3) { text-align:center; width:80px; font-family:'Fredoka One',cursive; font-size:1.1rem; }
+    #counts td { border-bottom:none; padding:4px 6px; }
+    #counts td.n { text-align:center; width:70px; font-family:'Fredoka One',cursive; font-size:1.35rem; }
+    #counts td.i { text-align:center; width:44px; font-size:1.1rem; }
+    #counts tr.head td { font-family:'Fredoka One',cursive; font-size:.95rem; color:#667; text-align:center; }
     #moves { position:relative; max-height:340px; overflow-y:auto; border-top:2px solid #eef1f4; }
     .mv { display:flex; gap:8px; align-items:center; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:800; }
     .mv:hover { background:#f2f6f9; }
     .mv.on { background:#fff4c2; }
-    .mv .sym { min-width:2.4em; text-align:center; font-size:1.1rem; }
+    .mv .sym { min-width:2.2em; display:flex; justify-content:center; }
+    /* the round move icons: a coloured circle with a white symbol, chess.com style */
+    .ico { display:inline-flex; align-items:center; justify-content:center; width:1.55em; height:1.55em; border-radius:50%;
+           color:#fff; font-family:'Fredoka One',cursive; font-size:1rem; line-height:1; letter-spacing:-.06em;
+           box-shadow:inset 0 -2px 0 rgba(0,0,0,.18); flex-shrink:0; }
+    .ico svg { width:62%; height:62%; fill:#fff; }
     .mv .label { margin-left:auto; font-family:'Fredoka One',cursive; white-space:nowrap; }
     .mv .eval { font-size:.8rem; opacity:.55; min-width:3.5em; text-align:right; }
   </style>
@@ -108,6 +116,12 @@ const KINDS = [
   ['forced', '▢', 'Forced', '#8a8a8a'], ['interesting', '⁉️', 'Interesting', '#c57ac9'], ['inaccuracy', '❓❗', 'Inaccuracy', '#f7c045'],
   ['mistake', '❓', 'Mistake', '#e58f2a'], ['miss', '❌', 'Miss', '#ee6b55'], ['blunder', '❓❓', 'Blunder', '#ca3431'],
 ];
+// white symbols for the round icons (drawn here, not copied from anywhere)
+const THUMB = '<svg viewBox="0 0 24 24"><path d="M2 10h4v11H2zM8 21h9.2a2 2 0 0 0 2-1.6l1.6-7.4A2 2 0 0 0 18.8 9.6H14l.8-4.2A1.8 1.8 0 0 0 13 3.2L8 9.4z"/></svg>';
+const BOOKICON = '<svg viewBox="0 0 24 24"><path d="M3 5.5C5.6 4.4 8.6 4.6 11 6v14c-2.4-1.4-5.4-1.6-8-.5zM21 5.5C18.4 4.4 15.4 4.6 13 6v14c2.4-1.4 5.4-1.6 8-.5z"/></svg>';
+const GLYPHS = { brilliant: '!!', great: '!', best: '★', excellent: THUMB, good: '✓', book: BOOKICON, forced: '→',
+                 interesting: '!?', inaccuracy: '?!', mistake: '?', miss: '✕', blunder: '??' };
+const icon = k => `<span class="ico" style="background:${KIND[k].colour}">${GLYPHS[k]}</span>`;
 const KIND = Object.fromEntries(KINDS.map(([k, sym, label, colour]) => [k, { sym, label, colour }]));
 // common first moves, for "Book"
 const BOOK = new Set(['e4', 'd4', 'c4', 'Nf3', 'e5', 'c5', 'e6', 'c6', 'd5', 'Nf6', 'Nc6', 'Nc3', 'Bc4', 'Bb5', 'd6', 'g6', 'g3', 'Bg7', 'Bg2', 'f4', 'Be7', 'Bd3', 'Be2', 'O-O', 'Nbd7', 'b6', 'a6']);
@@ -240,7 +254,7 @@ function addRow(i) {
   const d = reviewData[i], k = KIND[d.kind];
   const row = document.createElement('div');
   row.className = 'mv'; row.dataset.i = i;
-  row.innerHTML = `<span class="sym">${k.sym}</span><span>${Math.floor(i / 2) + 1}. ${d.words} <b>(${d.text})</b></span>
+  row.innerHTML = `<span class="sym">${icon(d.kind)}</span><span>${Math.floor(i / 2) + 1}. ${d.words} <b>(${d.text})</b></span>
                    <span class="label" style="color:${k.colour}">${k.label}</span><span class="eval">${d.eval}</span>`;
   row.onclick = () => show(i);
   $('moves').appendChild(row);
@@ -249,8 +263,8 @@ function done() {
   $('status').textContent = history.length ? 'Click a move, or use the buttons and the ← → keys.' : 'No moves to review.';
   const count = side => k => reviewData.filter(d => d.side === side && d.kind === k).length;
   const W = count('w'), B = count('b');
-  $('counts').innerHTML = `<tr><td></td><td>${WHO.w}</td><td>${WHO.b}</td></tr>` +
-    KINDS.map(([k, sym, label, colour]) => `<tr><td><span style="display:inline-block;width:2.4em;text-align:center">${sym}</span><span style="color:${colour}">${label}</span></td><td>${W(k)}</td><td>${B(k)}</td></tr>`).join('');
+  $('counts').innerHTML = `<tr class="head"><td></td><td>${WHO.w}</td><td></td><td>${WHO.b}</td></tr>` +
+    KINDS.map(([k, sym, label, colour]) => `<tr><td>${label}</td><td class="n" style="color:${colour}">${W(k)}</td><td class="i">${icon(k)}</td><td class="n" style="color:${colour}">${B(k)}</td></tr>`).join('');
   show(-1);
 }
 function show(i) {
@@ -264,10 +278,10 @@ function show(i) {
   sqEl(m.f).classList.add('last'); sqEl(m.t).classList.add('last');
   if (inCheck(s, s.turn)) sqEl(kingAt(s.b, s.turn)).classList.add('check');
   const [r, c] = rc(m.t), badge = document.createElement('div');
-  badge.className = 'badge'; badge.textContent = k.sym;
+  badge.className = 'badge'; badge.innerHTML = icon(d.kind);
   badge.style.left = (c * 12.5 + 8) + '%'; badge.style.top = Math.max(0, r * 12.5 - 1.5) + '%';
   boardEl.appendChild(badge);
-  $('said').innerHTML = `${d.words} (${d.text}). <span class="k" style="color:${k.colour}">${k.sym} ${k.label}!</span>`;
+  $('said').innerHTML = `${d.words} (${d.text}). <span class="k" style="color:${k.colour}">${icon(d.kind)} ${k.label}!</span>`;
   const row = document.querySelector(`.mv[data-i="${cur}"]`), list = $('moves');
   row.classList.add('on');                     // scroll the list only, not the whole page
   if (row.offsetTop < list.scrollTop) list.scrollTop = row.offsetTop;
