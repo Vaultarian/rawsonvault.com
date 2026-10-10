@@ -78,6 +78,38 @@
                    paint-order:stroke fill; animation:bannerPop .45s ease-out; }
     #banner small { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#fff; margin-top:.3rem; }
     @keyframes bannerPop { 0% { transform:scale(.3); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
+    /* checkmate: the losing king fades in at the side, then a paintbrush paints a red X over it */
+    #mateKing { position:fixed; right:24px; top:50%; transform:translateY(-50%); width:150px; height:150px; z-index:30;
+                display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .9s ease; pointer-events:none; }
+    #mateKing.show { opacity:1; }
+    #mateKing .face { font-size:120px; line-height:1; }
+    #mateKing .face.w { color:#fff; text-shadow:0 0 2px #000, 0 0 2px #000, 0 0 2px #000; }
+    #mateKing .face.b { color:#1d1d1d; text-shadow:0 0 2px #fff; }
+    #mateKing svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+    #mateKing .brush { font-size:46px; }
+    @media (max-width: 900px) { #mateKing { top:auto; bottom:90px; transform:none; width:110px; height:110px; }
+                                #mateKing .face { font-size:84px; } }
+
+    /* the game review, like chess.com */
+    #reviewBtn { display:none; background:#f4b400; color:#223; font-size:1.2rem; }
+    #review { display:none; width:min(560px, 94vw); background:#fff; border-radius:16px; box-shadow:0 4px 14px rgba(0,0,0,.12); padding:14px; }
+    #review h2 { font-family:'Fredoka One',cursive; font-weight:normal; font-size:1.6rem; margin-bottom:8px; }
+    #progress { height:12px; background:#e3e8ee; border-radius:6px; overflow:hidden; margin:6px 0 4px; }
+    #progress div { height:100%; width:0; background:#3d9595; transition:width .2s; }
+    #counts { width:100%; border-collapse:collapse; margin:6px 0 10px; font-weight:800; }
+    #counts td { padding:2px 6px; border-bottom:1px solid #eef1f4; }
+    #counts td:nth-child(2), #counts td:nth-child(3) { text-align:center; width:70px; font-family:'Fredoka One',cursive; font-size:1.1rem; }
+    #moves { position:relative; max-height:300px; overflow-y:auto; border-top:2px solid #eef1f4; }
+    .mv { display:flex; gap:8px; align-items:center; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:800; }
+    .mv:hover { background:#f2f6f9; }
+    .mv.on { background:#fff4c2; }
+    .mv .sym { min-width:2.4em; text-align:center; font-size:1.1rem; }
+    .mv .label { margin-left:auto; font-family:'Fredoka One',cursive; white-space:nowrap; }
+    .mv .eval { font-size:.8rem; opacity:.55; min-width:3.5em; text-align:right; }
+    #reviewNav { display:flex; gap:10px; justify-content:center; margin-top:10px; }
+    .badge { position:absolute; width:5.5%; height:5.5%; border-radius:50%; background:#fff; z-index:5; display:flex;
+             align-items:center; justify-content:center; font-size:clamp(.6rem, 2.4vw, 1rem); box-shadow:0 2px 6px rgba(0,0,0,.35);
+             animation:bannerPop .3s ease-out; }
     .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
     .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
              box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
@@ -108,6 +140,21 @@
   <div id="board"><div id="banner"><span></span><small></small></div></div>
   <div class="tray" id="trayBottom"></div>
   <div id="hint"></div>
+  <div id="review">
+    <h2>📋 Game review</h2>
+    <div id="reviewStatus">Reviewing...</div>
+    <div id="progress"><div></div></div>
+    <table id="counts"></table>
+    <div id="moves"></div>
+    <div id="reviewNav"><button id="prevMv">◀ Back</button><button id="nextMv">Next ▶</button></div>
+  </div>
+  <div id="mateKing"><span class="face">♚</span></div>
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </svg>
   <div id="score">
     <div class="tally"><b id="sw">0</b><span id="nw">White</span></div>
     <div class="tally"><b id="sd">0</b>Draws</div>
@@ -115,6 +162,7 @@
   </div>
   <div class="row">
     <button id="again" style="background:#3d9595">New round</button>
+    <button id="reviewBtn">📋 Review game</button>
     <button id="change" style="background:#fff;color:#223">Change players</button>
   </div>
 </div>
@@ -129,6 +177,7 @@ const $ = id => document.getElementById(id);
 const boardEl = $('board');
 const other = c => c === 'w' ? 'b' : 'w';
 let mode = 0, round = 0, st, over, starter = 'w', score = { w: 0, b: 0, d: 0 };
+let history = [], reviewing = false, reviewData = [], reviewAt = -1;
 let picked = null, nextId = 0, ids = [], speed = 1, lastCapture = 0;
 const fast = ms => ms / speed;
 
@@ -284,7 +333,8 @@ function notEnough(b) {
 /* ---------- drawing the board ---------- */
 function newRound() {
   round++;
-  st = startPosition(); over = false; picked = null;
+  st = startPosition(); over = false; picked = null; history = []; reviewing = false;
+  $('review').style.display = 'none'; $('reviewBtn').style.display = 'none'; hideMateKing();
   lastCapture = performance.now();
   $('trayTop').innerHTML = ''; $('trayBottom').innerHTML = ''; $('clock').style.display = 'none';
   $('banner').style.display = 'none';
@@ -363,6 +413,7 @@ function play(m) {
       const [rf, rt] = m.castle === 'K' ? [at(row, 7), at(row, 5)] : [at(row, 0), at(row, 3)];
       placeEl(pieceEl(rf), rt); ids[rt] = ids[rf]; ids[rf] = null;
     }
+    history.push({ s: st, m });                       // remembered for the review
     st = apply(st, m);
     setTimeout(() => {
       if (m.promo) { el.textContent = GLYPH[m.promo]; el.classList.add('promoted'); }
@@ -395,7 +446,215 @@ function finish(winner, why) {
   b.querySelector('small').textContent = why;
   b.style.display = 'flex';
   showScore();
+  if (why === 'Checkmate!') showMateKing(other(winner));
+  if (history.length) $('reviewBtn').style.display = 'inline-block';
 }
+
+/* ---------- checkmate: the king gets crossed out ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+function hideMateKing() { const mk = $('mateKing'); mk.className = ''; mk.querySelector('svg')?.remove(); }
+function showMateKing(loser) {
+  const mk = $('mateKing'), r = round;
+  hideMateKing();
+  mk.querySelector('.face').className = 'face ' + loser;
+  mk.className = 'show';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('filter', 'url(#rough)');
+  svg.appendChild(g); mk.appendChild(svg);
+  const brush = document.createElementNS(NS, 'text');
+  brush.setAttribute('class', 'brush'); brush.textContent = '🖌️';
+  ['M10 10 Q48 46 92 92', 'M90 8 Q55 48 8 94'].forEach((d, k) => setTimeout(() => {
+    if (r !== round) return;
+    const line = document.createElementNS(NS, 'path');
+    Object.entries({ d, fill: 'none', stroke: '#e53935', 'stroke-width': 13 }).forEach(([a, v]) => line.setAttribute(a, v));
+    g.appendChild(line);
+    const len = line.getTotalLength();
+    line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+    svg.appendChild(brush);
+    const start = performance.now(), ms = 380;
+    (function step(now) {
+      const t = Math.min(1, (now - start) / ms), e = 1 - Math.pow(1 - t, 2);
+      line.style.strokeDashoffset = len * (1 - e);
+      const pt = line.getPointAtLength(len * e), shake = Math.sin(now / 18) * 2;
+      brush.setAttribute('x', pt.x + shake); brush.setAttribute('y', pt.y + 4);
+      if (t < 1) requestAnimationFrame(step);
+    })(start);
+    setTimeout(() => { line.style.strokeDashoffset = 0; }, ms + 50);
+  }, 1000 + k * 480));
+  setTimeout(() => brush.remove(), 1000 + 2 * 480 + 200);
+}
+
+/* ---------- the game review ----------
+   For every move, the robot's brain looks at ALL the moves that were possible and scores them.
+   Comparing your move with the best one says how good it was:
+     lost almost nothing = Best, a bit = Excellent / Good, more = Inaccuracy / Mistake / Blunder.
+   Points are in "centipawns": 100 = one pawn. */
+const KINDS = [
+  ['brilliant', '‼️', 'Brilliant', '#1baca6'], ['great', '❗', 'Great', '#5b8bb0'], ['best', '⭐', 'Best', '#81b64c'],
+  ['excellent', '👍', 'Excellent', '#81b64c'], ['good', '✅', 'Good', '#95b776'], ['book', '📖', 'Book', '#a88865'],
+  ['forced', '▢', 'Forced', '#8a8a8a'], ['interesting', '⁉️', 'Interesting', '#c57ac9'], ['inaccuracy', '❓❗', 'Inaccuracy', '#f7c045'],
+  ['mistake', '❓', 'Mistake', '#e58f2a'], ['miss', '❌', 'Miss', '#ee6b55'], ['blunder', '❓❓', 'Blunder', '#ca3431'],
+];
+const KIND = Object.fromEntries(KINDS.map(([k, sym, label, colour]) => [k, { sym, label, colour }]));
+// common first moves, for "Book"
+const BOOK = new Set(['e4', 'd4', 'c4', 'Nf3', 'e5', 'c5', 'e6', 'c6', 'd5', 'Nf6', 'Nc6', 'Nc3', 'Bc4', 'Bb5', 'd6', 'g6', 'g3', 'Bg7', 'Bg2', 'f4', 'Be7', 'Bd3', 'Be2', 'O-O', 'Nbd7', 'b6', 'a6']);
+const NAMES = { K: 'king', Q: 'queen', R: 'rook', B: 'bishop', N: 'knight', P: 'pawn' };
+const sqName = i => { const [r, c] = rc(i); return 'abcdefgh'[c] + (8 - r); };
+
+// chess notation: Nf3, exd5, O-O, e8=Q, Qh5+, Qxf7#
+function san(s, m) {
+  if (m.castle) return (m.castle === 'K' ? 'O-O' : 'O-O-O') + checkMark(s, m);
+  const kind = m.piece[1];
+  let out = '';
+  if (kind === 'P') { if (m.cap) out = 'abcdefgh'[rc(m.f)[1]]; }
+  else {
+    out = kind;
+    const rivals = legal(s).filter(o => o.t === m.t && o.f !== m.f && o.piece === m.piece);
+    if (rivals.length) {
+      const [fr, fc] = rc(m.f);
+      if (!rivals.some(o => rc(o.f)[1] === fc)) out += 'abcdefgh'[fc];
+      else if (!rivals.some(o => rc(o.f)[0] === fr)) out += 8 - fr;
+      else out += sqName(m.f);
+    }
+  }
+  if (m.cap) out += 'x';
+  out += sqName(m.t);
+  if (m.promo) out += '=' + m.promo;
+  return out + checkMark(s, m) + (m.enPassant ? ' e.p.' : '');
+}
+function checkMark(s, m) {
+  const n = apply(s, m);
+  if (!inCheck(n, n.turn)) return '';
+  return legal(n).length ? '+' : '#';
+}
+// the move in plain words
+function words(s, m) {
+  const who = s.turn === 'w' ? 'White' : 'Black', p = NAMES[m.piece[1]];
+  if (m.castle) return `${who} castled ${m.castle === 'K' ? 'kingside' : 'queenside'}`;
+  if (m.promo) return `${who} pushed a pawn to ${sqName(m.t)} and made a queen`;
+  if (m.cap) return `${who} took the ${NAMES[m.cap[1]]} on ${sqName(m.t)} with the ${p}`;
+  return `${who} moved the ${p} to ${sqName(m.t)}`;
+}
+// did the move leave a piece where it can just be taken? (a "sacrifice")
+function isSacrifice(s, m) {
+  const n = apply(s, m), me = s.turn, them = other(me);
+  const v = VALUE[(m.promo || m.piece[1])];
+  if (v < 300 || !attacked(n.b, m.t, them)) return false;
+  const gained = m.cap ? VALUE[m.cap[1]] : 0;
+  const replies = legal(n).filter(o => o.t === m.t);     // only moves that are really allowed
+  if (!replies.length) return false;
+  const cheapest = Math.min(...replies.map(o => VALUE[o.piece[1]]));
+  return v - gained >= 200 && (cheapest < v || !attacked(n.b, m.t, me));
+}
+const clampEval = v => Math.max(-2000, Math.min(2000, v));
+function evalText(v, whiteToMove) {          // v is from the mover's side; show it from White's side
+  const w = whiteToMove ? v : -v;
+  if (Math.abs(w) > 90000) return (w > 0 ? '' : '-') + 'M' + Math.ceil((100000 - Math.abs(w)) / 2);
+  return (w >= 0 ? '+' : '') + (w / 100).toFixed(1);
+}
+
+function classify(i) {
+  const { s, m } = history[i];
+  const ms = legal(s);
+  const text = san(s, m);
+  const scored = ms.map(o => ({ o, v: -search(apply(s, o), 2, -Infinity, Infinity, 1) }))
+                   .sort((a, b) => b.v - a.v);
+  const best = clampEval(scored[0].v), second = scored[1] ? clampEval(scored[1].v) : -Infinity;
+  const played = scored.find(x => x.o.f === m.f && x.o.t === m.t && x.o.promo === m.promo).v;
+  const loss = best - clampEval(played);
+  const sac = isSacrifice(s, m);
+  let kind;
+  if (ms.length === 1) kind = 'forced';
+  else if (i < 10 && BOOK.has(text.replace(/[+#]/, '')) && loss <= 40) kind = 'book';
+  else if (sac && loss <= 20 && played >= -100) kind = 'brilliant';
+  else if (loss <= 10 && best - second >= 150) kind = 'great';
+  else if (loss <= 5) kind = 'best';
+  else if (sac && loss <= 120) kind = 'interesting';
+  else if (loss <= 35) kind = 'excellent';
+  else if (loss <= 90) kind = 'good';
+  else if (best >= 250 && played <= 60) kind = 'miss';      // you had a winning chance and let it go
+  else if (loss <= 180) kind = 'inaccuracy';
+  else if (loss <= 350) kind = 'mistake';
+  else kind = 'blunder';
+  const ev = text.includes('#') ? (s.turn === 'w' ? '1-0' : '0-1') : evalText(played, s.turn === 'w');
+  return { kind, text, words: words(s, m), eval: ev, side: s.turn, m };
+}
+
+$('reviewBtn').onclick = startReview;
+function startReview() {
+  $('reviewBtn').style.display = 'none';
+  $('banner').style.display = 'none';
+  hideMateKing();
+  reviewing = true; reviewData = []; reviewAt = -1;
+  $('review').style.display = 'block';
+  $('moves').innerHTML = ''; $('counts').innerHTML = '';
+  const r = round;
+  let i = 0;
+  (function next() {                         // one move at a time, so the page keeps moving
+    if (r !== round || !reviewing) return;
+    if (i >= history.length) return reviewDone();
+    reviewData.push(classify(i));
+    addRow(i);
+    i++;
+    $('reviewStatus').textContent = `Reviewing move ${i} of ${history.length}...`;
+    $('progress').firstElementChild.style.width = (100 * i / history.length) + '%';
+    setTimeout(next, 0);
+  })();
+}
+function addRow(i) {
+  const d = reviewData[i], k = KIND[d.kind];
+  const row = document.createElement('div');
+  row.className = 'mv'; row.dataset.i = i;
+  row.innerHTML = `<span class="sym">${k.sym}</span><span>${Math.floor(i / 2) + 1}. ${d.words} <b>(${d.text})</b></span>
+                   <span class="label" style="color:${k.colour}">${k.label}</span><span class="eval">${d.eval}</span>`;
+  row.onclick = () => showMove(i);
+  $('moves').appendChild(row);
+}
+function reviewDone() {
+  $('reviewStatus').textContent = 'Click a move to see it on the board, or use the ◀ ▶ buttons and arrow keys.';
+  const count = side => k => reviewData.filter(d => d.side === side && d.kind === k).length;
+  const W = count('w'), B = count('b');
+  const whoW = mode === WATCH ? 'White robot' : mode === 0 ? 'White' : 'You', whoB = mode === WATCH ? 'Black robot' : mode === 0 ? 'Black' : 'Robot';
+  $('counts').innerHTML = `<tr><td></td><td>${whoW}</td><td>${whoB}</td></tr>` +
+    KINDS.map(([k, sym, label, colour]) => `<tr><td><span style="display:inline-block;width:2.4em;text-align:center">${sym}</span><span style="color:${colour}">${label}</span></td><td>${W(k)}</td><td>${B(k)}</td></tr>`).join('');
+  showMove(history.length - 1);
+}
+function showMove(i) {
+  if (!reviewData.length) return;
+  reviewAt = Math.max(-1, Math.min(reviewData.length - 1, i));
+  const s = reviewAt < 0 ? history[0].s : apply(history[reviewAt].s, history[reviewAt].m);
+  drawPosition(s);
+  boardEl.querySelectorAll('.sq.last, .sq.check').forEach(q => q.classList.remove('last', 'check'));
+  boardEl.querySelectorAll('.badge').forEach(b => b.remove());
+  document.querySelectorAll('.mv.on').forEach(r => r.classList.remove('on'));
+  if (reviewAt < 0) return;
+  const { m } = history[reviewAt], d = reviewData[reviewAt];
+  sqEl(m.f).classList.add('last'); sqEl(m.t).classList.add('last');
+  if (inCheck(s, s.turn)) sqEl(kingAt(s.b, s.turn)).classList.add('check');
+  const [r, c] = rc(m.t), badge = document.createElement('div');
+  badge.className = 'badge'; badge.textContent = KIND[d.kind].sym;
+  badge.style.left = (c * 12.5 + 8.5) + '%'; badge.style.top = Math.max(0, r * 12.5 - 1) + '%';
+  boardEl.appendChild(badge);
+  const row = document.querySelector(`.mv[data-i="${reviewAt}"]`);
+  row.classList.add('on');
+  const list = $('moves');                    // scroll the list only, not the whole page
+  if (row.offsetTop < list.scrollTop) list.scrollTop = row.offsetTop;
+  else if (row.offsetTop + row.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = row.offsetTop + row.offsetHeight - list.clientHeight;
+}
+function drawPosition(s) {                    // put the pieces straight onto the squares, no sliding
+  boardEl.querySelectorAll('.piece').forEach(e => e.remove());
+  ids = Array(64).fill(null);
+  s.b.forEach((p, i) => { if (p) { ids[i] = makePiece(p, i); pieceEl(i).style.transition = 'none'; } });
+}
+$('prevMv').onclick = () => showMove(reviewAt - 1);
+$('nextMv').onclick = () => showMove(reviewAt + 1);
+document.addEventListener('keydown', e => {
+  if (!reviewing || $('review').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') showMove(reviewAt - 1);
+  if (e.key === 'ArrowRight') showMove(reviewAt + 1);
+});
 
 /* ---------- clicking and dragging ---------- */
 let drag = null;
