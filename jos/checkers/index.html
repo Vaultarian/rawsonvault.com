@@ -117,7 +117,8 @@
 </div>
 
 <script>
-const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)'];
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)', 'Robot vs robot (watch)'];
+const WATCH = 3;
 const $ = id => document.getElementById(id);
 const boardEl = $('board');
 let mode = 0, round = 0, board, turn, over, starter = 'R', score = { R: 0, B: 0, D: 0 };
@@ -142,8 +143,8 @@ document.addEventListener('keydown', e => {
 function begin() {
   score = { R: 0, B: 0, D: 0 };
   starter = 'R';
-  $('nr').textContent = mode === 0 ? 'Red' : 'You (Red)';
-  $('nb').textContent = mode === 0 ? 'Black' : 'Computer (Black)';
+  $('nr').textContent = mode === 0 ? 'Red' : mode === WATCH ? 'Red robot' : 'You (Red)';
+  $('nb').textContent = mode === 0 ? 'Black' : mode === WATCH ? 'Black robot' : 'Computer (Black)';
   $('setup').style.display = 'none';
   $('game').style.display = 'flex';
   newRound();
@@ -222,14 +223,14 @@ function movesFor(b, p, only) {
 }
 
 /* ---------- turns ---------- */
-const computerTurn = () => mode > 0 && turn === 'B' && !over;
-const name = p => mode === 0 ? (p === 'R' ? 'Red' : 'Black') : (p === 'R' ? 'You' : 'Robot');
+const computerTurn = () => !over && (mode === WATCH || (mode > 0 && turn === 'B'));
+const name = p => mode === 0 ? (p === 'R' ? 'Red' : 'Black') : mode === WATCH ? (p === 'R' ? 'Red robot' : 'Black robot') : (p === 'R' ? 'You' : 'Robot');
 function showScore() { $('sr').textContent = score.R; $('sb').textContent = score.B; $('sd').textContent = score.D; }
 
 function startTurn() {
   const moves = movesFor(board, turn, chain);
   if (!moves.length) return finish(other(turn));          // stuck (or no checkers left): the other player wins
-  if (quietMoves >= 80) return finish(null);
+  if (quietMoves >= 60) return finish(null);
   markMine(moves);
   if (computerTurn()) { $('hint').textContent = ''; return robotThink(); }
   const colour = turn === 'R' ? '#e53935' : '#223';
@@ -373,15 +374,17 @@ boardEl.addEventListener('pointerup', e => {
 function robotThink() {
   const r = round;
   const still = () => r === round && computerTurn();
-  $('turn').innerHTML = '<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>';
+  const face = mode === WATCH ? (turn === 'R' ? '🔴🤖' : '⚫🤖') : '🤖';
+  $('turn').innerHTML = `<span class="robot">${face} <span id="words"></span><span class="caret"></span></span>`;
   const words = $('words'), caret = document.querySelector('#turn .caret');
-  const text = chain ? 'Jumping again...' : 'Robot thinking...';
+  const text = mode === WATCH ? `${name(turn)} thinking...` : 'Robot thinking...';
+  const typeGap = mode === WATCH ? 28 : 90, wait = mode === WATCH ? 400 : 2000;
   let i = 0;
   function next() {
     if (!still()) return;
     caret.classList.add('typing');
     words.textContent = text.slice(0, ++i);
-    if (i < text.length) setTimeout(next, 90 * (0.6 + Math.random() * 0.8));
+    if (i < text.length) setTimeout(next, typeGap * (0.6 + Math.random() * 0.8));
     else {
       caret.classList.remove('typing');
       setTimeout(async () => {
@@ -396,7 +399,7 @@ function robotThink() {
         }
         if (r !== round) return;
         chain = null; turn = other(turn); startTurn();
-      }, chain ? 600 : 2000);
+      }, wait);
     }
   }
   setTimeout(next, 500);
@@ -432,14 +435,22 @@ function apply(b, m) {
 const applyTurn = (b, t) => t.reduce(apply, b);
 
 function judge(b, p) {
-  let s = 0;
-  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-    const pc = b[r][c]; if (!pc) continue;
+  let s = 0, mine = 0, theirs = 0;
+  const all = [];
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (b[r][c]) all.push({ ...b[r][c], r, c });
+  for (const pc of all) {
     let v = pc.king ? 170 : 100;
-    if (!pc.king) v += (pc.p === 'R' ? 7 - r : r) * 4;     // closer to becoming a king
-    if (c >= 2 && c <= 5 && r >= 2 && r <= 5) v += 5;      // the middle is strong
+    if (pc.p === p) mine += v; else theirs += v;
+    if (!pc.king) v += (pc.p === 'R' ? 7 - pc.r : pc.r) * 4;   // closer to becoming a king
+    if (pc.c >= 2 && pc.c <= 5 && pc.r >= 2 && pc.r <= 5) v += 5;   // the middle is strong
+    if (pc.king) {                                         // kings hunt: closer to the nearest enemy is better
+      const near = Math.min(...all.filter(q => q.p !== pc.p).map(q => Math.max(Math.abs(q.r - pc.r), Math.abs(q.c - pc.c))), 8);
+      v -= near * 6;
+    }
     s += pc.p === p ? v : -v;
   }
+  // when you are ahead, swapping checkers is good (fewer left = easier to finish them off)
+  s += Math.sign(mine - theirs) * (24 - all.length) * 8;
   return s;
 }
 function negamax(b, depth, a, beta, p) {
@@ -455,20 +466,19 @@ function negamax(b, depth, a, beta, p) {
   }
   return best;
 }
-function pickTurn() {
-  const ts = turnsFor(board, 'B');
+function pickTurn(p = turn) {
+  const ts = turnsFor(board, p);
   if (mode === 1) {
     // easy: takes the longest jump it sees, otherwise any move at random
     const longest = Math.max(...ts.map(t => t.length));
     const pool = ts[0][0].cap ? ts.filter(t => t.length === longest) : ts;
     return pool[Math.floor(Math.random() * pool.length)];
   }
-  let best = ts[0], top = -Infinity;
-  for (const t of ts.sort(() => Math.random() - 0.5)) {    // shuffle so equal moves are not always the same
-    const s = -negamax(applyTurn(board, t), 6, -Infinity, Infinity, "R");
-    if (s > top) { top = s; best = t; }
-  }
-  return best;
+  const scored = ts.map(t => ({ t, s: -negamax(applyTurn(board, t), mode === WATCH ? 4 : 6, -Infinity, Infinity, other(p)) }));
+  const top = Math.max(...scored.map(x => x.s));
+  // robot vs robot: any move nearly as good as the best, so every game is different
+  const good = scored.filter(x => x.s >= top - (mode === WATCH ? 12 : 0));
+  return good[Math.floor(Math.random() * good.length)].t;
 }
 </script>
 </body>
