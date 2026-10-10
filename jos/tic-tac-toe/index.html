@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Tic-Tac-Toe =====
+       X goes first. Get three in a row (across, down or corner to corner) to win.
+       Play a friend, or play the computer. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#e6f4ff; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.6rem; min-width:300px; text-align:center; }
+
+    #game { display:none; min-height:100vh; padding:60px 16px 20px; flex-direction:column; align-items:center; gap:18px; }
+    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; }
+    #grid { position:relative; display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; background:#223;
+            padding:10px; border-radius:18px; width:min(420px, 92vw); aspect-ratio:1; }
+    .cell { background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center;
+            font-family:'Fredoka One',cursive; font-size:clamp(3rem, 16vw, 6.5rem); cursor:pointer; }
+    .cell:hover:empty { background:#f3f8ff; }
+    .cell.x { color:#e5533d; }
+    .cell.o { color:#1e88e5; }
+    .cell.pop { animation:pop .25s ease-out; }
+    .cell.win { background:#fff59d; animation:wiggle .5s ease-in-out 2; }
+    @keyframes pop { 0% { transform:scale(.2); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
+    @keyframes wiggle { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-8deg); } 75% { transform:rotate(8deg); } }
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .tally.x b { color:#e5533d; } .tally.o b { color:#1e88e5; }
+    .row { display:flex; gap:12px; }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>❌ Tic-Tac-Toe ⭕</h1>
+  <div class="q">Who are you playing?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">A friend</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e5533d">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <div id="grid"></div>
+  <div id="score">
+    <div class="tally x"><b id="sx">0</b><span id="nx">X</span></div>
+    <div class="tally"><b id="sd">0</b>Draws</div>
+    <div class="tally o"><b id="so">0</b><span id="no">O</span></div>
+  </div>
+  <div class="row">
+    <button id="again" style="background:#e5533d">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change players</button>
+  </div>
+</div>
+
+<script>
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)'];
+const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const $ = id => document.getElementById(id);
+let mode = 0, board, turn, over, score = { X: 0, O: 0, D: 0 }, starter = 'X';
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[mode]; }
+$('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+$('start').onclick = begin;
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') $('less').click();
+  if (e.key === 'ArrowRight') $('more').click();
+  if (e.key === 'Enter') begin();
+});
+
+function begin() {
+  score = { X: 0, O: 0, D: 0 };
+  starter = 'X';
+  $('nx').textContent = mode === 0 ? 'X' : 'You (X)';
+  $('no').textContent = mode === 0 ? 'O' : 'Computer (O)';
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  newRound();
+}
+$('change').onclick = () => { $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+$('again').onclick = () => { starter = starter === 'X' ? 'O' : 'X'; newRound(); };  // take turns going first
+
+/* ---------- the board ---------- */
+function newRound() {
+  board = Array(9).fill('');
+  turn = starter;
+  over = false;
+  $('grid').innerHTML = board.map((_, i) => `<div class="cell" data-i="${i}"></div>`).join('');
+  document.querySelectorAll('.cell').forEach(c => c.onclick = () => humanMove(+c.dataset.i));
+  showScore();
+  showTurn();
+  if (computerTurn()) setTimeout(computerMove, 600);
+}
+
+function computerTurn() { return mode > 0 && turn === 'O' && !over; }
+
+function showTurn() {
+  const who = mode === 0 ? turn : (turn === 'X' ? 'Your' : 'Computer\'s');
+  $('turn').innerHTML = mode === 0
+    ? `<span style="color:${turn === 'X' ? '#e5533d' : '#1e88e5'}">${turn}</span>'s turn`
+    : `${who} turn`;
+}
+
+function showScore() { $('sx').textContent = score.X; $('so').textContent = score.O; $('sd').textContent = score.D; }
+
+function humanMove(i) {
+  if (over || board[i] || computerTurn()) return;
+  place(i);
+  if (computerTurn()) setTimeout(computerMove, 500);
+}
+
+function place(i) {
+  board[i] = turn;
+  const c = document.querySelector(`.cell[data-i="${i}"]`);
+  c.textContent = turn;
+  c.classList.add(turn.toLowerCase(), 'pop');
+  const line = winner(board);
+  if (line) return finish(line);
+  if (board.every(Boolean)) return finish(null);
+  turn = turn === 'X' ? 'O' : 'X';
+  showTurn();
+}
+
+function winner(b) {
+  return LINES.find(([a, c, d]) => b[a] && b[a] === b[c] && b[a] === b[d]) || null;
+}
+
+function finish(line) {
+  over = true;
+  if (line) {
+    line.forEach(i => document.querySelector(`.cell[data-i="${i}"]`).classList.add('win'));
+    score[turn]++;
+    const name = mode === 0 ? turn : (turn === 'X' ? 'You' : 'The computer');
+    $('turn').textContent = `🎉 ${name} ${name === 'You' ? 'win' : 'wins'}!`;
+  } else {
+    score.D++;
+    $('turn').textContent = '🤝 It\'s a draw!';
+  }
+  showScore();
+}
+
+/* ---------- the computer ---------- */
+// Hard: looks at every possible game to the end (minimax), so it never loses.
+// Easy: wins if it can, blocks you half the time, otherwise picks a random square.
+function computerMove() {
+  if (over) return;
+  const empty = board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+  let pick;
+  if (mode === 2) {
+    pick = best(board, 'O').i;
+  } else {
+    pick = findWin('O') ?? (Math.random() < 0.5 ? findWin('X') : null) ?? empty[Math.floor(Math.random() * empty.length)];
+  }
+  place(pick);
+}
+
+function findWin(p) {
+  for (const [a, b, c] of LINES) {
+    const v = [board[a], board[b], board[c]];
+    if (v.filter(x => x === p).length === 2 && v.includes('')) return [a, b, c][v.indexOf('')];
+  }
+  return null;
+}
+
+function best(b, p) {
+  const line = winner(b);
+  if (line) return { s: b[line[0]] === 'O' ? 1 : -1 };
+  if (b.every(Boolean)) return { s: 0 };
+  let top = null;
+  b.forEach((v, i) => {
+    if (v) return;
+    b[i] = p;
+    const s = best(b, p === 'O' ? 'X' : 'O').s;
+    b[i] = '';
+    if (!top || (p === 'O' ? s > top.s : s < top.s)) top = { i, s };
+  });
+  return top;
+}
+</script>
+</body>
+</html>
