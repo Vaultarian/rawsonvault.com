@@ -42,10 +42,18 @@
     #clock { display:none; font-family:'Fredoka One',cursive; font-size:1.3rem; color:#c62828; background:#fff;
              padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); animation:tick 1s steps(1) infinite; }
     @keyframes tick { 50% { transform:scale(1.08); } }
-    .nokings { position:relative; display:none; font-size:1.6rem; line-height:1; }
-    .nokings::before, .nokings::after { content:''; position:absolute; left:-10%; top:46%; width:120%; height:4px;
-                      background:#e53935; border-radius:2px; box-shadow:0 0 0 1px #fff; transform:rotate(45deg); }
-    .nokings::after { transform:rotate(-45deg); }
+    /* 5 or fewer checkers left: a big 🫅 fades in at the side, then a paintbrush paints a red X over it */
+    #noKings { position:fixed; right:24px; top:50%; transform:translateY(-50%); width:150px; height:150px; z-index:30;
+               display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .9s ease; pointer-events:none; }
+    #noKings.show { opacity:1; }
+    #noKings .face { font-size:110px; line-height:1; }
+    #noKings svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+    #noKings .brush { font-size:46px; }
+    #noKings .label { position:absolute; bottom:-30px; width:200px; text-align:center; font-family:'Fredoka One',cursive;
+                      color:#c62828; font-size:1.1rem; opacity:0; transition:opacity .5s; }
+    #noKings.done .label { opacity:1; }
+    @media (max-width: 900px) { #noKings { top:auto; bottom:90px; transform:none; width:110px; height:110px; }
+                                #noKings .face { font-size:80px; } }
     #hint { height:1.4rem; font-weight:900; color:#c62828; }
     .tray { width:min(560px, 94vw); height:30px; display:flex; gap:3px; align-items:center; }
     .tray .mini { width:24px; height:24px; border-radius:50%; border:2px solid rgba(0,0,0,.35); animation:drop .3s ease-out; }
@@ -112,8 +120,15 @@
 
 <div id="game">
   <div id="turn"></div>
-  <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span> <span class="nokings" id="noKings" title="5 or fewer checkers left: no more kings">🫅</span></div>
+  <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span></div>
   <div id="clock"></div>
+  <div id="noKings"><span class="face">🫅</span><div class="label">No more kings!</div></div>
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </svg>
   <div class="tray" id="trayTop"></div>
   <div id="board"><div id="banner"><span></span></div></div>
   <div class="tray" id="trayBottom"></div>
@@ -338,8 +353,48 @@ function finish(winner, why) {
 
 /* ---------- robot vs robot: no kings, and the no-jump clock ---------- */
 function updateNoKings() {
-  noKings = mode === WATCH && board && piecesLeft(board) <= 5;
-  $('noKings').style.display = noKings ? 'inline-block' : 'none';
+  const was = noKings;
+  noKings = !!(mode === WATCH && board && piecesLeft(board) <= 5);
+  if (noKings && !was) showNoKings();
+  if (!noKings) { const nk = $('noKings'); nk.className = ''; nk.querySelector('svg')?.remove(); }
+}
+
+// the 🫅 fades in, then a 🖌️ paints two red strokes across it, like Tic-Tac-Toe
+const NS = 'http://www.w3.org/2000/svg';
+function showNoKings() {
+  const nk = $('noKings'), r = round;
+  nk.querySelector('svg')?.remove();
+  nk.className = 'show';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('filter', 'url(#rough)');
+  svg.appendChild(g);
+  nk.appendChild(svg);
+  const brush = document.createElementNS(NS, 'text');
+  brush.setAttribute('class', 'brush');
+  brush.textContent = '🖌️';
+  const strokes = ['M10 10 Q48 46 92 92', 'M90 8 Q55 48 8 94'];
+  strokes.forEach((d, k) => setTimeout(() => {
+    if (r !== round) return;
+    const line = document.createElementNS(NS, 'path');
+    Object.entries({ d, fill: 'none', stroke: '#e53935', 'stroke-width': 13, 'stroke-linecap': 'butt' })
+      .forEach(([a, v]) => line.setAttribute(a, v));
+    g.appendChild(line);
+    const len = line.getTotalLength();
+    line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+    svg.appendChild(brush);
+    const start = performance.now(), ms = 380;
+    (function step(now) {
+      const t = Math.min(1, (now - start) / ms), e = 1 - Math.pow(1 - t, 2);
+      line.style.strokeDashoffset = len * (1 - e);
+      const pt = line.getPointAtLength(len * e), shake = Math.sin(now / 18) * 2;
+      brush.setAttribute('x', pt.x + shake); brush.setAttribute('y', pt.y + 4);
+      if (t < 1) requestAnimationFrame(step);
+    })(start);
+    setTimeout(() => { line.style.strokeDashoffset = 0; }, ms + 50);    // finished even if the tab was hidden
+  }, 1000 + k * 480));                                                  // after the fade-in, one stroke then the other
+  setTimeout(() => { brush.remove(); if (r === round) nk.classList.add('done'); }, 1000 + 2 * 480 + 200);
 }
 // 15 seconds with no jump: a clock counts down 15 more. Still no jump at 0 = a draw.
 setInterval(() => {
