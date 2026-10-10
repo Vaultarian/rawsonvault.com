@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../swirl.js"></script>
+<script src="../../cursors.js"></script>
+<script src="../../lang.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Review — Jos' Chess</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Chess: Game Review =====
+       Like chess.com. The game page sends the moves in the web address (#moves=e2e4,e7e5,...).
+       For every move, the robot's brain scores ALL the moves that were possible, then compares
+       the one that was played with the best one. 100 points = one pawn. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#e8eef4; user-select:none; min-height:100vh; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; font-size:2.4rem; text-align:center; padding:60px 16px 6px; }
+    #result { text-align:center; font-family:'Fredoka One',cursive; font-size:1.3rem; margin-bottom:14px; }
+
+    #wrap { display:flex; gap:22px; justify-content:center; align-items:flex-start; flex-wrap:wrap; padding:0 16px 30px; }
+    #left { width:min(520px, 94vw); display:flex; flex-direction:column; gap:10px; align-items:center; }
+    #board { position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; box-shadow:0 0 0 10px #34495e, 0 10px 26px rgba(0,0,0,.35); }
+    .sq { position:absolute; width:12.5%; height:12.5%; }
+    .sq.light { background:#eef2d6; } .sq.dark { background:#6f9a5b; }
+    .sq.last { box-shadow:inset 0 0 0 100px rgba(255,235,59,.38); }
+    .sq.check { box-shadow:inset 0 0 18px 8px rgba(229,57,53,.9); }
+    .sq .coord { position:absolute; font-size:.7rem; font-weight:900; opacity:.55; }
+    .piece { position:absolute; width:12.5%; height:12.5%; display:flex; align-items:center; justify-content:center;
+             font-size:clamp(1.8rem, 8.5vw, 3.4rem); line-height:1; z-index:2; }
+    .piece.w { color:#fff; text-shadow:0 0 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 2px #000, 0 3px 2px rgba(0,0,0,.35); }
+    .piece.b { color:#1d1d1d; text-shadow:0 0 1px #fff, 0 3px 2px rgba(0,0,0,.3); }
+    .badge { position:absolute; width:6%; height:6%; border-radius:50%; background:#fff; z-index:5; display:flex;
+             align-items:center; justify-content:center; font-size:clamp(.6rem, 2.4vw, 1rem); box-shadow:0 2px 6px rgba(0,0,0,.35);
+             animation:pop .3s ease-out; }
+    @keyframes pop { 0% { transform:scale(.3); } 70% { transform:scale(1.2); } 100% { transform:scale(1); } }
+    #nav { display:flex; gap:10px; margin-top:10px; }
+    #said { min-height:3.2rem; text-align:center; font-weight:900; font-size:1.15rem; }
+    #said .k { font-family:'Fredoka One',cursive; }
+
+    #right { width:min(460px, 94vw); background:#fff; border-radius:16px; box-shadow:0 4px 14px rgba(0,0,0,.12); padding:14px; }
+    #status { font-weight:800; }
+    #progress { height:12px; background:#e3e8ee; border-radius:6px; overflow:hidden; margin:6px 0 4px; }
+    #progress div { height:100%; width:0; background:#3d9595; transition:width .2s; }
+    #counts { width:100%; border-collapse:collapse; margin:6px 0 10px; font-weight:800; }
+    #counts td { padding:2px 6px; border-bottom:1px solid #eef1f4; }
+    #counts td:nth-child(2), #counts td:nth-child(3) { text-align:center; width:80px; font-family:'Fredoka One',cursive; font-size:1.1rem; }
+    #moves { position:relative; max-height:340px; overflow-y:auto; border-top:2px solid #eef1f4; }
+    .mv { display:flex; gap:8px; align-items:center; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:800; }
+    .mv:hover { background:#f2f6f9; }
+    .mv.on { background:#fff4c2; }
+    .mv .sym { min-width:2.4em; text-align:center; font-size:1.1rem; }
+    .mv .label { margin-left:auto; font-family:'Fredoka One',cursive; white-space:nowrap; }
+    .mv .eval { font-size:.8rem; opacity:.55; min-width:3.5em; text-align:right; }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../index.html">← Back to Chess</a>
+<h1>📋 Game Review</h1>
+<div id="result"></div>
+
+<div id="wrap">
+  <div id="left">
+    <div id="board"></div>
+    <div id="said">Press Next ▶ to go through the game.</div>
+    <div id="nav"><button id="first">⏮</button><button id="prev">◀ Back</button><button id="next">Next ▶</button><button id="last">⏭</button></div>
+  </div>
+  <div id="right">
+    <div id="status">Reviewing...</div>
+    <div id="progress"><div></div></div>
+    <table id="counts"></table>
+    <div id="moves"></div>
+  </div>
+</div>
+
+<script src="../engine.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const boardEl = $('board');
+
+/* ---------- read the game from the web address ---------- */
+const q = new URLSearchParams(location.hash.slice(1));
+const WHO = { w: q.get('w') || 'White', b: q.get('b') || 'Black' };
+const history = [];
+(function replay() {
+  let s = startPosition();
+  const sqIndex = n => 'abcdefgh'.indexOf(n[0]) + (8 - +n[1]) * 8;
+  for (const mv of (q.get('moves') || '').split(',').filter(Boolean)) {
+    const f = sqIndex(mv.slice(0, 2)), t = sqIndex(mv.slice(2, 4));
+    const m = legal(s).find(x => x.f === f && x.t === t);
+    if (!m) break;                                   // a broken address: stop at the last good move
+    history.push({ s, m });
+    s = apply(s, m);
+  }
+  history.end = s;
+})();
+
+/* ---------- the kinds of move, like chess.com ---------- */
+const KINDS = [
+  ['brilliant', '‼️', 'Brilliant', '#1baca6'], ['great', '❗', 'Great', '#5b8bb0'], ['best', '⭐', 'Best', '#81b64c'],
+  ['excellent', '👍', 'Excellent', '#81b64c'], ['good', '✅', 'Good', '#95b776'], ['book', '📖', 'Book', '#a88865'],
+  ['forced', '▢', 'Forced', '#8a8a8a'], ['interesting', '⁉️', 'Interesting', '#c57ac9'], ['inaccuracy', '❓❗', 'Inaccuracy', '#f7c045'],
+  ['mistake', '❓', 'Mistake', '#e58f2a'], ['miss', '❌', 'Miss', '#ee6b55'], ['blunder', '❓❓', 'Blunder', '#ca3431'],
+];
+const KIND = Object.fromEntries(KINDS.map(([k, sym, label, colour]) => [k, { sym, label, colour }]));
+// common first moves, for "Book"
+const BOOK = new Set(['e4', 'd4', 'c4', 'Nf3', 'e5', 'c5', 'e6', 'c6', 'd5', 'Nf6', 'Nc6', 'Nc3', 'Bc4', 'Bb5', 'd6', 'g6', 'g3', 'Bg7', 'Bg2', 'f4', 'Be7', 'Bd3', 'Be2', 'O-O', 'Nbd7', 'b6', 'a6']);
+const NAMES = { K: 'king', Q: 'queen', R: 'rook', B: 'bishop', N: 'knight', P: 'pawn' };
+
+// chess notation: Nf3, exd5, O-O, e8=Q, Qh5+, Qxf7#
+function san(s, m) {
+  if (m.castle) return (m.castle === 'K' ? 'O-O' : 'O-O-O') + checkMark(s, m);
+  const kind = m.piece[1];
+  let out = '';
+  if (kind === 'P') { if (m.cap) out = 'abcdefgh'[rc(m.f)[1]]; }
+  else {
+    out = kind;
+    const rivals = legal(s).filter(o => o.t === m.t && o.f !== m.f && o.piece === m.piece);
+    if (rivals.length) {
+      const [fr, fc] = rc(m.f);
+      if (!rivals.some(o => rc(o.f)[1] === fc)) out += 'abcdefgh'[fc];
+      else if (!rivals.some(o => rc(o.f)[0] === fr)) out += 8 - fr;
+      else out += sqName(m.f);
+    }
+  }
+  if (m.cap) out += 'x';
+  out += sqName(m.t);
+  if (m.promo) out += '=' + m.promo;
+  return out + checkMark(s, m) + (m.enPassant ? ' e.p.' : '');
+}
+function checkMark(s, m) {
+  const n = apply(s, m);
+  if (!inCheck(n, n.turn)) return '';
+  return legal(n).length ? '+' : '#';
+}
+// the move in plain words
+function words(s, m) {
+  const who = WHO[s.turn], p = NAMES[m.piece[1]];
+  if (m.castle) return `${who} castled ${m.castle === 'K' ? 'kingside' : 'queenside'}`;
+  if (m.promo) return `${who} pushed a pawn to ${sqName(m.t)} and made a queen`;
+  if (m.cap) return `${who} took the ${NAMES[m.cap[1]]} on ${sqName(m.t)} with the ${p}`;
+  return `${who} moved the ${p} to ${sqName(m.t)}`;
+}
+// did the move leave a piece where it can just be taken? (a "sacrifice")
+function isSacrifice(s, m) {
+  const n = apply(s, m), me = s.turn, them = other(me);
+  const v = VALUE[(m.promo || m.piece[1])];
+  if (v < 300 || !attacked(n.b, m.t, them)) return false;
+  const gained = m.cap ? VALUE[m.cap[1]] : 0;
+  const replies = legal(n).filter(o => o.t === m.t);     // only moves that are really allowed
+  if (!replies.length) return false;
+  const cheapest = Math.min(...replies.map(o => VALUE[o.piece[1]]));
+  return v - gained >= 200 && (cheapest < v || !attacked(n.b, m.t, me));
+}
+const clampEval = v => Math.max(-2000, Math.min(2000, v));
+function evalText(v, whiteToMove) {          // v is from the mover's side; show it from White's side
+  const w = whiteToMove ? v : -v;
+  if (Math.abs(w) > 90000) return (w > 0 ? '' : '-') + 'M' + Math.ceil((100000 - Math.abs(w)) / 2);
+  return (w >= 0 ? '+' : '') + (w / 100).toFixed(1);
+}
+
+function classify(i) {
+  const { s, m } = history[i];
+  const ms = legal(s);
+  const text = san(s, m);
+  const scored = ms.map(o => ({ o, v: -search(apply(s, o), 2, -Infinity, Infinity, 1) })).sort((a, b) => b.v - a.v);
+  const best = clampEval(scored[0].v), second = scored[1] ? clampEval(scored[1].v) : -Infinity;
+  const played = scored.find(x => x.o.f === m.f && x.o.t === m.t && x.o.promo === m.promo).v;
+  const loss = best - clampEval(played);
+  const sac = isSacrifice(s, m);
+  let kind;
+  if (ms.length === 1) kind = 'forced';
+  else if (i < 10 && BOOK.has(text.replace(/[+#]/, '')) && loss <= 40) kind = 'book';
+  else if (sac && loss <= 20 && played >= -100) kind = 'brilliant';
+  else if (loss <= 10 && best - second >= 150) kind = 'great';
+  else if (loss <= 5) kind = 'best';
+  else if (sac && loss <= 120) kind = 'interesting';
+  else if (loss <= 35) kind = 'excellent';
+  else if (loss <= 90) kind = 'good';
+  else if (best >= 250 && played <= 60) kind = 'miss';      // you had a winning chance and let it go
+  else if (loss <= 180) kind = 'inaccuracy';
+  else if (loss <= 350) kind = 'mistake';
+  else kind = 'blunder';
+  const ev = text.includes('#') ? (s.turn === 'w' ? '1-0' : '0-1') : evalText(played, s.turn === 'w');
+  return { kind, text, words: words(s, m), eval: ev, side: s.turn };
+}
+
+/* ---------- the result line ---------- */
+(function result() {
+  const s = history.end, moves = legal(s);
+  let r = '';
+  if (!moves.length && inCheck(s, s.turn)) r = `${WHO[other(s.turn)]} won by checkmate (${s.turn === 'b' ? '1-0' : '0-1'})`;
+  else if (!moves.length) r = 'Draw by stalemate (½-½)';
+  else if (notEnough(s.b)) r = 'Draw: not enough pieces to win (½-½)';
+  else r = 'The game stopped here';
+  $('result').textContent = `${WHO.w} vs ${WHO.b} · ${history.length} moves · ${r}`;
+})();
+
+/* ---------- the board ---------- */
+for (let i = 0; i < 64; i++) {
+  const [r, c] = rc(i), sq = document.createElement('div');
+  sq.className = 'sq ' + ((r + c) % 2 ? 'dark' : 'light');
+  sq.style.left = c * 12.5 + '%'; sq.style.top = r * 12.5 + '%'; sq.dataset.i = i;
+  if (c === 0) sq.innerHTML += `<span class="coord" style="left:3px;top:2px">${8 - r}</span>`;
+  if (r === 7) sq.innerHTML += `<span class="coord" style="right:4px;bottom:1px">${'abcdefgh'[c]}</span>`;
+  boardEl.appendChild(sq);
+}
+const sqEl = i => boardEl.querySelector(`.sq[data-i="${i}"]`);
+setTimeout(() => { if (!reviewData.length) drawPosition(startPosition()); }, 0);   // the start position while it works
+function drawPosition(s) {
+  boardEl.querySelectorAll('.piece, .badge').forEach(e => e.remove());
+  s.b.forEach((p, i) => {
+    if (!p) return;
+    const [r, c] = rc(i), el = document.createElement('div');
+    el.className = 'piece ' + p[0]; el.textContent = GLYPH[p[1]];
+    el.style.left = c * 12.5 + '%'; el.style.top = r * 12.5 + '%';
+    boardEl.appendChild(el);
+  });
+}
+
+/* ---------- reviewing, one move at a time so the page keeps moving ---------- */
+const reviewData = [];
+let cur = -1;
+(function next(i = 0) {
+  if (i >= history.length) return done();
+  reviewData.push(classify(i));
+  addRow(i);
+  $('status').textContent = `Reviewing move ${i + 1} of ${history.length}...`;
+  $('progress').firstElementChild.style.width = (100 * (i + 1) / history.length) + '%';
+  setTimeout(() => next(i + 1), 0);
+})();
+
+function addRow(i) {
+  const d = reviewData[i], k = KIND[d.kind];
+  const row = document.createElement('div');
+  row.className = 'mv'; row.dataset.i = i;
+  row.innerHTML = `<span class="sym">${k.sym}</span><span>${Math.floor(i / 2) + 1}. ${d.words} <b>(${d.text})</b></span>
+                   <span class="label" style="color:${k.colour}">${k.label}</span><span class="eval">${d.eval}</span>`;
+  row.onclick = () => show(i);
+  $('moves').appendChild(row);
+}
+function done() {
+  $('status').textContent = history.length ? 'Click a move, or use the buttons and the ← → keys.' : 'No moves to review.';
+  const count = side => k => reviewData.filter(d => d.side === side && d.kind === k).length;
+  const W = count('w'), B = count('b');
+  $('counts').innerHTML = `<tr><td></td><td>${WHO.w}</td><td>${WHO.b}</td></tr>` +
+    KINDS.map(([k, sym, label, colour]) => `<tr><td><span style="display:inline-block;width:2.4em;text-align:center">${sym}</span><span style="color:${colour}">${label}</span></td><td>${W(k)}</td><td>${B(k)}</td></tr>`).join('');
+  show(-1);
+}
+function show(i) {
+  cur = Math.max(-1, Math.min(reviewData.length - 1, i));
+  const s = cur < 0 ? startPosition() : apply(history[cur].s, history[cur].m);
+  drawPosition(s);
+  boardEl.querySelectorAll('.sq.last, .sq.check').forEach(e => e.classList.remove('last', 'check'));
+  document.querySelectorAll('.mv.on').forEach(r => r.classList.remove('on'));
+  if (cur < 0) { $('said').textContent = 'The start. Press Next ▶ to go through the game.'; return; }
+  const { m } = history[cur], d = reviewData[cur], k = KIND[d.kind];
+  sqEl(m.f).classList.add('last'); sqEl(m.t).classList.add('last');
+  if (inCheck(s, s.turn)) sqEl(kingAt(s.b, s.turn)).classList.add('check');
+  const [r, c] = rc(m.t), badge = document.createElement('div');
+  badge.className = 'badge'; badge.textContent = k.sym;
+  badge.style.left = (c * 12.5 + 8) + '%'; badge.style.top = Math.max(0, r * 12.5 - 1.5) + '%';
+  boardEl.appendChild(badge);
+  $('said').innerHTML = `${d.words} (${d.text}). <span class="k" style="color:${k.colour}">${k.sym} ${k.label}!</span>`;
+  const row = document.querySelector(`.mv[data-i="${cur}"]`), list = $('moves');
+  row.classList.add('on');                     // scroll the list only, not the whole page
+  if (row.offsetTop < list.scrollTop) list.scrollTop = row.offsetTop;
+  else if (row.offsetTop + row.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = row.offsetTop + row.offsetHeight - list.clientHeight;
+}
+$('first').onclick = () => show(-1);
+$('prev').onclick = () => show(cur - 1);
+$('next').onclick = () => show(cur + 1);
+$('last').onclick = () => show(reviewData.length - 1);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') show(cur - 1);
+  if (e.key === 'ArrowRight') show(cur + 1);
+});
+</script>
+</body>
+</html>
