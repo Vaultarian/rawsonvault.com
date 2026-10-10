@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jos Dictionary — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== The Jos Dictionary =====
+       Not a normal dictionary. Every word here is a word JOS himself has actually used,
+       talking to Carl — so it starts small and grows every time he talks. No word goes in
+       unless he said it.
+
+       1. INTRO: his sentence, word by word, fading in on a dark screen.
+       2. TRANSITION: placeholder for now. Jos is picking a proper one from Wondershare
+          Filmora he likes, and whichever one he picks replaces revealDictionary() below —
+          look for "SWAP HERE" in the script.
+       3. THE DICTIONARY: his words, alphabetical, searchable. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#fdf6e3; overflow-x:hidden; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+
+    /* ---------- 1. the intro ---------- */
+    #intro { position:fixed; inset:0; background:#0b1026; z-index:100; display:flex;
+             flex-direction:column; align-items:center; justify-content:center; gap:.6rem;
+             transition:opacity .8s ease; }
+    #intro .line { font-family:'Fredoka One',cursive; color:#fff; font-size:clamp(1.4rem, 5vw, 2.6rem);
+                   text-align:center; padding:0 20px; }
+    #intro .line span { opacity:0; display:inline-block; transition:opacity .5s ease; }
+    #intro .small { font-size:clamp(1rem, 3.2vw, 1.3rem); color:#b9c2e0; }
+    #intro .book { font-size:4rem; opacity:0; transition:opacity .8s ease, transform .8s ease; transform:scale(.6); }
+
+    /* ---------- 2. the transition (placeholder — swap this for Jos's pick) ---------- */
+    #stage { position:fixed; inset:0; background:#0b1026; z-index:90; opacity:0; pointer-events:none; }
+    #stage.go { transition:opacity .9s ease; }
+
+    /* ---------- 3. the dictionary itself ---------- */
+    #dict { display:none; min-height:100vh; padding:60px 16px 40px; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; text-align:center; font-size:2.6rem; }
+    #tag { text-align:center; opacity:.65; margin:4px 0 20px; font-weight:800; }
+    #search { display:block; margin:0 auto 24px; width:min(420px, 92vw); font-size:1.2rem;
+              font-family:'Nunito',sans-serif; padding:.7rem 1.1rem; border-radius:50px; border:3px solid #e8dcc0;
+              outline:none; }
+    #search:focus { border-color:#e5533d; }
+    #list { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
+    .entry { background:#fff; border-radius:16px; padding:14px 20px; box-shadow:0 4px 12px rgba(0,0,0,.08);
+             animation:pop .3s ease-out both; }
+    @keyframes pop { from { transform:scale(.9); opacity:0; } }
+    .entry .w { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#e5533d; }
+    .entry .d { margin-top:2px; }
+    .entry .added { font-size:.75rem; opacity:.5; margin-top:4px; }
+    #empty { text-align:center; opacity:.6; margin-top:40px; font-weight:800; display:none; }
+    #count { text-align:center; margin-top:28px; opacity:.6; font-weight:800; }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../#tools">← Back</a>
+
+<div id="intro">
+  <div class="book">📖</div>
+  <div class="line" id="l1"></div>
+  <div class="line small" id="l2"></div>
+</div>
+<div id="stage"></div>
+
+<div id="dict">
+  <h1>📖 The Jos Dictionary</h1>
+  <div id="tag">Every word here is one Jos has actually used.</div>
+  <input id="search" type="text" placeholder="🔍 Search a word...">
+  <div id="list"></div>
+  <div id="empty">No word like that yet — maybe Jos hasn't said it!</div>
+  <div id="count"></div>
+</div>
+
+<script src="words.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+
+/* ---------- 1. the intro: his sentence, fading in word by word ---------- */
+function playWords(el, text, startDelay) {
+  const words = text.split(' ');
+  el.innerHTML = words.map(w => `<span>${w}</span>`).join(' ');
+  const spans = el.querySelectorAll('span');
+  spans.forEach((s, i) => setTimeout(() => { s.style.opacity = 1; }, startDelay + i * 160));
+  return startDelay + spans.length * 160 + 500;
+}
+
+let t = 300;
+setTimeout(() => { $('.book') ; document.querySelector('#intro .book').style.opacity = 1; document.querySelector('#intro .book').style.transform = 'scale(1)'; }, t);
+t += 500;
+t = playWords($('l1'), 'This is the Jos Dictionary.', t);
+t = playWords($('l2'), 'It may not have all the words in the dictionary.', t + 200);
+
+setTimeout(revealDictionary, t + 400);
+
+/* ---------- 2. the transition ----------
+   SWAP HERE once Jos picks his favourite from Wondershare Filmora.
+   For now: the intro fades to the dark stage, the stage fades out onto the dictionary. */
+function revealDictionary() {
+  $('intro').style.opacity = 0;
+  $('stage').classList.add('go');
+  $('stage').style.opacity = 1;
+  setTimeout(() => {
+    $('intro').style.display = 'none';
+    $('dict').style.display = 'block';
+    buildList();
+    requestAnimationFrame(() => { $('stage').style.opacity = 0; });
+    setTimeout(() => { $('stage').style.display = 'none'; }, 900);
+  }, 800);
+}
+
+/* ---------- 3. the dictionary ---------- */
+const WORDS = DICTIONARY_WORDS.slice().sort((a, b) => a.word.localeCompare(b.word));
+
+function buildList(filter) {
+  const q = (filter || '').trim().toLowerCase();
+  const show = WORDS.filter(w => !q || w.word.toLowerCase().includes(q) || w.def.toLowerCase().includes(q));
+  $('list').innerHTML = show.map(w => `
+    <div class="entry">
+      <div class="w">${w.word}</div>
+      <div class="d">${w.def}</div>
+      <div class="added">added ${w.date}</div>
+    </div>`).join('');
+  $('empty').style.display = show.length ? 'none' : 'block';
+  $('count').textContent = q ? `${show.length} word${show.length === 1 ? '' : 's'} found` : `${WORDS.length} word${WORDS.length === 1 ? '' : 's'} so far`;
+}
+$('search').addEventListener('input', e => buildList(e.target.value));
+</script>
+</body>
+</html>
