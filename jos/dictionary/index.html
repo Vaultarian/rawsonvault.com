@@ -37,29 +37,33 @@
     #intro .book { font-size:4rem; opacity:0; transition:opacity .8s ease, transform .8s ease; transform:scale(.6); }
 
     /* ---------- 2. the transition — the camera-flash swap, from Jos's Filmora recording ----------
-       1. The screen flashes white, like a camera taking a picture.
-       2. What's on screen becomes a small tilted photo card, and the camera zooms OUT so you
-          can see it sitting there.
-       3. A new photo card appears and the camera zooms IN on it, until it fills the screen. */
-    #stage { position:fixed; inset:0; z-index:90; pointer-events:none; }
+       The intro itself never slides — it just fades in, word by word, as before.
+       1. The screen flashes white, like a camera taking a picture of the intro.
+       2. It becomes a small tilted photo card, and the camera zooms OUT so you can see it
+          sitting there on a black background, in place — this part doesn't slide either.
+       3. THEN that card slides off to the side.
+       4. The real dictionary — the one with all the words — slides in from the other side,
+          full screen, to replace it. */
+    #stage { position:fixed; inset:0; z-index:90; pointer-events:none; overflow:hidden; }
     #flash { position:absolute; inset:0; background:#fff; opacity:0; }
     .card { position:absolute; left:50%; top:50%; background:#000; overflow:hidden; opacity:0;
             border:0 solid #fff; box-shadow:0 0 0 rgba(0,0,0,0);
             transition:width .7s cubic-bezier(.4,0,.2,1), height .7s cubic-bezier(.4,0,.2,1),
-                       transform .7s cubic-bezier(.4,0,.2,1), border-radius .6s ease,
+                       transform .55s cubic-bezier(.4,0,.2,1), border-radius .6s ease,
                        border-width .6s ease, box-shadow .6s ease, opacity .3s ease; }
     .card img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-    /* full screen: the card looks exactly like the real page underneath it */
+    /* full screen, centred: the card looks exactly like the real page underneath it */
     .card.full { width:100vw; height:100vh; border-radius:0; border-width:0; opacity:1;
                  transform:translate(-50%,-50%) rotate(0deg); }
-    /* small: a tilted photo card with a white border, like a Polaroid just taken */
-    .card.small-old { width:58vmin; height:36vmin; border-radius:8px; border-width:9px;
-                       box-shadow:0 20px 50px rgba(0,0,0,.5); opacity:1;
-                       transform:translate(-50%,-50%) rotate(-10deg); }
-    .card.small-new { width:58vmin; height:36vmin; border-radius:8px; border-width:9px;
-                       box-shadow:0 20px 50px rgba(0,0,0,.5); opacity:1;
-                       transform:translate(-50%,-50%) rotate(9deg); }
-    .card.gone { opacity:0; }
+    /* small and tilted, still centred — a Polaroid just taken, before it goes anywhere */
+    .card.small { width:58vmin; height:36vmin; border-radius:8px; border-width:9px;
+                  box-shadow:0 20px 50px rgba(0,0,0,.5); opacity:1; }
+    .card.small.tilt-left { transform:translate(-50%,-50%) rotate(-10deg); }
+    .card.small.tilt-right { transform:translate(-50%,-50%) rotate(9deg); }
+    /* exit: the small card slides off to the left */
+    .card.exit-left { transform:translate(-160%,-50%) rotate(-16deg); }
+    /* entrance: the full dictionary starts off-screen to the right, and slides to centre */
+    .card.enter-right { transform:translate(60%,-50%) rotate(0deg); }
 
     /* ---------- 3. the dictionary itself ---------- */
     #dict { display:none; min-height:100vh; padding:60px 16px 40px; }
@@ -127,10 +131,10 @@ setTimeout(revealDictionary, t + 400);
 /* ---------- 2. the transition — the camera-flash swap, from Jos's Filmora recording ----------
    1. Snapshot the intro screen (html2canvas — a real picture of the actual pixels).
    2. Flash white, like a camera. Swap in the snapshot so nothing visibly jumps.
-   3. Zoom OUT: the snapshot shrinks into a small tilted photo card.
+   3. Zoom OUT, in place: the snapshot shrinks into a small tilted photo card. It doesn't slide.
    4. Meanwhile the real dictionary gets built behind the scenes, and gets snapshotted too.
-   5. The new snapshot pops in as a second small card, then zooms IN until it fills the screen —
-      at which point it's hiding the real (identical) dictionary page, so the card just vanishes. */
+   5. THEN, and only then: the small card slides off to the left, and the real dictionary
+      slides in from the right to fill the screen. */
 async function revealDictionary() {
   const cardOld = $('cardOld'), cardNew = $('cardNew'), flash = $('flash'), stage = $('stage');
 
@@ -167,18 +171,19 @@ async function revealDictionary() {
   flash.style.opacity = 0;
   await wait(150);
 
-  // zoom OUT: the old screen shrinks into a small tilted card
+  // zoom OUT: the old screen shrinks into a small tilted card, in place — no sliding yet
   cardOld.classList.remove('full');
-  cardOld.classList.add('small-old');
-  await wait(750);
-  cardOld.classList.add('gone');
+  cardOld.classList.add('small', 'tilt-left');
+  await wait(700);
 
-  // a new card pops in small, then zooms IN to fill the screen
-  cardNew.classList.add('small-new');
-  await wait(300);
-  cardNew.classList.remove('small-new');
-  cardNew.classList.add('full');
-  await wait(750);
+  // get the new card ready, full size but sitting just off-screen to the right
+  cardNew.classList.add('full', 'enter-right');
+  await wait(20);                                 // let the browser paint that off-screen position first
+
+  // now slide them both: the small photo card exits left, the real dictionary enters from the right
+  cardOld.classList.add('exit-left');
+  cardNew.classList.remove('enter-right');
+  await wait(600);
 
   $('stage').style.display = 'none';              // the real #dict underneath looks identical
 }
