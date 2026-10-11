@@ -15,9 +15,8 @@
        unless he said it.
 
        1. INTRO: his sentence, word by word, fading in on a dark screen.
-       2. TRANSITION: placeholder for now. Jos is picking a proper one from Wondershare
-          Filmora he likes, and whichever one he picks replaces revealDictionary() below —
-          look for "SWAP HERE" in the script.
+       2. TRANSITION: a tilted photo flies in from the corner and grows to fill the screen,
+          from the clip Jos recorded of Wondershare Filmora's transition gallery.
        3. THE DICTIONARY: his words, alphabetical, searchable. */
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { min-height:100%; }
@@ -36,9 +35,22 @@
     #intro .small { font-size:clamp(1rem, 3.2vw, 1.3rem); color:#b9c2e0; }
     #intro .book { font-size:4rem; opacity:0; transition:opacity .8s ease, transform .8s ease; transform:scale(.6); }
 
-    /* ---------- 2. the transition (placeholder — swap this for Jos's pick) ---------- */
-    #stage { position:fixed; inset:0; background:#0b1026; z-index:90; opacity:0; pointer-events:none; }
-    #stage.go { transition:opacity .9s ease; }
+    /* ---------- 2. the transition — Jos's pick, from his Filmora recording ----------
+       A tilted photo of the dictionary flies in from the bottom-left corner, small and
+       rotated like a Polaroid, then straightens up and grows to fill the whole screen. */
+    #stage { position:fixed; inset:0; z-index:90; pointer-events:none; overflow:hidden; }
+    #stagePhoto { position:absolute; width:46%; aspect-ratio:16/10; left:-12%; top:74%;
+                  background:#fdf6e3; border:9px solid #fff; border-radius:4px;
+                  box-shadow:0 20px 50px rgba(0,0,0,.5);
+                  transform:translate(0,0) rotate(-14deg) scale(1);
+                  transition:transform 1.05s cubic-bezier(.35,.02,.25,1), border-radius .85s ease, border-width .85s ease;
+                  overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    #stagePhoto .face { font-size:2.6rem; }
+    #stagePhoto.fly {
+      left:50%; top:50%;
+      transform:translate(-50%,-50%) rotate(0deg) scale(2.4);
+      border-radius:0; border-width:0;
+    }
 
     /* ---------- 3. the dictionary itself ---------- */
     #dict { display:none; min-height:100vh; padding:60px 16px 40px; }
@@ -67,7 +79,7 @@
   <div class="line" id="l1"></div>
   <div class="line small" id="l2"></div>
 </div>
-<div id="stage"></div>
+<div id="stage"><div id="stagePhoto"><span class="face">📖</span></div></div>
 
 <div id="dict">
   <h1>📖 The Jos Dictionary</h1>
@@ -99,20 +111,22 @@ t = playWords($('l2'), 'It may not have all the words in the dictionary.', t + 2
 
 setTimeout(revealDictionary, t + 400);
 
-/* ---------- 2. the transition ----------
-   SWAP HERE once Jos picks his favourite from Wondershare Filmora.
-   For now: the intro fades to the dark stage, the stage fades out onto the dictionary. */
+/* ---------- 2. the transition — the tilted photo from Jos's Filmora recording ---------- */
 function revealDictionary() {
+  // 1. the intro fades, the little tilted book sits waiting in the corner
   $('intro').style.opacity = 0;
-  $('stage').classList.add('go');
-  $('stage').style.opacity = 1;
+  const photo = $('stagePhoto');
   setTimeout(() => {
+    // 2. it flies to the middle, straightens out and grows to fill the whole screen
+    photo.classList.add('fly');
+  }, 450);
+  setTimeout(() => {
+    // 3. the dictionary is already underneath, so once the photo fills the screen we reveal it
     $('intro').style.display = 'none';
     $('dict').style.display = 'block';
     buildList();
-    requestAnimationFrame(() => { $('stage').style.opacity = 0; });
-    setTimeout(() => { $('stage').style.display = 'none'; }, 900);
-  }, 800);
+  }, 450 + 950);
+  setTimeout(() => { $('stage').style.display = 'none'; }, 450 + 1100 + 200);
 }
 
 /* ---------- 3. the dictionary ---------- */
