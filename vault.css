@@ -230,6 +230,14 @@ a:hover { color: var(--bronze-dark); }
 
 /* ── Wrapper for a nav-card with its own label above it ──────── */
 .nav-card-group { display: block; }
+.nav-card-group .section-label {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--ink-black);
+  margin-bottom: var(--gap-sm);
+}
 
 /* ── Card internals ───────────────────────────────────────── */
 .card-eyebrow {
