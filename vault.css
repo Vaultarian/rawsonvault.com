@@ -219,6 +219,7 @@ a:hover { color: var(--bronze-dark); }
 
 /* ── Plain section label (heading above a card group) ───────── */
 .section-label {
+  display: block;
   font-family: var(--font-display);
   font-size: 0.65rem;
   letter-spacing: 0.3em;
@@ -226,6 +227,9 @@ a:hover { color: var(--bronze-dark); }
   color: var(--gray-mid);
   margin-bottom: var(--gap-sm);
 }
+
+/* ── Wrapper for a nav-card with its own label above it ──────── */
+.nav-card-group { display: block; }
 
 /* ── Card internals ───────────────────────────────────────── */
 .card-eyebrow {
