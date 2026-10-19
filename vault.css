@@ -25,6 +25,12 @@
   --bronze-cream:   #E0C8B0;
   --bronze-parch:   #E8D8C8;   /* ★ warm background */
 
+  /* Slate family — class notes accent (cool, distinct from bronze/syllabus) */
+  --slate-deep:     #263540;
+  --slate-core:     #4A6378;   /* ★ primary accent */
+  --slate-light:    #8CA4B6;   /* ★ light accent / border */
+  --slate-parch:    #E9EFF2;   /* ★ cool background */
+
   /* Neutrals */
   --ink-black:      #1A1008;   /* ★ primary text — warm near-black */
   --charcoal:       #303030;
@@ -168,6 +174,18 @@ a:hover { color: var(--bronze-dark); }
   .nav-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Class-notes card row — always 2-up, never an odd leftover ── */
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap-md);
+  margin-bottom: var(--gap-xl);
+}
+
+@media (max-width: 620px) {
+  .notes-grid { grid-template-columns: 1fr; }
+}
+
 .nav-card {
   display: block;
   text-decoration: none;
@@ -186,6 +204,22 @@ a:hover { color: var(--bronze-dark); }
 }
 
 .nav-card:hover .card-title { color: var(--bronze-dark); }
+
+/* ── Notes-card variant (class notes — slate, not bronze) ──── */
+.nav-card.notes-card { border-color: var(--slate-light); }
+.nav-card.notes-card:hover { border-color: var(--slate-core); background: var(--slate-parch); }
+.nav-card.notes-card .card-eyebrow { color: var(--slate-core); }
+.nav-card.notes-card:hover .card-title { color: var(--slate-deep); }
+
+/* ── Plain section label (heading above a card group) ───────── */
+.section-label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  margin-bottom: var(--gap-sm);
+}
 
 /* ── Card internals ───────────────────────────────────────── */
 .card-eyebrow {
