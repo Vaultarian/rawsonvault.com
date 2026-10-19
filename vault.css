@@ -174,16 +174,17 @@ a:hover { color: var(--bronze-dark); }
   .nav-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Class-notes card row — always 2-up, never an odd leftover ── */
+/* ── Class-notes card row — small boxes, one row, centred ─────── */
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--gap-md);
+  grid-template-columns: repeat(auto-fit, minmax(110px, 150px));
+  justify-content: center;
+  gap: var(--gap-sm);
   margin-bottom: var(--gap-xl);
 }
 
 @media (max-width: 620px) {
-  .notes-grid { grid-template-columns: 1fr; }
+  .notes-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .nav-card {
@@ -206,9 +207,14 @@ a:hover { color: var(--bronze-dark); }
 .nav-card:hover .card-title { color: var(--bronze-dark); }
 
 /* ── Notes-card variant (class notes — slate, not bronze) ──── */
-.nav-card.notes-card { border-color: var(--slate-light); }
+.nav-card.notes-card {
+  border-color: var(--slate-light);
+  padding: var(--gap-sm);
+  text-align: center;
+}
 .nav-card.notes-card:hover { border-color: var(--slate-core); background: var(--slate-parch); }
-.nav-card.notes-card .card-eyebrow { color: var(--slate-core); }
+.nav-card.notes-card .card-eyebrow { color: var(--slate-core); margin-bottom: var(--gap-xs); }
+.nav-card.notes-card .card-title { margin-bottom: 0; }
 .nav-card.notes-card:hover .card-title { color: var(--slate-deep); }
 
 /* ── Plain section label (heading above a card group) ───────── */
