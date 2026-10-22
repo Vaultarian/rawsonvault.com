@@ -50,8 +50,8 @@ const GAMES = [
   { e: '⚫', t: 'Checkers', u: '../checkers/', i: 'Jump over the other player\'s pieces. Get to the end for a king. Play a friend or the computer.', ready: true },
   { e: '♟️', t: 'Chess', u: '../chess/', i: 'The king of board games. All the real rules. Play a friend, the computer, or watch robot vs robot.', ready: true },
   { e: '🎲', t: 'Ludo', u: '../ludo/', i: 'Race your four counters home. 2 to 4 players, people or robots.', ready: true },
-  { e: '🚢', t: 'Battleship', i: 'Find and sink the hidden ships.' },
-  { e: '🔲', t: 'Caterpillar', i: 'Draw lines, finish boxes, win squares.' },
+  { e: '🚢', t: 'Battleships', u: '../battleships/', i: 'Deploy your fleet, then sink the enemy. Play the computer, or watch robot vs robot.', ready: true },
+  { e: '🐛', t: 'Caterpillar', u: '../caterpillar/', i: 'Draw lines, finish boxes, win squares. Play a friend or the computer.', ready: true },
 ];
 document.getElementById('shelf').innerHTML = GAMES.map(g => g.ready
   ? `<a class="game" href="${g.u}"><span class="e">${g.e}</span><span class="t">${g.t}</span><span class="i">${g.i}</span></a>`
