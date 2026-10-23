@@ -45,6 +45,7 @@
     '#clockBig .typed{text-align:left;margin-left:auto;margin-right:auto}',
 
     /* the big clock */
+    '#clockBig.hidden{display:none}',
     '#clockBig{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;',
     '  font-family:"Fredoka One",cursive;text-shadow:0 0 30px rgba(255,170,90,.8),0 6px 0 rgba(0,0,0,.25);',
     '  transform-origin:50% 50%;white-space:nowrap}',
@@ -56,7 +57,34 @@
     '#clockBig .grp .old{position:absolute;left:0;top:0;pointer-events:none}',
     '#clockBig .d{display:block;font-family:Nunito,sans-serif;font-weight:800;font-size:clamp(1rem,3vw,2rem);opacity:.9;margin-top:.6rem}',
     '#clockStage .hint{position:absolute;left:0;right:0;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.55);',
-    '  font:700 .85rem Nunito,sans-serif;letter-spacing:.06em}'
+    '  font:700 .85rem Nunito,sans-serif;letter-spacing:.06em}',
+
+    /* clicking empty space hides the cursor; moving the mouse brings it straight back */
+    '#clockStage.hideCursor{cursor:none}',
+    '#clockStage.hideCursor #clockBig,#clockStage.hideCursor #clockAnalog{cursor:pointer}',
+
+    /* the analog clock */
+    '#clockAnalog{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);cursor:pointer;',
+    '  display:none;opacity:0;transition:opacity .4s ease}',
+    '#clockAnalog.on{display:block;opacity:1}',
+    '#clockAnalog svg{width:min(78vmin,480px);height:min(78vmin,480px);display:block}',
+    '#clockAnalog .face{fill:rgba(10,6,22,.55);stroke:rgba(255,255,255,.35);stroke-width:3}',
+    '#clockAnalog .num{fill:#fff;font-family:Nunito,sans-serif;font-weight:800;',
+    '  text-shadow:0 0 10px rgba(0,0,0,.6)}',
+    '#clockAnalog .tick{stroke:#fff;stroke-width:5;stroke-linecap:round}',
+    '#clockAnalog .hand{stroke-linecap:round;transform-origin:210px 210px}',   /* 210,210 = CX,CY in the JS below */
+    '#clockAnalog .hourHand{stroke:#fff;stroke-width:9}',
+    '#clockAnalog .minuteHand{stroke:#fff;stroke-width:6}',
+    '#clockAnalog .secondHand{stroke:#d9643a;stroke-width:3}',
+    '#clockAnalog .hub{fill:#d9643a}',
+
+    /* the beginner/.../expert slider, below the clock face */
+    '#clockLevel{position:absolute;left:50%;bottom:4.6rem;transform:translateX(-50%);width:min(70vmin,420px);',
+    '  display:none;text-align:center}',
+    '#clockAnalog.on ~ #clockLevel,#clockStage.analogOn #clockLevel{display:block}',
+    '#clockLevel input{width:100%;accent-color:#d9643a}',
+    '#clockLevel .lvRow{display:flex;justify-content:space-between;margin-top:.3rem;',
+    '  font:700 .68rem Nunito,sans-serif;color:rgba(255,255,255,.75);letter-spacing:.02em}'
   ].join('\n');
   document.head.appendChild(css);
 
@@ -104,8 +132,138 @@
     });
   }
 
-  var small, stage = null, big = null, timers = [];
+  var small, stage = null, big = null, analog = null, mode = 'digital', timers = [];
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+  /* ---------- clicking the clock screen ----------
+     click the clock (digital or analog) -> swap mode, and show the cursor again
+     click anywhere else -> hide the cursor (moving the mouse brings it back) */
+  function onStageClick(e) {
+    if (e.target.closest('#clockLevel')) return;            /* using the slider: do nothing else */
+    if (e.target.closest('#clockBig, #clockAnalog')) { toggleMode(); return; }
+    stage.classList.add('hideCursor');
+  }
+  function toggleMode() {
+    mode = (mode === 'digital') ? 'analog' : 'digital';
+    stage.classList.remove('hideCursor');
+    stage.classList.toggle('analogOn', mode === 'analog');
+    if (big) big.classList.toggle('hidden', mode === 'analog');
+    if (analog) analog.classList.toggle('on', mode === 'analog');
+    if (mode === 'analog') updateAnalog(new Date());
+  }
+
+  /* ---------- the analog clock ----------
+     A slider picks how it's labelled, easiest to hardest:
+     Beginner+ (hour/minute/second rings, 3 hands) -> Beginner (hour/minute rings, 2 hands)
+     -> Regular (1-12) -> Intermediate (Roman numerals) -> Expert (just 4 lines, no numbers). */
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var ROMAN = ['XII', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+  var CX = 210, CY = 210;
+  var LEVELS = [
+    { label: 'Beginner+', numbers: 'triple', hourR: 95,  minuteR: 142, secondR: 182, hourLen: 95,  minuteLen: 142, secondLen: 182, hands: 3 },
+    { label: 'Beginner',  numbers: 'double', hourR: 100, minuteR: 165, hourLen: 100, minuteLen: 165, hands: 2 },
+    { label: 'Regular',   numbers: 'plain',  numR: 155,  hourLen: 95,  minuteLen: 145, hands: 2 },
+    { label: 'Intermediate', numbers: 'roman', numR: 155, hourLen: 95, minuteLen: 145, hands: 2 },
+    { label: 'Expert',    numbers: 'ticks',  hourLen: 95, minuteLen: 145, hands: 2 }
+  ];
+  function loadLevel() {
+    try {
+      var raw = localStorage.getItem('jos-clock-level');
+      if (raw === null) return 1;             /* nothing saved yet - Beginner */
+      var v = +raw;
+      return (v >= 0 && v <= 4) ? v : 1;
+    } catch (e) { return 1; }
+  }
+  function saveLevel(v) { try { localStorage.setItem('jos-clock-level', v); } catch (e) {} }
+
+  function polar(r, deg) {
+    var rad = (deg - 90) * Math.PI / 180;
+    return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function numberRing(group, count, radius, fontSize, labelFn) {
+    for (var i = 0; i < count; i++) {
+      var p = polar(radius, i * (360 / count));
+      var t = svgEl('text', { x: p.x, y: p.y, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-size': fontSize, 'class': 'num' });
+      t.textContent = labelFn(i);
+      group.appendChild(t);
+    }
+  }
+
+  var elFace, elNumbers, elTicks, elHour, elMinute, elSecond;
+  function buildAnalog(stageEl) {
+    analog = document.createElement('div');
+    analog.id = 'clockAnalog';
+    var svg = svgEl('svg', { viewBox: '0 0 420 420' });
+    elFace = svgEl('circle', { class: 'face', cx: CX, cy: CY, r: 200 });
+    elNumbers = svgEl('g', {});
+    elTicks = svgEl('g', {});
+    elSecond = svgEl('line', { class: 'hand secondHand', x1: CX, y1: CY, x2: CX, y2: CY });
+    elMinute = svgEl('line', { class: 'hand minuteHand', x1: CX, y1: CY, x2: CX, y2: CY });
+    elHour = svgEl('line', { class: 'hand hourHand', x1: CX, y1: CY, x2: CX, y2: CY });
+    var hub = svgEl('circle', { class: 'hub', cx: CX, cy: CY, r: 7 });
+    svg.appendChild(elFace); svg.appendChild(elTicks); svg.appendChild(elNumbers);
+    svg.appendChild(elHour); svg.appendChild(elMinute); svg.appendChild(elSecond); svg.appendChild(hub);
+    analog.appendChild(svg);
+    stageEl.appendChild(analog);
+
+    var panel = document.createElement('div');
+    panel.id = 'clockLevel';
+    var slider = document.createElement('input');
+    slider.type = 'range'; slider.min = 0; slider.max = 4; slider.step = 1;
+    var row = document.createElement('div');
+    row.className = 'lvRow';
+    LEVELS.forEach(function (lv) { var s = document.createElement('span'); s.textContent = lv.label; row.appendChild(s); });
+    panel.appendChild(slider); panel.appendChild(row);
+    stageEl.appendChild(panel);
+
+    slider.value = loadLevel();
+    renderLevel(+slider.value);
+    slider.addEventListener('input', function () { renderLevel(+slider.value); saveLevel(+slider.value); });
+  }
+
+  function renderLevel(i) {
+    var lv = LEVELS[i];
+    elNumbers.innerHTML = ''; elTicks.innerHTML = '';
+    elSecond.style.display = (lv.hands === 3) ? '' : 'none';
+    if (lv.numbers === 'triple') {
+      numberRing(elNumbers, 12, lv.hourR, 15, function (i) { return i === 0 ? '12' : String(i); });
+      numberRing(elNumbers, 60, lv.minuteR, 9, function (i) { return i === 0 ? '60' : String(i); });
+      numberRing(elNumbers, 60, lv.secondR, 8, function (i) { return i === 0 ? '60' : String(i); });
+    } else if (lv.numbers === 'double') {
+      numberRing(elNumbers, 12, lv.hourR, 16, function (i) { return i === 0 ? '12' : String(i); });
+      numberRing(elNumbers, 60, lv.minuteR, 9, function (i) { return i === 0 ? '60' : String(i); });
+    } else if (lv.numbers === 'plain') {
+      numberRing(elNumbers, 12, lv.numR, 20, function (i) { return i === 0 ? '12' : String(i); });
+    } else if (lv.numbers === 'roman') {
+      numberRing(elNumbers, 12, lv.numR, 17, function (i) { return ROMAN[i]; });
+    } else if (lv.numbers === 'ticks') {
+      [0, 90, 180, 270].forEach(function (deg) {
+        var a = polar(195, deg), b = polar(170, deg);
+        elTicks.appendChild(svgEl('line', { class: 'tick', x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
+      });
+    }
+    setHandLength(elHour, lv.hourLen);
+    setHandLength(elMinute, lv.minuteLen);
+    if (lv.hands === 3) setHandLength(elSecond, lv.secondLen);
+    curLevel = lv;
+    updateAnalog(new Date());
+  }
+  function setHandLength(line, len) { line.setAttribute('y2', CY - len); }
+  function rotate(line, deg) { line.style.transform = 'rotate(' + deg + 'deg)'; }
+
+  var curLevel = LEVELS[1];
+  function updateAnalog(now) {
+    if (!analog) return;
+    var h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
+    rotate(elHour, h * 30 + m * 0.5);
+    rotate(elMinute, m * 6 + s * 0.1);
+    if (curLevel.hands === 3) rotate(elSecond, s * 6);
+  }
 
   /* ---------- the small clock, ticking ---------- */
   function tick() {
@@ -116,6 +274,7 @@
       roll(big.querySelector('.t'), now);
       big.querySelector('.d .words').textContent = date(now, true);
     }
+    if (mode === 'analog') updateAnalog(now);
   }
 
   /* ---------- click: lava lamp, then the time is typed out ---------- */
@@ -131,13 +290,15 @@
     glow.className = 'glow';
     var hint = document.createElement('div');
     hint.className = 'hint';
-    hint.textContent = 'Click anywhere to go back';
+    hint.textContent = 'Click the clock for analog · click anywhere else to hide your cursor · Esc to go back';
     stage.appendChild(lava); stage.appendChild(glow); stage.appendChild(hint);
     document.body.appendChild(stage);
     void stage.offsetWidth;
     stage.classList.add('on');
-    stage.addEventListener('click', close);
+    stage.addEventListener('click', onStageClick);
+    stage.addEventListener('mousemove', function () { stage.classList.remove('hideCursor'); });
     lavaLamp(lava);
+    buildAnalog(stage);
 
     /* 2. a typing bar in the middle types the time, goes to the next line, types the date */
     big = document.createElement('div');
@@ -251,7 +412,7 @@
   function close() {
     if (!stage) return;
     var s = stage;
-    stage = null; big = null;
+    stage = null; big = null; analog = null; mode = 'digital';
     timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
     timers = [];
     s.classList.remove('on');
