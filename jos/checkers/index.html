@@ -39,6 +39,8 @@
                 background:#fff; padding:6px 16px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
     #speedRow input { width:180px; accent-color:#e53935; }
     #speedVal { min-width:3ch; }
+    #ruleBadge { font-family:'Fredoka One',cursive; font-size:1rem; background:#fff; color:#223;
+                 padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
     #clock { display:none; font-family:'Fredoka One',cursive; font-size:1.3rem; color:#c62828; background:#fff;
              padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); animation:tick 1s steps(1) infinite; }
     @keyframes tick { 50% { transform:scale(1.08); } }
@@ -114,12 +116,20 @@
     <div id="mode">A friend</div>
     <button id="more" title="(→)">→</button>
   </div>
+  <div class="q">Jump rules?</div>
+  <div class="picker">
+    <button id="lessRule">←</button>
+    <div id="ruleName">Competition</div>
+    <button id="moreRule">→</button>
+  </div>
+  <div id="ruleHelp" style="font-family:'Nunito',sans-serif;font-size:1rem;max-width:360px;text-align:center;color:#556">If you can jump, you must.</div>
   <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e53935">Enter</button>
   <div>Use the ← → arrow keys, then press Enter</div>
 </div>
 
 <div id="game">
   <div id="turn"></div>
+  <div id="ruleBadge"></div>
   <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span></div>
   <div id="clock"></div>
   <div id="noKings"><span class="face">🫅</span><div class="label">No more kings!</div></div>
@@ -147,6 +157,12 @@
 <script>
 const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)', 'Robot vs robot (watch)'];
 const WATCH = 3;
+const RULES = [
+  { name: 'Regular', help: 'Jumping is your choice.' },
+  { name: 'Competition', help: 'If you can jump, you must.' },
+  { name: 'Competition Plus', help: 'You must jump, and take the biggest jump.' },
+];
+let rule = 1;   // 0 = Regular, 1 = Competition, 2 = Competition Plus
 const $ = id => document.getElementById(id);
 const boardEl = $('board');
 let mode = 0, round = 0, board, turn, over, starter = 'R', score = { R: 0, B: 0, D: 0 };
@@ -170,6 +186,9 @@ const other = p => p === 'R' ? 'B' : 'R';
 function showMode() { $('mode').textContent = MODES[mode]; }
 $('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
 $('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+function showRule() { $('ruleName').textContent = RULES[rule].name; $('ruleHelp').textContent = RULES[rule].help; }
+$('lessRule').onclick = () => { rule = (rule + RULES.length - 1) % RULES.length; showRule(); };
+$('moreRule').onclick = () => { rule = (rule + 1) % RULES.length; showRule(); };
 $('start').onclick = begin;
 document.addEventListener('keydown', e => {
   if ($('setup').style.display === 'none') return;
@@ -183,6 +202,7 @@ function begin() {
   starter = 'R';
   $('nr').textContent = mode === 0 ? 'Red' : mode === WATCH ? 'Red robot' : 'You (Red)';
   $('nb').textContent = mode === 0 ? 'Black' : mode === WATCH ? 'Black robot' : 'Computer (Black)';
+  $('ruleBadge').textContent = '📏 ' + RULES[rule].name;
   $('setup').style.display = 'none';
   $('game').style.display = 'flex';
   $('speedRow').style.display = mode === WATCH ? 'flex' : 'none';
@@ -253,14 +273,33 @@ function stepsFrom(b, r, c) {
   }
   return out;
 }
-// every move one player can make right now. If any jump exists, only jumps are allowed.
+// how many more jumps a checker can chain together from here (becoming a king this turn stops it)
+function chainLen(b, r, c, startedKing) {
+  if (!startedKing && b[r][c].king) return 0;
+  const js = jumpsFrom(b, r, c);
+  if (!js.length) return 0;
+  return 1 + Math.max(...js.map(m => chainLen(apply(b, m), m.tr, m.tc, startedKing)));
+}
+// Competition Plus: out of several jumps, keep only the one(s) that take the most checkers overall
+function bestJumps(b, jumps) {
+  const scored = jumps.map(m => ({ m, n: 1 + chainLen(apply(b, m), m.tr, m.tc, b[m.fr][m.fc].king) }));
+  const best = Math.max(...scored.map(x => x.n));
+  return scored.filter(x => x.n === best).map(x => x.m);
+}
+// every move one player can make right now, under the chosen jump rule:
+// Regular = jumping is a choice, Competition = if you can jump you must, Competition Plus = and it must be the biggest jump
 function movesFor(b, p, only) {
-  if (only) return jumpsFrom(b, only[0], only[1]);
+  if (only) {
+    const js = jumpsFrom(b, only[0], only[1]);
+    return rule === 2 && js.length > 1 ? bestJumps(b, js) : js;
+  }
   let jumps = [], steps = [];
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (b[r][c] && b[r][c].p === p) {
     jumps.push(...jumpsFrom(b, r, c)); steps.push(...stepsFrom(b, r, c));
   }
-  return jumps.length ? jumps : steps;
+  if (!jumps.length) return steps;
+  if (rule === 0) return [...jumps, ...steps];
+  return rule === 2 ? bestJumps(b, jumps) : jumps;
 }
 
 /* ---------- turns ---------- */
@@ -276,7 +315,11 @@ function startTurn() {
   if (computerTurn()) { $('hint').textContent = ''; return robotThink(); }
   const colour = turn === 'R' ? '#e53935' : '#223';
   $('turn').innerHTML = mode === 0 ? `<span style="color:${colour}">${name(turn)}</span>'s turn` : 'Your turn';
-  $('hint').textContent = chain ? 'Jump again!' : moves[0].cap ? 'You have to jump!' : '';
+  const hasCap = moves.some(m => m.cap);
+  $('hint').textContent = chain ? (rule === 2 ? 'Jump again — biggest jump!' : 'Jump again!')
+    : hasCap && rule === 2 ? 'You have to take the biggest jump!'
+    : hasCap && rule === 1 ? 'You have to jump!'
+    : hasCap ? 'You can jump!' : '';
 }
 
 function markMine(moves) {
@@ -510,7 +553,7 @@ function robotThink() {
 function turnsFor(b, p) {
   const out = [];
   function extend(b2, seq, r, c) {
-    const more = jumpsFrom(b2, r, c);
+    const more = movesFor(b2, p, [r, c]);   // respects the jump rule on every link of the chain, not just the first
     const pc = b2[r][c];
     const justKinged = seq.length && !seq[seq.length - 1].wasKing && pc.king;
     if (!more.length || justKinged) { out.push(seq); return; }
