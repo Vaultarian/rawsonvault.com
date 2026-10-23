@@ -163,6 +163,7 @@
     </style>
 <script src="swirl.js" data-swirl-links></script>
 <script src="mods.js"></script>
+<script src="lang.js"></script>
 </head>
 <body>
 <script>
@@ -359,7 +360,7 @@
                     ctx.strokeStyle = 'rgba(0, 229, 255, 0.45)'; ctx.stroke();
                 }
             }
-            requestAnimationFrame(drawLoop);
+            if (container.isConnected) requestAnimationFrame(drawLoop);   /* stop once the loading screen is gone */
         }
 
         function triggerWhiteout() {

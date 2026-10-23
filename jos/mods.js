@@ -7,6 +7,10 @@
 (function () {
   var KEY = 'jos-mods';
   var SECRET = 'jos';        /* the secret word — type it anywhere on the home page */
+  /* in a game the script tag says data-game: the button moves to the bottom corner,
+     and Day and night and Secret code stay on the home page only */
+  var GAME = !!(document.currentScript && document.currentScript.hasAttribute('data-game'));
+  var HOME_ONLY = ['sky', 'secret'];
 
   var MODS = [
     { id: 'glow',    name: '✨ Hover glow',     about: 'Buttons glow and float up when your mouse is on them' },
@@ -17,6 +21,7 @@
     { id: 'pop',     name: '🎈 Buttons pop in', about: 'Buttons bounce in one by one when the page opens' },
     { id: 'secret',  name: '🤫 Secret code',    about: 'Type the secret word and something happens…' }
   ];
+  if (GAME) MODS = MODS.filter(function (m) { return HOME_ONLY.indexOf(m.id) < 0; });
 
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
@@ -25,7 +30,10 @@
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
   }
   var state = load();
-  function isOn(id) { return state[id] !== false; }   /* every mod starts ON */
+  function isOn(id) {
+    if (GAME && HOME_ONLY.indexOf(id) >= 0) return false;
+    return state[id] !== false;    /* every mod starts ON */
+  }
   function hell() { return document.body.classList.contains('hell'); }
 
   var css = document.createElement('style');
@@ -38,6 +46,10 @@
     '#modsBtn:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.3)}',
     'body.sm-open #modsBtn,body.set-open #modsBtn,body.sm-open #modsPanel,body.set-open #modsPanel{display:none}',
     '@media (max-width:600px){#modsBtn{font-size:.8rem;padding:.55rem 1rem;top:6.2rem;right:.6rem}}',
+    /* in a game: bottom right corner, panel opens upwards */
+    '#modsBtn.game{top:auto;bottom:1rem;right:1rem;z-index:100000}',
+    '#modsPanel.game{top:auto;bottom:4.6rem;z-index:100001;max-height:calc(100vh - 6rem);transform-origin:bottom right}',
+    '@media (max-width:600px){#modsBtn.game{top:auto;bottom:.6rem;right:.6rem}}',
 
     /* the panel */
     '#modsPanel{position:fixed;top:10.8rem;right:1rem;z-index:501;width:300px;max-width:calc(100vw - 2rem);',
@@ -69,6 +81,12 @@
     'body.mod-glow .museum-button:hover,body.mod-glow #showModeBtn:hover,body.mod-glow #hardModeBtn:hover,body.mod-glow #modsBtn:hover{',
     '  transform:translateY(-4px) scale(1.05);',
     '  box-shadow:0 0 0 3px rgba(255,255,255,.7),0 0 22px 6px rgba(217,100,58,.6),0 10px 18px rgba(0,0,0,.2)}',
+
+    /* hover glow in a game: any button or link */
+    'body.mod-glow.mods-game button:not(#modsBtn),body.mod-glow.mods-game a{transition:transform .18s ease,box-shadow .25s ease}',
+    'body.mod-glow.mods-game button:not(#modsBtn):not(:disabled):hover,body.mod-glow.mods-game a:hover{',
+    '  transform:translateY(-3px) scale(1.04);',
+    '  box-shadow:0 0 0 3px rgba(255,255,255,.7),0 0 14px 4px rgba(61,149,149,.7),0 6px 10px rgba(0,0,0,.15)}',
 
     /* MOD: click ripple */
     '.mod-ring{position:fixed;z-index:1000002;pointer-events:none;width:16px;height:16px;margin:-8px 0 0 -8px;',
@@ -228,7 +246,7 @@
   }
 
   /* ---------- 🎈 buttons pop in ---------- */
-  var POP_TARGETS = '.big-nav-btn, .nav-tab, .nav-item > .nav-tab, .panel-heading, .pill, .museum-button, #showModeBtn, #hardModeBtn, #modsBtn, #gearBtn';
+  var POP_TARGETS = GAME ? 'button' : '.big-nav-btn, .nav-tab, .nav-item > .nav-tab, .panel-heading, .pill, .museum-button, #showModeBtn, #hardModeBtn, #modsBtn, #gearBtn';
   function popIn() {
     var items = Array.prototype.slice.call(document.querySelectorAll(POP_TARGETS));
     items.forEach(function (el) { el.classList.add('mod-poppable'); });
@@ -258,7 +276,7 @@
   /* ---------- 🤫 secret code ---------- */
   var typed = '';
   document.addEventListener('keydown', function (e) {
-    if (!isOn('secret') || e.key.length !== 1) return;
+    if (GAME || !isOn('secret') || e.key.length !== 1) return;
     var t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
     typed = (typed + e.key.toLowerCase()).slice(-SECRET.length);
@@ -308,11 +326,12 @@
   function build() {
     var btn = document.createElement('button');
     btn.id = 'modsBtn';
+    if (GAME) { btn.className = 'game'; document.body.classList.add('mods-game'); }
     btn.textContent = '🧪 MODS';
 
     var panel = document.createElement('div');
     panel.id = 'modsPanel';
-    panel.className = 'shut';
+    panel.className = GAME ? 'shut game' : 'shut';
     panel.innerHTML = '<h3>🧪 Modifications</h3>';
 
     var rows = [];
@@ -347,7 +366,7 @@
 
     document.body.appendChild(btn);
     document.body.appendChild(panel);
-    buildSky();
+    if (!GAME) buildSky();
     buildBubbles();
     apply();
     if (isOn('pop')) popIn();
