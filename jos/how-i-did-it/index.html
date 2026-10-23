@@ -116,6 +116,38 @@
             display: block;
         }
 
+        /* Trinket shut down: grey logo, red rubber stamp, no click */
+        .tool-icon.shut {
+            position: relative;
+            cursor: not-allowed;
+        }
+        .tool-icon.shut:hover {
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tool-icon.shut img {
+            filter: grayscale(1);
+            opacity: 0.45;
+        }
+        .stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-18deg);
+            padding: 3px 6px;
+            border: 3px solid #c8102e;
+            border-radius: 6px;
+            color: #c8102e;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.95rem;
+            line-height: 1;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            background: rgba(255,255,255,0.75);
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.75), inset 0 0 0 3px #c8102e;
+            pointer-events: none;
+        }
+
         .tool-name {
             font-family: 'Fredoka One', cursive;
             font-size: 1.5rem;
@@ -181,13 +213,14 @@
     </div>
 
     <div class="tool-card">
-        <a class="tool-icon" href="https://trinket.io" target="_blank" rel="noopener">
+        <div class="tool-icon shut" title="Trinket has shut down">
             <img src="../../images/third-party/trinket.png" alt="Trinket logo">
-        </a>
+            <span class="stamp">SHUT DOWN</span>
+        </div>
         <div>
             <div class="tool-name">And I used TRINKET.CODE</div>
             <div class="tool-intro">Trinket lets you run and write code in any browser, on any device.</div>
-            <div class="tool-desc">Trinkets work instantly, with no need to log in, download plugins, or install software. I used Trinket to write and run my Python games right in the browser — super easy!</div>
+            <div class="tool-desc">Trinkets work instantly, with no need to log in, download plugins, or install software. I used Trinket to write and run my Python games right in the browser — super easy! But unfortunately, it has now shut down.</div>
         </div>
     </div>
 

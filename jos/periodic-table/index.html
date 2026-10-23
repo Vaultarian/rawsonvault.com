@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Periodic Table — Jos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="elements.js"></script>
+  <style>
+    /* ===== Jos's Periodic Table =====
+       All 118 elements, coloured by type. Click one and the panel on the right shows its
+       atom as a Bohr model (the nucleus in the middle, electrons whizzing round in shells)
+       and its facts. Facts from PubChem. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f7f5f0; font-family:'Nunito',sans-serif; color:#223;
+           display:flex; flex-direction:column; }
+    .back-link { position:fixed; top:20px; left:20px; z-index:10; font-family:'Fredoka One',cursive;
+                 color:#22334488; text-decoration:none; font-size:1rem; }
+    .back-link:hover { color:#223; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:400; color:#d9643a; text-align:center;
+         font-size:clamp(1.8rem,4vw,2.6rem); margin:1.4rem 0 .2rem; }
+    .sub { text-align:center; color:#567; font-weight:700; margin-bottom:1rem; }
+
+    .layout { flex:1; display:flex; gap:1.2rem; padding:0 1.2rem 1.2rem; align-items:flex-start; }
+    .table-wrap { flex:1; min-width:0; }
+
+    /* the table: 18 columns; row 8 is a gap, rows 9 and 10 are the lanthanides and actinides */
+    #table { display:grid; grid-template-columns:repeat(18,1fr); grid-template-rows:repeat(7,auto) 14px auto auto; gap:3px; }
+    .el { position:relative; aspect-ratio:1/1.05; border:2px solid transparent; border-radius:6px; cursor:pointer;
+          display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+          transition:transform .1s, box-shadow .1s; min-width:0; }
+    .el:hover { transform:scale(1.12); z-index:2; box-shadow:0 4px 12px rgba(0,0,0,.18); }
+    .el.on { border-color:#1a73e8; box-shadow:0 0 0 2px #fff, 0 0 0 4px #1a73e8; z-index:3; }
+    .el .n  { position:absolute; top:2px; left:4px; font-size:clamp(.45rem,.75vw,.68rem); font-weight:800; }
+    .el .s  { font-size:clamp(.75rem,1.7vw,1.6rem); line-height:1; font-weight:600; }
+    .el .nm { font-size:clamp(.35rem,.6vw,.58rem); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+              max-width:96%; margin-top:2px; }
+
+    /* colours for each type of element */
+    .t-alkali     { background:#dff3f8; color:#0b6f80; }
+    .t-earth      { background:#fde3e8; color:#d0164a; }
+    .t-transition { background:#efe7ff; color:#7038dd; }
+    .t-post       { background:#dcf3e2; color:#17703a; }
+    .t-metalloid  { background:#fff1d1; color:#9a5b05; }
+    .t-nonmetal   { background:#e2edff; color:#2a5fd6; }
+    .t-halogen    { background:#dff6f1; color:#0f7a66; }
+    .t-noble      { background:#fde6ee; color:#c2185b; }
+    .t-lanthanide { background:#e0f1fb; color:#0a6896; }
+    .t-actinide   { background:#fde8da; color:#c0450f; }
+
+    .legend { display:flex; flex-wrap:wrap; gap:.4rem .9rem; justify-content:center; margin-top:1rem; font-size:.8rem; font-weight:800; }
+    .legend span { display:inline-flex; align-items:center; gap:.35rem; }
+    .legend i { width:12px; height:12px; border-radius:50%; display:inline-block; }
+
+    /* the panel on the right */
+    #panel { width:340px; flex:none; background:#fff; border-radius:18px; padding:1.4rem 1.4rem 1rem;
+             box-shadow:0 6px 24px rgba(0,0,0,.08); position:sticky; top:1rem; margin-bottom:4.5rem; }   /* room for the Language and Mods buttons */
+    #pName { font-family:'Fredoka One',cursive; font-weight:400; font-size:2rem; line-height:1.1; }
+    #pName sup { font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; vertical-align:super; }
+    #pType { display:flex; align-items:center; gap:.4rem; font-weight:800; font-size:.9rem; margin-top:.3rem; }
+    #pType i { width:11px; height:11px; border-radius:50%; display:inline-block; }
+    #atom { display:block; width:100%; aspect-ratio:1; margin:.6rem 0 .1rem; }
+    .cap { font-size:.78rem; color:#678; font-weight:700; text-align:center; margin-bottom:.9rem; }
+    .facts { list-style:none; font-size:.92rem; }
+    .facts li { padding:.32rem 0; border-top:1px solid #eee; display:flex; justify-content:space-between; gap:1rem; }
+    .facts b { font-weight:800; color:#345; }
+    .facts span { text-align:right; color:#223; }
+    .credit { font-size:.7rem; color:#89a; margin-top:.8rem; }
+    .credit a { color:#2a5fd6; }
+
+    @media (max-width:1000px) {
+      .layout { flex-direction:column; align-items:stretch; }
+      #panel { width:auto; position:static; }
+      #atom { max-width:300px; margin-left:auto; margin-right:auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="../">← Back</a>
+  <h1>🧪 The Periodic Table</h1>
+  <p class="sub">Click any element to see what its atom looks like inside</p>
+
+  <div class="layout">
+    <div class="table-wrap">
+      <div id="table"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <aside id="panel">
+      <h2 id="pName"></h2>
+      <div id="pType"><i></i><span></span></div>
+      <canvas id="atom" width="600" height="600"></canvas>
+      <p class="cap" id="pCap"></p>
+      <ul class="facts" id="facts"></ul>
+      <p class="credit">Facts from <a href="https://pubchem.ncbi.nlm.nih.gov/periodic-table/" target="_blank" rel="noopener">PubChem</a>
+        (US National Library of Medicine). The Bohr model is a simple picture of an atom, not exactly what it looks like.</p>
+    </aside>
+  </div>
+
+<script>
+(function () {
+  /* each type of element: its class (for the colour), its name, and its dot colour */
+  var TYPES = {
+    'Alkali metal':          ['t-alkali',     'Alkali metal',          '#0b9bb3'],
+    'Alkaline earth metal':  ['t-earth',      'Alkaline earth metal',  '#e0245e'],
+    'Transition metal':      ['t-transition', 'Transition metal',      '#7c4dff'],
+    'Post-transition metal': ['t-post',       'Post-transition metal', '#1e9e52'],
+    'Metalloid':             ['t-metalloid',  'Metalloid',             '#d18b0f'],
+    'Nonmetal':              ['t-nonmetal',   'Reactive nonmetal',     '#1a73e8'],
+    'Halogen':               ['t-halogen',    'Halogen',               '#12a088'],
+    'Noble gas':             ['t-noble',      'Noble gas',             '#e0457b'],
+    'Lanthanide':            ['t-lanthanide', 'Lanthanide',            '#1592c9'],
+    'Actinide':              ['t-actinide',   'Actinide',              '#e8621a']
+  };
+
+  /* ---------- build the table ---------- */
+  var table = document.getElementById('table'), tiles = [];
+  ELEMENTS.forEach(function (e) {
+    var t = document.createElement('button');
+    t.className = 'el ' + TYPES[e[4]][0];
+    t.style.gridRow = e[11][0];
+    t.style.gridColumn = e[11][1];
+    t.title = e[2];
+    t.innerHTML = '<span class="n"></span><span class="s"></span><span class="nm"></span>';
+    t.querySelector('.n').textContent = e[0];
+    t.querySelector('.s').textContent = e[1];
+    t.querySelector('.nm').textContent = e[2];
+    t.addEventListener('click', function () { show(e); });
+    table.appendChild(t);
+    tiles[e[0]] = t;
+  });
+  var legend = document.getElementById('legend');
+  Object.keys(TYPES).forEach(function (k) {
+    var s = document.createElement('span');
+    s.innerHTML = '<i></i>';
+    s.firstChild.style.background = TYPES[k][2];
+    s.appendChild(document.createTextNode(TYPES[k][1]));
+    legend.appendChild(s);
+  });
+
+  /* ---------- the panel: name, type, atom, facts ---------- */
+  var current = null;
+  function show(e) {
+    if (current) tiles[current[0]].classList.remove('on');
+    current = e;
+    tiles[e[0]].classList.add('on');
+    var name = document.getElementById('pName');
+    name.textContent = e[2] + ' (' + e[1] + ') ';
+    var sup = document.createElement('sup'); sup.textContent = e[0]; name.appendChild(sup);
+    var type = document.getElementById('pType');
+    type.querySelector('i').style.background = TYPES[e[4]][2];
+    type.querySelector('span').textContent = TYPES[e[4]][1];
+    document.getElementById('pCap').textContent =
+      'Bohr model · ' + e[0] + (e[0] === 1 ? ' electron' : ' electrons') + ' in ' + e[5].length +
+      (e[5].length === 1 ? ' shell' : ' shells') + ': ' + e[5].join(', ');
+
+    function deg(v) { return v === '' ? 'Not known' : v + ' °C'; }
+    var facts = [
+      ['Symbol', e[1]],
+      ['Atomic number', e[0]],
+      ['Atomic mass', e[3] + ' u'],
+      ['State at room temperature', e[6]],
+      ['Melting point', deg(e[7])],
+      ['Boiling point', deg(e[8])],
+      ['Density', e[9] === '' ? 'Not known' : e[9] + ' g/cm³'],
+      ['Discovered', e[10] === 'Ancient' ? 'In ancient times' : e[10]]
+    ];
+    var ul = document.getElementById('facts');
+    ul.textContent = '';
+    facts.forEach(function (f) {
+      var li = document.createElement('li'), b = document.createElement('b'), v = document.createElement('span');
+      b.textContent = f[0]; v.textContent = f[1];
+      li.appendChild(b); li.appendChild(v); ul.appendChild(li);
+    });
+  }
+
+  /* ---------- the Bohr model, spinning ----------
+     The nucleus sits in the middle. Each shell is a ring, and its electrons go round it:
+     the inner shells spin faster than the outer ones. */
+  var cv = document.getElementById('atom'), ctx = cv.getContext('2d');
+  function draw(time) {
+    var W = cv.width, c = W / 2;
+    ctx.clearRect(0, 0, W, W);
+    if (current) {
+      var shells = current[5], n = shells.length;
+      var inner = 62, outer = W / 2 - 18, gap = n > 1 ? (outer - inner) / (n - 1) : 0;
+      var dot = n > 5 ? 7 : 9;
+      var colour = TYPES[current[4]][2];
+      /* the nucleus */
+      var g = ctx.createRadialGradient(c - 12, c - 12, 4, c, c, 40);
+      g.addColorStop(0, '#ff8a70'); g.addColorStop(1, '#d9342b');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(c, c, 36, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = '800 26px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(current[1], c, c + 1);
+      /* the shells and their electrons */
+      shells.forEach(function (count, i) {
+        var r = inner + gap * i;
+        ctx.strokeStyle = 'rgba(80,100,130,.25)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.stroke();
+        var spin = time / 1000 * (1.3 / (i + 1)) * (i % 2 ? -1 : 1);   /* inner shells faster; every other shell the other way */
+        for (var k = 0; k < count; k++) {
+          var a = spin + k / count * Math.PI * 2;
+          ctx.fillStyle = colour;
+          ctx.beginPath(); ctx.arc(c + Math.cos(a) * r, c + Math.sin(a) * r, dot, 0, Math.PI * 2); ctx.fill();
+        }
+      });
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+
+  show(ELEMENTS[0]);   /* start on Hydrogen, like Google */
+})();
+</script>
+</body>
+</html>

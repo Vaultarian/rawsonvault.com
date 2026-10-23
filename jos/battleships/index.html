@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battleships — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Battleships =====
+       You place your own fleet, then fire at Enemy Waters. A shell flies in to wherever
+       you (or the computer) fired. Sink a ship and its hull fades into view and burns.
+       Sink the whole fleet and the whole board catches fire. Robot vs robot mode shows
+       both fleets the whole time, for watching rather than playing. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#e8f4fb; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+    button:disabled { opacity:.35; cursor:default; }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; text-align:center; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.2rem; min-width:320px; text-align:center; }
+
+    #deploy, #game { display:none; min-height:100vh; padding:56px 16px 24px; flex-direction:column; align-items:center; gap:14px; }
+    #deploy h1 { font-size:2.2rem; }
+    #deployInfo { font-family:'Fredoka One',cursive; font-size:1.3rem; text-align:center; min-height:1.6em; }
+    #turn { font-family:'Fredoka One',cursive; font-size:1.7rem; height:2.4rem; display:flex; align-items:center; text-align:center; }
+    #boards { display:flex; gap:28px; flex-wrap:wrap; justify-content:center; }
+    .fleet { display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .fleet h2 { font-family:'Fredoka One',cursive; font-weight:normal; font-size:1.2rem; }
+
+    /* ---- the grid, shared by the deploy board and both battle boards ---- */
+    .board {
+      --cell: clamp(24px, 6.2vw, 34px);
+      display:grid; grid-template-columns: var(--cell) repeat(10, var(--cell)); grid-auto-rows: var(--cell);
+      gap:3px; background:#1565c0; padding:6px; border-radius:10px;
+    }
+    .board .lbl, .board .cell { display:flex; align-items:center; justify-content:center; }
+    .board .lbl { font-weight:800; color:#cfe8ff; font-size:calc(var(--cell) * 0.42); }
+    .board .cell { background:#aee0ff; border-radius:4px; font-size:calc(var(--cell) * 0.52); position:relative; }
+    .board.clickable .cell:not(.hit):not(.miss):not(.burnt) { cursor:pointer; }
+    .board.clickable .cell:not(.hit):not(.miss):not(.burnt):hover { background:#7cc8f5; }
+
+    /* the hull — a tapered boat shape made from however many cells it spans */
+    .cell.hull { background:#5b6b7a; border-radius:0; }
+    .cell.hull.horiz.end-a { clip-path: polygon(100% 15%, 35% 15%, 0 50%, 35% 85%, 100% 85%); }
+    .cell.hull.horiz.end-b { clip-path: polygon(0 15%, 65% 15%, 100% 50%, 65% 85%, 0 85%); }
+    .cell.hull.vert.end-a   { clip-path: polygon(15% 100%, 15% 35%, 50% 0, 85% 35%, 85% 100%); }
+    .cell.hull.vert.end-b   { clip-path: polygon(15% 0, 15% 65%, 50% 100%, 85% 65%, 85% 0); }
+    .cell.hull.igniting { animation: hullFadeIn .35s ease; }
+    @keyframes hullFadeIn { from { opacity:.2; filter:brightness(2.6); } to { opacity:1; filter:brightness(1); } }
+
+    .cell.hit { background:#ff6f61; }
+    .cell.miss { background:#eaf6ff; color:#8fb8d6; }
+    .cell.burning { background:#7a2e12 !important; clip-path:none !important; animation: flicker .22s ease-in-out infinite alternate; }
+    @keyframes flicker { from { filter:brightness(1); } to { filter:brightness(1.45); } }
+    .cell.burnt { background:#1a1210 !important; clip-path:none !important; }
+
+    .cell.preview-ok { background: rgba(70,210,120,.7) !important; }
+    .cell.preview-bad { background: rgba(230,70,70,.6) !important; }
+
+    .status { font-size:.9rem; opacity:.75; min-height:1.2em; }
+
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .tally.you b { color:#1565c0; } .tally.cpu b { color:#e53935; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+
+    /* the robot's screen, same look as Connect 4 and Tic-Tac-Toe */
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.25rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+
+    /* a flying shot */
+    .bullet { position:fixed; left:0; top:0; z-index:60; font-size:22px; transform:translate(-50%,-50%); pointer-events:none; }
+
+    @media (max-width:480px) { #boards { gap:16px; } }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>🚢 Battleships 💥</h1>
+  <div class="q">How do you want to play?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">Easy</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e53935">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="deploy">
+  <h1>⚓ Deploy Your Fleet</h1>
+  <div class="board" id="deployBoard"></div>
+  <div id="deployInfo"></div>
+  <div class="row">
+    <button id="rotate">🔄 Rotate</button>
+    <button id="randomFill">🔀 Fill randomly</button>
+  </div>
+  <button id="deployStart" style="background:#e53935" disabled>⚔️ Start Battle</button>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <div id="boards">
+    <div class="fleet">
+      <h2 id="enemyHeading">🌊 Enemy Waters</h2>
+      <div class="board" id="enemyBoard"></div>
+      <div class="status" id="enemyStatus"></div>
+    </div>
+    <div class="fleet">
+      <h2 id="myHeading">🚢 My Fleet</h2>
+      <div class="board" id="myBoard"></div>
+      <div class="status" id="myStatus"></div>
+    </div>
+  </div>
+  <div id="score">
+    <div class="tally you"><b id="sMe">0</b><span id="nameMe">You</span></div>
+    <div class="tally cpu"><b id="sCpu">0</b><span id="nameCpu">Computer</span></div>
+  </div>
+  <div class="row">
+    <button id="again">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change mode</button>
+  </div>
+  <div style="opacity:.6" id="hint">Click a cell in Enemy Waters to fire</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const N = 10;
+const LETTERS = 'ABCDEFGHIJ';
+const SHIP_DEFS = [
+  { name: 'Carrier', size: 5 },
+  { name: 'Battleship', size: 4 },
+  { name: 'Cruiser', size: 3 },
+  { name: 'Submarine', size: 3 },
+  { name: 'Destroyer', size: 2 },
+];
+const MODES = ['Easy', 'Hard', 'Robot vs robot (watch)'];
+const WATCH = 2;
+
+let diff = 0, watchMode = false, round = 0, over = false, turn = 'me', busy = false;
+let me, cpu;                 // { board: [][], ships: [{ name, size, cells, hits, sunk }] }
+let myShots, cpuShots;       // grids of null / 'hit' / 'miss' — what each side has fired AT the opponent
+let myCells, enemyCells;     // the DOM cells, built fresh each round
+let deployBoard, deployCells, placing;
+let aiQueueMe = [], aiQueueCpu = [];
+let score = { me: 0, cpu: 0 };
+
+function emptyBoard() { return Array.from({ length: N }, () => Array(N).fill(null)); }
+
+/* ---------- placing a fleet ---------- */
+function shipCellsFrom(r, c, size, orient) {
+  const cells = [];
+  for (let k = 0; k < size; k++) {
+    const rr = orient === 'h' ? r : r + k, cc = orient === 'h' ? c + k : c;
+    if (rr >= N || cc >= N) return null;
+    cells.push([rr, cc]);
+  }
+  return cells;
+}
+function fitsHere(board, cells) { return !!cells && cells.every(([r, c]) => !board[r][c]); }
+
+function deployFleet() {
+  const board = emptyBoard();
+  const ships = SHIP_DEFS.map(s => ({ ...s, cells: [], hits: 0, sunk: false }));
+  for (const ship of ships) {
+    let placed = false;
+    while (!placed) {
+      const orient = Math.random() < 0.5 ? 'h' : 'v';
+      const r = Math.floor(Math.random() * N), c = Math.floor(Math.random() * N);
+      const cells = shipCellsFrom(r, c, ship.size, orient);
+      if (fitsHere(board, cells)) { cells.forEach(([rr, cc]) => board[rr][cc] = ship); ship.cells = cells; placed = true; }
+    }
+  }
+  return { board, ships };
+}
+
+/* ---------- hull shape ---------- */
+// index 0 and the last index are the two tapered ends; everything between is a plain hull cell
+function hullParts(ship, r, c) {
+  const i = ship.cells.findIndex(([rr, cc]) => rr === r && cc === c);
+  const horiz = ship.cells.length < 2 || ship.cells[0][0] === ship.cells[1][0];
+  const pos = i === 0 ? 'end-a' : i === ship.cells.length - 1 ? 'end-b' : 'mid';
+  return [horiz ? 'horiz' : 'vert', pos];
+}
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[diff]; }
+$('less').onclick = () => { diff = (diff + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { diff = (diff + 1) % MODES.length; showMode(); };
+$('start').onclick = begin;
+
+function begin() {
+  score = { me: 0, cpu: 0 };
+  watchMode = diff === WATCH;
+  $('setup').style.display = 'none';
+  if (watchMode) startBattle(deployFleet());
+  else startDeploy();
+}
+
+/* ---------- the deploy screen ---------- */
+function buildBoard(id, { onClick, onEnter, onLeave } = {}) {
+  const el = $(id);
+  el.className = 'board' + (onClick ? ' clickable' : '');
+  el.innerHTML = '';
+  const corner = document.createElement('div'); corner.className = 'lbl'; el.appendChild(corner);
+  for (let c = 0; c < N; c++) { const l = document.createElement('div'); l.className = 'lbl'; l.textContent = LETTERS[c]; el.appendChild(l); }
+  const grid = [];
+  for (let r = 0; r < N; r++) {
+    const rowLbl = document.createElement('div'); rowLbl.className = 'lbl'; rowLbl.textContent = r + 1; el.appendChild(rowLbl);
+    const row = [];
+    for (let c = 0; c < N; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (onClick) cell.onclick = () => onClick(r, c);
+      if (onEnter) cell.onmouseenter = () => onEnter(r, c);
+      if (onLeave) cell.onmouseleave = () => onLeave(r, c);
+      el.appendChild(cell);
+      row.push(cell);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+function startDeploy() {
+  deployBoard = emptyBoard();
+  placing = { ships: SHIP_DEFS.map(s => ({ ...s, cells: [] })), idx: 0, orient: 'h' };
+  deployCells = buildBoard('deployBoard', { onClick: tryPlace, onEnter: previewAt, onLeave: clearPreview });
+  drawDeploy();
+  showDeployInfo();
+  $('deployStart').disabled = true;
+  $('deploy').style.display = 'flex';
+}
+
+function drawDeploy() {
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const el = deployCells[r][c], ship = deployBoard[r][c];
+    el.className = 'cell';
+    el.textContent = '';
+    if (ship) { const [o, p] = hullParts(ship, r, c); el.classList.add('hull', o, p); }
+  }
+}
+function showDeployInfo() {
+  const ship = placing.ships[placing.idx];
+  $('deployInfo').textContent = `Place your ${ship.name} (${ship.size} squares) — 🔄 to turn it`;
+}
+function previewAt(r, c) {
+  clearPreview();
+  const ship = placing.ships[placing.idx];
+  if (!ship) return;
+  const cells = shipCellsFrom(r, c, ship.size, placing.orient);
+  const ok = fitsHere(deployBoard, cells);
+  (cells || []).forEach(([rr, cc]) => deployCells[rr][cc].classList.add(ok ? 'preview-ok' : 'preview-bad'));
+}
+function clearPreview() {
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) deployCells[r][c].classList.remove('preview-ok', 'preview-bad');
+}
+function tryPlace(r, c) {
+  const ship = placing.ships[placing.idx];
+  if (!ship) return;
+  const cells = shipCellsFrom(r, c, ship.size, placing.orient);
+  if (!fitsHere(deployBoard, cells)) return;
+  cells.forEach(([rr, cc]) => deployBoard[rr][cc] = ship);
+  ship.cells = cells;
+  placing.idx++;
+  clearPreview();
+  drawDeploy();
+  if (placing.idx >= placing.ships.length) {
+    $('deployStart').disabled = false;
+    $('deployInfo').textContent = 'Fleet ready! Press ⚔️ Start Battle';
+  } else showDeployInfo();
+}
+$('rotate').onclick = () => { placing.orient = placing.orient === 'h' ? 'v' : 'h'; };
+$('randomFill').onclick = () => {
+  for (; placing.idx < placing.ships.length; placing.idx++) {
+    const ship = placing.ships[placing.idx];
+    let placed = false;
+    while (!placed) {
+      const orient = Math.random() < 0.5 ? 'h' : 'v';
+      const r = Math.floor(Math.random() * N), c = Math.floor(Math.random() * N);
+      const cells = shipCellsFrom(r, c, ship.size, orient);
+      if (fitsHere(deployBoard, cells)) { cells.forEach(([rr, cc]) => deployBoard[rr][cc] = ship); ship.cells = cells; placed = true; }
+    }
+  }
+  drawDeploy();
+  $('deployStart').disabled = false;
+  $('deployInfo').textContent = 'Fleet ready! Press ⚔️ Start Battle';
+};
+$('deployStart').onclick = () => {
+  const ships = placing.ships.map(s => ({ ...s, hits: 0, sunk: false }));
+  $('deploy').style.display = 'none';
+  startBattle({ board: deployBoard, ships });
+};
+
+/* ---------- the battle ---------- */
+function startBattle(myFleet) {
+  me = myFleet;
+  cpu = deployFleet();
+  myShots = emptyBoard(); cpuShots = emptyBoard();
+  aiQueueMe = []; aiQueueCpu = [];
+  over = false; turn = 'me'; busy = false;
+  round++;
+  myCells = buildBoard('myBoard', {});
+  enemyCells = buildBoard('enemyBoard', watchMode ? {} : { onClick: fireAt });
+
+  $('myHeading').textContent = watchMode ? '🤖 Robot A' : '🚢 My Fleet';
+  $('enemyHeading').textContent = watchMode ? '🤖 Robot B' : '🌊 Enemy Waters';
+  $('nameMe').textContent = watchMode ? 'Robot A' : 'You';
+  $('nameCpu').textContent = watchMode ? 'Robot B' : 'Computer';
+  $('hint').textContent = watchMode ? 'Just sit back and watch the battle!' : 'Click a cell in Enemy Waters to fire';
+
+  $('game').style.display = 'flex';
+  drawBoards(); showScore(); showStatus();
+  if (watchMode) { $('turn').textContent = 'Battle starting...'; setTimeout(robotMeTurn, 700); }
+  else $('turn').textContent = 'Your turn — fire at Enemy Waters';
+}
+
+$('again').onclick = () => { if (watchMode) startBattle(deployFleet()); else startDeploy(); };
+$('change').onclick = () => {
+  over = true; round++;   // bumping round cancels any in-flight animation callbacks
+  $('game').style.display = 'none';
+  $('setup').style.display = 'flex';
+};
+
+function renderCell(el, ship, state, revealUnfired, r, c) {
+  el.className = 'cell';
+  el.textContent = '';
+  if (state === 'miss') { el.classList.add('miss'); el.textContent = '·'; return; }
+  if (state === 'hit') {
+    el.classList.add(ship.sunk ? 'burnt' : 'hit');
+    el.textContent = ship.sunk ? '' : '💥';
+    return;
+  }
+  if (ship && revealUnfired) { const [o, p] = hullParts(ship, r, c); el.classList.add('hull', o, p); }
+}
+function drawBoards() {
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    renderCell(myCells[r][c], me.board[r][c], myShots[r][c], true, r, c);
+    renderCell(enemyCells[r][c], cpu.board[r][c], cpuShots[r][c], watchMode, r, c);
+  }
+}
+function fleetLeft(ships) { return ships.filter(s => !s.sunk).length; }
+function showStatus() {
+  $('myStatus').textContent = `${fleetLeft(me.ships)} of ${me.ships.length} ships afloat`;
+  $('enemyStatus').textContent = `${fleetLeft(cpu.ships)} of ${cpu.ships.length} ships afloat`;
+}
+function showScore() { $('sMe').textContent = score.me; $('sCpu').textContent = score.cpu; }
+
+/* ---------- a shot flying in ---------- */
+function fireBullet(targetCellEl, boardEl) {
+  return new Promise(resolve => {
+    const b = document.createElement('div');
+    b.className = 'bullet';
+    b.textContent = '💣';
+    document.body.appendChild(b);
+    const boardRect = boardEl.getBoundingClientRect();
+    const targetRect = targetCellEl.getBoundingClientRect();
+    const startX = boardRect.left + boardRect.width / 2, startY = boardRect.top - 36;
+    const endX = targetRect.left + targetRect.width / 2, endY = targetRect.top + targetRect.height / 2;
+    b.style.left = startX + 'px'; b.style.top = startY + 'px';
+    b.style.transform = 'translate(-50%,-50%)';
+    requestAnimationFrame(() => {
+      b.style.transition = 'left .32s ease-in, top .32s ease-in, transform .32s ease-in';
+      b.style.left = endX + 'px'; b.style.top = endY + 'px';
+      b.style.transform = 'translate(-50%,-50%) scale(.6) rotate(360deg)';
+    });
+    setTimeout(() => { b.remove(); resolve(); }, 340);
+  });
+}
+
+/* ---------- a ship sinking: its hull fades in, then it catches fire ---------- */
+function sinkAnimation(ship, cellsGrid, rid) {
+  return new Promise(resolve => {
+    const spots = ship.cells.map(([r, c]) => ({ el: cellsGrid[r][c], r, c }));
+    spots.forEach(({ el, r, c }, i) => {
+      setTimeout(() => {
+        if (rid !== round) return;
+        const [o, p] = hullParts(ship, r, c);
+        el.className = `cell hull ${o} ${p} igniting`;
+        el.textContent = '';
+      }, i * 90);
+    });
+    const afterFade = spots.length * 90 + 250;
+    spots.forEach(({ el }, i) => {
+      setTimeout(() => {
+        if (rid !== round) return;
+        el.classList.remove('igniting');
+        el.classList.add('burning');
+        el.textContent = '🔥';
+      }, afterFade + i * 70);
+    });
+    setTimeout(resolve, afterFade + spots.length * 70 + 850);
+  });
+}
+
+/* ---------- a whole fleet lost: the entire board catches fire ---------- */
+function burnBoard(cellsGrid, rid) {
+  return new Promise(resolve => {
+    const order = [];
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) order.push([r, c]);
+    order.sort(() => Math.random() - 0.5);
+    order.forEach(([r, c], i) => {
+      setTimeout(() => {
+        if (rid !== round) return;
+        cellsGrid[r][c].classList.add('burning');
+        cellsGrid[r][c].textContent = '🔥';
+      }, i * 12);
+    });
+    setTimeout(() => {
+      if (rid === round) order.forEach(([r, c]) => {
+        cellsGrid[r][c].classList.remove('burning');
+        cellsGrid[r][c].classList.add('burnt');
+        cellsGrid[r][c].textContent = '';
+      });
+      resolve();
+    }, order.length * 12 + 750);
+  });
+}
+
+/* ---------- firing, for anyone: the player, the computer, or either robot ---------- */
+async function doFire(firer, r, c) {
+  const rid = round;
+  const isMe = firer === 'me';
+  const targetBoard = isMe ? cpu : me;
+  const targetShots = isMe ? cpuShots : myShots;
+  const targetCells = isMe ? enemyCells : myCells;
+  const targetBoardEl = isMe ? $('enemyBoard') : $('myBoard');
+
+  await fireBullet(targetCells[r][c], targetBoardEl);
+  if (rid !== round) return;
+
+  const ship = targetBoard.board[r][c];
+  targetShots[r][c] = ship ? 'hit' : 'miss';
+  drawBoards(); showStatus();
+
+  if (ship) {
+    ship.hits++;
+    if (ship.hits === ship.size) {
+      ship.sunk = true;
+      await sinkAnimation(ship, targetCells, rid);
+      if (rid !== round) return;
+      drawBoards(); showStatus();
+    } else {
+      (isMe ? aiQueueMe : aiQueueCpu).push(...neighbours(targetShots, r, c));
+    }
+  }
+
+  if (targetBoard.ships.every(s => s.sunk)) {
+    await burnBoard(targetCells, rid);
+    if (rid !== round) return;
+    endRound(firer);
+    return;
+  }
+
+  turn = isMe ? 'cpu' : 'me';
+  afterTurnSwitch();
+}
+
+function afterTurnSwitch() {
+  if (over) return;
+  if (turn === 'cpu') setTimeout(cpuTurn, 500);
+  else if (watchMode) setTimeout(robotMeTurn, 700);
+  else $('turn').textContent = 'Your turn — fire at Enemy Waters';
+}
+
+function fireAt(r, c) {
+  if (over || turn !== 'me' || watchMode || busy || cpuShots[r][c]) return;
+  busy = true;
+  doFire('me', r, c).then(() => { busy = false; });
+}
+
+function showRobotThinking(text, rid, cb) {
+  if (rid !== round || over) return;
+  $('turn').innerHTML = '<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>';
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  let i = 0;
+  (function next() {
+    if (rid !== round || over) return;
+    caret.classList.add('typing');
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, 70 * (0.6 + Math.random() * 0.8));
+    else {
+      caret.classList.remove('typing');
+      setTimeout(() => { if (rid === round && !over) cb(); }, 450);
+    }
+  })();
+}
+function cpuTurn() {
+  const rid = round;
+  showRobotThinking(watchMode ? 'Robot B taking aim...' : 'Computer taking aim...', rid, () => {
+    const [r, c] = pickShot(myShots, aiQueueCpu, diff === 1 || watchMode);
+    doFire('cpu', r, c);
+  });
+}
+function robotMeTurn() {
+  const rid = round;
+  showRobotThinking('Robot A taking aim...', rid, () => {
+    const [r, c] = pickShot(cpuShots, aiQueueMe, true);
+    doFire('me', r, c);
+  });
+}
+
+function neighbours(shotsGrid, r, c) {
+  return [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].filter(([rr, cc]) => rr >= 0 && rr < N && cc >= 0 && cc < N && !shotsGrid[rr][cc]);
+}
+function openCells(shotsGrid) {
+  const spots = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!shotsGrid[r][c]) spots.push([r, c]);
+  return spots;
+}
+function pickShot(shotsGrid, queue, hard) {
+  if (hard) {
+    while (queue.length) {
+      const [r, c] = queue.shift();
+      if (!shotsGrid[r][c]) return [r, c];
+    }
+  }
+  const spots = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (shotsGrid[r][c]) continue;
+    if (hard && (r + c) % 2) continue;   // hard: hunt on a checkerboard first
+    spots.push([r, c]);
+  }
+  const pool = spots.length ? spots : openCells(shotsGrid);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function endRound(winner) {
+  over = true;
+  score[winner]++;
+  showScore();
+  if (watchMode) $('turn').textContent = winner === 'me' ? '🎉 Robot A wins!' : '🎉 Robot B wins!';
+  else $('turn').textContent = winner === 'me' ? '🎉 You sank the whole fleet!' : '💥 The computer sank your fleet!';
+}
+
+/* ---------- keyboard, setup screen only ---------- */
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') $('less').click();
+  if (e.key === 'ArrowRight') $('more').click();
+  if (e.key === 'Enter') begin();
+});
+
+showMode();
+</script>
+</body>
+</html>

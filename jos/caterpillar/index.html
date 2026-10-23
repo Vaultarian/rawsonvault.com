@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caterpillar — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Caterpillar (Dots and Boxes) =====
+       Click a line between two dots to draw it. Finish the 4th side of a box and you
+       win that square — and get another turn. Most squares when the lines run out wins. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#f3fbe9; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.2rem; min-width:280px; text-align:center; }
+
+    #game { display:none; min-height:100vh; padding:56px 16px 20px; flex-direction:column; align-items:center; gap:14px; }
+    #turn { font-family:'Fredoka One',cursive; font-size:1.8rem; height:2.6rem; display:flex; align-items:center; }
+
+    /* ---- the grid of dots, lines and boxes ---- */
+    #board {
+      --dotw: 11px; --boxw: clamp(26px, 7.5vw, 46px);
+      display:grid;
+      grid-template-columns: var(--dotw) repeat(5, var(--boxw) var(--dotw));
+      grid-template-rows: var(--dotw) repeat(5, var(--boxw) var(--dotw));
+      background:#fff; padding:10px; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,.08);
+    }
+    .dot { width:var(--dotw); height:var(--dotw); background:#223; border-radius:50%; justify-self:center; align-self:center; z-index:2; }
+    .edge { position:relative; cursor:pointer; }
+    .edge.h { width:var(--boxw); height:var(--dotw); }
+    .edge.v { width:var(--dotw); height:var(--boxw); }
+    .edge::after { content:''; position:absolute; background:#d8e2e6; border-radius:3px; transition:background .12s; }
+    .edge.h::after { left:1px; right:1px; top:50%; height:4px; transform:translateY(-50%); }
+    .edge.v::after { top:1px; bottom:1px; left:50%; width:4px; transform:translateX(-50%); }
+    #board:not(.locked) .edge:not(.filled):hover::after { background:#9fb3bb; }
+    .edge.filled::after { background:var(--line-color); }
+    .edge.h.filled::after { height:6px; }
+    .edge.v.filled::after { width:6px; }
+    #board.locked .edge:not(.filled) { cursor:default; }
+    .box { width:var(--boxw); height:var(--boxw); display:flex; align-items:center; justify-content:center;
+           font-size:calc(var(--boxw) * 0.55); border-radius:6px; transition:background .15s; }
+    .box.A { background:rgba(67,160,71,.18); }
+    .box.B { background:rgba(251,140,0,.18); }
+
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .tally.a b { color:#43a047; } .tally.b b { color:#fb8c00; }
+    .row { display:flex; gap:12px; }
+
+    /* the robot's screen, same look as Connect 4 and Tic-Tac-Toe */
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>🐛 Caterpillar 🐛</h1>
+  <div class="q">Who are you playing?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">A friend</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#43a047">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <div id="board"></div>
+  <div id="score">
+    <div class="tally a"><b id="sa">0</b><span id="na">Green</span></div>
+    <div class="tally b"><b id="sb">0</b><span id="nb">Orange</span></div>
+  </div>
+  <div class="row">
+    <button id="again">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change players</button>
+  </div>
+  <div style="opacity:.6">Click a line to draw it. Finish a box and go again!</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const BOXES = 5, DOTS = BOXES + 1;
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)'];
+const COLOUR = { A: '#43a047', B: '#fb8c00' };
+
+let H, V, boxOwner, cellEls;
+let mode = 0, round = 0, turn = 'A', over = false, starter = 'A', score = { A: 0, B: 0 };
+
+function emptyBoard() {
+  H = Array.from({ length: DOTS }, () => Array(BOXES).fill(null));
+  V = Array.from({ length: BOXES }, () => Array(DOTS).fill(null));
+  boxOwner = Array.from({ length: BOXES }, () => Array(BOXES).fill(null));
+}
+
+/* ---------- the rules ---------- */
+function sidesFilled(r, c) { return (H[r][c] ? 1 : 0) + (H[r + 1][c] ? 1 : 0) + (V[r][c] ? 1 : 0) + (V[r][c + 1] ? 1 : 0); }
+function boxesTouchedBy(type, i, j) {
+  if (type === 'h') return [i - 1 >= 0 && [i - 1, j], i < BOXES && [i, j]].filter(Boolean);
+  return [j - 1 >= 0 && [i, j - 1], j < BOXES && [i, j]].filter(Boolean);
+}
+function allEmptyEdges() {
+  const out = [];
+  for (let r = 0; r < DOTS; r++) for (let c = 0; c < BOXES; c++) if (!H[r][c]) out.push({ type: 'h', i: r, j: c });
+  for (let r = 0; r < BOXES; r++) for (let c = 0; c < DOTS; c++) if (!V[r][c]) out.push({ type: 'v', i: r, j: c });
+  return out;
+}
+
+/* ---------- the grid ---------- */
+function buildGrid() {
+  const el = $('board');
+  el.innerHTML = '';
+  cellEls = [];
+  for (let r = 0; r <= 2 * BOXES; r++) {
+    const row = [];
+    for (let c = 0; c <= 2 * BOXES; c++) {
+      const d = document.createElement('div');
+      const evenR = r % 2 === 0, evenC = c % 2 === 0;
+      if (evenR && evenC) d.className = 'dot';
+      else if (evenR && !evenC) { d.className = 'edge h'; const i = r / 2, j = (c - 1) / 2; d.onclick = () => playEdge('h', i, j); }
+      else if (!evenR && evenC) { d.className = 'edge v'; const i = (r - 1) / 2, j = c / 2; d.onclick = () => playEdge('v', i, j); }
+      else d.className = 'box';
+      el.appendChild(d);
+      row.push(d);
+    }
+    cellEls.push(row);
+  }
+}
+const hEl = (i, j) => cellEls[i * 2][j * 2 + 1];
+const vEl = (i, j) => cellEls[i * 2 + 1][j * 2];
+const boxEl = (i, j) => cellEls[i * 2 + 1][j * 2 + 1];
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[mode]; }
+$('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+$('start').onclick = begin;
+
+function begin() {
+  score = { A: 0, B: 0 };
+  starter = 'A';
+  $('na').textContent = mode === 0 ? 'Green' : 'You (Green)';
+  $('nb').textContent = mode === 0 ? 'Orange' : 'Computer (Orange)';
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  newRound();
+}
+$('change').onclick = () => { round++; $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+$('again').onclick = () => { starter = starter === 'A' ? 'B' : 'A'; newRound(); };
+
+function newRound() {
+  round++;
+  emptyBoard();
+  buildGrid();
+  turn = starter; over = false;
+  showScore(); showTurn();
+  if (computerTurn()) robotThink();
+}
+
+const computerTurn = () => mode > 0 && turn === 'B' && !over;
+const name = p => mode === 0 ? (p === 'A' ? 'Green' : 'Orange') : (p === 'A' ? 'You' : 'The computer');
+function showScore() { $('sa').textContent = score.A; $('sb').textContent = score.B; }
+function showTurn() {
+  $('board').classList.toggle('locked', computerTurn());
+  if (over || computerTurn()) return;
+  $('turn').innerHTML = mode === 0 ? `<span style="color:${COLOUR[turn]}">${name(turn)}</span>'s turn` : 'Your turn';
+}
+
+/* ---------- playing a line ---------- */
+function playEdge(type, i, j) {
+  if (over || computerTurn()) return;
+  if ((type === 'h' && H[i][j]) || (type === 'v' && V[i][j])) return;
+  commitEdge(type, i, j, turn);
+}
+
+function commitEdge(type, i, j, who) {
+  const grid = type === 'h' ? H : V;
+  grid[i][j] = who;
+  const el = type === 'h' ? hEl(i, j) : vEl(i, j);
+  el.classList.add('filled');
+  el.style.setProperty('--line-color', COLOUR[who]);
+
+  let captured = 0;
+  boxesTouchedBy(type, i, j).forEach(([br, bc]) => {
+    if (!boxOwner[br][bc] && sidesFilled(br, bc) === 4) {
+      boxOwner[br][bc] = who;
+      captured++;
+      const bel = boxEl(br, bc);
+      bel.classList.add(who);
+      bel.textContent = who === 'A' ? '🟢' : '🟠';
+    }
+  });
+  if (captured) score[who] += captured;
+  showScore();
+
+  if (allEmptyEdges().length === 0) { finish(); return; }
+  if (!captured) turn = turn === 'A' ? 'B' : 'A';
+  showTurn();
+  if (computerTurn()) robotThink();
+}
+
+function finish() {
+  over = true;
+  $('board').classList.add('locked');
+  if (score.A === score.B) { $('turn').textContent = "🤝 It's a tie!"; return; }
+  const winner = score.A > score.B ? 'A' : 'B';
+  $('turn').textContent = `🎉 ${name(winner)} ${name(winner) === 'You' ? 'win' : 'wins'}!`;
+}
+
+/* ---------- the robot's turn ---------- */
+function robotThink() {
+  const r = round;
+  const still = () => r === round && computerTurn();
+  $('turn').innerHTML = '<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>';
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  const text = 'Computer thinking...';
+  let i = 0;
+  (function next() {
+    if (!still()) return;
+    caret.classList.add('typing');
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, 90 * (0.6 + Math.random() * 0.8));
+    else {
+      caret.classList.remove('typing');
+      setTimeout(() => { if (still()) commitEdge(...Object.values(pickMove(mode === 2)), 'B'); }, 650);
+    }
+  })();
+}
+
+/* ---------- the computer's brain ---------- */
+// Always takes a free box. Otherwise plays safe (no 3-sided gift) when it can.
+// Hard mode, when forced to gift, gives away the smallest possible chain.
+function wouldCapture(e) { return boxesTouchedBy(e.type, e.i, e.j).some(([r, c]) => sidesFilled(r, c) === 3); }
+function giftCount(e) { return boxesTouchedBy(e.type, e.i, e.j).filter(([r, c]) => sidesFilled(r, c) === 2).length; }
+function pickMove(hard) {
+  const edges = allEmptyEdges();
+  const captures = edges.filter(wouldCapture);
+  if (captures.length) return captures[Math.floor(Math.random() * captures.length)];
+  const safe = edges.filter(e => giftCount(e) === 0);
+  if (!hard) return (safe.length ? safe : edges)[Math.floor(Math.random() * (safe.length || edges.length))];
+  if (safe.length) return safe[Math.floor(Math.random() * safe.length)];
+  let best = edges[0], bestN = Infinity;
+  for (const e of edges) { const n = giftCount(e); if (n < bestN) { bestN = n; best = e; } }
+  return best;
+}
+
+/* ---------- keyboard, setup screen only ---------- */
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') $('less').click();
+  if (e.key === 'ArrowRight') $('more').click();
+  if (e.key === 'Enter') begin();
+});
+
+showMode();
+</script>
+</body>
+</html>

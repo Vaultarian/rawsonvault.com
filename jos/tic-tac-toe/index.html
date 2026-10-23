@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Tic-Tac-Toe =====
+       X goes first. Get three in a row (across, down or corner to corner) to win.
+       Play a friend, or play the computer. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#e6f4ff; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.6rem; min-width:300px; text-align:center; }
+
+    #game { display:none; min-height:100vh; padding:60px 16px 20px; flex-direction:column; align-items:center; gap:18px; }
+    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; display:flex; align-items:center; }
+    /* the robot's screen: white letters typed out, with the blinking typing bar from the lava lamp clock */
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+    #grid { position:relative; display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:repeat(3, 1fr); gap:10px; background:#223;
+            padding:10px; border-radius:18px; width:min(420px, 92vw); aspect-ratio:1; }
+    .cell { background:#fff; border-radius:10px; min-width:0; min-height:0; overflow:hidden; line-height:1; display:flex; align-items:center; justify-content:center;
+            font-family:'Fredoka One',cursive; font-size:clamp(3rem, 16vw, 6.5rem); cursor:pointer; }
+    .cell:hover:empty { background:#f3f8ff; }
+    .cell.x { color:#e5533d; }
+    .cell.o { color:#1e88e5; }
+    .cell.pop { animation:pop .25s ease-out; }
+    .cell svg { width:88%; height:88%; overflow:visible; }
+    .cell.painted { animation:none; }
+    .brush { font-size:30px; pointer-events:none; }
+    /* the big brush that flies in from the corner and crosses out the winning line */
+    .flybrush { position:fixed; left:0; top:0; font-size:56px; line-height:1; z-index:60; pointer-events:none;
+                transition:transform .8s cubic-bezier(.3,.1,.3,1), opacity .3s; }
+    .winline { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; overflow:visible; }
+    .cell.win { background:#fff59d; animation:wiggle .5s ease-in-out 2; }
+    @keyframes pop { 0% { transform:scale(.2); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
+    @keyframes wiggle { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-8deg); } 75% { transform:rotate(8deg); } }
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .tally.x b { color:#e5533d; } .tally.o b { color:#1e88e5; }
+    .row { display:flex; gap:12px; }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>❌ Tic-Tac-Toe ⭕</h1>
+  <div class="q">Who are you playing?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">A friend</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e5533d">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <div id="grid"></div>
+  <!-- the rough paint edge: wobbles the outline of every brush stroke -->
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </svg>
+  <div id="score">
+    <div class="tally x"><b id="sx">0</b><span id="nx">X</span></div>
+    <div class="tally"><b id="sd">0</b>Draws</div>
+    <div class="tally o"><b id="so">0</b><span id="no">O</span></div>
+  </div>
+  <div class="row">
+    <button id="again" style="background:#e5533d">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change players</button>
+  </div>
+</div>
+
+<script>
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)'];
+const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const $ = id => document.getElementById(id);
+let round = 0, mode = 0, board, turn, over, score = { X: 0, O: 0, D: 0 }, starter = 'X';
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[mode]; }
+$('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+$('start').onclick = begin;
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') $('less').click();
+  if (e.key === 'ArrowRight') $('more').click();
+  if (e.key === 'Enter') begin();
+});
+
+function begin() {
+  score = { X: 0, O: 0, D: 0 };
+  starter = 'X';
+  $('nx').textContent = mode === 0 ? 'X' : 'You (X)';
+  $('no').textContent = mode === 0 ? 'O' : 'Computer (O)';
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  newRound();
+}
+$('change').onclick = () => { $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+$('again').onclick = () => { starter = starter === 'X' ? 'O' : 'X'; newRound(); };  // take turns going first
+
+/* ---------- the board ---------- */
+function newRound() {
+  round++;
+  document.querySelectorAll('.flybrush').forEach(b => b.remove());
+  board = Array(9).fill('');
+  turn = starter;
+  over = false;
+  $('grid').innerHTML = board.map((_, i) => `<div class="cell" data-i="${i}"></div>`).join('');
+  document.querySelectorAll('.cell').forEach(c => c.onclick = () => humanMove(+c.dataset.i));
+  showScore();
+  showTurn();
+  if (computerTurn()) robotThink();
+}
+
+function computerTurn() { return mode > 0 && turn === 'O' && !over; }
+
+function showTurn() {
+  const who = mode === 0 ? turn : (turn === 'X' ? 'Your' : 'Computer\'s');
+  $('turn').innerHTML = mode === 0
+    ? `<span style="color:${turn === 'X' ? '#e5533d' : '#1e88e5'}">${turn}</span>'s turn`
+    : `${who} turn`;
+}
+
+function showScore() { $('sx').textContent = score.X; $('so').textContent = score.O; $('sd').textContent = score.D; }
+
+function humanMove(i) {
+  if (over || board[i] || computerTurn()) return;
+  place(i);
+  if (computerTurn()) robotThink();
+}
+
+function place(i) {
+  board[i] = turn;
+  const c = document.querySelector(`.cell[data-i="${i}"]`);
+  c.classList.add(turn.toLowerCase(), 'painted');
+  paint(c, turn);
+  const line = winner(board);
+  if (line) return finish(line);
+  if (board.every(Boolean)) return finish(null);
+  turn = turn === 'X' ? 'O' : 'X';
+  showTurn();
+}
+
+function winner(b) {
+  return LINES.find(([a, c, d]) => b[a] && b[a] === b[c] && b[a] === b[d]) || null;
+}
+
+function finish(line) {
+  over = true;
+  if (line) {
+    line.forEach(i => document.querySelector(`.cell[data-i="${i}"]`).classList.add('win'));
+    const r = round;
+    setTimeout(() => { if (r === round) crossOut(line); }, 700);   // wait for the last mark to be painted
+    score[turn]++;
+    const name = mode === 0 ? turn : (turn === 'X' ? 'You' : 'The computer');
+    $('turn').textContent = `🎉 ${name} ${name === 'You' ? 'win' : 'wins'}!`;
+  } else {
+    score.D++;
+    $('turn').textContent = '🤝 It\'s a draw!';
+  }
+  showScore();
+}
+
+/* ---------- the paintbrush ---------- */
+// Each mark is made of brush strokes. A stroke = a thick red/blue line with a rough edge,
+// plus thin white streaks inside it (the dry bits of the brush).
+// The 🖌️ moves along the line while it is drawn.
+const RED = '#e53935', BLUE = '#1e88e5';
+const NS = 'http://www.w3.org/2000/svg';
+
+function oPath() {
+  // goes round 1.15 times, a little wonky, so the end overlaps the start like a real brush
+  const pts = [];
+  for (let k = 0; k <= 120; k++) {
+    const a = (-110 + k * 3.45) * Math.PI / 180;
+    const wob = 1 + 0.04 * Math.sin(k * 0.12);
+    pts.push(`${(50 + 30 * wob * Math.cos(a)).toFixed(1)} ${(52 + 34 * wob * Math.sin(a)).toFixed(1)}`);
+  }
+  return 'M' + pts.join(' L');
+}
+
+const STROKES = {
+  X: [ { d: 'M12 12 Q46 46 88 90', w: 21, ms: 260, streaks: false },
+       { d: 'M86 8 Q55 48 14 92', w: 21, ms: 260, streaks: false } ],
+  O: [ { d: oPath(), w: 19, ms: 520, streaks: true } ],
+};
+
+function line(svg, d, colour, width, extra) {
+  const el = document.createElementNS(NS, 'path');
+  el.setAttribute('d', d);
+  el.setAttribute('fill', 'none');
+  el.setAttribute('stroke', colour);
+  el.setAttribute('stroke-width', width);
+  el.setAttribute('stroke-linecap', 'butt');
+  el.setAttribute('stroke-linejoin', 'round');
+  Object.entries(extra || {}).forEach(([k, v]) => el.setAttribute(k, v));
+  svg.appendChild(el);
+  return el;
+}
+
+function paint(cell, mark) {
+  const colour = mark === 'X' ? RED : BLUE;
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('filter', 'url(#rough)');
+  svg.appendChild(g);
+  cell.innerHTML = '';
+  cell.appendChild(svg);
+
+  const brush = document.createElementNS(NS, 'text');
+  brush.setAttribute('class', 'brush');
+  brush.textContent = '🖌️';
+
+  let delay = 0;
+  STROKES[mark].forEach(st => {
+    const main = line(g, st.d, colour, st.w);
+    // white streaks, slightly off the middle, broken up into dashes
+    const streaks = !st.streaks ? [] : [
+      line(g, st.d, '#fff', 1.4, { transform: 'translate(3 -1)', 'stroke-dasharray': '0 60 70 300' }),
+      line(g, st.d, '#fff', 1.0, { transform: 'translate(5 -2)', 'stroke-dasharray': '0 70 55 300' }),
+    ];
+    const len = main.getTotalLength();
+    [main, ...streaks].forEach(el => { el.style.strokeDasharray = el === main ? len : el.getAttribute('stroke-dasharray');
+                                    el.style.opacity = 0; });
+    main.style.strokeDashoffset = len;
+    // white streaks use a mask-like trick: show them only once the paint has reached them
+    setTimeout(() => animateStroke(svg, brush, main, streaks, len, st.ms), delay);
+    delay += st.ms + 60;
+  });
+  setTimeout(() => brush.remove(), delay + 120);
+}
+
+function animateStroke(svg, brush, main, streaks, len, ms) {
+  svg.appendChild(brush);
+  main.style.opacity = 1;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - start) / ms);
+    const e = 1 - Math.pow(1 - t, 2);              // fast at the start, slows at the end
+    main.style.strokeDashoffset = len * (1 - e);
+    streaks.forEach(s => s.style.opacity = e > 0.85 ? 1 : 0);
+    const p = main.getPointAtLength(len * e);
+    const shake = Math.sin(now / 18) * 2;           // vigorous!
+    brush.setAttribute('x', p.x + shake);
+    brush.setAttribute('y', p.y + 4);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  // if the tab was hidden mid-stroke, make sure the mark still ends up finished
+  setTimeout(() => { main.style.strokeDashoffset = 0; streaks.forEach(s => s.style.opacity = 1); }, ms + 50);
+}
+
+/* ---------- crossing out the winning line ---------- */
+// A big 🖌️ slides in from the top-right corner of the screen to the start of the line,
+// then paints a thick rough stroke through the three winning squares.
+function crossOut(line) {
+  const grid = $('grid'), g = grid.getBoundingClientRect();
+  const mid = i => { const c = document.querySelector(`.cell[data-i="${i}"]`).getBoundingClientRect();
+                     return { x: c.left + c.width / 2 - g.left, y: c.top + c.height / 2 - g.top }; };
+  const a = mid(line[0]), b = mid(line[2]);
+  // stretch the line a bit past the first and last squares
+  const dx = b.x - a.x, dy = b.y - a.y, k = 0.22;
+  const p1 = { x: a.x - dx * k, y: a.y - dy * k }, p2 = { x: b.x + dx * k, y: b.y + dy * k };
+
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'winline');
+  svg.setAttribute('viewBox', `0 0 ${g.width} ${g.height}`);
+  const stroke = document.createElementNS(NS, 'path');
+  stroke.setAttribute('d', `M${p1.x} ${p1.y} L${p2.x} ${p2.y}`);
+  Object.entries({ fill: 'none', stroke: '#223', 'stroke-width': g.width * 0.06, 'stroke-linecap': 'round',
+                   filter: 'url(#rough)', opacity: 0.9 }).forEach(([key, v]) => stroke.setAttribute(key, v));
+  svg.appendChild(stroke);
+  grid.appendChild(svg);
+  const len = stroke.getTotalLength();
+  stroke.style.strokeDasharray = len;
+  stroke.style.strokeDashoffset = len;
+
+  // the brush: its tip is its bottom-left corner, so place it there
+  const brush = document.createElement('div');
+  brush.className = 'flybrush';
+  brush.textContent = '🖌️';
+  document.body.appendChild(brush);
+  const size = 56;
+  const at = (x, y) => `translate(${x}px, ${y - size}px)`;
+  brush.style.transform = at(window.innerWidth + 20, -20);         // off the top-right corner
+  brush.getBoundingClientRect();                                  // let the browser see the start place
+  brush.style.transform = at(g.left + p1.x, g.top + p1.y);        // slide down to the start of the line
+
+  setTimeout(() => {
+    brush.style.transition = 'opacity .3s';
+    const start = performance.now(), ms = 450;
+    function step(now) {
+      const t = Math.min(1, (now - start) / ms);
+      stroke.style.strokeDashoffset = len * (1 - t);
+      const shake = Math.sin(now / 16) * 3;
+      brush.style.transform = at(g.left + p1.x + (p2.x - p1.x) * t + shake, g.top + p1.y + (p2.y - p1.y) * t + shake);
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    setTimeout(() => { stroke.style.strokeDashoffset = 0; brush.style.opacity = 0; }, ms + 150);
+    setTimeout(() => brush.remove(), ms + 600);
+  }, 850);
+}
+
+/* ---------- robot thinking ---------- */
+// The typing bar blinks, types "Robot thinking...", blinks again, then after 2 seconds the robot moves.
+function robotThink() {
+  const r = round;
+  const still = () => r === round && computerTurn();      // stop if a new round started
+  $('turn').innerHTML = '<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>';
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  const text = 'Robot thinking...';
+  let i = 0;
+  function next() {
+    if (!still()) return;
+    caret.classList.add('typing');                         // solid while typing
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, 90 * (0.6 + Math.random() * 0.8));   // a little uneven, like real typing
+    else {
+      caret.classList.remove('typing');                    // blinking again
+      setTimeout(() => { if (still()) computerMove(); }, 2000);
+    }
+  }
+  setTimeout(next, 500);                                   // the bar blinks before the typing starts
+}
+
+/* ---------- the computer ---------- */
+// Hard: looks at every possible game to the end (minimax), so it never loses.
+// Easy: wins if it can, blocks you half the time, otherwise picks a random square.
+function computerMove() {
+  if (over) return;
+  const empty = board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+  let pick;
+  if (mode === 2) {
+    pick = best(board, 'O').i;
+  } else {
+    pick = findWin('O') ?? (Math.random() < 0.5 ? findWin('X') : null) ?? empty[Math.floor(Math.random() * empty.length)];
+  }
+  place(pick);
+}
+
+function findWin(p) {
+  for (const [a, b, c] of LINES) {
+    const v = [board[a], board[b], board[c]];
+    if (v.filter(x => x === p).length === 2 && v.includes('')) return [a, b, c][v.indexOf('')];
+  }
+  return null;
+}
+
+function best(b, p) {
+  const line = winner(b);
+  if (line) return { s: b[line[0]] === 'O' ? 1 : -1 };
+  if (b.every(Boolean)) return { s: 0 };
+  let top = null;
+  b.forEach((v, i) => {
+    if (v) return;
+    b[i] = p;
+    const s = best(b, p === 'O' ? 'X' : 'O').s;
+    b[i] = '';
+    if (!top || (p === 'O' ? s > top.s : s < top.s)) top = { i, s };
+  });
+  return top;
+}
+</script>
+</body>
+</html>

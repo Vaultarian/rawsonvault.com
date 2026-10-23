@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ludo — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Ludo =====
+       Roll a 6 to bring a counter out. Go all the way round, then up your own coloured path to the middle.
+       Land on someone and they go back to their base (not on the stars or starting squares, they are safe).
+       A 6 means roll again. Taking a counter means roll again. Exact roll to get home. All 4 home wins. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#fdf6e3; user-select:none; min-height:100vh; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+    button:disabled { opacity:.35; cursor:default; transform:none; }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.1rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.5rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:60px; height:60px; padding:0; }
+    .num { font-family:'Fredoka One',cursive; font-size:3.6rem; min-width:80px; text-align:center; }
+    .picker.on { outline:4px solid #f4b400; border-radius:50px; outline-offset:6px; }
+
+    #game { display:none; padding:56px 16px 20px; justify-content:center; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+    canvas { background:#fff; border-radius:14px; box-shadow:0 6px 20px rgba(0,0,0,.18); max-width:94vw; height:auto; touch-action:none; }
+    #side { width:280px; display:flex; flex-direction:column; gap:12px; }
+    .box { background:#fff; border-radius:16px; padding:12px 16px; box-shadow:0 4px 12px rgba(0,0,0,.1); }
+    #turn { font-family:'Fredoka One',cursive; font-size:1.35rem; min-height:2rem; }
+    #dice { font-size:5rem; line-height:1; text-align:center; height:88px; }
+    #dice.rolling { animation:shake .12s linear infinite; }
+    @keyframes shake { 0% { transform:rotate(-14deg); } 50% { transform:rotate(14deg); } 100% { transform:rotate(-14deg); } }
+    #roll { font-size:1.4rem; width:100%; padding:.8rem; background:#e5533d; }
+    #roll:hover { background:#c23e2a; }
+    #msg { min-height:2.6rem; font-weight:800; }
+    .who { display:flex; align-items:center; gap:.5rem; font-weight:800; padding:3px 0; }
+    .who .dot { width:20px; height:20px; border-radius:50%; border:2px solid #223; }
+    .who.now { text-decoration:underline; text-underline-offset:4px; }
+    .who .home { margin-left:auto; }
+    #speedRow { display:none; align-items:center; gap:8px; font-family:'Fredoka One',cursive; }
+    #speedRow input { flex:1; accent-color:#e5533d; }
+    .robot { background:#223; color:#fff; border-radius:12px; padding:.1rem .7rem; display:inline-block; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>🎲 Ludo 🏠</h1>
+  <div class="q">How many players?</div>
+  <div class="picker on" id="pickPlayers"><button data-d="-1">←</button><div class="num" id="numPlayers">4</div><button data-d="1">→</button></div>
+  <div class="q">How many of them are robots? 🤖</div>
+  <div class="picker" id="pickRobots"><button data-d="-1">←</button><div class="num" id="numRobots">3</div><button data-d="1">→</button></div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e5533d">Enter</button>
+  <div>← → to change, ↑ ↓ to switch, Enter to start</div>
+</div>
+
+<div id="game">
+  <canvas id="board" width="600" height="600"></canvas>
+  <div id="side">
+    <div class="box"><div id="turn"></div></div>
+    <div class="box"><div id="dice">🎲</div></div>
+    <button id="roll">Roll the dice</button>
+    <div class="box" id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span></div>
+    <div class="box" id="msg">Press Roll, or the Space bar.</div>
+    <div class="box" id="players"></div>
+    <button id="restart" style="background:#fff;color:#223">New game</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const cv = $('board'), ctx = cv.getContext('2d');
+const N = 15, S = cv.width / N;                       // the board is 15 x 15 squares
+const COLOURS = { red: '#e53935', green: '#43a047', yellow: '#fbc02d', blue: '#1e88e5' };
+const LIGHT = { red: '#ffcdd2', green: '#c8e6c9', yellow: '#fff3c4', blue: '#bbdefb' };
+const ORDER = ['red', 'green', 'yellow', 'blue'];      // turn order, going round the board
+const FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+/* ---------- the track ----------
+   52 squares round the outside, as [column, row]. Square 0 is Red's starting square. */
+const TRACK = [];
+const seg = (c, r, dc, dr, n) => { for (let k = 0; k < n; k++) TRACK.push([c + dc * k, r + dr * k]); };
+seg(1, 6, 1, 0, 5); seg(6, 5, 0, -1, 6); seg(7, 0, 1, 0, 2);
+seg(8, 1, 0, 1, 5); seg(9, 6, 1, 0, 6); seg(14, 7, 0, 1, 2);
+seg(13, 8, -1, 0, 5); seg(8, 9, 0, 1, 6); seg(7, 14, -1, 0, 2);
+seg(6, 13, 0, -1, 5); seg(5, 8, -1, 0, 6); seg(0, 7, 0, -1, 2);
+const START = { red: 0, green: 13, yellow: 26, blue: 39 };
+const SAFE = new Set([0, 8, 13, 21, 26, 34, 39, 47]);   // starting squares and stars
+// each colour's own path to the middle: 5 squares, then the finish
+const HOME = {
+  red:    [[1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [6.4, 7]],
+  green:  [[7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6.4]],
+  yellow: [[13, 7], [12, 7], [11, 7], [10, 7], [9, 7], [7.6, 7]],
+  blue:   [[7, 13], [7, 12], [7, 11], [7, 10], [7, 9], [7, 7.6]],
+};
+const BASE = { red: [1.5, 1.5], green: [10.5, 1.5], yellow: [10.5, 10.5], blue: [1.5, 10.5] };   // top-left of each base's inner box
+const FINISH = 56;                                     // steps: 0-50 = the track, 51-55 = home path, 56 = home!
+
+/* A counter's position is how far it has gone: -1 = in base, 0 = on its starting square, 56 = home. */
+let players = [], now = 0, dice = 0, busy = false, sixes = 0, over = false, round = 0, speed = 1, choosing = null;
+const fast = ms => ms / speed;
+const absSquare = (col, step) => (START[col] + step) % 52;
+
+function cellOf(col, step, k) {
+  if (step < 0) { const [bc, br] = BASE[col]; return [bc + (k % 2) * 2 + 0.5, br + Math.floor(k / 2) * 2 + 0.5]; }
+  if (step <= 50) return TRACK[absSquare(col, step)];
+  return HOME[col][step - 51];
+}
+
+/* ---------- setup ---------- */
+let howMany = 4, robots = 3, which = 0;
+function showSetup() {
+  $('numPlayers').textContent = howMany; $('numRobots').textContent = robots;
+  $('pickPlayers').classList.toggle('on', which === 0); $('pickRobots').classList.toggle('on', which === 1);
+}
+function change(w, d) {
+  if (w === 0) { howMany = Math.max(2, Math.min(4, howMany + d)); robots = Math.min(robots, howMany); }
+  else robots = Math.max(0, Math.min(howMany, robots + d));
+  which = w; showSetup();
+}
+document.querySelectorAll('#pickPlayers button').forEach(b => b.onclick = () => change(0, +b.dataset.d));
+document.querySelectorAll('#pickRobots button').forEach(b => b.onclick = () => change(1, +b.dataset.d));
+$('start').onclick = begin;
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display !== 'none') {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { which = 1 - which; showSetup(); }
+    if (e.key === 'ArrowLeft') change(which, -1);
+    if (e.key === 'ArrowRight') change(which, 1);
+    if (e.key === 'Enter') begin();
+    return;
+  }
+  if (e.key === ' ') { e.preventDefault(); if (!$('roll').disabled) $('roll').click(); }
+  if (choosing && /^[1-4]$/.test(e.key)) pickCounter(+e.key - 1);
+});
+$('speed').oninput = e => { speed = +e.target.value; $('speedVal').textContent = speed + '×'; };
+
+function begin() {
+  round++;
+  const cols = howMany === 2 ? ['red', 'yellow'] : howMany === 3 ? ['red', 'green', 'yellow'] : ORDER;
+  // the robots are the last players, so a person is always Red
+  players = cols.map((col, i) => ({ col, robot: i >= howMany - robots, pos: [-1, -1, -1, -1] }));
+  now = 0; dice = 0; busy = false; sixes = 0; over = false; choosing = null;
+  $('speedRow').style.display = robots > 0 ? 'flex' : 'none';
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  $('dice').textContent = '🎲';
+  $('msg').textContent = 'Roll a 6 to bring a counter out.';
+  startTurn();
+}
+$('restart').onclick = () => { round++; $('game').style.display = 'none'; $('setup').style.display = 'flex'; showSetup(); };
+
+const nameOf = p => p.col[0].toUpperCase() + p.col.slice(1) + (p.robot ? ' robot' : '');
+function showPlayers() {
+  $('players').innerHTML = players.map((p, i) =>
+    `<div class="who ${i === now ? 'now' : ''}"><span class="dot" style="background:${COLOURS[p.col]}"></span>${nameOf(p)}
+     <span class="home">${'🏠'.repeat(p.pos.filter(x => x === FINISH).length)}</span></div>`).join('');
+}
+
+/* ---------- the rules ---------- */
+function canMove(p, k, d) {
+  const s = p.pos[k];
+  if (s === FINISH) return false;
+  if (s < 0) return d === 6;
+  return s + d <= FINISH;                              // exact roll to get home
+}
+const movable = (p, d) => [0, 1, 2, 3].filter(k => canMove(p, k, d));
+
+/* ---------- turns ---------- */
+function startTurn() {
+  if (over) return;
+  const p = players[now];
+  showPlayers();
+  const c = COLOURS[p.col];
+  $('turn').innerHTML = `<span style="color:${c}">●</span> ${nameOf(p)}'s turn`;
+  $('roll').disabled = p.robot;
+  $('roll').style.background = c;
+  if (p.robot) robotTurn();
+}
+
+$('roll').onclick = () => { if (!busy && !over && !players[now].robot) roll(); };
+
+function roll() {
+  busy = true; $('roll').disabled = true;
+  const r = round;
+  $('dice').classList.add('rolling');
+  let shakes = 0;
+  const iv = setInterval(() => { $('dice').textContent = FACES[Math.floor(Math.random() * 6)]; }, 70);
+  setTimeout(() => {
+    clearInterval(iv);
+    if (r !== round) return;
+    $('dice').classList.remove('rolling');
+    dice = 1 + Math.floor(Math.random() * 6);
+    $('dice').textContent = FACES[dice - 1];
+    afterRoll();
+  }, fast(600));
+}
+
+function afterRoll() {
+  const p = players[now];
+  if (dice === 6) sixes++;
+  if (sixes === 3) { $('msg').textContent = 'Three 6s in a row! Turn over.'; sixes = 0; return later(nextPlayer, 900); }
+  const ms = movable(p, dice);
+  if (!ms.length) {
+    $('msg').textContent = p.pos.every(s => s < 0) ? `${dice === 6 ? '' : 'You need a 6 to come out.'}` : 'No moves with that roll.';
+    return later(dice === 6 ? again : nextPlayer, 900);
+  }
+  if (p.robot) return later(() => move(robotPick(p, ms)), 350);
+  // only one choice, or every choice is a counter in base (they are all the same): just move it
+  if (ms.length === 1 || ms.every(k => p.pos[k] < 0)) return later(() => move(ms[0]), 300);
+  // more than one choice: the person clicks a counter (or presses 1-4)
+  choosing = ms;
+  $('msg').textContent = 'Click the counter you want to move.';
+}
+const later = (fn, ms) => { const r = round; setTimeout(() => { if (r === round) fn(); }, fast(ms)); };
+
+function pickCounter(k) {
+  if (!choosing || !choosing.includes(k)) return;
+  choosing = null;
+  move(k);
+}
+cv.addEventListener('pointerdown', e => {
+  if (!choosing) return;
+  const b = cv.getBoundingClientRect();
+  const x = (e.clientX - b.left) * cv.width / b.width / S, y = (e.clientY - b.top) * cv.height / b.height / S;
+  const p = players[now];
+  let best = -1, bestD = 0.9;
+  choosing.forEach(k => { const [cx, cy] = cellOf(p.col, p.pos[k], k); const d = Math.hypot(cx + 0.5 - x, cy + 0.5 - y); if (d < bestD) { bestD = d; best = k; } });
+  if (best >= 0) pickCounter(best);
+});
+
+// move a counter one square at a time, so it hops
+function move(k) {
+  const p = players[now], r = round;
+  let s = p.pos[k];
+  const target = s < 0 ? 0 : s + dice;
+  const hop = () => {
+    if (r !== round) return;
+    s = s < 0 ? 0 : s + 1;
+    p.pos[k] = s;
+    hopping = { col: p.col, k, t: performance.now() };
+    if (s < target) setTimeout(hop, fast(170));
+    else landed(k);
+  };
+  hop();
+}
+let hopping = null;
+
+function landed(k) {
+  const p = players[now], s = p.pos[k];
+  let bonus = dice === 6, text = '';
+  if (s <= 50 && !SAFE.has(absSquare(p.col, s))) {   // anyone else here goes back to base
+    const sq = absSquare(p.col, s);
+    players.forEach(q => {
+      if (q === p) return;
+      q.pos.forEach((qs, qk) => {
+        if (qs >= 0 && qs <= 50 && absSquare(q.col, qs) === sq) { q.pos[qk] = -1; bonus = true; text = `💥 ${nameOf(p)} sent ${nameOf(q)} back to base!`; }
+      });
+    });
+  }
+  if (s === FINISH) text = `🏠 A ${p.col} counter got home!`;
+  if (p.pos.every(x => x === FINISH)) return win(p);
+  $('msg').textContent = text || (bonus ? 'Roll again!' : '');
+  if (text && bonus) $('msg').textContent += ' Roll again!';
+  busy = false;
+  later(bonus ? again : nextPlayer, 500);
+}
+function again() { busy = false; startTurn(); }
+function nextPlayer() { sixes = 0; busy = false; now = (now + 1) % players.length; startTurn(); }
+
+function win(p) {
+  over = true; busy = false; showPlayers();
+  $('turn').innerHTML = `🎉 <span style="color:${COLOURS[p.col]}">${nameOf(p)}</span> wins!`;
+  $('msg').textContent = 'All four counters home! Press New game to play again.';
+  $('roll').disabled = true;
+}
+
+/* ---------- robots ---------- */
+function robotTurn() {
+  const r = round, p = players[now];
+  $('msg').innerHTML = `<span class="robot">🤖 <span id="words"></span><span class="caret"></span></span>`;
+  const text = `${nameOf(p)} rolling...`, words = $('words'), caret = document.querySelector('#msg .caret');
+  let i = 0;
+  (function next() {
+    if (r !== round || over) return;
+    caret.classList.add('typing');
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, fast(35 * (0.6 + Math.random() * 0.8)));
+    else { caret.classList.remove('typing'); later(roll, 350); }
+  })();
+}
+// score each possible move: getting home, taking a counter, coming out, getting safe, running away
+function robotPick(p, ms) {
+  const danger = (col, s) => {                        // could someone land here next turn?
+    if (s < 0 || s > 50 || SAFE.has(absSquare(col, s))) return false;
+    const sq = absSquare(col, s);
+    return players.some(q => q !== p && q.pos.some(qs => qs >= 0 && qs <= 50 && ((sq - absSquare(q.col, qs) + 52) % 52) >= 1 && ((sq - absSquare(q.col, qs) + 52) % 52) <= 6));
+  };
+  let best = ms[0], top = -Infinity;
+  for (const k of ms) {
+    const s = p.pos[k], t = s < 0 ? 0 : s + dice;
+    let v = t;                                          // further along is better
+    if (t === FINISH) v += 100;
+    if (s < 0) v += 40;
+    if (t <= 50 && !SAFE.has(absSquare(p.col, t))) {
+      const sq = absSquare(p.col, t);
+      if (players.some(q => q !== p && q.pos.some(qs => qs >= 0 && qs <= 50 && absSquare(q.col, qs) === sq))) v += 80;
+    }
+    if (t > 50) v += 25;                                // on the home path: nobody can touch it
+    if (danger(p.col, s)) v += 20;                      // moving away from danger
+    if (danger(p.col, t)) v -= 30;                      // moving into danger
+    if (t <= 50 && SAFE.has(absSquare(p.col, t))) v += 10;
+    v += Math.random() * 3;
+    if (v > top) { top = v; best = k; }
+  }
+  return best;
+}
+
+/* ---------- drawing ---------- */
+function rect(c, r, w, h, fill, stroke) { ctx.fillStyle = fill; ctx.fillRect(c * S, r * S, w * S, h * S); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.strokeRect(c * S, r * S, w * S, h * S); } }
+function star(x, y, rad, fill) {
+  ctx.fillStyle = fill; ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? rad * 0.45 : rad; ctx.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)); }
+  ctx.fill();
+}
+function drawBoard() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  rect(0, 0, N, N, '#fff');
+  // the four bases
+  const bases = { red: [0, 0], green: [9, 0], yellow: [9, 9], blue: [0, 9] };
+  for (const [col, [c, r]] of Object.entries(bases)) {
+    rect(c, r, 6, 6, COLOURS[col]);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect((c + 1) * S, (r + 1) * S, 4 * S, 4 * S, 14); ctx.fill();
+    for (let k = 0; k < 4; k++) { const [x, y] = cellOf(col, -1, k); ctx.fillStyle = LIGHT[col]; ctx.beginPath(); ctx.arc((x + 0.5) * S, (y + 0.5) * S, S * 0.55, 0, 7); ctx.fill(); }
+  }
+  // the track
+  TRACK.forEach(([c, r], i) => {
+    let fill = '#fff';
+    for (const col of ORDER) if (START[col] === i) fill = COLOURS[col];
+    rect(c, r, 1, 1, fill, '#9aa');
+    if (SAFE.has(i) && fill === '#fff') star((c + 0.5) * S, (r + 0.5) * S, S * 0.36, '#c9c9c9');
+  });
+  // the home paths
+  for (const col of ORDER) HOME[col].slice(0, 5).forEach(([c, r]) => rect(c, r, 1, 1, COLOURS[col], '#9aa'));
+  // the middle: four triangles
+  const m = [[6, 6], [9, 6], [9, 9], [6, 9]];
+  const tri = { red: [m[0], m[3]], green: [m[0], m[1]], yellow: [m[1], m[2]], blue: [m[2], m[3]] };
+  for (const col of ORDER) {
+    const [[a, b], [c, d]] = tri[col];
+    ctx.fillStyle = COLOURS[col]; ctx.beginPath(); ctx.moveTo(a * S, b * S); ctx.lineTo(c * S, d * S); ctx.lineTo(7.5 * S, 7.5 * S); ctx.fill();
+  }
+}
+
+function drawCounter(col, x, y, scale, glow, label) {
+  const R = S * 0.36 * scale;
+  ctx.save();
+  if (glow) { ctx.shadowColor = '#fff'; ctx.shadowBlur = 18; }
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + R * 0.75, R * 0.9, R * 0.35, 0, 0, 7); ctx.fill();
+  const g = ctx.createRadialGradient(x - R * 0.3, y - R * 0.4, R * 0.1, x, y, R);
+  g.addColorStop(0, '#fff'); g.addColorStop(0.25, COLOURS[col]); g.addColorStop(1, '#000a');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.fill();
+  ctx.lineWidth = 2.5; ctx.strokeStyle = glow ? '#fff' : '#223'; ctx.stroke();
+  ctx.restore();
+  if (label) { ctx.fillStyle = '#fff'; ctx.font = `${Math.round(R)}px 'Fredoka One', cursive`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y + 1); }
+}
+
+function draw(now_) {
+  drawBoard();
+  if (!players.length) return requestAnimationFrame(draw);
+  const p = players[now];
+  // group counters by square so two on one square sit side by side
+  const spots = {};
+  players.forEach(q => q.pos.forEach((s, k) => {
+    const [c, r] = cellOf(q.col, s, k), key = s === FINISH ? 'home' + q.col : c + ',' + r;
+    (spots[key] = spots[key] || []).push({ q, k, c, r, s });
+  }));
+  for (const list of Object.values(spots)) list.forEach((it, j) => {
+    const n = list.length, off = n > 1 ? (j - (n - 1) / 2) * 0.28 : 0;
+    let x = (it.c + 0.5 + off) * S, y = (it.r + 0.5) * S;
+    if (it.s === FINISH) { x = (it.c + 0.5 + (it.k - 1.5) * 0.18) * S; }
+    let lift = 0;
+    if (hopping && hopping.col === it.q.col && hopping.k === it.k) {
+      const t = (now_ - hopping.t) / fast(170);
+      if (t < 1) lift = Math.sin(t * Math.PI) * S * 0.35;
+    }
+    const glow = choosing && it.q === p && choosing.includes(it.k) && Math.sin(now_ / 150) > -0.3;
+    drawCounter(it.q.col, x, y - lift, n > 2 ? 0.75 : n > 1 ? 0.85 : 1, glow, choosing && it.q === p && choosing.includes(it.k) ? String(it.k + 1) : '');
+  });
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+showSetup();
+</script>
+</body>
+</html>

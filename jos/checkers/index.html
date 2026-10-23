@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkers — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Jos's Checkers =====
+       Drag a checker (or click it, then click a dot). Checkers move forward on the diagonals.
+       Jump over the other player's checker to take it. If you can jump, you must, and if you
+       can jump again straight away, you keep going. Reach the far side to become a king 👑,
+       which can move backwards too. Take all their checkers, or leave them stuck, to win. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#f4ead8; user-select:none; }
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+    .back-link:hover { background:#223; color:#fff; }
+    h1 { font-family:'Fredoka One',cursive; font-weight:normal; }
+    button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:50px; padding:.55rem 1.2rem;
+             background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+    button:hover { background:#3d9595; }
+    button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+
+    #setup { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; }
+    #setup h1 { font-size:3rem; }
+    #setup .q { font-size:1.6rem; font-family:'Fredoka One',cursive; }
+    .picker { display:flex; align-items:center; gap:1.2rem; }
+    .picker button { font-size:2rem; width:64px; height:64px; padding:0; }
+    #mode { font-family:'Fredoka One',cursive; font-size:2.6rem; min-width:300px; text-align:center; }
+
+    #game { display:none; min-height:100vh; padding:56px 16px 20px; flex-direction:column; align-items:center; gap:10px; }
+    #turn { font-family:'Fredoka One',cursive; font-size:2rem; height:2.6rem; display:flex; align-items:center; }
+    #speedRow { display:none; align-items:center; gap:10px; font-family:'Fredoka One',cursive; font-size:1.1rem;
+                background:#fff; padding:6px 16px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
+    #speedRow input { width:180px; accent-color:#e53935; }
+    #speedVal { min-width:3ch; }
+    #ruleBadge { font-family:'Fredoka One',cursive; font-size:1rem; background:#fff; color:#223;
+                 padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
+    #clock { display:none; font-family:'Fredoka One',cursive; font-size:1.3rem; color:#c62828; background:#fff;
+             padding:4px 14px; border-radius:50px; box-shadow:0 3px 10px rgba(0,0,0,.1); animation:tick 1s steps(1) infinite; }
+    @keyframes tick { 50% { transform:scale(1.08); } }
+    /* 5 or fewer checkers left: a big 🫅 fades in at the side, then a paintbrush paints a red X over it */
+    #noKings { position:fixed; right:24px; top:50%; transform:translateY(-50%); width:150px; height:150px; z-index:30;
+               display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .9s ease; pointer-events:none; }
+    #noKings.show { opacity:1; }
+    #noKings .face { font-size:110px; line-height:1; }
+    #noKings svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+    #noKings .brush { font-size:46px; }
+    #noKings .label { position:absolute; bottom:-30px; width:200px; text-align:center; font-family:'Fredoka One',cursive;
+                      color:#c62828; font-size:1.1rem; opacity:0; transition:opacity .5s; }
+    #noKings.done .label { opacity:1; }
+    @media (max-width: 900px) { #noKings { top:auto; bottom:90px; transform:none; width:110px; height:110px; }
+                                #noKings .face { font-size:80px; } }
+    #hint { height:1.4rem; font-weight:900; color:#c62828; }
+    .tray { width:min(560px, 94vw); height:30px; display:flex; gap:3px; align-items:center; }
+    .tray .mini { width:24px; height:24px; border-radius:50%; border:2px solid rgba(0,0,0,.35); animation:drop .3s ease-out; }
+    @keyframes drop { from { transform:translateY(-14px) scale(1.4); opacity:0; } }
+
+    #board { position:relative; width:min(560px, 94vw); aspect-ratio:1; border-radius:10px; overflow:hidden;
+             box-shadow:0 0 0 10px #5d3a1a, 0 10px 26px rgba(0,0,0,.35); touch-action:none; }
+    .sq { position:absolute; width:12.5%; height:12.5%; }
+    .sq.light { background:#f3d9b1; }
+    .sq.dark { background:#8b5a2b; }
+    .sq.can::after { content:''; position:absolute; left:35%; top:35%; width:30%; height:30%; border-radius:50%;
+                     background:rgba(255,255,255,.55); box-shadow:0 0 0 3px rgba(0,0,0,.15); }
+    .sq.last { box-shadow:inset 0 0 0 4px rgba(255,235,59,.6); }
+
+    .piece { position:absolute; width:12.5%; height:12.5%; display:flex; align-items:center; justify-content:center;
+             transition:left var(--t,.28s) ease, top var(--t,.28s) ease, transform var(--t,.28s) ease, opacity var(--t,.28s); z-index:2; }
+    .piece .disc { width:80%; height:80%; border-radius:50%; display:flex; align-items:center; justify-content:center;
+                   font-size:clamp(1rem, 4.5vw, 1.9rem); box-shadow:0 4px 0 rgba(0,0,0,.4); }
+    .piece.R .disc { background:radial-gradient(circle at 35% 30%, #ff8a80, #e53935 55%, #a31f1c); border:4px solid #b71c1c; }
+    .piece.B .disc { background:radial-gradient(circle at 35% 30%, #666, #2b2b2b 55%, #111); border:4px solid #000; }
+    .piece .disc::before { content:''; position:absolute; width:46%; height:46%; border-radius:50%; border:3px solid rgba(0,0,0,.25); }
+    .piece.R .disc::before { border-color:rgba(120,0,0,.45); }
+    .piece.B .disc::before { border-color:rgba(255,255,255,.18); }
+    .piece.mine { cursor:grab; }
+    .piece.mine:hover .disc { filter:brightness(1.12); }
+    .piece.picked { z-index:10; transform:scale(1.15); }
+    .piece.dragging { transition:none; z-index:10; transform:scale(1.2); cursor:grabbing; }
+    .piece.jumping { transform:scale(1.35); z-index:10; }
+    .piece.gone { transform:scale(0) rotate(180deg); opacity:0; }
+    .piece.crowned .disc { animation:crown .5s ease-out; }
+    @keyframes crown { 0% { transform:scale(1); } 40% { transform:scale(1.35) rotate(-10deg); } 100% { transform:scale(1); } }
+
+    #score { display:flex; gap:12px; }
+    .tally { background:#fff; border-radius:16px; padding:10px 18px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; min-width:96px; }
+    .tally b { display:block; font-family:'Fredoka One',cursive; font-size:2rem; font-weight:normal; }
+    .tally.r b { color:#e53935; }
+    .row { display:flex; gap:12px; }
+    #banner { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(20,20,40,.55); z-index:20; }
+    #banner span { font-family:'Fredoka One',cursive; font-size:clamp(2.2rem, 9vw, 4rem); -webkit-text-stroke:2px #223;
+                   paint-order:stroke fill; animation:bannerPop .45s ease-out; }
+    @keyframes bannerPop { 0% { transform:scale(.3); } 70% { transform:scale(1.15); } 100% { transform:scale(1); } }
+    /* the robot's screen, same as the other games */
+    .robot { background:#223; color:#fff; border-radius:14px; padding:.15rem 1rem; font-size:1.6rem; min-width:16ch; text-align:left; }
+    .caret { display:inline-block; width:.08em; height:.85em; margin-left:.05em; vertical-align:-.04em; background:#fff;
+             box-shadow:0 0 12px rgba(255,170,90,.9); animation:caretBlink 1s steps(1) infinite; }
+    .caret.typing { animation:none; }
+    @keyframes caretBlink { 50% { opacity:0; } }
+  </style>
+</head>
+<body>
+<a class="back-link" href="../classic-games/">← Classic Games</a>
+
+<div id="setup">
+  <h1>🔴 Checkers ⚫</h1>
+  <div class="q">Who are you playing?</div>
+  <div class="picker">
+    <button id="less" title="(←)">←</button>
+    <div id="mode">A friend</div>
+    <button id="more" title="(→)">→</button>
+  </div>
+  <div class="q">Jump rules?</div>
+  <div class="picker">
+    <button id="lessRule">←</button>
+    <div id="ruleName">Competition</div>
+    <button id="moreRule">→</button>
+  </div>
+  <div id="ruleHelp" style="font-family:'Nunito',sans-serif;font-size:1rem;max-width:360px;text-align:center;color:#556">If you can jump, you must.</div>
+  <button id="start" style="font-size:1.4rem;padding:.7rem 2rem;background:#e53935">Enter</button>
+  <div>Use the ← → arrow keys, then press Enter</div>
+</div>
+
+<div id="game">
+  <div id="turn"></div>
+  <div id="ruleBadge"></div>
+  <div id="speedRow">🐢 <input id="speed" type="range" min="1" max="10" value="1"> 🐇 <span id="speedVal">1×</span></div>
+  <div id="clock"></div>
+  <div id="noKings"><span class="face">🫅</span><div class="label">No more kings!</div></div>
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </svg>
+  <div class="tray" id="trayTop"></div>
+  <div id="board"><div id="banner"><span></span></div></div>
+  <div class="tray" id="trayBottom"></div>
+  <div id="hint"></div>
+  <div id="score">
+    <div class="tally r"><b id="sr">0</b><span id="nr">Red</span></div>
+    <div class="tally"><b id="sd">0</b>Draws</div>
+    <div class="tally"><b id="sb">0</b><span id="nb">Black</span></div>
+  </div>
+  <div class="row">
+    <button id="again" style="background:#e53935">New round</button>
+    <button id="change" style="background:#fff;color:#223">Change players</button>
+  </div>
+</div>
+
+<script>
+const MODES = ['A friend', 'The computer (easy)', 'The computer (hard)', 'Robot vs robot (watch)'];
+const WATCH = 3;
+const RULES = [
+  { name: 'Regular', help: 'Jumping is your choice.' },
+  { name: 'Competition', help: 'If you can jump, you must.' },
+  { name: 'Competition Plus', help: 'You must jump, and take the biggest jump.' },
+];
+let rule = 1;   // 0 = Regular, 1 = Competition, 2 = Competition Plus
+const $ = id => document.getElementById(id);
+const boardEl = $('board');
+let mode = 0, round = 0, board, turn, over, starter = 'R', score = { R: 0, B: 0, D: 0 };
+let chain = null;          // during a double jump: the checker that must keep jumping
+let picked = null;         // the checker you clicked on
+let quietMoves = 0;        // moves in a row with no jump and no king made: 80 = a draw
+let nextId = 0;
+let lastJump = 0;          // robot vs robot: when the last checker was taken
+let noKings = false;       // robot vs robot: 5 or fewer checkers left, so nobody can become a king
+const piecesLeft = b => b.flat().filter(Boolean).length;
+let speed = 1;             // robot vs robot: 1 = normal, 10 = super fast
+const fast = ms => ms / speed;
+$('speed').oninput = e => {
+  speed = +e.target.value;
+  $('speedVal').textContent = speed + '×';
+  boardEl.style.setProperty('--t', (0.28 / speed) + 's');
+};
+const other = p => p === 'R' ? 'B' : 'R';
+
+/* ---------- setup screen ---------- */
+function showMode() { $('mode').textContent = MODES[mode]; }
+$('less').onclick = () => { mode = (mode + MODES.length - 1) % MODES.length; showMode(); };
+$('more').onclick = () => { mode = (mode + 1) % MODES.length; showMode(); };
+function showRule() { $('ruleName').textContent = RULES[rule].name; $('ruleHelp').textContent = RULES[rule].help; }
+$('lessRule').onclick = () => { rule = (rule + RULES.length - 1) % RULES.length; showRule(); };
+$('moreRule').onclick = () => { rule = (rule + 1) % RULES.length; showRule(); };
+$('start').onclick = begin;
+document.addEventListener('keydown', e => {
+  if ($('setup').style.display === 'none') return;
+  if (e.key === 'ArrowLeft') $('less').click();
+  if (e.key === 'ArrowRight') $('more').click();
+  if (e.key === 'Enter') begin();
+});
+
+function begin() {
+  score = { R: 0, B: 0, D: 0 };
+  starter = 'R';
+  $('nr').textContent = mode === 0 ? 'Red' : mode === WATCH ? 'Red robot' : 'You (Red)';
+  $('nb').textContent = mode === 0 ? 'Black' : mode === WATCH ? 'Black robot' : 'Computer (Black)';
+  $('ruleBadge').textContent = '📏 ' + RULES[rule].name;
+  $('setup').style.display = 'none';
+  $('game').style.display = 'flex';
+  $('speedRow').style.display = mode === WATCH ? 'flex' : 'none';
+  if (mode !== WATCH) { $('speed').value = 1; $('speed').oninput({ target: $('speed') }); }
+  newRound();
+}
+$('change').onclick = () => { round++; $('game').style.display = 'none'; $('setup').style.display = 'flex'; };
+$('again').onclick = () => { starter = other(starter); newRound(); };
+
+/* ---------- the board ---------- */
+// board[r][c] is null or { p: 'R' or 'B', king: true/false, id }. Row 0 is the top.
+// Black starts at the top and moves down; Red starts at the bottom and moves up.
+const dark = (r, c) => (r + c) % 2 === 1;
+
+function newRound() {
+  round++;
+  board = Array.from({ length: 8 }, (_, r) => Array.from({ length: 8 }, (_, c) =>
+    dark(r, c) && r < 3 ? { p: 'B', king: false, id: nextId++ } :
+    dark(r, c) && r > 4 ? { p: 'R', king: false, id: nextId++ } : null));
+  turn = starter; over = false; chain = null; picked = null; quietMoves = 0;
+  lastJump = performance.now(); noKings = false; updateNoKings(); $('clock').style.display = 'none';
+  $('trayTop').innerHTML = ''; $('trayBottom').innerHTML = '';
+  $('banner').style.display = 'none';
+  boardEl.querySelectorAll('.sq, .piece').forEach(e => e.remove());
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const sq = document.createElement('div');
+    sq.className = 'sq ' + (dark(r, c) ? 'dark' : 'light');
+    sq.style.left = c * 12.5 + '%'; sq.style.top = r * 12.5 + '%';
+    sq.dataset.r = r; sq.dataset.c = c;
+    boardEl.appendChild(sq);
+  }
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]) makePiece(board[r][c], r, c);
+  showScore();
+  startTurn();
+}
+
+function makePiece(pc, r, c) {
+  const el = document.createElement('div');
+  el.className = 'piece ' + pc.p;
+  el.id = 'pc' + pc.id;
+  el.innerHTML = '<div class="disc"></div>';
+  place(el, r, c);
+  boardEl.appendChild(el);
+}
+function place(el, r, c) { el.style.left = c * 12.5 + '%'; el.style.top = r * 12.5 + '%'; }
+const pieceEl = pc => $('pc' + pc.id);
+
+/* ---------- the rules ---------- */
+function dirs(pc) {
+  if (pc.king) return [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+  return pc.p === 'R' ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]];
+}
+const inside = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+
+function jumpsFrom(b, r, c) {
+  const pc = b[r][c], out = [];
+  for (const [dr, dc] of dirs(pc)) {
+    const mr = r + dr, mc = c + dc, tr = r + 2 * dr, tc = c + 2 * dc;
+    if (inside(tr, tc) && b[mr][mc] && b[mr][mc].p !== pc.p && !b[tr][tc]) out.push({ fr: r, fc: c, tr, tc, cap: [mr, mc] });
+  }
+  return out;
+}
+function stepsFrom(b, r, c) {
+  const out = [];
+  for (const [dr, dc] of dirs(b[r][c])) {
+    const tr = r + dr, tc = c + dc;
+    if (inside(tr, tc) && !b[tr][tc]) out.push({ fr: r, fc: c, tr, tc, cap: null });
+  }
+  return out;
+}
+// how many more jumps a checker can chain together from here (becoming a king this turn stops it)
+function chainLen(b, r, c, startedKing) {
+  if (!startedKing && b[r][c].king) return 0;
+  const js = jumpsFrom(b, r, c);
+  if (!js.length) return 0;
+  return 1 + Math.max(...js.map(m => chainLen(apply(b, m), m.tr, m.tc, startedKing)));
+}
+// Competition Plus: out of several jumps, keep only the one(s) that take the most checkers overall
+function bestJumps(b, jumps) {
+  const scored = jumps.map(m => ({ m, n: 1 + chainLen(apply(b, m), m.tr, m.tc, b[m.fr][m.fc].king) }));
+  const best = Math.max(...scored.map(x => x.n));
+  return scored.filter(x => x.n === best).map(x => x.m);
+}
+// every move one player can make right now, under the chosen jump rule:
+// Regular = jumping is a choice, Competition = if you can jump you must, Competition Plus = and it must be the biggest jump
+function movesFor(b, p, only) {
+  if (only) {
+    const js = jumpsFrom(b, only[0], only[1]);
+    return rule === 2 && js.length > 1 ? bestJumps(b, js) : js;
+  }
+  let jumps = [], steps = [];
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (b[r][c] && b[r][c].p === p) {
+    jumps.push(...jumpsFrom(b, r, c)); steps.push(...stepsFrom(b, r, c));
+  }
+  if (!jumps.length) return steps;
+  if (rule === 0) return [...jumps, ...steps];
+  return rule === 2 ? bestJumps(b, jumps) : jumps;
+}
+
+/* ---------- turns ---------- */
+const computerTurn = () => !over && (mode === WATCH || (mode > 0 && turn === 'B'));
+const name = p => mode === 0 ? (p === 'R' ? 'Red' : 'Black') : mode === WATCH ? (p === 'R' ? 'Red robot' : 'Black robot') : (p === 'R' ? 'You' : 'Robot');
+function showScore() { $('sr').textContent = score.R; $('sb').textContent = score.B; $('sd').textContent = score.D; }
+
+function startTurn() {
+  const moves = movesFor(board, turn, chain);
+  if (!moves.length) return finish(other(turn));          // stuck (or no checkers left): the other player wins
+  if (quietMoves >= 60 && mode !== WATCH) return finish(null);   // robot vs robot uses the no-jump clock instead
+  markMine(moves);
+  if (computerTurn()) { $('hint').textContent = ''; return robotThink(); }
+  const colour = turn === 'R' ? '#e53935' : '#223';
+  $('turn').innerHTML = mode === 0 ? `<span style="color:${colour}">${name(turn)}</span>'s turn` : 'Your turn';
+  const hasCap = moves.some(m => m.cap);
+  $('hint').textContent = chain ? (rule === 2 ? 'Jump again — biggest jump!' : 'Jump again!')
+    : hasCap && rule === 2 ? 'You have to take the biggest jump!'
+    : hasCap && rule === 1 ? 'You have to jump!'
+    : hasCap ? 'You can jump!' : '';
+}
+
+function markMine(moves) {
+  boardEl.querySelectorAll('.piece').forEach(e => e.classList.remove('mine'));
+  if (computerTurn()) return;
+  moves.forEach(m => pieceEl(board[m.fr][m.fc]).classList.add('mine'));
+}
+
+// make one move (one step, or one jump). Returns after the slide has finished.
+function doMove(m) {
+  return new Promise(done => {
+    const pc = board[m.fr][m.fc], el = pieceEl(pc);
+    board[m.tr][m.tc] = pc; board[m.fr][m.fc] = null;
+    boardEl.querySelectorAll('.sq.last').forEach(s => s.classList.remove('last'));
+    sqEl(m.fr, m.fc).classList.add('last'); sqEl(m.tr, m.tc).classList.add('last');
+    if (m.cap) el.classList.add('jumping');                 // it lifts up as it hops over
+    place(el, m.tr, m.tc);
+    let kinged = false;
+    setTimeout(() => {
+      el.classList.remove('jumping');
+      if (m.cap) {
+        const [cr, cc] = m.cap, victim = board[cr][cc];
+        board[cr][cc] = null;
+        const vEl = pieceEl(victim);
+        vEl.classList.add('gone');                          // spins away
+        setTimeout(() => vEl.remove(), fast(300));
+        const mini = document.createElement('div');
+        mini.className = 'mini';
+        mini.style.background = victim.p === 'R' ? '#e53935' : '#222';
+        $(victim.p === 'R' ? 'trayTop' : 'trayBottom').appendChild(mini);   // goes to the pile of the player who took it
+      }
+      if (m.cap) { lastJump = performance.now(); updateNoKings(); }
+      if (!pc.king && !noKings && ((pc.p === 'R' && m.tr === 0) || (pc.p === 'B' && m.tr === 7))) {
+        pc.king = true; kinged = true;
+        el.querySelector('.disc').textContent = '👑';
+        el.classList.add('crowned');
+      }
+      quietMoves = m.cap || kinged ? 0 : quietMoves + 1;
+      done(kinged);
+    }, fast(300));
+  });
+}
+const sqEl = (r, c) => boardEl.querySelector(`.sq[data-r="${r}"][data-c="${c}"]`);
+
+async function play(m) {
+  clearPicked();
+  const kinged = await doMove(m);
+  // after a jump, the same checker keeps going if it can jump again (but a new king stops)
+  if (m.cap && !kinged && jumpsFrom(board, m.tr, m.tc).length) chain = [m.tr, m.tc];
+  else { chain = null; turn = other(turn); }
+  startTurn();
+}
+
+function finish(winner, why) {
+  if (over) return;
+  over = true;
+  $('clock').style.display = 'none';
+  boardEl.querySelectorAll('.piece').forEach(e => e.classList.remove('mine'));
+  $('hint').textContent = '';
+  const b = $('banner'), span = b.querySelector('span');
+  if (winner) {
+    score[winner]++;
+    $('turn').textContent = `🎉 ${name(winner)} ${name(winner) === 'You' ? 'win' : 'wins'}!`;
+    span.textContent = `${name(winner)} winner!`;
+    span.style.color = winner === 'R' ? '#ff5a4e' : '#fff';
+  } else {
+    score.D++;
+    $('turn').textContent = '🤝 It\'s a draw!';
+    span.textContent = why || 'Draw!'; span.style.color = '#fff';
+  }
+  b.style.display = 'flex';
+  showScore();
+}
+
+/* ---------- robot vs robot: no kings, and the no-jump clock ---------- */
+function updateNoKings() {
+  const was = noKings;
+  noKings = !!(mode === WATCH && board && piecesLeft(board) <= 5);
+  if (noKings && !was) showNoKings();
+  if (!noKings) { const nk = $('noKings'); nk.className = ''; nk.querySelector('svg')?.remove(); }
+}
+
+// the 🫅 fades in, then a 🖌️ paints two red strokes across it, like Tic-Tac-Toe
+const NS = 'http://www.w3.org/2000/svg';
+function showNoKings() {
+  const nk = $('noKings'), r = round;
+  nk.querySelector('svg')?.remove();
+  nk.className = 'show';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('filter', 'url(#rough)');
+  svg.appendChild(g);
+  nk.appendChild(svg);
+  const brush = document.createElementNS(NS, 'text');
+  brush.setAttribute('class', 'brush');
+  brush.textContent = '🖌️';
+  const strokes = ['M10 10 Q48 46 92 92', 'M90 8 Q55 48 8 94'];
+  strokes.forEach((d, k) => setTimeout(() => {
+    if (r !== round) return;
+    const line = document.createElementNS(NS, 'path');
+    Object.entries({ d, fill: 'none', stroke: '#e53935', 'stroke-width': 13, 'stroke-linecap': 'butt' })
+      .forEach(([a, v]) => line.setAttribute(a, v));
+    g.appendChild(line);
+    const len = line.getTotalLength();
+    line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+    svg.appendChild(brush);
+    const start = performance.now(), ms = 380;
+    (function step(now) {
+      const t = Math.min(1, (now - start) / ms), e = 1 - Math.pow(1 - t, 2);
+      line.style.strokeDashoffset = len * (1 - e);
+      const pt = line.getPointAtLength(len * e), shake = Math.sin(now / 18) * 2;
+      brush.setAttribute('x', pt.x + shake); brush.setAttribute('y', pt.y + 4);
+      if (t < 1) requestAnimationFrame(step);
+    })(start);
+    setTimeout(() => { line.style.strokeDashoffset = 0; }, ms + 50);    // finished even if the tab was hidden
+  }, 1000 + k * 480));                                                  // after the fade-in, one stroke then the other
+  setTimeout(() => { brush.remove(); if (r === round) nk.classList.add('done'); }, 1000 + 2 * 480 + 200);
+}
+// 15 seconds with no jump: a clock counts down 15 more. Still no jump at 0 = a draw.
+setInterval(() => {
+  if (mode !== WATCH || over || $('game').style.display !== 'flex') return;
+  const quiet = (performance.now() - lastJump) / 1000;
+  const left = Math.ceil(30 - quiet);
+  if (quiet < 15) { $('clock').style.display = 'none'; return; }
+  $('clock').style.display = 'block';
+  $('clock').textContent = `⏰ No jumps! Draw in ${left}`;
+  if (left <= 0) finish(null, 'No jumps: Draw!');
+}, 200);
+
+/* ---------- clicking and dragging ---------- */
+let drag = null;
+const humanCanPlay = () => !over && !computerTurn() && $('game').style.display === 'flex';
+
+function squareAt(e) {
+  const b = boardEl.getBoundingClientRect();
+  const c = Math.floor((e.clientX - b.left) / b.width * 8), r = Math.floor((e.clientY - b.top) / b.height * 8);
+  return inside(r, c) ? [r, c] : null;
+}
+function movesOf(r, c) { return movesFor(board, turn, chain).filter(m => m.fr === r && m.fc === c); }
+function clearPicked() {
+  picked = null;
+  boardEl.querySelectorAll('.sq.can').forEach(s => s.classList.remove('can'));
+  boardEl.querySelectorAll('.piece.picked').forEach(e => e.classList.remove('picked'));
+}
+function pick(r, c) {
+  clearPicked();
+  const ms = movesOf(r, c);
+  if (!ms.length) return false;
+  picked = [r, c];
+  pieceEl(board[r][c]).classList.add('picked');
+  ms.forEach(m => sqEl(m.tr, m.tc).classList.add('can'));
+  return true;
+}
+
+boardEl.addEventListener('pointerdown', e => {
+  if (!humanCanPlay()) return;
+  const at = squareAt(e); if (!at) return;
+  const [r, c] = at;
+  // clicked a dot: move there
+  if (picked) {
+    const m = movesOf(...picked).find(m => m.tr === r && m.tc === c);
+    if (m) return play(m);
+  }
+  if (board[r][c] && board[r][c].p === turn && pick(r, c)) {
+    const el = pieceEl(board[r][c]), b = boardEl.getBoundingClientRect();
+    drag = { r, c, el, b, moved: false, x0: e.clientX, y0: e.clientY };
+    boardEl.setPointerCapture(e.pointerId);
+  } else clearPicked();
+});
+boardEl.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return;   // tiny wobble = still a click
+  drag.moved = true;
+  drag.el.classList.add('dragging');
+  const s = drag.b.width / 8;
+  drag.el.style.left = (e.clientX - drag.b.left - s / 2) + 'px';
+  drag.el.style.top = (e.clientY - drag.b.top - s / 2) + 'px';
+});
+boardEl.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.moved) return;                                     // it was a click: the dots stay showing
+  d.el.classList.remove('dragging');
+  const at = squareAt(e);
+  const m = at && movesOf(d.r, d.c).find(m => m.tr === at[0] && m.tc === at[1]);
+  if (m) {
+    d.el.style.transition = 'none'; place(d.el, m.tr, m.tc);  // drop it right where you let go
+    d.el.getBoundingClientRect(); d.el.style.transition = '';
+    play(m);
+  } else { place(d.el, d.r, d.c); }                         // not allowed there: it slides back
+});
+
+/* ---------- robot thinking ---------- */
+function robotThink() {
+  const r = round;
+  const still = () => r === round && computerTurn();
+  const face = mode === WATCH ? (turn === 'R' ? '🔴🤖' : '⚫🤖') : '🤖';
+  $('turn').innerHTML = `<span class="robot">${face} <span id="words"></span><span class="caret"></span></span>`;
+  const words = $('words'), caret = document.querySelector('#turn .caret');
+  const text = mode === WATCH ? `${name(turn)} thinking...` : 'Robot thinking...';
+  const typeGap = mode === WATCH ? 28 : 90, wait = mode === WATCH ? 400 : 2000;
+  let i = 0;
+  function next() {
+    if (!still()) return;
+    caret.classList.add('typing');
+    words.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(next, fast(typeGap * (0.6 + Math.random() * 0.8)));
+    else {
+      caret.classList.remove('typing');
+      setTimeout(async () => {
+        if (!still()) return;
+        const plan = pickTurn();                            // the whole turn, every jump in it
+        for (let k = 0; k < plan.length; k++) {
+          if (r !== round || over) return;
+          const m = plan[k];
+          const kinged = await doMove(m);
+          if (k < plan.length - 1) await new Promise(ok => setTimeout(ok, fast(350)));
+          if (kinged) break;
+        }
+        if (r !== round || over) return;
+        chain = null; turn = other(turn); startTurn();
+      }, fast(wait));
+    }
+  }
+  setTimeout(next, fast(500));
+}
+
+/* ---------- the computer's brain ---------- */
+// A "turn" is a list of moves: one step, or a jump followed by any further jumps.
+function turnsFor(b, p) {
+  const out = [];
+  function extend(b2, seq, r, c) {
+    const more = movesFor(b2, p, [r, c]);   // respects the jump rule on every link of the chain, not just the first
+    const pc = b2[r][c];
+    const justKinged = seq.length && !seq[seq.length - 1].wasKing && pc.king;
+    if (!more.length || justKinged) { out.push(seq); return; }
+    for (const m of more) { const b3 = apply(b2, m); extend(b3, [...seq, { ...m, wasKing: pc.king }], m.tr, m.tc); }
+  }
+  const first = movesFor(b, p);
+  for (const m of first) {
+    if (!m.cap) { out.push([m]); continue; }
+    const wasKing = b[m.fr][m.fc].king;
+    extend(apply(b, m), [{ ...m, wasKing }], m.tr, m.tc);
+  }
+  return out;
+}
+function apply(b, m) {
+  const n = b.map(row => row.map(x => x && { ...x }));
+  const pc = n[m.fr][m.fc];
+  n[m.tr][m.tc] = pc; n[m.fr][m.fc] = null;
+  if (m.cap) n[m.cap[0]][m.cap[1]] = null;
+  if (!noKings && ((pc.p === 'R' && m.tr === 0) || (pc.p === 'B' && m.tr === 7))) pc.king = true;
+  return n;
+}
+const applyTurn = (b, t) => t.reduce(apply, b);
+
+function judge(b, p) {
+  let s = 0, mine = 0, theirs = 0;
+  const all = [];
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (b[r][c]) all.push({ ...b[r][c], r, c });
+  for (const pc of all) {
+    let v = pc.king ? 170 : 100;
+    if (pc.p === p) mine += v; else theirs += v;
+    if (!pc.king && !noKings) v += (pc.p === 'R' ? 7 - pc.r : pc.r) * (mode === WATCH ? 1 : 4);   // closer to becoming a king
+    if (pc.c >= 2 && pc.c <= 5 && pc.r >= 2 && pc.r <= 5) v += 5;   // the middle is strong
+    // hunting: closer to the nearest enemy is better. Kings always hunt. In robot vs robot
+    // the side whose turn it is wants every checker in the fight, so they attack instead of running.
+    const hunts = pc.king || (mode === WATCH && pc.p === p);
+    if (hunts) {
+      const near = Math.min(...all.filter(q => q.p !== pc.p).map(q => Math.max(Math.abs(q.r - pc.r), Math.abs(q.c - pc.c))), 8);
+      v -= near * (noKings ? 10 : 6);
+    }
+    s += pc.p === p ? v : -v;
+  }
+  // when you are ahead, swapping checkers is good (fewer left = easier to finish them off)
+  s += Math.sign(mine - theirs) * (24 - all.length) * 8;
+  return s;
+}
+function negamax(b, depth, a, beta, p) {
+  const ts = turnsFor(b, p);
+  if (!ts.length) return -100000 - depth;                 // stuck = lost
+  if (depth === 0) return judge(b, p);
+  let best = -Infinity;
+  for (const t of ts) {
+    const s = -negamax(applyTurn(b, t), depth - 1, -beta, -a, other(p));
+    if (s > best) best = s;
+    if (s > a) a = s;
+    if (a >= beta) break;
+  }
+  return best;
+}
+function pickTurn(p = turn) {
+  const ts = turnsFor(board, p);
+  if (mode === 1) {
+    // easy: takes the longest jump it sees, otherwise any move at random
+    const longest = Math.max(...ts.map(t => t.length));
+    const pool = ts[0][0].cap ? ts.filter(t => t.length === longest) : ts;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  const scored = ts.map(t => ({ t, s: -negamax(applyTurn(board, t), mode === WATCH ? 4 : 6, -Infinity, Infinity, other(p)) }));
+  const top = Math.max(...scored.map(x => x.s));
+  // robot vs robot: any move nearly as good as the best, so every game is different
+  const good = scored.filter(x => x.s >= top - (mode === WATCH ? 12 : 0));
+  return good[Math.floor(Math.random() * good.length)].t;
+}
+</script>
+</body>
+</html>

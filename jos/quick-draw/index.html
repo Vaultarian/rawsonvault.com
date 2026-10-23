@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Draw — Jos' Projects</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <script src="robot-brain.js"></script>
+  <style>
+    /* ===== Jos's Quick Draw =====
+       You get something to draw and 20 seconds. A little robot watches you draw and
+       says what it thinks it is. If it guesses right, you win that round. 6 rounds.
+       The robot's brain was trained on drawings from Google's Quick, Draw! and runs
+       right here in the browser — nothing is sent anywhere. */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; }
+    body { font-family:'Nunito',sans-serif; color:#223; background:#ffd54f; overflow:hidden; user-select:none; }
+    /* the Back button sits above everything, even the start and end cards */
+    .back-link { position:fixed; top:12px; left:16px; z-index:50; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+                 font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.12); }
+    .back-link:hover { background:#223; color:#fff; }
+
+    /* the bar along the top */
+    #bar { position:fixed; left:0; right:0; top:0; height:64px; display:flex; align-items:center; justify-content:center;
+           gap:1.2rem; font-family:'Fredoka One',cursive; font-size:1.5rem; z-index:5; pointer-events:none; }
+    #bar .what { background:#fff; padding:.3rem 1.1rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.12); }
+    #bar .clock { min-width:4.2rem; text-align:center; background:#223; color:#ffd54f; padding:.3rem .8rem; border-radius:50px; }
+    #bar .clock.low { background:#e53935; color:#fff; }
+    #bar .round { font-size:1rem; opacity:.7; }
+
+    /* the paper */
+    /* a canvas doesn't stretch between left/right like a box does, so its size is set directly */
+    #paper { position:fixed; left:12px; top:64px; width:calc(100% - 24px); height:calc(100% - 182px); background:#fff; border-radius:18px;
+             box-shadow:0 6px 0 rgba(0,0,0,.12); cursor:crosshair; touch-action:none; }
+    #clear { position:fixed; right:28px; top:80px; z-index:6; border:none; cursor:pointer; font-family:'Fredoka One',cursive;
+             background:#eee; color:#456; padding:.45rem 1rem; border-radius:50px; font-size:.95rem; }
+    #clear:hover { background:#e2e2e2; }
+
+    /* the robot, bottom left, with its speech bubble */
+    #robotBox { position:fixed; left:18px; right:18px; bottom:10px; height:100px; display:flex; align-items:center; gap:14px; z-index:5; }
+    #robot { width:92px; height:100px; flex:none; overflow:visible; }
+    #robot .eye { transform-box:fill-box; transform-origin:center; animation:blink 4s infinite; }
+    #robot .light { animation:glow 1.2s ease-in-out infinite alternate; }
+    #robot.talking .mouth { animation:talk .18s steps(2) infinite; transform-box:fill-box; transform-origin:center; }
+    #robot.happy .head { animation:hop .5s ease 2; transform-box:fill-box; transform-origin:bottom; }
+    @keyframes blink { 0%,94%,100% { transform:scaleY(1); } 97% { transform:scaleY(.1); } }
+    @keyframes glow { to { fill:#ff5252; } }
+    @keyframes talk { 50% { transform:scaleY(.3); } }
+    @keyframes hop { 50% { transform:translateY(-10px); } }
+    #say { position:relative; background:#fff; border-radius:18px; padding:.7rem 1.2rem; font-weight:900; font-size:1.25rem;
+           box-shadow:0 4px 0 rgba(0,0,0,.12); max-width:calc(100% - 200px); min-height:2.8rem; display:flex; align-items:center; }
+    #say::before { content:''; position:absolute; left:-12px; top:50%; margin-top:-10px; border:10px solid transparent; border-right-color:#fff; border-left:0; }
+    #voice { border:none; cursor:pointer; background:#fff; border-radius:50%; width:44px; height:44px; font-size:1.3rem;
+             box-shadow:0 3px 0 rgba(0,0,0,.12); flex:none; }
+
+    /* cards: the start, each round's "draw this", and the end */
+    /* the cards fade in and out, they don't pop */
+    .card-wrap { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:rgba(255,213,79,.96);
+                 opacity:0; visibility:hidden; pointer-events:none; transition:opacity .6s ease, visibility .6s; }
+    .card-wrap.shown { opacity:1; visibility:visible; pointer-events:auto; }
+    .card-wrap .card { transform:translateY(14px); transition:transform .6s ease; }
+    .card-wrap.shown .card { transform:none; }
+    /* the big tick on top of your drawing when the robot gets it */
+    #tick { position:fixed; left:50%; top:calc(64px + (100% - 182px) / 2); width:min(42vh,320px); height:min(42vh,320px);
+            transform:translate(-50%,-50%) scale(.6); opacity:0; pointer-events:none; z-index:7; transition:opacity .35s ease, transform .5s cubic-bezier(.3,1.5,.5,1); }
+    #tick.on { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    #tick path { stroke-dasharray:200; stroke-dashoffset:200; }
+    #tick.on path { stroke-dashoffset:0; transition:stroke-dashoffset .5s ease .15s; }
+    .card { text-align:center; padding:1.5rem; max-width:900px; }
+    .card h1 { font-family:'Fredoka One',cursive; font-weight:400; font-size:clamp(2.4rem,7vw,4.5rem); line-height:1.05; }
+    .card h2 { font-family:'Fredoka One',cursive; font-weight:400; font-size:clamp(1.6rem,4.5vw,3rem); line-height:1.1; margin:.3rem 0 .6rem; }
+    .card p { font-size:1.15rem; font-weight:800; margin:.5rem 0 1.2rem; }
+    .card .big { font-size:4rem; line-height:1.1; }
+    .go { border:none; cursor:pointer; font-family:'Fredoka One',cursive; font-size:1.4rem; color:#fff; background:#223;
+          padding:.75rem 2.4rem; border-radius:50px; box-shadow:0 5px 0 rgba(0,0,0,.25); transition:transform .1s; }
+    .go:hover { transform:scale(1.05); }
+    .results { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:1rem 0 1.4rem; }
+    .results figure { background:#fff; border-radius:14px; padding:.5rem; box-shadow:0 4px 0 rgba(0,0,0,.12); }
+    .results canvas { width:100%; aspect-ratio:4/3; display:block; }
+    .results figcaption { font-weight:900; font-size:.95rem; margin-top:.25rem; }
+    .results .yes { color:#2e7d32; } .results .no { color:#c62828; }
+    .credit { font-size:.75rem; font-weight:700; opacity:.65; margin-top:1rem; }
+    .credit a { color:inherit; }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="../">← Back</a>
+
+  <div id="bar"><span class="round" id="round"></span><span class="what" id="what"></span><span class="clock" id="clock">0:20</span></div>
+  <canvas id="paper"></canvas>
+  <button id="clear">🧽 Clear</button>
+  <svg id="tick" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="46" fill="rgba(67,160,71,.9)" stroke="#fff" stroke-width="5"/>
+    <path d="M28 52 L44 67 L73 35" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <div id="robotBox">
+    <svg id="robot" viewBox="0 0 92 100" aria-hidden="true">
+      <line x1="46" y1="4" x2="46" y2="18" stroke="#455" stroke-width="4"/>
+      <circle class="light" cx="46" cy="6" r="6" fill="#ffb300"/>
+      <g class="head">
+        <rect x="10" y="18" width="72" height="56" rx="16" fill="#90a4ae" stroke="#455a64" stroke-width="4"/>
+        <rect x="18" y="28" width="56" height="34" rx="10" fill="#263238"/>
+        <ellipse class="eye" cx="35" cy="42" rx="7" ry="8" fill="#4dd0e1"/>
+        <ellipse class="eye" cx="57" cy="42" rx="7" ry="8" fill="#4dd0e1"/>
+        <rect class="mouth" x="36" y="53" width="20" height="5" rx="2.5" fill="#4dd0e1"/>
+        <rect x="2" y="38" width="8" height="18" rx="4" fill="#78909c"/><rect x="82" y="38" width="8" height="18" rx="4" fill="#78909c"/>
+      </g>
+      <rect x="26" y="76" width="40" height="22" rx="8" fill="#78909c" stroke="#455a64" stroke-width="4"/>
+    </svg>
+    <div id="say">…</div>
+    <button id="voice" title="Robot voice on/off">🔊</button>
+  </div>
+
+  <div class="card-wrap shown" id="startCard">
+    <div class="card">
+      <div class="big">🤖✏️</div>
+      <h1>Quick, Draw!</h1>
+      <p>You get 6 things to draw, 20 seconds each.<br>Can the robot guess what you're drawing?</p>
+      <button class="go" id="startBtn">Let's draw!</button>
+      <p class="credit">The robot learned from 243,000 drawings by real people in Google's
+        <a href="https://quickdraw.withgoogle.com/data" target="_blank" rel="noopener">Quick, Draw! dataset</a> (CC BY 4.0).
+        It runs inside this page, so your drawings never leave your computer.</p>
+    </div>
+  </div>
+  <div class="card-wrap" id="roundCard">
+    <div class="card">
+      <p id="rcRound"></p>
+      <div class="big" id="rcEmoji"></div>
+      <h2 id="rcWhat"></h2>
+      <p>in under 20 seconds</p>
+      <button class="go" id="rcGo">Got it!</button>
+    </div>
+  </div>
+  <div class="card-wrap" id="endCard">
+    <div class="card">
+      <h2 id="endTitle"></h2>
+      <div class="results" id="results"></div>
+      <button class="go" id="again">Play again</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  /* ---------------------------------------------------------------
+     THE ROBOT'S BRAIN
+     A neural network: two layers that look for little shapes, then two that decide.
+     Its numbers were squashed to whole numbers for a small file; here they are unsquashed.
+     --------------------------------------------------------------- */
+  var B = ROBOT_BRAIN, W = {};
+  Object.keys(B.layers).forEach(function (k) {
+    var L = B.layers[k], bin = atob(L.data), a = new Float32Array(bin.length);
+    for (var i = 0; i < bin.length; i++) { var v = bin.charCodeAt(i); a[i] = (v > 127 ? v - 256 : v) * L.scale; }
+    W[k] = a;
+  });
+
+  /* look for patterns: a 3x3 "stamp" slid over every spot of every layer, then keep only
+     the positive bits (relu) and shrink by keeping the biggest of each 2x2 block (max pool) */
+  function convReluPool(input, inC, size, w, bias, outC) {
+    var conv = new Float32Array(outC * size * size);
+    for (var o = 0; o < outC; o++)
+      for (var y = 0; y < size; y++)
+        for (var x = 0; x < size; x++) {
+          var sum = bias[o];
+          for (var c = 0; c < inC; c++)
+            for (var ky = -1; ky <= 1; ky++) {
+              var yy = y + ky; if (yy < 0 || yy >= size) continue;
+              for (var kx = -1; kx <= 1; kx++) {
+                var xx = x + kx; if (xx < 0 || xx >= size) continue;
+                sum += input[(c * size + yy) * size + xx] * w[((o * inC + c) * 3 + ky + 1) * 3 + kx + 1];
+              }
+            }
+          conv[(o * size + y) * size + x] = sum > 0 ? sum : 0;
+        }
+    var h = size / 2, out = new Float32Array(outC * h * h);
+    for (var o2 = 0; o2 < outC; o2++)
+      for (var y2 = 0; y2 < h; y2++)
+        for (var x2 = 0; x2 < h; x2++) {
+          var b = (o2 * size + y2 * 2) * size + x2 * 2;
+          out[(o2 * h + y2) * h + x2] = Math.max(conv[b], conv[b + 1], conv[b + size], conv[b + size + 1]);
+        }
+    return out;
+  }
+  function dense(input, w, bias, n, relu) {
+    var out = new Float32Array(n), m = input.length;
+    for (var i = 0; i < n; i++) {
+      var s = bias[i];
+      for (var j = 0; j < m; j++) s += input[j] * w[i * m + j];
+      out[i] = relu && s < 0 ? 0 : s;
+    }
+    return out;
+  }
+  /* 28 x 28 picture (0 = paper, 1 = ink) -> how sure it is about each of the 15 things */
+  function think(pic) {
+    var a = convReluPool(pic, 1, 28, W['c1.weight'], W['c1.bias'], 16);
+    a = convReluPool(a, 16, 14, W['c2.weight'], W['c2.bias'], 32);
+    a = dense(a, W['f1.weight'], W['f1.bias'], 64, true);
+    a = dense(a, W['f2.weight'], W['f2.bias'], B.things.length, false);
+    var max = Math.max.apply(null, a), sum = 0, p = [];
+    for (var i = 0; i < a.length; i++) { p[i] = Math.exp(a[i] - max); sum += p[i]; }
+    return p.map(function (v) { return v / sum; });
+  }
+  /* a check that this page does the same sums as the training did (used by tests) */
+  window.robotSelfTest = function () {
+    var bin = atob(ROBOT_PROBE.pics), ok = 0, n = ROBOT_PROBE.answers.length;
+    for (var k = 0; k < n; k++) {
+      var pic = new Float32Array(784);
+      for (var i = 0; i < 784; i++) pic[i] = bin.charCodeAt(k * 784 + i) / 255;
+      var p = think(pic), best = p.indexOf(Math.max.apply(null, p));
+      if (best === ROBOT_PROBE.answers[k]) ok++;
+    }
+    return ok + ' / ' + n;
+  };
+
+  /* ---------------------------------------------------------------
+     THE 15 THINGS
+     --------------------------------------------------------------- */
+  var NAMES = { 'cat': ['a cat', '🐱'], 'house': ['a house', '🏠'], 'tree': ['a tree', '🌳'], 'sun': ['the sun', '☀️'],
+    'fish': ['a fish', '🐟'], 'car': ['a car', '🚗'], 'star': ['a star', '⭐'], 'apple': ['an apple', '🍎'],
+    'bicycle': ['a bicycle', '🚲'], 'clock': ['a clock', '🕐'], 'umbrella': ['an umbrella', '☂️'],
+    'snowman': ['a snowman', '⛄'], 'rainbow': ['a rainbow', '🌈'], 'ice cream': ['an ice cream', '🍦'],
+    'airplane': ['an aeroplane', '✈️'] };
+  function name(i) { return NAMES[B.things[i]] ? NAMES[B.things[i]][0] : 'something else'; }
+  /* the robot's 16th answer: "it's not one of my 15 things" (a plain circle, a square, a squiggle…) */
+  var ELSE = B.things.indexOf('something else');
+
+  /* ---------------------------------------------------------------
+     DRAWING
+     --------------------------------------------------------------- */
+  var paper = document.getElementById('paper'), pen = paper.getContext('2d');
+  var strokes = [], drawing = false, canDraw = false, dpr = window.devicePixelRatio || 1;
+  function sizePaper() {
+    var r = paper.getBoundingClientRect();
+    paper.width = r.width * dpr; paper.height = r.height * dpr;
+    redraw();
+  }
+  function redraw() {
+    pen.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pen.clearRect(0, 0, paper.width, paper.height);
+    pen.strokeStyle = '#223'; pen.fillStyle = '#223'; pen.lineWidth = 6; pen.lineCap = 'round'; pen.lineJoin = 'round';
+    strokes.forEach(function (s) {
+      pen.beginPath(); pen.moveTo(s[0][0], s[0][1]);
+      if (s.length === 1) pen.lineTo(s[0][0] + 0.1, s[0][1]);
+      for (var i = 1; i < s.length; i++) pen.lineTo(s[i][0], s[i][1]);
+      pen.stroke();
+    });
+  }
+  function point(e) { var r = paper.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  paper.addEventListener('pointerdown', function (e) {
+    if (!canDraw) return;
+    drawing = true; paper.setPointerCapture(e.pointerId);
+    strokes.push([point(e)]); redraw(); changed();
+  });
+  paper.addEventListener('pointermove', function (e) {
+    if (!drawing) return;
+    var s = strokes[strokes.length - 1], p = point(e), q = s[s.length - 1];
+    if (Math.hypot(p[0] - q[0], p[1] - q[1]) < 2) return;
+    s.push(p); redraw(); changed();
+  });
+  window.addEventListener('pointerup', function () { if (drawing) { drawing = false; changed(); } });
+  document.getElementById('clear').addEventListener('click', function () { strokes = []; redraw(); changed(); });
+  window.addEventListener('resize', sizePaper);
+
+  /* turn the drawing into a 28 x 28 picture, made the same way as the Quick, Draw! ones:
+     the drawing is fitted into the middle of the square with a small gap round it, the
+     lines are about 2 pixels thick, white ink on black */
+  var big = document.createElement('canvas'); big.width = big.height = 280;
+  var bctx = big.getContext('2d', { willReadFrequently: true });
+  function toPicture(list) {
+    var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    list.forEach(function (s) { s.forEach(function (p) {
+      minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]); minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]); }); });
+    var size = Math.max(maxX - minX, maxY - minY, 1), k = 240 / size;
+    var ox = 140 - (minX + maxX) / 2 * k, oy = 140 - (minY + maxY) / 2 * k;
+    bctx.fillStyle = '#000'; bctx.fillRect(0, 0, 280, 280);
+    bctx.strokeStyle = '#fff'; bctx.lineWidth = 18; bctx.lineCap = 'round'; bctx.lineJoin = 'round';
+    list.forEach(function (s) {
+      bctx.beginPath(); bctx.moveTo(s[0][0] * k + ox, s[0][1] * k + oy);
+      if (s.length === 1) bctx.lineTo(s[0][0] * k + ox + 0.1, s[0][1] * k + oy);
+      for (var i = 1; i < s.length; i++) bctx.lineTo(s[i][0] * k + ox, s[i][1] * k + oy);
+      bctx.stroke();
+    });
+    var px = bctx.getImageData(0, 0, 280, 280).data, pic = new Float32Array(784);
+    for (var y = 0; y < 28; y++) for (var x = 0; x < 28; x++) {         /* each small square = the average of 10 x 10 */
+      var sum = 0;
+      for (var dy = 0; dy < 10; dy++) for (var dx = 0; dx < 10; dx++) sum += px[((y * 10 + dy) * 280 + x * 10 + dx) * 4];
+      pic[y * 28 + x] = sum / 100 / 255;
+    }
+    return pic;
+  }
+  window.robotGuessStrokes = function (list, sure) {     /* for tests */
+    var p = think(toPicture(list)), i = p.indexOf(Math.max.apply(null, p));
+    return sure ? [B.things[i], Math.round(p[i] * 100)] : B.things[i];
+  };
+
+  /* ---------------------------------------------------------------
+     THE ROBOT TALKING
+     --------------------------------------------------------------- */
+  var robot = document.getElementById('robot'), say = document.getElementById('say');
+  var voiceOn = false;                                          /* the voice starts OFF; 🔇 turns it on */
+  try { voiceOn = localStorage.getItem('jos-quickdraw-voice') === 'on'; } catch (e) {}
+  var voiceBtn = document.getElementById('voice');
+  function paintVoice() { voiceBtn.textContent = voiceOn ? '🔊' : '🔇'; }
+  voiceBtn.addEventListener('click', function () {
+    voiceOn = !voiceOn; paintVoice();
+    try { localStorage.setItem('jos-quickdraw-voice', voiceOn ? 'on' : 'off'); } catch (e) {}
+    if (!voiceOn && window.speechSynthesis) speechSynthesis.cancel();
+  });
+  paintVoice();
+  var lastSaid = '', talkTimer = 0;
+  function speak(text, loud) {
+    if (text === lastSaid) return;
+    lastSaid = text;
+    say.textContent = text;
+    robot.classList.add('talking');
+    clearTimeout(talkTimer);
+    talkTimer = setTimeout(function () { robot.classList.remove('talking'); }, 300 + text.length * 45);
+    if (voiceOn && loud && window.speechSynthesis) {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text.replace(/[^\w\s',.!?]/g, ''));
+      u.rate = 1.1; u.pitch = 1.3;
+      speechSynthesis.speak(u);
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     THE GAME
+     --------------------------------------------------------------- */
+  var ROUNDS = 6, order = [], round = 0, target = 0, timeLeft = 0, tickTimer = 0, guessTimer = 0, results = [], live = false;
+  var show = function (id, on) { document.getElementById(id).classList.toggle('shown', on); };
+  var tick = document.getElementById('tick');
+
+  function start() {
+    order = B.things.map(function (_, i) { return i; }).filter(function (i) { return i !== ELSE; }).sort(function () { return Math.random() - 0.5; }).slice(0, ROUNDS);
+    round = 0; results = [];
+    show('startCard', false); show('endCard', false);
+    nextRound();
+  }
+  function nextRound() {
+    if (round >= ROUNDS) return finish();
+    target = order[round];
+    strokes = []; redraw(); canDraw = false; lastSaid = '';
+    tick.classList.remove('on');
+    document.getElementById('rcRound').textContent = 'Drawing ' + (round + 1) + ' of ' + ROUNDS;
+    document.getElementById('rcEmoji').textContent = '✏️';
+    document.getElementById('rcWhat').textContent = 'Draw ' + name(target);
+    show('roundCard', true);
+  }
+  function go() {
+    show('roundCard', false);
+    document.getElementById('round').textContent = (round + 1) + ' / ' + ROUNDS;
+    document.getElementById('what').textContent = 'Draw ' + name(target);
+    timeLeft = 20; paintClock();
+    canDraw = true; live = true;
+    speak('Go! Draw ' + name(target) + '.', false);
+    clearInterval(tickTimer);
+    tickTimer = setInterval(function () {
+      timeLeft--; paintClock();
+      if (timeLeft <= 0) endRound(false);
+    }, 1000);
+  }
+  function paintClock() {
+    var c = document.getElementById('clock');
+    c.textContent = '0:' + String(Math.max(0, timeLeft)).padStart(2, '0');
+    c.classList.toggle('low', timeLeft <= 5);
+  }
+
+  /* every time the drawing changes, the robot has another think (not too often) */
+  var lastThink = 0;
+  function changed() {
+    if (!live) return;
+    var wait = Math.max(0, 350 - (Date.now() - lastThink));
+    clearTimeout(guessTimer);
+    guessTimer = setTimeout(guess, wait);
+  }
+  function guess() {
+    lastThink = Date.now();
+    if (!live || !strokes.length) return;
+    /* how much has been drawn: the length of all the lines, and how big the whole drawing is */
+    var length = 0, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    strokes.forEach(function (st) { st.forEach(function (q, i) {
+      if (i) length += Math.hypot(q[0] - st[i - 1][0], q[1] - st[i - 1][1]);
+      minX = Math.min(minX, q[0]); maxX = Math.max(maxX, q[0]); minY = Math.min(minY, q[1]); maxY = Math.max(maxY, q[1]); }); });
+    var size = Math.max(maxX - minX, maxY - minY);
+    /* the robot only knows 15 things, so it always picks one of them — even for a scribble.
+       So: no guessing at all until there is a proper amount of drawing */
+    if (length < 300 || size < 70) {
+      speak(size < 70 && length >= 300 ? 'I don\'t know… try drawing it bigger!' : 'I don\'t know what you\'re drawing…', length >= 150);
+      return;
+    }
+    var p = think(toPicture(strokes));
+    var ranked = p.map(function (v, i) { return [v, i]; }).sort(function (a, b) { return b[0] - a[0]; });
+    var top = ranked[0], second = ranked[1];
+    if (top[1] === target && top[0] > 0.8) {                     /* really sure, and right: got it! */
+      speak('I get it, you\'re drawing ' + name(target) + '!', true);
+      robot.classList.remove('happy'); void robot.offsetWidth; robot.classList.add('happy');
+      tick.classList.add('on');                                  /* a big ✓ on top of the drawing */
+      return endRound(true);
+    }
+    if (second[1] === ELSE) second = ranked[2];                 /* never say "…or something else?" */
+    if (top[1] === ELSE || top[0] < 0.4) speak('I don\'t know what you\'re drawing…', true);
+    else if (second[0] > 0.2) speak('I think you\'re drawing ' + name(top[1]) + '… or ' + name(second[1]) + '?', true);
+    else speak('I think you\'re drawing ' + name(top[1]) + '…', true);
+  }
+
+  function endRound(won) {
+    if (!live) return;
+    live = false; canDraw = false; drawing = false;
+    clearInterval(tickTimer); clearTimeout(guessTimer);
+    var p = strokes.length ? think(toPicture(strokes)) : null, best = p ? p.indexOf(Math.max.apply(null, p)) : -1;
+    results.push({ target: target, won: won, strokes: strokes.map(function (s) { return s.slice(); }),
+                   w: paper.clientWidth, h: paper.clientHeight, thought: best });
+    if (!won) speak('Sorry, I couldn\'t guess it! It was ' + name(target) + '.', true);
+    round++;
+    setTimeout(nextRound, won ? 1600 : 2400);
+  }
+
+  function finish() {
+    var wins = results.filter(function (r) { return r.won; }).length;
+    document.getElementById('endTitle').textContent = 'The robot guessed ' + wins + ' out of ' + ROUNDS + '!';
+    var box = document.getElementById('results'); box.textContent = '';
+    results.forEach(function (r) {
+      var f = document.createElement('figure'), c = document.createElement('canvas'), cap = document.createElement('figcaption');
+      c.width = 400; c.height = 300;
+      var g = c.getContext('2d'), k = Math.min(400 / r.w, 300 / r.h);
+      g.fillStyle = '#fff'; g.fillRect(0, 0, 400, 300);
+      g.strokeStyle = '#223'; g.lineWidth = 3; g.lineCap = 'round'; g.lineJoin = 'round';
+      r.strokes.forEach(function (s) {
+        g.beginPath(); g.moveTo(s[0][0] * k, s[0][1] * k);
+        for (var i = 1; i < s.length; i++) g.lineTo(s[i][0] * k, s[i][1] * k);
+        g.stroke();
+      });
+      cap.className = r.won ? 'yes' : 'no';
+      cap.textContent = NAMES[B.things[r.target]][1] + ' ' + name(r.target) + (r.won ? ' ✓' : ' ✗' + (r.thought >= 0 && r.thought !== ELSE ? ' (it thought ' + name(r.thought) + ')' : ''));
+      f.appendChild(c); f.appendChild(cap); box.appendChild(f);
+    });
+    speak(wins >= 4 ? 'That was fun! You\'re a great drawer!' : 'That was fun! Let\'s play again!', true);
+    show('endCard', true);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('rcGo').addEventListener('click', go);
+  document.getElementById('again').addEventListener('click', start);
+  sizePaper();
+  speak('Hi! I\'m the drawing robot.', false);
+})();
+</script>
+</body>
+</html>
