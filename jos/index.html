@@ -37,6 +37,7 @@
                       transform-origin: 30% 38%;
                       transition: opacity 0.2s ease, transform 0.25s ease; }
         #cursorFire.lit { opacity: 1; }
+        #cursorFire.lost { opacity: 0 !important; }   /* the real cursor left the page - hide ours too, so it never sits stuck */
         #cursorFire.burning { transform: translate(-30%, -38%) scale(1.3); }
         #cursorFire::before { content: ''; position: absolute; left: 30%; top: 30%; width: 110px; height: 110px;
                               transform: translate(-50%, -50%); border-radius: 50%; z-index: -1; opacity: 0;
@@ -613,8 +614,21 @@
 
         document.addEventListener('mousemove', function (e) {
             mx = e.clientX; my = e.clientY; seen = true;
-            if (cur) { cur.style.left = mx + 'px'; cur.style.top = my + 'px'; }
+            if (cur) cur.classList.remove('lost');
         });
+
+        /* the real cursor left the window (or the tab lost focus) - our cursor can't know
+           where it's gone, so hide it rather than leave it stuck in the last spot */
+        document.addEventListener('mouseleave', function () { if (cur) cur.classList.add('lost'); });
+        window.addEventListener('blur', function () { if (cur) cur.classList.add('lost'); });
+
+        /* FOREVER LOOP: every single frame, put the black cursor exactly where the real
+           one last was. Nothing else is ever allowed to leave it in the wrong place. */
+        function follow() {
+            if (cur) { cur.style.left = mx + 'px'; cur.style.top = my + 'px'; }
+            requestAnimationFrame(follow);
+        }
+        requestAnimationFrame(follow);
 
         function hellOn() { try { return sessionStorage.getItem('jos-hard-mode') === 'on'; } catch (e) { return false; } }
 
