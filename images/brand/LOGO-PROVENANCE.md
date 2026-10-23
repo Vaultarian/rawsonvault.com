@@ -94,6 +94,7 @@ All now resolve to the canonical file:
 - Mrs. L favicon / PWA icons → `~/AlfredOS/mrs_landingham/web/static/` (regenerated from this mark 2026-06-15)
 - `~/AlfredOS/agents/scribe/weekly_grid.py` → `~/assets/vault-logo.png` (Scribe's weekly-calendar `LOGO_PATH`). Repointed 2026-06-18 from the old `~/vault/04-Resources/brand/rawsonvault/logos/icon only/TheVaultD29aR04aP01ZL_icon.png`; that stale path is why the weekly calendar PDFs were still stamping the pre-canon mark.
 - AI Club S4E2 lesson ("Set the icon" deploy step) → `~/rawsonvault/images/brand/vault-icon.png`. Repointed 2026-06-18 from the old `~/Pictures/vault_logos/icon only/vault_icon_transparent.png`.
+- Alfred's web front door → `~/AlfredOS/agents/alfred-web/web/` (`favicon.ico` and `apple-touch-icon.png` copied byte-identical from the site root; `vault-icon-192.png` for the in-page mark). Added 2026-09-13 when that service got its icon.
 
 ## Brand bronze palette
 
