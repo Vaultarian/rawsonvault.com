@@ -168,6 +168,9 @@
     { label: 'Intermediate', numbers: 'roman', numR: 155, hourLen: 95, minuteLen: 145, hands: 2 },
     { label: 'Expert',    numbers: 'ticks',  hourLen: 95, minuteLen: 145, hands: 2 }
   ];
+  function loadMode() { try { return localStorage.getItem('jos-clock-mode') === 'analog' ? 'analog' : 'digital'; } catch (e) { return 'digital'; } }
+  function saveMode(v) { try { localStorage.setItem('jos-clock-mode', v); } catch (e) {} }
+
   function loadLevel() {
     try {
       var raw = localStorage.getItem('jos-clock-level');
@@ -267,6 +270,31 @@
     if (curLevel.hands === 3) rotate(elSecond, s * 6);
   }
 
+  /* ---------- opening straight into analog: zoom + fade in, hands spin fast then
+     settle on the real time (really fast -> slow -> slow -> slow -> stop) ---------- */
+  function spinHand(line, target, extraTurns) {
+    var anim = line.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(' + (target + extraTurns * 360) + 'deg)' }],
+      { duration: 1700, easing: 'cubic-bezier(.08,.75,.18,1)', fill: 'forwards' }
+    );
+    anim.finished.then(function () { anim.cancel(); rotate(line, target); }).catch(function () {});
+  }
+  function spinIn() {
+    var svg = analog.querySelector('svg');
+    svg.style.transition = 'none';
+    svg.style.transform = 'scale(.25)';
+    svg.style.opacity = '0';
+    void svg.offsetWidth;
+    svg.style.transition = 'transform .9s cubic-bezier(.2,.8,.2,1), opacity .5s ease';
+    svg.style.transform = 'scale(1)';
+    svg.style.opacity = '1';
+
+    var now = new Date(), h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
+    spinHand(elHour, h * 30 + m * 0.5, 3);
+    spinHand(elMinute, m * 6 + s * 0.1, 4);
+    if (curLevel.hands === 3) spinHand(elSecond, s * 6, 6);
+  }
+
   /* ---------- the small clock, ticking ---------- */
   function tick() {
     var now = new Date();
@@ -302,12 +330,26 @@
     lavaLamp(lava);
     buildAnalog(stage);
 
-    /* 2. a typing bar in the middle types the time, goes to the next line, types the date */
+    /* 2. a typing bar in the middle types the time, goes to the next line, types the date -
+       unless last time was closed on analog, in which case open straight into analog instead */
     big = document.createElement('div');
     big.id = 'clockBig';
     big.innerHTML = '<span class="t typed"></span><span class="d typed"><span class="words"></span></span>';
     stage.appendChild(big);
     var t = big.querySelector('.t'), d = big.querySelector('.d'), words = d.querySelector('.words');
+
+    if (loadMode() === 'analog') {
+      t.textContent = time(new Date()); words.textContent = date(new Date(), true);
+      t.classList.remove('typed'); d.classList.remove('typed');
+      big.ready = true;
+      big.classList.add('hidden');
+      mode = 'analog';
+      stage.classList.add('analogOn');
+      analog.classList.add('on');
+      spinIn();
+      return;
+    }
+
     var caret = document.createElement('span');
     caret.className = 'caret';
 
@@ -413,6 +455,7 @@
   /* ---------- click again or Esc: back to normal ---------- */
   function close() {
     if (!stage) return;
+    saveMode(mode);
     var s = stage;
     stage = null; big = null; analog = null; mode = 'digital';
     timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
