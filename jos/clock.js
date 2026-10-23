@@ -59,9 +59,11 @@
     '#clockStage .hint{position:absolute;left:0;right:0;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.55);',
     '  font:700 .85rem Nunito,sans-serif;letter-spacing:.06em}',
 
-    /* clicking empty space hides the cursor; moving the mouse brings it straight back */
-    '#clockStage.hideCursor{cursor:none}',
-    '#clockStage.hideCursor #clockBig,#clockStage.hideCursor #clockAnalog{cursor:pointer}',
+    /* the clock screen controls its own cursor - the home page's own cursor trick (which
+       hides the real one everywhere, site-wide, with !important) must not reach in here */
+    '#clockStage,#clockStage *{cursor:pointer!important}',
+    '#clockStage.hideCursor,#clockStage.hideCursor *{cursor:none!important}',
+    '#clockStage.hideCursor #clockBig,#clockStage.hideCursor #clockAnalog{cursor:pointer!important}',
 
     /* the analog clock */
     '#clockAnalog{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);cursor:pointer;',
