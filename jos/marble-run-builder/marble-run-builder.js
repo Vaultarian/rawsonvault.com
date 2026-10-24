@@ -180,6 +180,13 @@ function setCell(gx, gy, brick){
   markDirty();
   renderGrid();
 }
+function placeDefaultStartFinish(){
+  // every fresh board gets a Start and Finish already down, straight-line below each other,
+  // so there's always something to press Run on - no empty board with nothing testable
+  const col = Math.min(1, gridW-1);
+  setCell(col, 0, {type:'start', rot:0});
+  setCell(col, gridH-1, {type:'finish', rot:0});
+}
 function eraseCell(gx,gy){ setCell(gx,gy,null); }
 
 function markDirty(){
@@ -701,7 +708,9 @@ function init(){
   document.getElementById('startBuildBtn').onclick = ()=>{
     gridW=pickW; gridH=pickW; editGrid=makeGrid(gridW,gridH); startXY=null; finishXY=null;
     document.getElementById('sizeTag').textContent = gridW+'×'+gridH;
-    showScreen('builderScreen'); sizeCanvases(); fitZoomToViewport(); renderGrid(); markDirty();
+    showScreen('builderScreen'); sizeCanvases(); fitZoomToViewport();
+    placeDefaultStartFinish();
+    renderGrid(); markDirty();
   };
   document.getElementById('openGalleryBtn').onclick = ()=>{ renderGallery(); showScreen('galleryScreen'); };
   document.getElementById('galleryBtn').onclick = ()=>{ renderGallery(); showScreen('galleryScreen'); };
@@ -710,7 +719,9 @@ function init(){
   document.getElementById('runBtn').onclick = ()=> running ? stopRun(false) : startRun();
   document.getElementById('clearBtn').onclick = ()=>{
     if (running) stopRun(false);
-    editGrid = makeGrid(gridW,gridH); startXY=null; finishXY=null; markDirty(); renderGrid();
+    editGrid = makeGrid(gridW,gridH); startXY=null; finishXY=null;
+    placeDefaultStartFinish();
+    markDirty(); renderGrid();
     marbles = []; // wipe any dispensed balls left sitting on screen from the last run
     marbleCtx.clearRect(0,0,gridW*CELL,gridH*CELL);
   };
