@@ -14,10 +14,10 @@ const DEFAULT_ROT = { oneway:0, gravswitch:0, dispenser:2, spring:0 };
 // which DIRS index each brick's real picture points to at zero rotation (others point "up")
 const IMG_NATIVE_DIR = { dispenser: 2, speedup: 1 };
 
-const BASIC   = ['solid','ramp','ramp2','curve','flat','start','finish'];
+const BASIC   = ['solid','ramp','curve','flat','start','finish'];
 const SPECIAL = ['spring','oneway','portal','breakable','speedup','gravswitch','dispenser'];
 const NAMES = {
-  solid:'Block', ramp:'Ramp', ramp2:'Ramp', curve:'Curve', flat:'Flat',
+  solid:'Block', ramp:'Ramp', curve:'Curve', flat:'Flat',
   start:'Start', finish:'Finish', spring:'Spring', oneway:'One-Way',
   portal:'Portal', breakable:'Breakable', speedup:'Speed Up',
   gravswitch:'Gravity', dispenser:'Dispenser', eraser:'Eraser'
@@ -104,12 +104,11 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.fillStyle = '#7a4a2e'; ctx.fillRect(-s,-s,size,size);
       ctx.strokeStyle = '#4e2f1c'; ctx.lineWidth=2; ctx.strokeRect(-s+1,-s+1,size-2,size-2);
       break;
-    case 'ramp': case 'ramp2':
+    case 'ramp':
       ctx.rotate(angle);
       ctx.fillStyle = '#2b2b2b';
       ctx.beginPath();
-      if (type==='ramp'){ ctx.moveTo(-s,-s); ctx.lineTo(-s,s); ctx.lineTo(s,s); }
-      else { ctx.moveTo(s,-s); ctx.lineTo(-s,s); ctx.lineTo(s,s); }
+      ctx.moveTo(-s,-s); ctx.lineTo(-s,s); ctx.lineTo(s,s);
       ctx.closePath(); ctx.fill();
       break;
     case 'curve':
@@ -454,8 +453,8 @@ function collideWithCell(m, cx, cy, cell){
   const ox = cx*CELL, oy = cy*CELL; // cell origin px
   if (cell.type==='solid'){
     collideAABB(m, ox, oy, CELL, CELL, 0.15);
-  } else if (cell.type==='ramp' || cell.type==='ramp2'){
-    collideRamp(m, ox, oy, cell.type, cell.rot);
+  } else if (cell.type==='ramp'){
+    collideRamp(m, ox, oy, cell.rot);
   } else if (cell.type==='curve'){
     collideCurve(m, ox, oy, cell.rot);
   } else if (cell.type==='oneway'){
@@ -505,7 +504,7 @@ function collideAABB(m, ox, oy, w, h, restitution){
 }
 // Solid-half-plane collision against the cell's diagonal: pushes the marble out to the
 // empty side and keeps only its tangential (along-the-slope) velocity — a frictionless slide.
-// Used for both 'ramp'/'ramp2' (straight) and 'curve' (same collision, rounder look only).
+// Used for both 'ramp' (straight) and 'curve' (same collision, rounder look only).
 function collideDiagonal(m, ox, oy, x1,y1,x2,y2, solidPx,solidPy){
   const ex=x2-x1, ey=y2-y1, len=Math.hypot(ex,ey)||1;
   const tx=ex/len, ty=ey/len;
@@ -520,20 +519,18 @@ function collideDiagonal(m, ox, oy, x1,y1,x2,y2, solidPx,solidPy){
   const vn = m.vx*nx+m.vy*ny;
   if (vn < 0){ m.vx -= vn*nx; m.vy -= vn*ny; } // remove only the into-surface component
 }
-function rampGeometry(type, rot){
-  const pts = type==='ramp2' ? [[1,0],[0,1]] : [[0,0],[1,1]];
-  const solidLocal = type==='ramp2' ? [0.96,0.96] : [0.04,0.96];
-  const [ax,ay,bx,by] = rotatePoints(pts[0][0],pts[0][1],pts[1][0],pts[1][1],rot);
-  const [slx,sly] = rotatePoint(solidLocal[0], solidLocal[1], rot);
+function rampGeometry(rot){
+  const [ax,ay,bx,by] = rotatePoints(0,0,1,1,rot);
+  const [slx,sly] = rotatePoint(0.04, 0.96, rot);
   return {ax,ay,bx,by,slx,sly};
 }
-function collideRamp(m, ox, oy, type, rot){
-  const g = rampGeometry(type, rot);
+function collideRamp(m, ox, oy, rot){
+  const g = rampGeometry(rot);
   collideDiagonal(m, ox, oy, ox+g.ax*CELL, oy+g.ay*CELL, ox+g.bx*CELL, oy+g.by*CELL, ox+g.slx*CELL, oy+g.sly*CELL);
 }
 function collideCurve(m, ox, oy, rot){
   // same solid-half physics as a ramp; only the drawn icon is rounded
-  collideRamp(m, ox, oy, 'ramp', rot);
+  collideRamp(m, ox, oy, rot);
 }
 function collideThinStrip(m, ox, oy, rot){
   const t = CELL*0.22;
