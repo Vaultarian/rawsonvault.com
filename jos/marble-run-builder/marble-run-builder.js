@@ -78,7 +78,7 @@ function makeSlot(type){
   return slot;
 }
 function onSlotClick(slot, type){
-  if (running) return;
+  if (running) stopRun(false); // any click always works - picking a brick stops a live run instead of being ignored
   if (selected && selected.type === type && selected.slot === slot){
     slot._rot = (slot._rot + 1) % 4;
     drawBrick(slot.querySelector('canvas').getContext('2d'), 35, 31, 54, type, slot._rot, {});
@@ -232,7 +232,7 @@ function initViewportEvents(){
   const gridCanvas = document.getElementById('gridCanvas');
 
   gridCanvas.addEventListener('mousedown', (e)=>{
-    if (running) return;
+    if (running) stopRun(false); // any click always works - stop a live run instead of ignoring the click
     const {gx,gy} = cellFromEvent(e, vpInner);
     if (gx<0||gy<0||gx>=gridW||gy>=gridH) return;
     const existing = editGrid[gy][gx];
@@ -684,7 +684,7 @@ function init(){
 
   document.getElementById('runBtn').onclick = ()=> running ? stopRun(false) : startRun();
   document.getElementById('clearBtn').onclick = ()=>{
-    if (running) return;
+    if (running) stopRun(false);
     editGrid = makeGrid(gridW,gridH); startXY=null; finishXY=null; markDirty(); renderGrid();
   };
   document.getElementById('saveBtn').onclick = openSaveDialog;
