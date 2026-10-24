@@ -11,6 +11,8 @@ const DIRS = [                   // rot 0..3, clockwise, matches the brick icons
   {x:0,y:-1}, {x:1,y:0}, {x:0,y:1}, {x:-1,y:0}
 ];
 const DEFAULT_ROT = { oneway:0, gravswitch:0, dispenser:2, spring:0 };
+// which DIRS index each brick's real picture points to at zero rotation (others point "up")
+const IMG_NATIVE_DIR = { dispenser: 2 };
 
 const BASIC   = ['solid','ramp','ramp2','curve','flat','start','finish'];
 const SPECIAL = ['spring','oneway','portal','breakable','speedup','gravswitch','dispenser'];
@@ -137,7 +139,13 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       if (type==='dispenser' && meta && meta.used) alpha = 0.3;
       if (type==='breakable' && meta && meta.broken) alpha = 0.15;
       ctx.globalAlpha = alpha;
-      if (type !== 'eraser') ctx.rotate(angle); // eraser has no facing direction
+      if (type !== 'eraser'){
+        // the real picture's own arrow doesn't always point "up" at rest (dispenser's points
+        // down), so rotate from whichever way the picture actually points, not from rot=0
+        const nativeDir = IMG_NATIVE_DIR[type] || 0;
+        const steps = (rot - nativeDir + 4) % 4;
+        ctx.rotate(steps * Math.PI/2);
+      }
       if (img && img.complete && img.naturalWidth){
         ctx.imageSmoothingEnabled = false;
         const fit = Math.min(size/img.naturalWidth, size/img.naturalHeight);
@@ -380,7 +388,22 @@ function collideWithCell(m, cx, cy, cell){
     collideOneway(m, ox, oy, cell);
   } else if (cell.type==='flat'){
     collideThinStrip(m, ox, oy, cell.rot);
-  } else if (['finish','spring','speedup','gravswitch','dispenser'].includes(cell.type)){
+  } else if (cell.type==='gravswitch'){
+    // a real brick - the marble can't pass through it, but touching it still flips gravity
+    if (collideAABB(m, ox, oy, CELL, CELL, 0.15)){
+      gravityDir = DIRS[cell.rot]; activeGravSwitch = {x:cx,y:cy}; cell.meta.active = true;
+    }
+  } else if (cell.type==='dispenser'){
+    // a real brick too - solid, but still fires its one marble on contact
+    if (collideAABB(m, ox, oy, CELL, CELL, 0.15) && !cell.meta.used){
+      cell.meta.used = true;
+      const f = DIRS[cell.rot];
+      // spawn just outside the dispenser's own edge (not dead-centre in it), so the new
+      // marble doesn't instantly re-collide with the solid block it was just fired from
+      const spawnX = cx*CELL+CELL/2 + f.x*(CELL*0.5+12), spawnY = cy*CELL+CELL/2 + f.y*(CELL*0.5+12);
+      marbles.push(makeMarble(spawnX, spawnY, f.x*900, f.y*900, '#e67e22'));
+    }
+  } else if (['finish','spring','speedup'].includes(cell.type)){
     collideThinStrip(m, ox, oy, 0); // always sit as a floor; rot is only the "facing" for its effect
   } else if (cell.type==='breakable' && !cell.meta.broken){
     collideThinStrip(m, ox, oy, 0);
@@ -402,6 +425,7 @@ function collideAABB(m, ox, oy, w, h, restitution){
   } else if (dist===0){
     m.y -= m.r; m.vy = 0;
   }
+  return dist < m.r + 1.5; // "is the marble touching this block" — used by solid bricks with an effect
 }
 // Solid-half-plane collision against the cell's diagonal: pushes the marble out to the
 // empty side and keeps only its tangential (along-the-slope) velocity — a frictionless slide.
@@ -494,14 +518,7 @@ function handleTriggers(m, gx, gy){
       m.vx = up.x*1500; m.vy = up.y*1500;
     } else if (cell.type==='speedup'){
       m.vx *= 1.6; m.vy *= 1.6;
-    } else if (cell.type==='gravswitch'){
-      gravityDir = DIRS[cell.rot];
-      activeGravSwitch = {x:gx,y:gy};
-      cell.meta.active = true;
-    } else if (cell.type==='dispenser' && !cell.meta.used){
-      cell.meta.used = true;
-      const f = DIRS[cell.rot];
-      marbles.push(makeMarble(gx*CELL+CELL/2, gy*CELL+CELL/2, f.x*900, f.y*900, '#e67e22'));
+    // gravswitch and dispenser are solid now - they fire from contact in collideWithCell instead
     } else if (cell.type==='portal' && m.portalCooldown<=0){
       const pair = portalPairs.find(p => (p[0].x===gx&&p[0].y===gy) || (p[1].x===gx&&p[1].y===gy));
       if (pair){
