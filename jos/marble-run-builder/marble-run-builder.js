@@ -22,6 +22,23 @@ const NAMES = {
 };
 const SINGLETON = { start:true, finish:true }; // only one of these allowed on the board
 
+/* real screenshots of the actual marblerun.at bricks — used instead of drawn icons */
+const IMG_TYPES = ['spring','oneway','portal','breakable','speedup','gravswitch','dispenser','eraser'];
+const BRICK_IMAGES = {};
+let imagesReadyCount = 0;
+IMG_TYPES.forEach(t=>{
+  const img = new Image();
+  img.onload = ()=>{ imagesReadyCount++; if (gridCtx) renderGrid(); refreshToolboxIcons(); };
+  img.src = 'brick-art/' + t + '.png';
+  BRICK_IMAGES[t] = img;
+});
+function refreshToolboxIcons(){
+  document.querySelectorAll('.brick-slot').forEach(slot=>{
+    const cv = slot.querySelector('canvas');
+    if (cv) drawBrick(cv.getContext('2d'), 35, 31, 54, slot.dataset.type, slot._rot, {});
+  });
+}
+
 /* ---------------- state ---------------- */
 let gridW = 10, gridH = 10;
 let editGrid = makeGrid(gridW, gridH);
@@ -113,79 +130,27 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
         ctx.fillRect(-s+xx*cw, -s+yy*cw, cw, cw);
       }
       break; }
-    case 'spring':
-      ctx.rotate(angle);
-      ctx.save(); ctx.rotate(-0.5);
-      ctx.fillStyle = '#2b2b2b'; ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(-s*0.85,-s*0.45,size*0.85,size*0.45,4) : ctx.rect(-s*0.85,-s*0.45,size*0.85,size*0.45);
-      ctx.fill();
-      ctx.strokeStyle = '#f0c419'; ctx.lineWidth = size*0.045;
-      for(let i=1;i<5;i++){
-        const xx = -s*0.85 + i*(size*0.85/5);
-        ctx.beginPath(); ctx.moveTo(xx,-s*0.45); ctx.lineTo(xx,0); ctx.stroke();
-      }
-      ctx.restore();
-      break;
-    case 'oneway':
-      ctx.rotate(angle);
-      ctx.fillStyle = '#222';
-      ctx.beginPath(); ctx.moveTo(0,-s*0.85); ctx.lineTo(s*0.6, -s*0.05); ctx.lineTo(-s*0.6, -s*0.05); ctx.closePath(); ctx.fill();
-      ctx.fillRect(-s*0.6, s*0.1, size*0.6, size*0.22);
-      break;
-    case 'portal': {
-      const linked = meta && meta.paired;
-      ctx.fillStyle = linked ? '#2e2e2e' : '#777';
-      ctx.beginPath(); ctx.arc(0,0,s*0.78,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#e8e0cf';
-      ctx.beginPath(); ctx.arc(0,0,s*0.42,0,Math.PI*2); ctx.fill();
-      break; }
-    case 'breakable': {
-      const broken = meta && meta.broken;
-      if (!broken){
-        ctx.strokeStyle = '#2b2b2b'; ctx.lineWidth = size*0.05; ctx.lineCap='round';
-        const cracks = [[0,-s*0.75,0,0],[s*0.7,-s*0.3,0,0],[s*0.75,s*0.3,0,0],[0,s*0.8,0,0],[-s*0.7,s*0.35,0,0],[-s*0.75,-s*0.35,0,0]];
-        cracks.forEach(c=>{ ctx.beginPath(); ctx.moveTo(c[0],c[1]); ctx.lineTo(c[2],c[3]); ctx.stroke(); });
-        ctx.fillStyle='#2b2b2b'; ctx.beginPath(); ctx.arc(0,0,size*0.045,0,Math.PI*2); ctx.fill();
+    case 'spring': case 'oneway': case 'portal': case 'breakable':
+    case 'speedup': case 'gravswitch': case 'dispenser': case 'eraser': {
+      const img = BRICK_IMAGES[type];
+      let alpha = 1;
+      if (type==='dispenser' && meta && meta.used) alpha = 0.3;
+      if (type==='breakable' && meta && meta.broken) alpha = 0.15;
+      ctx.globalAlpha = alpha;
+      if (type !== 'eraser') ctx.rotate(angle); // eraser has no facing direction
+      if (img && img.complete && img.naturalWidth){
+        ctx.imageSmoothingEnabled = false;
+        const fit = Math.min(size/img.naturalWidth, size/img.naturalHeight);
+        const dw = img.naturalWidth*fit, dh = img.naturalHeight*fit;
+        ctx.drawImage(img, -dw/2, -dh/2, dw, dh);
       } else {
-        ctx.strokeStyle = 'rgba(80,80,80,.2)'; ctx.lineWidth=size*0.03;
-        ctx.strokeRect(-s*0.8,-s*0.8,size*0.8,size*0.8);
+        ctx.fillStyle = '#ccc'; ctx.fillRect(-s,-s,size,size); // still loading
       }
-      break; }
-    case 'speedup':
-      ctx.rotate(angle);
-      ctx.fillStyle = '#2980b9';
-      [-s*0.35, s*0.35].forEach(off=>{
-        ctx.beginPath(); ctx.moveTo(off-s*0.3,-s*0.6); ctx.lineTo(off+s*0.3,0); ctx.lineTo(off-s*0.3,s*0.6); ctx.closePath(); ctx.fill();
-      });
-      break;
-    case 'gravswitch': {
-      ctx.fillStyle = '#eee'; ctx.fillRect(-s,-s,size,size);
-      ctx.strokeStyle='#999'; ctx.strokeRect(-s+1,-s+1,size-2,size-2);
-      ctx.save(); ctx.rotate(angle);
-      ctx.fillStyle = (meta && meta.active) ? '#f0c419' : '#555';
-      ctx.beginPath(); ctx.moveTo(0,-s*0.7); ctx.lineTo(s*0.4,0); ctx.lineTo(s*0.15,0); ctx.lineTo(s*0.15,s*0.7);
-      ctx.lineTo(-s*0.15,s*0.7); ctx.lineTo(-s*0.15,0); ctx.lineTo(-s*0.4,0); ctx.closePath(); ctx.fill();
-      ctx.restore();
-      break; }
-    case 'dispenser': {
-      const used = meta && meta.used;
-      ctx.save(); ctx.rotate(angle);
-      ctx.globalAlpha = used ? 0.3 : 1;
-      ctx.fillStyle = '#d94c3d';
-      ctx.beginPath(); ctx.moveTo(0,s*0.75); ctx.lineTo(s*0.6,-s*0.5); ctx.lineTo(-s*0.6,-s*0.5); ctx.closePath(); ctx.fill();
-      ctx.restore();
-      break; }
-    case 'eraser': {
-      ctx.rotate(-0.4);
-      const ew=size*0.8, eh=size*0.42, r=6;
-      ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(-ew/2,-eh/2,ew,eh,r) : ctx.rect(-ew/2,-eh/2,ew,eh);
-      ctx.save(); ctx.clip();
-      ctx.fillStyle = '#e07a7a'; ctx.fillRect(-ew/2,-eh/2,ew*0.55,eh);
-      ctx.fillStyle = '#f4f4f4'; ctx.fillRect(-ew/2+ew*0.55,-eh/2,ew*0.45,eh);
-      ctx.restore();
-      ctx.strokeStyle = '#8a5050'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-ew/2,-eh/2,ew,eh,r) : ctx.rect(-ew/2,-eh/2,ew,eh); ctx.stroke();
+      if (type==='gravswitch' && meta && meta.active){
+        ctx.globalAlpha = 0.35; ctx.fillStyle = '#f0c419';
+        ctx.beginPath(); ctx.arc(0,0,s*0.95,0,Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
       break; }
   }
   ctx.restore();
