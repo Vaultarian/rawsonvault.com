@@ -114,33 +114,41 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       }
       break; }
     case 'spring':
-      ctx.strokeStyle = '#444'; ctx.lineWidth = 3; ctx.beginPath();
-      for(let i=0;i<5;i++){ const yy = -s + i*(size/4); ctx.moveTo(-s*0.7, yy); ctx.lineTo(s*0.7, yy+(size/8)*(i%2?1:-1)); }
-      ctx.stroke();
-      ctx.fillStyle = '#555'; ctx.fillRect(-s, s-3, size, 3);
+      ctx.rotate(angle);
+      ctx.save(); ctx.rotate(-0.5);
+      ctx.fillStyle = '#2b2b2b'; ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(-s*0.85,-s*0.45,size*0.85,size*0.45,4) : ctx.rect(-s*0.85,-s*0.45,size*0.85,size*0.45);
+      ctx.fill();
+      ctx.strokeStyle = '#f0c419'; ctx.lineWidth = size*0.045;
+      for(let i=1;i<5;i++){
+        const xx = -s*0.85 + i*(size*0.85/5);
+        ctx.beginPath(); ctx.moveTo(xx,-s*0.45); ctx.lineTo(xx,0); ctx.stroke();
+      }
+      ctx.restore();
       break;
     case 'oneway':
       ctx.rotate(angle);
-      ctx.strokeStyle = '#222'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(-s*0.8, -s*0.1); ctx.lineTo(s*0.8, -s*0.1); ctx.stroke();
       ctx.fillStyle = '#222';
-      ctx.beginPath(); ctx.moveTo(0,-s); ctx.lineTo(s*0.6, s*0.3); ctx.lineTo(-s*0.6, s*0.3); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0,-s*0.85); ctx.lineTo(s*0.6, -s*0.05); ctx.lineTo(-s*0.6, -s*0.05); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-s*0.6, s*0.1, size*0.6, size*0.22);
       break;
     case 'portal': {
       const linked = meta && meta.paired;
-      ctx.strokeStyle = linked ? '#2e9e4f' : '#999'; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(0,0,s*0.75,0,Math.PI*2); ctx.stroke();
-      ctx.fillStyle = linked ? '#f0c419' : '#ccc'; ctx.beginPath(); ctx.arc(0,0,s*0.22,0,Math.PI*2); ctx.fill();
-      ctx.rotate(angle); ctx.strokeStyle='#555'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(-s*0.9,0); ctx.lineTo(s*0.9,0); ctx.stroke();
+      ctx.fillStyle = linked ? '#2e2e2e' : '#777';
+      ctx.beginPath(); ctx.arc(0,0,s*0.78,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e8e0cf';
+      ctx.beginPath(); ctx.arc(0,0,s*0.42,0,Math.PI*2); ctx.fill();
       break; }
     case 'breakable': {
       const broken = meta && meta.broken;
-      ctx.strokeStyle = broken ? 'rgba(150,120,90,.3)' : '#8a6d4e'; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(0,0,s*0.75,0,Math.PI*2); ctx.stroke();
       if (!broken){
-        ctx.strokeStyle='#c0392b'; ctx.lineWidth=2; ctx.beginPath();
-        ctx.moveTo(-s*0.4,-s*0.5); ctx.lineTo(0,0); ctx.lineTo(-s*0.1,s*0.2); ctx.lineTo(s*0.4,s*0.6); ctx.stroke();
+        ctx.strokeStyle = '#2b2b2b'; ctx.lineWidth = size*0.05; ctx.lineCap='round';
+        const cracks = [[0,-s*0.75,0,0],[s*0.7,-s*0.3,0,0],[s*0.75,s*0.3,0,0],[0,s*0.8,0,0],[-s*0.7,s*0.35,0,0],[-s*0.75,-s*0.35,0,0]];
+        cracks.forEach(c=>{ ctx.beginPath(); ctx.moveTo(c[0],c[1]); ctx.lineTo(c[2],c[3]); ctx.stroke(); });
+        ctx.fillStyle='#2b2b2b'; ctx.beginPath(); ctx.arc(0,0,size*0.045,0,Math.PI*2); ctx.fill();
+      } else {
+        ctx.strokeStyle = 'rgba(80,80,80,.2)'; ctx.lineWidth=size*0.03;
+        ctx.strokeRect(-s*0.8,-s*0.8,size*0.8,size*0.8);
       }
       break; }
     case 'speedup':
@@ -167,10 +175,18 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.beginPath(); ctx.moveTo(0,s*0.75); ctx.lineTo(s*0.6,-s*0.5); ctx.lineTo(-s*0.6,-s*0.5); ctx.closePath(); ctx.fill();
       ctx.restore();
       break; }
-    case 'eraser':
-      ctx.fillStyle = '#e88'; ctx.fillRect(-s*0.8,-s*0.5,size*0.8,size*0.6);
-      ctx.strokeStyle = '#a33'; ctx.lineWidth=2; ctx.strokeRect(-s*0.8,-s*0.5,size*0.8,size*0.6);
-      break;
+    case 'eraser': {
+      ctx.rotate(-0.4);
+      const ew=size*0.8, eh=size*0.42, r=6;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(-ew/2,-eh/2,ew,eh,r) : ctx.rect(-ew/2,-eh/2,ew,eh);
+      ctx.save(); ctx.clip();
+      ctx.fillStyle = '#e07a7a'; ctx.fillRect(-ew/2,-eh/2,ew*0.55,eh);
+      ctx.fillStyle = '#f4f4f4'; ctx.fillRect(-ew/2+ew*0.55,-eh/2,ew*0.45,eh);
+      ctx.restore();
+      ctx.strokeStyle = '#8a5050'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-ew/2,-eh/2,ew,eh,r) : ctx.rect(-ew/2,-eh/2,ew,eh); ctx.stroke();
+      break; }
   }
   ctx.restore();
 }
