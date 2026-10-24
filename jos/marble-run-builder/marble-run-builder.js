@@ -302,7 +302,7 @@ function collectPortalPairs(grid){
 }
 function makeMarble(x,y,vx,vy,color){
   return { x,y,vx,vy, r: CELL*0.28, color: color||'#d94c3d', lastCellX:null, lastCellY:null,
-           portalCooldown:0, breakTrack:null, dead:false, won:false };
+           portalCooldown:0, breakTrack:null, touchBreakThisStep:null, dead:false, won:false };
 }
 
 function cellAt(grid,gx,gy){ if(gx<0||gy<0||gy>=grid.length||gx>=grid[0].length) return null; return grid[gy][gx]; }
@@ -379,7 +379,16 @@ function subStep(m, dt){
   if (m.y > gridH*CELL-m.r) { m.y = gridH*CELL-m.r; if (m.vy>0) m.vy = 0; }
 
   const gx = Math.floor(m.x/CELL), gy = Math.floor(m.y/CELL);
+  m.touchBreakThisStep = null;
   resolveCollisions(m, gx, gy);
+  // breakable is solid now - track contact (not centre-cell) so it still breaks on-off
+  if (m.breakTrack && (!m.touchBreakThisStep || m.touchBreakThisStep.x!==m.breakTrack.x || m.touchBreakThisStep.y!==m.breakTrack.y)){
+    const bc = cellAt(runGrid, m.breakTrack.x, m.breakTrack.y);
+    if (bc && bc.type==='breakable' && !bc.meta.broken && !bc.meta.breakAt){
+      bc.meta.breakAt = performance.now()+1000;
+    }
+  }
+  m.breakTrack = m.touchBreakThisStep;
   handleTriggers(m, gx, gy);
 }
 
@@ -418,12 +427,14 @@ function collideWithCell(m, cx, cy, cell){
       const spawnX = cx*CELL+CELL/2 + f.x*(CELL*0.5+12), spawnY = cy*CELL+CELL/2 + f.y*(CELL*0.5+12);
       marbles.push(makeMarble(spawnX, spawnY, f.x*900, f.y*900, '#e67e22'));
     }
-  } else if (['finish','spring','speedup'].includes(cell.type)){
+  } else if (['finish','spring'].includes(cell.type)){
     collideThinStrip(m, ox, oy, 0); // always sit as a floor; rot is only the "facing" for its effect
   } else if (cell.type==='breakable' && !cell.meta.broken){
-    collideThinStrip(m, ox, oy, 0);
+    // a real solid brick too - it just breaks once the marble has been on it and left
+    if (collideAABB(m, ox, oy, CELL, CELL, 0.15)) m.touchBreakThisStep = {x:cx,y:cy};
   }
-  // portal + broken breakable: no collider at all (pass through)
+  // speedup, portal, and broken breakable: no collider at all (pass through) - speedup landing
+  // on a floor first would zero its speed before the boost ever multiplied it
 }
 
 function collideAABB(m, ox, oy, w, h, restitution){
@@ -515,16 +526,7 @@ function rotatePoints(ax,ay,bx,by,rot){
 function handleTriggers(m, gx, gy){
   const cell = cellAt(runGrid, gx, gy);
   const enteredNewCell = (gx!==m.lastCellX || gy!==m.lastCellY);
-
-  // breakable enter/exit tracking (works even without "new cell" edge, needs both enter and exit)
-  if (m.breakTrack && (m.breakTrack.x!==gx || m.breakTrack.y!==gy)){
-    const bc = cellAt(runGrid, m.breakTrack.x, m.breakTrack.y);
-    if (bc && bc.type==='breakable' && !bc.meta.broken && !bc.meta.breakAt){
-      bc.meta.breakAt = performance.now()+1000;
-    }
-    m.breakTrack = null;
-  }
-  if (cell && cell.type==='breakable' && !cell.meta.broken){ m.breakTrack = {x:gx,y:gy}; }
+  // breakable's own on-off tracking now happens in subStep, from contact, not this cell lookup
 
   if (enteredNewCell && cell){
     if (cell.type==='finish'){ m.won = true; m.color = '#2e9e4f'; stopRun(true); }
