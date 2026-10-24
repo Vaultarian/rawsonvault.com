@@ -274,6 +274,12 @@ function setZoom(z){
   document.getElementById('viewportInner').style.transform = `scale(${zoom})`;
   document.getElementById('zoomLabel').textContent = Math.round(zoom*100)+'%';
 }
+function fitZoomToViewport(){
+  const vp = document.getElementById('viewport');
+  const availW = vp.clientWidth - 24, availH = vp.clientHeight - 24; // a little breathing room
+  const fit = Math.min(availW/(gridW*CELL), availH/(gridH*CELL));
+  setZoom(fit);
+}
 
 /* ================= physics ================= */
 function cloneRunGrid(){
@@ -358,10 +364,12 @@ function subStep(m, dt){
 
   m.x += m.vx*dt; m.y += m.vy*dt;
 
+  // the board's own edge is a wall all the way round - sides and top bounce a little,
+  // the bottom is solid ground the marble comes to rest on, same as any other floor
   if (m.x < m.r) { m.x = m.r; m.vx = Math.abs(m.vx)*0.3; }
   if (m.x > gridW*CELL-m.r) { m.x = gridW*CELL-m.r; m.vx = -Math.abs(m.vx)*0.3; }
   if (m.y < m.r) { m.y = m.r; m.vy = Math.abs(m.vy)*0.3; }
-  if (m.y > gridH*CELL + CELL*2) { m.dead = true; return; } // fell off the bottom
+  if (m.y > gridH*CELL-m.r) { m.y = gridH*CELL-m.r; if (m.vy>0) m.vy = 0; }
 
   const gx = Math.floor(m.x/CELL), gy = Math.floor(m.y/CELL);
   resolveCollisions(m, gx, gy);
@@ -625,7 +633,7 @@ function loadTrackForEdit(t){
   gridW=t.w; gridH=t.h; editGrid=t.grid; startXY=t.startXY; finishXY=t.finishXY;
   document.getElementById('sizeTag').textContent = gridW+'×'+gridH;
   showScreen('builderScreen');
-  sizeCanvases(); renderGrid(); markDirty();
+  sizeCanvases(); fitZoomToViewport(); renderGrid(); markDirty();
 }
 
 /* ---------------- view mode (fullscreen, playback only) ---------------- */
@@ -693,7 +701,7 @@ function init(){
   document.getElementById('startBuildBtn').onclick = ()=>{
     gridW=pickW; gridH=pickW; editGrid=makeGrid(gridW,gridH); startXY=null; finishXY=null;
     document.getElementById('sizeTag').textContent = gridW+'×'+gridH;
-    showScreen('builderScreen'); sizeCanvases(); setZoom(1); renderGrid(); markDirty();
+    showScreen('builderScreen'); sizeCanvases(); fitZoomToViewport(); renderGrid(); markDirty();
   };
   document.getElementById('openGalleryBtn').onclick = ()=>{ renderGallery(); showScreen('galleryScreen'); };
   document.getElementById('galleryBtn').onclick = ()=>{ renderGallery(); showScreen('galleryScreen'); };
@@ -703,6 +711,8 @@ function init(){
   document.getElementById('clearBtn').onclick = ()=>{
     if (running) stopRun(false);
     editGrid = makeGrid(gridW,gridH); startXY=null; finishXY=null; markDirty(); renderGrid();
+    marbles = []; // wipe any dispensed balls left sitting on screen from the last run
+    marbleCtx.clearRect(0,0,gridW*CELL,gridH*CELL);
   };
   document.getElementById('saveBtn').onclick = openSaveDialog;
   document.getElementById('saveConfirmBtn').onclick = confirmSave;
