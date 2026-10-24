@@ -48,7 +48,7 @@ let startXY = null, finishXY = null;   // {x,y} cell coords, kept in sync with e
 let zoom = 1;
 let selected = null;        // {type, rot}
 let painting = false;       // mouse held down, painting/erasing across cells
-let dragBrickFrom = null;   // {x,y} when dragging an existing placed brick
+let dragBrickFrom = null;   // {brick, fromGx, fromGy, startX, startY, moved} while dragging a brick already on the board
 let dragGhost = null;       // currently-dragged toolbox brick (drag & drop placement)
 
 let running = false;
@@ -253,19 +253,44 @@ function initViewportEvents(){
     const existing = editGrid[gy][gx];
     if (selected && selected.type === 'eraser'){ painting = true; eraseCell(gx,gy); return; }
     if (existing && !dragGhost){
-      // click an existing brick: rotate it in place
-      existing.rot = (existing.rot + 1) % 4;
-      markDirty(); renderGrid();
+      // don't know yet if this is a click (rotate) or a drag (move/remove) - mousemove decides
+      dragBrickFrom = { brick: existing, fromGx: gx, fromGy: gy, startX: e.clientX, startY: e.clientY, moved: false };
       return;
     }
     if (selected){ painting = true; applyPaint(gx,gy); }
   });
   window.addEventListener('mousemove', (e)=>{
+    if (dragBrickFrom && !dragBrickFrom.moved){
+      const dist = Math.hypot(e.clientX-dragBrickFrom.startX, e.clientY-dragBrickFrom.startY);
+      if (dist > 6){
+        dragBrickFrom.moved = true;
+        // pick it up off its old spot - it's either going somewhere else on the board,
+        // or off the edge to be thrown away, same as dragging a brick in the real game
+        editGrid[dragBrickFrom.fromGy][dragBrickFrom.fromGx] = null;
+        if (dragBrickFrom.brick.type==='start' && startXY && startXY.x===dragBrickFrom.fromGx && startXY.y===dragBrickFrom.fromGy) startXY=null;
+        if (dragBrickFrom.brick.type==='finish' && finishXY && finishXY.x===dragBrickFrom.fromGx && finishXY.y===dragBrickFrom.fromGy) finishXY=null;
+        markDirty(); renderGrid();
+      }
+    }
     if (!painting || running) return;
     const {gx,gy} = cellFromEvent(e, vpInner);
     applyPaint(gx,gy);
   });
-  window.addEventListener('mouseup', ()=>{ painting = false; dragGhost = null; });
+  window.addEventListener('mouseup', (e)=>{
+    painting = false; dragGhost = null;
+    if (dragBrickFrom){
+      if (dragBrickFrom.moved){
+        const {gx,gy} = cellFromEvent(e, vpInner);
+        if (gx>=0 && gy>=0 && gx<gridW && gy<gridH) setCell(gx,gy, dragBrickFrom.brick);
+        // dropped off the board: it was already lifted off, so it's just gone - that's the delete
+      } else {
+        // never actually dragged - treat the click as a rotate, same as before
+        dragBrickFrom.brick.rot = (dragBrickFrom.brick.rot + 1) % 4;
+        markDirty(); renderGrid();
+      }
+      dragBrickFrom = null;
+    }
+  });
 
   // drag a toolbox brick straight onto the grid
   gridCanvas.addEventListener('mouseup', (e)=>{
