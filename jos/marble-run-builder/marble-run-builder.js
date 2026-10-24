@@ -76,7 +76,7 @@ function makeSlot(type){
   slot._rot = DEFAULT_ROT[type] || 0;
   drawBrick(cv.getContext('2d'), 35, 31, 54, type, slot._rot, {});
   slot.addEventListener('click', () => onSlotClick(slot, type));
-  slot.addEventListener('mousedown', (e) => { dragGhost = {type, rot:slot._rot}; });
+  slot.addEventListener('mousedown', (e) => { dragGhost = {type, rot:slot._rot}; showDragPreview(type, slot._rot, e.clientX, e.clientY); });
   return slot;
 }
 function onSlotClick(slot, type){
@@ -112,9 +112,13 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.closePath(); ctx.fill();
       break;
     case 'curve':
+      // same two straight edges as a ramp, but the diagonal is a real curve, not a straight line
       ctx.rotate(angle);
       ctx.fillStyle = '#2b2b2b';
-      ctx.beginPath(); ctx.moveTo(-s,s); ctx.arc(-s,s,size,-Math.PI/2,0); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-s,-s); ctx.lineTo(-s,s); ctx.lineTo(s,s);
+      ctx.quadraticCurveTo(s*0.98,-s*0.98, -s,-s);
+      ctx.closePath(); ctx.fill();
       break;
     case 'flat':
       ctx.rotate(angle);
@@ -136,7 +140,7 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       const img = BRICK_IMAGES[type];
       let alpha = 1;
       if (type==='dispenser' && meta && meta.used) alpha = 0.3;
-      if (type==='breakable' && meta && meta.broken) alpha = 0.15;
+      if (type==='breakable' && meta && meta.broken) alpha = 0; // gone - cracked, then vanished
       ctx.globalAlpha = alpha;
       if (type !== 'eraser'){
         // the real picture's own arrow doesn't always point "up" at rest (dispenser's points
@@ -206,16 +210,20 @@ function sizeCanvases(){
   document.getElementById('viewportInner').style.width = w+'px';
   document.getElementById('viewportInner').style.height = h+'px';
 }
-function renderGrid(){
+function renderGrid(){ renderGridFrom(editGrid); }
+function renderGridFrom(grid){
+  // used for both the still board while building (editGrid) and the live board during a
+  // run (runGrid) - without this second use, a crack, a used dispenser, a lit-up gravity
+  // switch... none of it would ever actually show, only the marble would animate
   gridCtx.clearRect(0,0,gridW*CELL,gridH*CELL);
   gridCtx.strokeStyle = 'rgba(0,0,0,.12)'; gridCtx.lineWidth=1;
   for(let x=0;x<=gridW;x++){ gridCtx.beginPath(); gridCtx.moveTo(x*CELL+.5,0); gridCtx.lineTo(x*CELL+.5,gridH*CELL); gridCtx.stroke(); }
   for(let y=0;y<=gridH;y++){ gridCtx.beginPath(); gridCtx.moveTo(0,y*CELL+.5); gridCtx.lineTo(gridW*CELL,y*CELL+.5); gridCtx.stroke(); }
   for(let y=0;y<gridH;y++) for(let x=0;x<gridW;x++){
-    const b = editGrid[y][x];
+    const b = grid[y][x];
     if (!b) continue;
-    let meta = {};
-    if (b.type==='portal') meta.paired = portalLinked(x,y,editGrid);
+    let meta = b.meta ? Object.assign({}, b.meta) : {};
+    if (b.type==='portal') meta.paired = portalLinked(x,y,grid);
     drawBrick(gridCtx, x*CELL+CELL/2, y*CELL+CELL/2, CELL*0.92, b.type, b.rot, meta);
   }
 }
@@ -240,6 +248,20 @@ function applyPaint(gx,gy){
   if (selected.type === 'eraser') eraseCell(gx,gy);
   else setCell(gx,gy,{type:selected.type, rot:selected.rot});
 }
+
+function showDragPreview(type, rot, clientX, clientY){
+  const cv = document.getElementById('dragPreview');
+  cv.style.display = 'block';
+  cv.style.left = (clientX-26)+'px'; cv.style.top = (clientY-26)+'px';
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,64,64);
+  drawBrick(ctx, 32, 32, 48, type, rot, {});
+}
+function moveDragPreview(clientX, clientY){
+  const cv = document.getElementById('dragPreview');
+  cv.style.left = (clientX-26)+'px'; cv.style.top = (clientY-26)+'px';
+}
+function hideDragPreview(){ document.getElementById('dragPreview').style.display = 'none'; }
 
 function initViewportEvents(){
   const vpInner = document.getElementById('viewportInner');
@@ -269,14 +291,18 @@ function initViewportEvents(){
         if (dragBrickFrom.brick.type==='start' && startXY && startXY.x===dragBrickFrom.fromGx && startXY.y===dragBrickFrom.fromGy) startXY=null;
         if (dragBrickFrom.brick.type==='finish' && finishXY && finishXY.x===dragBrickFrom.fromGx && finishXY.y===dragBrickFrom.fromGy) finishXY=null;
         markDirty(); renderGrid();
+        showDragPreview(dragBrickFrom.brick.type, dragBrickFrom.brick.rot, e.clientX, e.clientY);
       }
     }
+    if (dragBrickFrom && dragBrickFrom.moved) moveDragPreview(e.clientX, e.clientY);
+    if (dragGhost) moveDragPreview(e.clientX, e.clientY);
     if (!painting || running) return;
     const {gx,gy} = cellFromEvent(e, vpInner);
     applyPaint(gx,gy);
   });
   window.addEventListener('mouseup', (e)=>{
     painting = false; dragGhost = null;
+    hideDragPreview();
     if (dragBrickFrom){
       if (dragBrickFrom.moved){
         const {gx,gy} = cellFromEvent(e, vpInner);
@@ -326,7 +352,7 @@ function collectPortalPairs(grid){
 }
 function makeMarble(x,y,vx,vy,color){
   return { x,y,vx,vy, r: CELL*0.28, color: color||'#d94c3d', lastCellX:null, lastCellY:null,
-           portalCooldown:0, breakTrack:null, touchBreakThisStep:null, dead:false, won:false,
+           portalCooldown:0, dead:false, won:false,
            fanDir:null, fanActive:false, fanStartX:0, fanStartY:0 };
 }
 
@@ -358,6 +384,7 @@ function stopRun(won){
   rafId = null;
   const rb = document.getElementById('runBtn');
   rb.textContent = '▶ Run'; rb.style.background = '';
+  renderGrid(); // back to the clean, unbroken board - ready to edit again
   if (won){
     finished = true; dirty = false;
     document.getElementById('finishBanner').style.display = 'block';
@@ -370,8 +397,8 @@ let lastTime = 0, runStartedAt = 0;
 const GRAVITY_ACCEL = 1700;
 const MAX_SPEED = 2600;
 const MAX_RUN_MS = 12000; // safety: if nothing finishes or falls off in 12s, stop so you can edit again
-const FAN_SPEED = 1300;        // top speed the speed-up pushes you toward ("about 10 mph")
-const FAN_PUSH = 3200;         // how hard the push builds up to that speed
+const FAN_SPEED = 650;         // top speed the speed-up pushes you toward - a nudge, not a takeover
+const FAN_PUSH = 1100;         // weaker than gravity itself, so it adds to your motion, not override it
 const FAN_RANGE = CELL * 10;   // how far the wind reaches before it lets go ("10 blocks")
 const FAN_WINDDOWN = 0.1;      // fraction of fan-speed left after 1 full second once out of range
 
@@ -381,6 +408,7 @@ function physicsLoop(now){
   if (now - runStartedAt > MAX_RUN_MS){ stopRun(false); return; }
   let anyAlive = false;
   marbles.forEach(m=>{ if(!m.dead && !m.won){ anyAlive=true; stepMarble(m, dt); }});
+  renderGridFrom(runGrid); // so a crack, a used dispenser, a lit-up gravity switch actually show
   renderMarbles();
   if (!anyAlive){ stopRun(marbles.some(m=>m.won)); return; }
   rafId = requestAnimationFrame(physicsLoop);
@@ -428,16 +456,7 @@ function subStep(m, dt){
   if (m.y > gridH*CELL-m.r) { m.y = gridH*CELL-m.r; if (m.vy>0) m.vy = 0; }
 
   const gx = Math.floor(m.x/CELL), gy = Math.floor(m.y/CELL);
-  m.touchBreakThisStep = null;
   resolveCollisions(m, gx, gy);
-  // breakable is solid now - track contact (not centre-cell) so it still breaks on-off
-  if (m.breakTrack && (!m.touchBreakThisStep || m.touchBreakThisStep.x!==m.breakTrack.x || m.touchBreakThisStep.y!==m.breakTrack.y)){
-    const bc = cellAt(runGrid, m.breakTrack.x, m.breakTrack.y);
-    if (bc && bc.type==='breakable' && !bc.meta.broken && !bc.meta.breakAt){
-      bc.meta.breakAt = performance.now()+1000;
-    }
-  }
-  m.breakTrack = m.touchBreakThisStep;
   handleTriggers(m, gx, gy);
 }
 
@@ -479,8 +498,10 @@ function collideWithCell(m, cx, cy, cell){
   } else if (['finish','spring'].includes(cell.type)){
     collideThinStrip(m, ox, oy, 0); // always sit as a floor; rot is only the "facing" for its effect
   } else if (cell.type==='breakable' && !cell.meta.broken){
-    // a real solid brick too - it just breaks once the marble has been on it and left
-    if (collideAABB(m, ox, oy, CELL, CELL, 0.15)) m.touchBreakThisStep = {x:cx,y:cy};
+    // a real solid brick - cracks the moment it's touched, gone a second later
+    if (collideAABB(m, ox, oy, CELL, CELL, 0.15) && !cell.meta.breakAt){
+      cell.meta.breakAt = performance.now() + 1000;
+    }
   }
   // speedup, portal, and broken breakable: no collider at all (pass through) - speedup landing
   // on a floor first would zero its speed before the boost ever multiplied it
@@ -703,7 +724,8 @@ function openViewMode(t){
   cv.width=mc.width=t.w*CELL; cv.height=mc.height=t.h*CELL;
   document.getElementById('viewInner').style.width=cv.width+'px';
   document.getElementById('viewInner').style.height=cv.height+'px';
-  viewZoom = Math.min(1, Math.min(window.innerWidth/cv.width, window.innerHeight/cv.height));
+  const vp = document.getElementById('viewViewport');
+  viewZoom = Math.min(1, Math.min((vp.clientWidth-24)/cv.width, (vp.clientHeight-24)/cv.height));
   document.getElementById('viewInner').style.transform = `scale(${viewZoom})`;
   const ctx = cv.getContext('2d');
   ctx.clearRect(0,0,cv.width,cv.height);
@@ -724,17 +746,19 @@ function runViewTrack(t){
   const sx = startXY.x*CELL+CELL/2, sy = startXY.y*CELL+CELL/2;
   marbles = [ makeMarble(sx, sy-CELL*0.1, 0, 0) ];
   const vcanvas = document.getElementById('viewMarbleCanvas');
+  const savedGridCtx = gridCtx, savedMarbleCtx = marbleCtx;
   marbleCtx = vcanvas.getContext('2d');
+  gridCtx = document.getElementById('viewGridCanvas').getContext('2d');
   running = true;
   lastTime = performance.now();
   if (rafId) cancelAnimationFrame(rafId);
-  const origStop = stopRun;
   rafId = requestAnimationFrame(function loop(now){
     const dt = Math.min(0.032,(now-lastTime)/1000); lastTime=now;
     let anyAlive=false;
     marbles.forEach(m=>{ if(!m.dead && !m.won){ anyAlive=true; stepMarble(m,dt); }});
+    renderGridFrom(runGrid); // so a crack, a used dispenser etc. actually show up here too
     renderMarbles();
-    if (!anyAlive){ running=false; gridW=savedW; gridH=savedH; editGrid=savedEdit; startXY=savedStart; finishXY=savedFinish; marbleCtx=document.getElementById('marbleCanvas').getContext('2d'); return; }
+    if (!anyAlive){ running=false; gridW=savedW; gridH=savedH; editGrid=savedEdit; startXY=savedStart; finishXY=savedFinish; gridCtx=savedGridCtx; marbleCtx=savedMarbleCtx; return; }
     rafId = requestAnimationFrame(loop);
   });
 }
