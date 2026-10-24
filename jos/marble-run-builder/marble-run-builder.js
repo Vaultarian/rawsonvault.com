@@ -52,10 +52,10 @@ function makeSlot(type){
   slot.dataset.type = type;
   slot.title = NAMES[type];
   const cv = document.createElement('canvas');
-  cv.width = 64; cv.height = 48;
+  cv.width = 70; cv.height = 62;
   slot.appendChild(cv);
   slot._rot = DEFAULT_ROT[type] || 0;
-  drawBrick(cv.getContext('2d'), 32, 24, 40, type, slot._rot, {});
+  drawBrick(cv.getContext('2d'), 35, 31, 54, type, slot._rot, {});
   slot.addEventListener('click', () => onSlotClick(slot, type));
   slot.addEventListener('mousedown', (e) => { dragGhost = {type, rot:slot._rot}; });
   return slot;
@@ -64,7 +64,7 @@ function onSlotClick(slot, type){
   if (running) return;
   if (selected && selected.type === type && selected.slot === slot){
     slot._rot = (slot._rot + 1) % 4;
-    drawBrick(slot.querySelector('canvas').getContext('2d'), 32, 24, 40, type, slot._rot, {});
+    drawBrick(slot.querySelector('canvas').getContext('2d'), 35, 31, 54, type, slot._rot, {});
     selected.rot = slot._rot;
     return;
   }
@@ -335,6 +335,9 @@ function startRun(){
   const sx = startXY.x*CELL+CELL/2, sy = startXY.y*CELL+CELL/2;
   marbles = [ makeMarble(sx, sy-CELL*0.1, 0, 0) ];
   lastTime = performance.now();
+  runStartedAt = lastTime;
+  const rb = document.getElementById('runBtn');
+  rb.textContent = '⏹ Stop'; rb.style.background = '#c0392b';
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(physicsLoop);
 }
@@ -342,6 +345,8 @@ function stopRun(won){
   running = false;
   if (rafId) cancelAnimationFrame(rafId);
   rafId = null;
+  const rb = document.getElementById('runBtn');
+  rb.textContent = '▶ Run'; rb.style.background = '';
   if (won){
     finished = true; dirty = false;
     document.getElementById('finishBanner').style.display = 'block';
@@ -350,13 +355,15 @@ function stopRun(won){
   }
 }
 
-let lastTime = 0;
+let lastTime = 0, runStartedAt = 0;
 const GRAVITY_ACCEL = 1700;
 const MAX_SPEED = 2600;
+const MAX_RUN_MS = 12000; // safety: if nothing finishes or falls off in 12s, stop so you can edit again
 
 function physicsLoop(now){
   const dt = Math.min(0.032, (now-lastTime)/1000);
   lastTime = now;
+  if (now - runStartedAt > MAX_RUN_MS){ stopRun(false); return; }
   let anyAlive = false;
   marbles.forEach(m=>{ if(!m.dead && !m.won){ anyAlive=true; stepMarble(m, dt); }});
   renderMarbles();
@@ -710,7 +717,7 @@ function init(){
   document.getElementById('galleryBtn').onclick = ()=>{ renderGallery(); showScreen('galleryScreen'); };
   document.getElementById('galleryBackBtn').onclick = ()=> showScreen('builderScreen');
 
-  document.getElementById('runBtn').onclick = ()=> startRun();
+  document.getElementById('runBtn').onclick = ()=> running ? stopRun(false) : startRun();
   document.getElementById('clearBtn').onclick = ()=>{
     if (running) return;
     editGrid = makeGrid(gridW,gridH); startXY=null; finishXY=null; markDirty(); renderGrid();
