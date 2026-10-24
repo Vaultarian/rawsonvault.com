@@ -12,7 +12,7 @@ const DIRS = [                   // rot 0..3, clockwise, matches the brick icons
 ];
 const DEFAULT_ROT = { oneway:0, gravswitch:0, dispenser:2, spring:0 };
 // which DIRS index each brick's real picture points to at zero rotation (others point "up")
-const IMG_NATIVE_DIR = { dispenser: 2 };
+const IMG_NATIVE_DIR = { dispenser: 2, speedup: 1 };
 
 const BASIC   = ['solid','ramp','ramp2','curve','flat','start','finish'];
 const SPECIAL = ['spring','oneway','portal','breakable','speedup','gravswitch','dispenser'];
@@ -302,7 +302,8 @@ function collectPortalPairs(grid){
 }
 function makeMarble(x,y,vx,vy,color){
   return { x,y,vx,vy, r: CELL*0.28, color: color||'#d94c3d', lastCellX:null, lastCellY:null,
-           portalCooldown:0, breakTrack:null, touchBreakThisStep:null, dead:false, won:false };
+           portalCooldown:0, breakTrack:null, touchBreakThisStep:null, dead:false, won:false,
+           fanDir:null, fanActive:false, fanStartX:0, fanStartY:0 };
 }
 
 function cellAt(grid,gx,gy){ if(gx<0||gy<0||gy>=grid.length||gx>=grid[0].length) return null; return grid[gy][gx]; }
@@ -345,6 +346,10 @@ let lastTime = 0, runStartedAt = 0;
 const GRAVITY_ACCEL = 1700;
 const MAX_SPEED = 2600;
 const MAX_RUN_MS = 12000; // safety: if nothing finishes or falls off in 12s, stop so you can edit again
+const FAN_SPEED = 1300;        // top speed the speed-up pushes you toward ("about 10 mph")
+const FAN_PUSH = 3200;         // how hard the push builds up to that speed
+const FAN_RANGE = CELL * 10;   // how far the wind reaches before it lets go ("10 blocks")
+const FAN_WINDDOWN = 0.1;      // fraction of fan-speed left after 1 full second once out of range
 
 function physicsLoop(now){
   const dt = Math.min(0.032, (now-lastTime)/1000);
@@ -366,6 +371,26 @@ function stepMarble(m, dt){
 function subStep(m, dt){
   m.vx += gravityDir.x*GRAVITY_ACCEL*dt;
   m.vy += gravityDir.y*GRAVITY_ACCEL*dt;
+
+  // the fan: pushes toward FAN_SPEED along its own direction, like wind on a feather - works
+  // even from a standstill, keeps blowing for FAN_RANGE, then fades out instead of cutting off
+  if (m.fanActive){
+    const cur = m.vx*m.fanDir.x + m.vy*m.fanDir.y;
+    if (cur < FAN_SPEED){
+      const push = Math.min(FAN_PUSH*dt, FAN_SPEED-cur);
+      m.vx += m.fanDir.x*push; m.vy += m.fanDir.y*push;
+    }
+    if (Math.hypot(m.x-m.fanStartX, m.y-m.fanStartY) >= FAN_RANGE) m.fanActive = false;
+  } else if (m.fanDir){
+    const cur = m.vx*m.fanDir.x + m.vy*m.fanDir.y;
+    if (cur > 2){
+      const decayed = cur * Math.pow(FAN_WINDDOWN, dt);
+      m.vx += m.fanDir.x*(decayed-cur); m.vy += m.fanDir.y*(decayed-cur);
+    } else {
+      m.fanDir = null;
+    }
+  }
+
   const speed = Math.hypot(m.vx,m.vy);
   if (speed > MAX_SPEED){ m.vx *= MAX_SPEED/speed; m.vy *= MAX_SPEED/speed; }
 
@@ -534,7 +559,9 @@ function handleTriggers(m, gx, gy){
       const up = {x:-gravityDir.x,y:-gravityDir.y};
       m.vx = up.x*1500; m.vy = up.y*1500;
     } else if (cell.type==='speedup'){
-      m.vx *= 1.6; m.vy *= 1.6;
+      m.fanDir = DIRS[cell.rot];
+      m.fanActive = true;
+      m.fanStartX = m.x; m.fanStartY = m.y;
     // gravswitch and dispenser are solid now - they fire from contact in collideWithCell instead
     } else if (cell.type==='portal' && m.portalCooldown<=0){
       const pair = portalPairs.find(p => (p[0].x===gx&&p[0].y===gy) || (p[1].x===gx&&p[1].y===gy));
