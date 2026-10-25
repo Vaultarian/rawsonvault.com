@@ -25,7 +25,7 @@ const NAMES = {
 const SINGLETON = { start:true, finish:true }; // only one of these allowed on the board
 
 /* real screenshots of the actual marblerun.at bricks — used instead of drawn icons */
-const IMG_TYPES = ['spring','oneway','portal','breakable','speedup','gravswitch','dispenser','eraser'];
+const IMG_TYPES = ['oneway','portal','breakable','speedup','gravswitch','dispenser','eraser'];
 const BRICK_IMAGES = {};
 let imagesReadyCount = 0;
 IMG_TYPES.forEach(t=>{
@@ -93,6 +93,24 @@ function onSlotClick(slot, type){
 }
 
 /* ================= brick drawing ================= */
+function drawRibbon(ctx, x1, y1, x2, y2, thickness){
+  // a thin band between two points, pointed at both ends - the "X" cross in the spring coil
+  const dx = x2-x1, dy = y2-y1;
+  const len = Math.hypot(dx,dy);
+  const ux = dx/len, uy = dy/len;
+  const px = -uy, py = ux;
+  const hw = thickness/2;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x1+px*hw, y1+py*hw);
+  ctx.lineTo(x2+px*hw, y2+py*hw);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x2-px*hw, y2-py*hw);
+  ctx.lineTo(x1-px*hw, y1-py*hw);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+}
 function drawBrick(ctx, cx, cy, size, type, rot, meta){
   ctx.clearRect(cx-size/2-4, cy-size/2-4, size+8, size+8);
   ctx.save();
@@ -135,7 +153,28 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
         ctx.fillRect(-s+xx*cw, -s+yy*cw, cw, cw);
       }
       break; }
-    case 'spring': case 'oneway': case 'portal': case 'breakable':
+    case 'spring': {
+      // Jos's own design: a base block, 3 rows of crossed ribbons, a thin top slab
+      ctx.rotate(angle);
+      const w = size*0.78, baseH = size*0.30, slabH = size*0.08, coilH = size*0.40;
+      const baseTopY = s - baseH;
+      const coilTopY = baseTopY - coilH;
+      const slabTopY = coilTopY - slabH;
+      ctx.fillStyle = '#ececea'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      ctx.fillRect(-w/2, baseTopY, w, baseH);
+      ctx.strokeRect(-w/2, baseTopY, w, baseH);
+      const xCount = 3, segH = coilH/xCount, half = w*0.46, ribbonW = size*0.065;
+      ctx.lineWidth = 1.5;
+      for(let i=0;i<xCount;i++){
+        const yBot = baseTopY - i*segH, yTop = baseTopY - (i+1)*segH;
+        drawRibbon(ctx, -half, yBot, half, yTop, ribbonW);
+        drawRibbon(ctx, half, yBot, -half, yTop, ribbonW);
+      }
+      ctx.lineWidth = 2;
+      ctx.fillRect(-w/2, slabTopY, w, slabH);
+      ctx.strokeRect(-w/2, slabTopY, w, slabH);
+      break; }
+    case 'oneway': case 'portal': case 'breakable':
     case 'speedup': case 'gravswitch': case 'dispenser': case 'eraser': {
       const img = BRICK_IMAGES[type];
       let alpha = 1;
