@@ -530,8 +530,8 @@ CALENDARS = {
         "Autumn term to the October break"),
     "physics-11-r": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
-              / "y11r-physics-calendar-autumn-1.pdf",
-        "Autumn term to the October break"),
+              / "y11r-physics-calendar-autumn-2.pdf",
+        "P3 Particle Model \u0026 P4 Atomic Structure, to the Christmas break"),
     "physics-12-sh": (
         VAULT / "01-Teaching/Physics - DP/Calendar"
               / "y12sh-physics-calendar-autumn-1.pdf",
