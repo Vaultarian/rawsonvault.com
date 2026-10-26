@@ -25,7 +25,7 @@ const NAMES = {
 const SINGLETON = { start:true, finish:true }; // only one of these allowed on the board
 
 /* real screenshots of the actual marblerun.at bricks — used instead of drawn icons */
-const IMG_TYPES = ['breakable','speedup','gravswitch','dispenser','eraser'];
+const IMG_TYPES = ['speedup','gravswitch','dispenser','eraser'];
 const BRICK_IMAGES = {};
 let imagesReadyCount = 0;
 IMG_TYPES.forEach(t=>{
@@ -185,6 +185,55 @@ function drawRibbon(ctx, x1, y1, x2, y2, thickness){
   ctx.fill();
   ctx.stroke();
 }
+function mulberry32(seed){
+  // small, fast, seeded random number generator - same seed always gives the same
+  // sequence, which is how a breakable cell always cracks the same way
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function perimeterParam(x, y, s){
+  // where a point on the square's own border sits, going clockwise from the top-left
+  // corner (0), round to top-right (1), bottom-right (2), bottom-left (3), back to 0
+  const eps = 0.01;
+  if (Math.abs(y+s) < eps) return (x+s)/(2*s);
+  if (Math.abs(x-s) < eps) return 1 + (y+s)/(2*s);
+  if (Math.abs(y-s) < eps) return 2 + (s-x)/(2*s);
+  return 3 + (s-y)/(2*s);
+}
+function breakableShards(cx, cy, size){
+  // Jos's design: a random dot inside, lines from random points on the edge all meeting
+  // there. Seeded from the brick's own position, so the same cell always cracks the same
+  // way instead of a new pattern every redraw. The square's own corners are folded into
+  // the same sorted list as the line endpoints, so each gap between two neighbours -
+  // always on the same edge - is one triangular shard; no shard is ever more than that.
+  const s = size/2;
+  const rnd = mulberry32((Math.round(cx)*374761393 + Math.round(cy)*668265263) >>> 0);
+  const dot = {x:(rnd()-0.5)*size*0.5, y:(rnd()-0.5)*size*0.5};
+  const lineCount = 6 + Math.floor(rnd()*4);
+  const pts = [];
+  for(let i=0;i<lineCount;i++){
+    const edge = Math.floor(rnd()*4), t = rnd();
+    let ex, ey;
+    if (edge===0){ ex=-s+t*size; ey=-s; }
+    else if (edge===1){ ex=s; ey=-s+t*size; }
+    else if (edge===2){ ex=-s+t*size; ey=s; }
+    else { ex=-s; ey=-s+t*size; }
+    pts.push({x:ex, y:ey, p:perimeterParam(ex,ey,s)});
+  }
+  const corners = [{x:-s,y:-s,p:0},{x:s,y:-s,p:1},{x:s,y:s,p:2},{x:-s,y:s,p:3}];
+  const all = pts.concat(corners).sort((a,b)=>a.p-b.p);
+  const shards = [];
+  for(let i=0;i<all.length;i++){
+    const a = all[i], b = all[(i+1)%all.length];
+    const cxm = (dot.x+a.x+b.x)/3, cym = (dot.y+a.y+b.y)/3;
+    shards.push({ dot, a:{x:a.x,y:a.y}, b:{x:b.x,y:b.y}, cx:cxm, cy:cym, spin:(rnd()-0.5)*4 });
+  }
+  return shards;
+}
 function drawBrick(ctx, cx, cy, size, type, rot, meta){
   ctx.clearRect(cx-size/2-4, cy-size/2-4, size+8, size+8);
   ctx.save();
@@ -285,12 +334,46 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.closePath();
       ctx.fill(); ctx.stroke();
       break; }
-    case 'breakable':
+    case 'breakable': {
+      // Jos's design: a cracked brick (random dot, lines from the edges to it), and when
+      // it actually breaks, each wedge between the crack lines flies apart under gravity
+      // with a small outward push, then is gone a second later.
+      const shards = breakableShards(cx, cy, size);
+      if (meta && meta.broken){
+        const t = meta.brokenAt ? (performance.now()-meta.brokenAt)/1000 : 0;
+        if (t < 1){
+          const IMPULSE = 90, SHARD_GRAVITY = 500;
+          shards.forEach(sh=>{
+            const dx = sh.cx-sh.dot.x, dy = sh.cy-sh.dot.y, dlen = Math.hypot(dx,dy) || 1;
+            const ox = (dx/dlen)*IMPULSE*t + 0.5*gravityDir.x*SHARD_GRAVITY*t*t;
+            const oy = (dy/dlen)*IMPULSE*t + 0.5*gravityDir.y*SHARD_GRAVITY*t*t;
+            ctx.save();
+            ctx.translate(ox, oy);
+            ctx.translate(sh.cx, sh.cy); ctx.rotate(sh.spin*t); ctx.translate(-sh.cx, -sh.cy);
+            ctx.fillStyle = '#ececea'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            ctx.moveTo(sh.dot.x, sh.dot.y); ctx.lineTo(sh.a.x, sh.a.y); ctx.lineTo(sh.b.x, sh.b.y);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+          });
+        }
+      } else {
+        ctx.fillStyle = '#ececea'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+        ctx.fillRect(-s, -s, size, size);
+        ctx.strokeRect(-s, -s, size, size);
+        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.3;
+        shards.forEach(sh=>{
+          ctx.beginPath();
+          ctx.moveTo(sh.a.x, sh.a.y); ctx.lineTo(sh.dot.x, sh.dot.y); ctx.lineTo(sh.b.x, sh.b.y);
+          ctx.stroke();
+        });
+      }
+      break; }
     case 'speedup': case 'gravswitch': case 'dispenser': case 'eraser': {
       const img = BRICK_IMAGES[type];
       let alpha = 1;
       if (type==='dispenser' && meta && meta.used) alpha = 0.3;
-      if (type==='breakable' && meta && meta.broken) alpha = 0; // gone - cracked, then vanished
       ctx.globalAlpha = alpha;
       if (type !== 'eraser'){
         // the real picture's own arrow doesn't always point "up" at rest (dispenser's points
@@ -810,11 +893,15 @@ function handleTriggers(m, gx, gy){
   if (m.portalCooldown>0) m.portalCooldown--;
   m.lastCellX = gx; m.lastCellY = gy;
 
-  // fire any scheduled breaks
+  // fire any scheduled breaks, and clear away any that finished shattering a second ago
   for(let yy=0; yy<runGrid.length; yy++) for(let xx=0; xx<runGrid[0].length; xx++){
     const c = runGrid[yy][xx];
-    if (c && c.type==='breakable' && c.meta.breakAt && !c.meta.broken && performance.now()>=c.meta.breakAt){
+    if (!c || c.type!=='breakable') continue;
+    if (c.meta.breakAt && !c.meta.broken && performance.now()>=c.meta.breakAt){
       c.meta.broken = true;
+      c.meta.brokenAt = performance.now();
+    } else if (c.meta.broken && performance.now()-c.meta.brokenAt >= 1000){
+      runGrid[yy][xx] = null;
     }
   }
 }
