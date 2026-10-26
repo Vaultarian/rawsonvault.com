@@ -670,14 +670,14 @@ function collideWithCell(m, cx, cy, cell){
       cell.meta.breakAt = performance.now() + 1000;
     }
   } else if (cell.type==='portal'){
-    // a real solid half-block, like the others above - touching it is what warps the
-    // marble to its partner, same pattern as a dispenser firing on contact
+    // a real solid half-block, like the others above. Touching its flat back is just a
+    // wall - only touching it from the notch's open side warps the marble to its partner
     if (collidePortal(m, ox, oy, cell) && m.portalCooldown<=0){
       const pair = portalPairs.find(p => (p[0].x===cx&&p[0].y===cy) || (p[1].x===cx&&p[1].y===cy));
       if (pair){
         const dest = (pair[0].x===cx&&pair[0].y===cy) ? pair[1] : pair[0];
         const destCell = cellAt(runGrid, dest.x, dest.y);
-        const facing = DIRS[portalEffRot(destCell)];
+        const facing = DIRS[(portalEffRot(destCell)+2)%4]; // out through the notch, not into the block
         const speed = Math.max(Math.hypot(m.vx,m.vy), 300); // always a real push out, even from a stop
         m.x = dest.x*CELL+CELL/2; m.y = dest.y*CELL+CELL/2;
         m.vx = facing.x*speed; m.vy = facing.y*speed;
@@ -693,11 +693,16 @@ function collidePortal(m, ox, oy, cell){
   const h = CELL/2;
   let rx=ox, ry=oy, rw=CELL, rh=h;
   const effRot = portalEffRot(cell);
-  if (effRot===0){ /* flush top, default rect already correct */ }
-  else if (effRot===2){ ry = oy+CELL-h; }
+  if (effRot===2){ ry = oy+CELL-h; }
   else if (effRot===1){ rx = ox+CELL-h; rw=h; rh=CELL; }
   else if (effRot===3){ rw=h; rh=CELL; }
-  return collideAABB(m, rx, ry, rw, rh, 0.15);
+  // which side the marble is coming from, checked before the solid push-back moves it -
+  // the notch only works from its open side, same as the real toy; the flat back is a wall
+  const notchFacing = DIRS[(effRot+2)%4];
+  const bcx = ox+CELL/2, bcy = oy+CELL/2;
+  const fromOpenSide = (m.x-bcx)*notchFacing.x + (m.y-bcy)*notchFacing.y > 0;
+  const touching = collideAABB(m, rx, ry, rw, rh, 0.15);
+  return touching && fromOpenSide;
 }
 
 function collideAABB(m, ox, oy, w, h, restitution){
