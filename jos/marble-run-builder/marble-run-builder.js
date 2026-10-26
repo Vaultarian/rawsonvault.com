@@ -180,7 +180,7 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       // DIRS[0] - same convention collideOneway already uses)
       ctx.rotate(angle);
       const triW = size*0.31, triH = size*0.275;
-      const slabW = size*0.62, slabH = size*0.10;
+      const slabW = size, slabH = size*0.10; // slab spans the full grid cell - a marble can't sneak past the end of it
       const slabTopY = -s*0.88;
       const triApexY = -triH/2, triBaseY = triH/2;
       ctx.fillStyle = '#1a1a1a'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
