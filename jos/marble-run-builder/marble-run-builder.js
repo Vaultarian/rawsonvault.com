@@ -65,6 +65,16 @@ function makeGrid(w,h){ return Array.from({length:h},()=>Array.from({length:w},(
 // pairing is placement order, not board position: portal 1 + portal 2 are a pair,
 // portal 3 + portal 4 are the next pair, and so on - and it stays that way even if you
 // drag one of them somewhere else on the board.
+function portalIsFirst(meta){
+  // the first of a pair (or a portal still waiting for its partner) faces the base way;
+  // the second faces the opposite way - a plain 180 degree flip of the same shape
+  return !meta || meta.pairedWith == null || meta.portalId < meta.pairedWith;
+}
+function portalEffRot(cell){
+  // rot is the player's own click-to-rotate, same as any other brick; the pairing role
+  // just adds a 180 on top of that, so both can apply at once
+  return (cell.rot + (portalIsFirst(cell.meta) ? 0 : 2)) % 4;
+}
 function findPortalCellById(id){
   for(let y=0;y<editGrid.length;y++) for(let x=0;x<editGrid[0].length;x++){
     const c = editGrid[y][x];
@@ -259,21 +269,19 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.strokeRect(-slabW/2, slabTopY, slabW, slabH);
       break; }
     case 'portal': {
-      // Jos's design, corrected to match the real piece: only HALF the tile is solid
-      // block, flush to one edge, with a semicircle notch bitten out of its inner edge -
-      // not a full-tile block with a half-circle stuck on. The first of a pair (or a
-      // portal still waiting for its partner) sits in the top half, notch biting up into
-      // it; the second sits in the bottom half, notch biting down. No rotation - which
-      // half it shows comes from its pairing, set when it was placed (see makeBrick).
+      // Jos's design, matching the real piece: only HALF the tile is solid block, flush
+      // to one edge, with a semicircle notch bitten out of its inner edge. One shape,
+      // drawn flush to the top with the notch biting up into it - rotation (the player's
+      // own click-to-rotate, plus a built-in 180 for the second of a pair) does the rest,
+      // same as every other rotatable brick.
+      ctx.rotate(portalEffRot({rot, meta}) * Math.PI/2);
       const blockW = size, blockH = s, r = size*0.42;
-      const isFirst = !meta || meta.pairedWith == null || meta.portalId < meta.pairedWith;
       ctx.fillStyle = '#ececea'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
-      if (isFirst) { ctx.fillRect(-blockW/2, -s, blockW, blockH); ctx.strokeRect(-blockW/2, -s, blockW, blockH); }
-      else { ctx.fillRect(-blockW/2, 0, blockW, blockH); ctx.strokeRect(-blockW/2, 0, blockW, blockH); }
+      ctx.fillRect(-blockW/2, -s, blockW, blockH);
+      ctx.strokeRect(-blockW/2, -s, blockW, blockH);
       ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
       ctx.beginPath();
-      if (isFirst) ctx.arc(0, 0, r, Math.PI, Math.PI*2, false); // bites up into the top-half block
-      else ctx.arc(0, 0, r, 0, Math.PI, false); // bites down into the bottom-half block
+      ctx.arc(0, 0, r, Math.PI, Math.PI*2, false); // bites up into the block
       ctx.closePath();
       ctx.fill(); ctx.stroke();
       break; }
@@ -661,9 +669,35 @@ function collideWithCell(m, cx, cy, cell){
     if (collideAABB(m, ox, oy, CELL, CELL, 0.15) && !cell.meta.breakAt){
       cell.meta.breakAt = performance.now() + 1000;
     }
+  } else if (cell.type==='portal'){
+    // a real solid half-block, like the others above - touching it is what warps the
+    // marble to its partner, same pattern as a dispenser firing on contact
+    if (collidePortal(m, ox, oy, cell) && m.portalCooldown<=0){
+      const pair = portalPairs.find(p => (p[0].x===cx&&p[0].y===cy) || (p[1].x===cx&&p[1].y===cy));
+      if (pair){
+        const dest = (pair[0].x===cx&&pair[0].y===cy) ? pair[1] : pair[0];
+        const destCell = cellAt(runGrid, dest.x, dest.y);
+        const facing = DIRS[portalEffRot(destCell)];
+        const speed = Math.max(Math.hypot(m.vx,m.vy), 300); // always a real push out, even from a stop
+        m.x = dest.x*CELL+CELL/2; m.y = dest.y*CELL+CELL/2;
+        m.vx = facing.x*speed; m.vy = facing.y*speed;
+        m.portalCooldown = 14;
+      }
+    }
   }
-  // speedup, portal, and broken breakable: no collider at all (pass through) - speedup landing
+  // speedup and broken breakable: no collider at all (pass through) - speedup landing
   // on a floor first would zero its speed before the boost ever multiplied it
+}
+function collidePortal(m, ox, oy, cell){
+  // solid only where the drawn block is - flush to whichever edge portalEffRot points at
+  const h = CELL/2;
+  let rx=ox, ry=oy, rw=CELL, rh=h;
+  const effRot = portalEffRot(cell);
+  if (effRot===0){ /* flush top, default rect already correct */ }
+  else if (effRot===2){ ry = oy+CELL-h; }
+  else if (effRot===1){ rx = ox+CELL-h; rw=h; rh=CELL; }
+  else if (effRot===3){ rw=h; rh=CELL; }
+  return collideAABB(m, rx, ry, rw, rh, 0.15);
 }
 
 function collideAABB(m, ox, oy, w, h, restitution){
@@ -764,18 +798,8 @@ function handleTriggers(m, gx, gy){
       m.fanDir = DIRS[cell.rot];
       m.fanActive = true;
       m.fanStartX = m.x; m.fanStartY = m.y;
-    // gravswitch and dispenser are solid now - they fire from contact in collideWithCell instead
-    } else if (cell.type==='portal' && m.portalCooldown<=0){
-      const pair = portalPairs.find(p => (p[0].x===gx&&p[0].y===gy) || (p[1].x===gx&&p[1].y===gy));
-      if (pair){
-        const dest = (pair[0].x===gx&&pair[0].y===gy) ? pair[1] : pair[0];
-        const destCell = cellAt(runGrid, dest.x, dest.y);
-        const facing = DIRS[destCell.rot];
-        const speed = Math.hypot(m.vx,m.vy);
-        m.x = dest.x*CELL+CELL/2; m.y = dest.y*CELL+CELL/2;
-        m.vx = facing.x*speed; m.vy = facing.y*speed;
-        m.portalCooldown = 14;
-      }
+    // gravswitch, dispenser and portal are solid now - they fire from contact in
+    // collideWithCell instead
     }
   }
   if (m.portalCooldown>0) m.portalCooldown--;
