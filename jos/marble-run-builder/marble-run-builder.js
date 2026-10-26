@@ -25,7 +25,7 @@ const NAMES = {
 const SINGLETON = { start:true, finish:true }; // only one of these allowed on the board
 
 /* real screenshots of the actual marblerun.at bricks — used instead of drawn icons */
-const IMG_TYPES = ['oneway','portal','breakable','speedup','gravswitch','dispenser','eraser'];
+const IMG_TYPES = ['portal','breakable','speedup','gravswitch','dispenser','eraser'];
 const BRICK_IMAGES = {};
 let imagesReadyCount = 0;
 IMG_TYPES.forEach(t=>{
@@ -174,7 +174,27 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.fillRect(-w/2, slabTopY, w, slabH);
       ctx.strokeRect(-w/2, slabTopY, w, slabH);
       break; }
-    case 'oneway': case 'portal': case 'breakable':
+    case 'oneway': {
+      // Jos's own design: a thin slab at the top of the brick, a small triangle dead
+      // centre, tip pointing the way the marble is allowed through (rot 0 = up, matches
+      // DIRS[0] - same convention collideOneway already uses)
+      ctx.rotate(angle);
+      const triW = size*0.31, triH = size*0.275;
+      const slabW = size*0.62, slabH = size*0.10;
+      const slabTopY = -s*0.88;
+      const triApexY = -triH/2, triBaseY = triH/2;
+      ctx.fillStyle = '#1a1a1a'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, triApexY);
+      ctx.lineTo(-triW/2, triBaseY);
+      ctx.lineTo(triW/2, triBaseY);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ececea'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      ctx.fillRect(-slabW/2, slabTopY, slabW, slabH);
+      ctx.strokeRect(-slabW/2, slabTopY, slabW, slabH);
+      break; }
+    case 'portal': case 'breakable':
     case 'speedup': case 'gravswitch': case 'dispenser': case 'eraser': {
       const img = BRICK_IMAGES[type];
       let alpha = 1;
