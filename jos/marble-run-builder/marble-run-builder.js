@@ -25,7 +25,7 @@ const NAMES = {
 const SINGLETON = { start:true, finish:true }; // only one of these allowed on the board
 
 /* real screenshots of the actual marblerun.at bricks — used instead of drawn icons */
-const IMG_TYPES = ['portal','breakable','speedup','gravswitch','dispenser','eraser'];
+const IMG_TYPES = ['breakable','speedup','gravswitch','dispenser','eraser'];
 const BRICK_IMAGES = {};
 let imagesReadyCount = 0;
 IMG_TYPES.forEach(t=>{
@@ -55,7 +55,71 @@ let running = false;
 let runGrid = null, marbles = [], gravityDir = {x:0,y:1}, activeGravSwitch = null;
 let finished = false, dirty = false, rafId = null, portalPairs = [];
 
+// each portal remembers its own number and who it's paired with, so the pairing survives
+// a drag-move and doesn't depend on where the portals happen to sit on the board
+let nextPortalId = 1, portalWaitingId = null; // the most recently placed portal with no partner yet
+
 function makeGrid(w,h){ return Array.from({length:h},()=>Array.from({length:w},()=>null)); }
+
+/* ================= portal pairing ================= */
+// pairing is placement order, not board position: portal 1 + portal 2 are a pair,
+// portal 3 + portal 4 are the next pair, and so on - and it stays that way even if you
+// drag one of them somewhere else on the board.
+function findPortalCellById(id){
+  for(let y=0;y<editGrid.length;y++) for(let x=0;x<editGrid[0].length;x++){
+    const c = editGrid[y][x];
+    if (c && c.type==='portal' && c.meta && c.meta.portalId===id) return c;
+  }
+  return null;
+}
+function makeBrick(type, rot){
+  const brick = {type, rot};
+  if (type === 'portal'){
+    const id = nextPortalId++;
+    const meta = {portalId:id, pairedWith:null};
+    const waiting = portalWaitingId!==null ? findPortalCellById(portalWaitingId) : null;
+    if (waiting){
+      meta.pairedWith = portalWaitingId;
+      waiting.meta.pairedWith = id;
+      portalWaitingId = null;
+    } else {
+      portalWaitingId = id; // nothing waiting (or it got deleted) - this one waits now
+    }
+    brick.meta = meta;
+  }
+  return brick;
+}
+function destroyPortalPartner(old){
+  // called just before `old` is removed from the board (erased, dragged off, or painted
+  // over) - if it was half of a pair, the other half goes too
+  if (!old.meta) return;
+  if (portalWaitingId === old.meta.portalId) portalWaitingId = null;
+  const partnerId = old.meta.pairedWith;
+  if (partnerId == null) return;
+  for(let y=0;y<editGrid.length;y++) for(let x=0;x<editGrid[0].length;x++){
+    const c = editGrid[y][x];
+    if (c && c.type==='portal' && c.meta && c.meta.portalId===partnerId){
+      editGrid[y][x] = null;
+      if (portalWaitingId === partnerId) portalWaitingId = null;
+      return;
+    }
+  }
+}
+function resetPortalState(){ nextPortalId = 1; portalWaitingId = null; }
+function recomputePortalState(grid){
+  // after loading a saved track - figure out the highest id used and whether one portal
+  // is still waiting for a partner, rather than trusting module state left over from before
+  let maxId = 0, waiting = null;
+  for(let y=0;y<grid.length;y++) for(let x=0;x<grid[0].length;x++){
+    const c = grid[y][x];
+    if (c && c.type==='portal' && c.meta && c.meta.portalId){
+      if (c.meta.portalId > maxId) maxId = c.meta.portalId;
+      if (c.meta.pairedWith == null) waiting = c.meta.portalId;
+    }
+  }
+  nextPortalId = maxId+1;
+  portalWaitingId = waiting;
+}
 
 /* ================= toolbox ================= */
 function buildToolbox(){
@@ -194,7 +258,26 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
       ctx.fillRect(-slabW/2, slabTopY, slabW, slabH);
       ctx.strokeRect(-slabW/2, slabTopY, slabW, slabH);
       break; }
-    case 'portal': case 'breakable':
+    case 'portal': {
+      // Jos's design, corrected to match the real piece: only HALF the tile is solid
+      // block, flush to one edge, with a semicircle notch bitten out of its inner edge -
+      // not a full-tile block with a half-circle stuck on. The first of a pair (or a
+      // portal still waiting for its partner) sits in the top half, notch biting up into
+      // it; the second sits in the bottom half, notch biting down. No rotation - which
+      // half it shows comes from its pairing, set when it was placed (see makeBrick).
+      const blockW = size, blockH = s, r = size*0.42;
+      const isFirst = !meta || meta.pairedWith == null || meta.portalId < meta.pairedWith;
+      ctx.fillStyle = '#ececea'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      if (isFirst) { ctx.fillRect(-blockW/2, -s, blockW, blockH); ctx.strokeRect(-blockW/2, -s, blockW, blockH); }
+      else { ctx.fillRect(-blockW/2, 0, blockW, blockH); ctx.strokeRect(-blockW/2, 0, blockW, blockH); }
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (isFirst) ctx.arc(0, 0, r, Math.PI, Math.PI*2, false); // bites up into the top-half block
+      else ctx.arc(0, 0, r, 0, Math.PI, false); // bites down into the bottom-half block
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      break; }
+    case 'breakable':
     case 'speedup': case 'gravswitch': case 'dispenser': case 'eraser': {
       const img = BRICK_IMAGES[type];
       let alpha = 1;
@@ -229,12 +312,13 @@ function drawBrick(ctx, cx, cy, size, type, rot, meta){
 /* ================= board <-> toolbox interaction ================= */
 function setCell(gx, gy, brick){
   if (gx<0||gy<0||gx>=gridW||gy>=gridH) return;
+  const old = editGrid[gy][gx];
+  if (old && old.type==='portal' && old!==brick) destroyPortalPartner(old);
   if (brick && SINGLETON[brick.type]){
     const prev = brick.type==='start' ? startXY : finishXY;
     if (prev) editGrid[prev.y][prev.x] = null;
     if (brick.type==='start') startXY = {x:gx,y:gy}; else finishXY = {x:gx,y:gy};
   } else {
-    const old = editGrid[gy][gx];
     if (old && old.type==='start' && startXY && startXY.x===gx && startXY.y===gy) startXY=null;
     if (old && old.type==='finish' && finishXY && finishXY.x===gx && finishXY.y===gy) finishXY=null;
   }
@@ -282,16 +366,8 @@ function renderGridFrom(grid){
     const b = grid[y][x];
     if (!b) continue;
     let meta = b.meta ? Object.assign({}, b.meta) : {};
-    if (b.type==='portal') meta.paired = portalLinked(x,y,grid);
     drawBrick(gridCtx, x*CELL+CELL/2, y*CELL+CELL/2, CELL*0.92, b.type, b.rot, meta);
   }
-}
-function portalLinked(x,y,grid){
-  const all = [];
-  for(let yy=0; yy<grid.length; yy++) for(let xx=0; xx<grid[0].length; xx++)
-    if (grid[yy][xx] && grid[yy][xx].type==='portal') all.push({x:xx,y:yy});
-  const idx = all.findIndex(p=>p.x===x&&p.y===y);
-  return idx>=0 && idx < (all.length - (all.length%2));
 }
 
 /* ================= viewport interaction ================= */
@@ -305,7 +381,7 @@ function applyPaint(gx,gy){
   if (gx<0||gy<0||gx>=gridW||gy>=gridH) return;
   if (!selected) return;
   if (selected.type === 'eraser') eraseCell(gx,gy);
-  else setCell(gx,gy,{type:selected.type, rot:selected.rot});
+  else setCell(gx,gy, makeBrick(selected.type, selected.rot));
 }
 
 function showDragPreview(type, rot, clientX, clientY){
@@ -366,7 +442,12 @@ function initViewportEvents(){
       if (dragBrickFrom.moved){
         const {gx,gy} = cellFromEvent(e, vpInner);
         if (gx>=0 && gy>=0 && gx<gridW && gy<gridH) setCell(gx,gy, dragBrickFrom.brick);
-        // dropped off the board: it was already lifted off, so it's just gone - that's the delete
+        else {
+          // dropped off the board: it was already lifted off, so it's just gone - that's
+          // the delete. setCell never sees this one, so the partner cleanup has to happen here.
+          if (dragBrickFrom.brick.type==='portal') destroyPortalPartner(dragBrickFrom.brick);
+          markDirty(); renderGrid();
+        }
       } else {
         // never actually dragged - treat the click as a rotate, same as before
         dragBrickFrom.brick.rot = (dragBrickFrom.brick.rot + 1) % 4;
@@ -380,7 +461,7 @@ function initViewportEvents(){
   gridCanvas.addEventListener('mouseup', (e)=>{
     if (running || !dragGhost) return;
     const {gx,gy} = cellFromEvent(e, vpInner);
-    setCell(gx,gy,{type:dragGhost.type, rot:dragGhost.rot});
+    setCell(gx,gy, makeBrick(dragGhost.type, dragGhost.rot));
   });
 }
 
@@ -399,14 +480,33 @@ function fitZoomToViewport(){
 
 /* ================= physics ================= */
 function cloneRunGrid(){
-  return editGrid.map(row => row.map(c => c ? {type:c.type, rot:c.rot, meta:{broken:false, used:false, touching:false, breakAt:0}} : null));
+  return editGrid.map(row => row.map(c => {
+    if (!c) return null;
+    const meta = {broken:false, used:false, touching:false, breakAt:0};
+    // a portal's id and partner are part of what it IS, not runtime state - keep them,
+    // or a run would forget who's paired with who
+    if (c.type==='portal' && c.meta){ meta.portalId = c.meta.portalId; meta.pairedWith = c.meta.pairedWith; }
+    return {type:c.type, rot:c.rot, meta};
+  }));
 }
 function collectPortalPairs(grid){
-  const all = [];
-  for(let y=0;y<grid.length;y++) for(let x=0;x<grid[0].length;x++)
-    if (grid[y][x] && grid[y][x].type==='portal') all.push({x,y});
-  const pairs = [];
-  for(let i=0;i+1<all.length;i+=2) pairs.push([all[i], all[i+1]]);
+  // pairs come from each portal's own pairedWith, same as the drawing - not board position
+  const pairs = [], seen = new Set();
+  for(let y=0;y<grid.length;y++) for(let x=0;x<grid[0].length;x++){
+    const c = grid[y][x];
+    if (!c || c.type!=='portal' || !c.meta) continue;
+    const id = c.meta.portalId, partnerId = c.meta.pairedWith;
+    if (partnerId == null || seen.has(id)) continue;
+    outer:
+    for(let yy=0;yy<grid.length;yy++) for(let xx=0;xx<grid[0].length;xx++){
+      const p = grid[yy][xx];
+      if (p && p.type==='portal' && p.meta && p.meta.portalId===partnerId){
+        pairs.push([{x,y},{x:xx,y:yy}]);
+        seen.add(id); seen.add(partnerId);
+        break outer;
+      }
+    }
+  }
   return pairs;
 }
 function makeMarble(x,y,vx,vy,color){
@@ -769,6 +869,7 @@ function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; 
 
 function loadTrackForEdit(t){
   gridW=t.w; gridH=t.h; editGrid=t.grid; startXY=t.startXY; finishXY=t.finishXY;
+  recomputePortalState(editGrid);
   document.getElementById('sizeTag').textContent = gridW+'×'+gridH;
   showScreen('builderScreen');
   sizeCanvases(); fitZoomToViewport(); renderGrid(); markDirty();
@@ -790,7 +891,7 @@ function openViewMode(t){
   ctx.clearRect(0,0,cv.width,cv.height);
   for(let y=0;y<t.h;y++) for(let x=0;x<t.w;x++){
     const b = t.grid[y][x]; if(!b) continue;
-    let meta={}; if (b.type==='portal') meta.paired = portalLinked(x,y,t.grid);
+    let meta = b.meta ? Object.assign({}, b.meta) : {};
     drawBrick(ctx, x*CELL+CELL/2, y*CELL+CELL/2, CELL*0.92, b.type, b.rot, meta);
   }
   document.getElementById('viewRunBtn').onclick = ()=> runViewTrack(t);
@@ -841,6 +942,7 @@ function init(){
   document.getElementById('wPlus').onclick  = ()=>{ pickW=Math.min(40,pickW+2); updateSizeLabel(); };
   document.getElementById('startBuildBtn').onclick = ()=>{
     gridW=pickW; gridH=pickW; editGrid=makeGrid(gridW,gridH); startXY=null; finishXY=null;
+    resetPortalState();
     document.getElementById('sizeTag').textContent = gridW+'×'+gridH;
     showScreen('builderScreen'); sizeCanvases(); fitZoomToViewport();
     placeDefaultStartFinish();
@@ -854,6 +956,7 @@ function init(){
   document.getElementById('clearBtn').onclick = ()=>{
     if (running) stopRun(false);
     editGrid = makeGrid(gridW,gridH); startXY=null; finishXY=null;
+    resetPortalState();
     placeDefaultStartFinish();
     markDirty(); renderGrid();
     marbles = []; // wipe any dispensed balls left sitting on screen from the last run
