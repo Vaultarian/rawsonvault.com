@@ -478,8 +478,8 @@ VOCAB_LANGS = [("fr", "Français"), ("de", "Deutsch"), ("es", "Español")]
 CALENDARS = {
     "computer-science-10": (
         VAULT / "01-Teaching/Computer Science - GCSE/Calendar"
-              / "y10-cs-calendar-autumn-1.pdf",
-        "\u00a71.2 Data Representation, to the October break"),
+              / "y10-cs-calendar-autumn-2.pdf",
+        "Hardware and algorithm design, to the Christmas break"),
     "computer-science-11": (
         VAULT / "01-Teaching/Computer Science - GCSE/Calendar"
               / "y11-cs-calendar-autumn-1.pdf",
