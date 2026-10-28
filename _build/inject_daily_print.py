@@ -158,6 +158,26 @@ def pdfs_in(block):
     return [p for p, _ in pdf_links(block)]
 
 
+# Licensed print-only material (OCR past papers, the IB Questionbank, textbook
+# extracts) never comes into this public repo: it lives in the "Daily Print"
+# folder on Alex's St Leonards Drive. A Drive link written anywhere in the
+# entry as [label](https://drive.google.com/...) is shown in the Documents
+# cell as a link, and nothing is copied. Only Drive/Docs URLs, because those
+# files are restricted to Alex's school account: the page carries a name and
+# a sign-in wall, never the document. 2026-10-28.
+DRIVE_LINK = re.compile(r"\[([^\]]+)\]\((https://(?:drive|docs)\.google\.com/[^)\s]+)\)")
+
+
+def drive_links(block):
+    """[(label, url)] for the Google Drive links in this block, in order."""
+    found, seen = [], set()
+    for label, url in DRIVE_LINK.findall(block):
+        if url not in seen:
+            seen.add(url)
+            found.append((tidy(label.strip()), url))
+    return found
+
+
 def page_count(pdf):
     """Page count, or None. Never raises -- a missing count is cosmetic.
 
@@ -186,6 +206,7 @@ def build_rows(day):
             topic=strip_md(field(block, "Topic")) or "—",
             copies=override or (str(size) if size else "—"),
             docs=[(p, page_count(p)) for p in pdfs_in(block)],
+            drive=drive_links(block),
         ))
     return week, rows
 
@@ -196,12 +217,15 @@ def render(day, week, rows, files):
     e = html.escape
     trs = []
     for r in rows:
-        if r["docs"]:
-            links = "".join(
-                f'<a class="print-doc" href="files/{e(files[p].name)}">{e(files[p].stem)}'
-                + (f' <span class="pp">{n}pp</span>' if n else "") + "</a>"
-                for p, n in r["docs"])
-        else:
+        links = "".join(
+            f'<a class="print-doc" href="files/{e(files[p].name)}">{e(files[p].stem)}'
+            + (f' <span class="pp">{n}pp</span>' if n else "") + "</a>"
+            for p, n in r["docs"])
+        links += "".join(
+            f'<a class="print-doc" href="{e(url)}" target="_blank" rel="noopener">{e(label)}'
+            ' <span class="pp">school Drive</span></a>'
+            for label, url in r["drive"])
+        if not links:
             links = '<span class="print-none">—</span>'
         cls = "print-copies-n" if r["copies"].isdigit() else "print-copies-t"
         trs.append(f"""          <tr>
@@ -355,7 +379,8 @@ def main():
     print(f"{day} · {describe(day)} · {len(rows)} period(s) · {len(wanted)} PDF(s)")
     for r in rows:
         print(f"  {r['period']:6} {r['klass']:22} copies={r['copies']:<34}"
-              f"{len(r['docs'])} doc(s)")
+              f"{len(r['docs'])} doc(s)"
+              + (f" + {len(r['drive'])} on Drive" if r["drive"] else ""))
     for path in sorted(set(touched)):
         print(f"PUBLISH: {path}")
 
