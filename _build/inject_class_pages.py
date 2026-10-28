@@ -522,8 +522,8 @@ CALENDARS = {
         "Forces 1: Kinematics, to the October break"),
     "physics-10-r": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
-              / "y10r-physics-calendar-autumn-1.pdf",
-        "Forces 1: Kinematics, to the October break"),
+              / "y10r-physics-calendar-autumn-2.pdf",
+        "Forces 2, to the Christmas break"),
     "physics-11-q": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
               / "y11q-physics-calendar-autumn-2.pdf",
