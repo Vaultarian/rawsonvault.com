@@ -482,8 +482,8 @@ CALENDARS = {
         "Hardware and algorithm design, to the Christmas break"),
     "computer-science-11": (
         VAULT / "01-Teaching/Computer Science - GCSE/Calendar"
-              / "y11-cs-calendar-autumn-1.pdf",
-        "\u00a72.2 Programming Fundamentals, to the October break"),
+              / "y11-cs-calendar-autumn-2.pdf",
+        "Paper 2: algorithms and programming, to the Christmas break"),
     "design-9b": (
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
               / "y9b-design-calendar-autumn-1.pdf",
