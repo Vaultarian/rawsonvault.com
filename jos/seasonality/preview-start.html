@@ -6,7 +6,7 @@
 <title>SEASONALITY! — start preview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 html, body {
@@ -194,12 +194,12 @@ html, body {
 #pauseBtn span { width: 6px; height: 20px; border-radius: 2px; background: #5a3b1a; }
 #pauseBtn:hover { background: #fff; }
 
-#pauseScreen, #quitScreen {
+#pauseScreen {
   position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none; transition: opacity .3s ease;
 }
 #pauseScreen { z-index: 40; background: rgba(8, 16, 8, .6); }
-#pauseScreen.on, #quitScreen.on { opacity: 1; pointer-events: auto; }
+#pauseScreen.on { opacity: 1; pointer-events: auto; }
 .panel {
   display: none; width: 320px; padding: 22px; border-radius: 18px;
   background: #fffdf7; box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
@@ -240,13 +240,46 @@ html, body {
 .shake { animation: shake .4s ease; }
 @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 
-#quitScreen {
-  z-index: 50; flex-direction: column; gap: 4px;
-  background: linear-gradient(#9fd8fb, #dff3ff 62%, #72c34c 62%, #3f8f2c);
+/* ---------- the opener: the same intro as index.html, copied in (index.html is untouched) ---------- */
+#opener {
+  position: fixed; inset: 0; z-index: 60; background: #0b2a16; cursor: pointer;
+  opacity: 0; pointer-events: none; transition: opacity .5s ease;
 }
-#quitScreen .title { font-size: min(13vw, 120px); font-weight: 700; color: #1f6b2a; line-height: 1; letter-spacing: .02em; }
-#quitScreen .sub { margin-bottom: 16px; font-size: 22px; font-weight: 600; color: #2b3a24; }
-#quitScreen .pbtn { width: 260px; }
+#opener.on { opacity: 1; pointer-events: auto; }
+#opener .screen {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 700ms ease;
+}
+#opener .screen.on { opacity: 1; }
+#screen1 { background: radial-gradient(circle at 50% 38%, #1d6b38 0%, #0f4526 55%, #072d17 100%); }
+#opener .stage { position: relative; width: 340px; height: 340px; perspective: 900px; }
+#opener .clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+#brand {
+  z-index: 5; position: absolute; left: 50%; top: 50%; margin-top: 130px; transform: translateX(-50%);
+  white-space: nowrap; font-family: 'Cinzel', serif; font-weight: 700; font-size: 30px;
+  letter-spacing: .34em; color: #f4d9b4;
+}
+#brand span { display: inline-block; opacity: 0; transform: translateY(14px); }
+#screen2 { flex-direction: column; background: linear-gradient(#bfe9f5 0%, #dff3e0 46%, #9fd47f 74%, #6fae52 100%); }
+#title {
+  position: absolute; z-index: 5; margin: 0; white-space: nowrap;
+  font-family: 'Fredoka', sans-serif; font-weight: 700; line-height: 1; letter-spacing: .02em;
+  color: #1f6b2a; opacity: 0; transition: opacity 220ms ease;
+}
+#title.on { opacity: 1; }
+#play {
+  z-index: 5; position: absolute; bottom: 9%; padding: 16px 52px;
+  font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 26px; letter-spacing: .12em;
+  color: #fff; background: #2e8b3d; border: none; border-bottom: 5px solid #1c5c27; border-radius: 14px;
+  cursor: pointer; opacity: 0; transition: opacity 600ms ease, transform 120ms ease;
+}
+#play.on { opacity: 1; }
+#play:hover { background: #35a247; }
+#play:active { transform: translateY(3px); border-bottom-width: 2px; }
+#skip {
+  z-index: 9; position: absolute; right: 18px; bottom: 14px;
+  font-size: 13px; letter-spacing: .14em; color: rgba(255, 255, 255, .4);
+}
 
 /* ---------- the leafy poof ---------- */
 .leaf {
@@ -398,15 +431,25 @@ html, body {
     <label class="switch-row">Sapling growing <input type="checkbox" id="growOn"><span class="switch"></span></label>
     <label class="switch-row">Sun cooldown <input type="checkbox" id="coolOn"><span class="switch"></span></label>
     <button class="pbtn ed" id="skipBtn">Skip tutorial</button>
+    <button class="pbtn quit" id="newBtn">New game</button>
     <button class="pbtn back" data-back>Back</button>
   </div>
 </div>
 
-<div id="quitScreen">
-  <div class="title">SEASONALITY!</div>
-  <div class="sub">Your game is saved.</div>
-  <button class="pbtn go" id="continueBtn">Continue</button>
-  <button class="pbtn back" id="newBtn">New Game</button>
+<!-- the opener, copied from index.html: the logo clip, then the forest clip, the title and PLAY -->
+<div id="opener" class="on">
+  <div class="screen" id="screen1">
+    <video id="clip1" class="clip" src="video/intro-logo.mp4" muted playsinline preload="auto"></video>
+    <div class="stage">
+      <div id="brand"></div>
+    </div>
+  </div>
+  <div class="screen" id="screen2">
+    <video id="clip2" class="clip" src="video/intro-forest.mp4" muted playsinline preload="auto"></video>
+    <h1 id="title">SEASONALITY!</h1>
+    <button id="play">PLAY</button>
+  </div>
+  <div id="skip">CLICK TO SKIP</div>
 </div>
 
 <template id="timerArt"><div class="box timer"><div class="clock"><div class="hand"></div></div><span>30 seconds</span></div></template>
@@ -439,7 +482,7 @@ const NS = 'http://www.w3.org/2000/svg';
 const $ = id => document.getElementById(id);
 const blocker = $('blocker'), hole = $('hole'), msg = $('msg'), glove = $('glove'), menu = $('menu');
 const saplingBtn = $('saplingBtn'), willowRow = $('willowRow'), energy = $('energy');
-const pauseScreen = $('pauseScreen'), quitScreen = $('quitScreen');
+const pauseScreen = $('pauseScreen');
 
 /* ---------- the game clock: it stands still while the game is paused ---------- */
 let paused = false, pausedAt = 0, pausedFor = 0;
@@ -1083,7 +1126,7 @@ function openPlantMenu(m) {
 }
 function closePlantMenu() { menu.classList.remove('on'); step = 'free'; }
 
-const notWorld = '#menu, #hud, #pauseBtn, #pauseScreen, #quitScreen, #toWillow';
+const notWorld = '#menu, #hud, #pauseBtn, #pauseScreen, #opener, #toWillow';
 let drag = null, justDragged = false;
 document.addEventListener('mousedown', e => {
   justDragged = false;
@@ -1125,21 +1168,28 @@ document.addEventListener('click', e => {
 /* ---------- pause ----------
    The game clock stops, and so does every animation that was moving. */
 let pausedAnims = [], editorOpen = false;
-function pauseGame() {
+function stopClock() {
   if (paused) return;
   paused = true; pausedAt = performance.now();
   drag = null;
   pausedAnims = document.getAnimations().filter(a => a.playState === 'running');
   pausedAnims.forEach(a => a.pause());
+}
+function startClock() {
+  if (!paused) return;
+  pausedFor += performance.now() - pausedAt; paused = false;
+  pausedAnims.forEach(a => { try { a.play(); } catch (err) {} });
+  pausedAnims = [];
+}
+function pauseGame() {
+  if (paused) return;
+  stopClock();
   view('main');
   pauseScreen.classList.add('on');
 }
 function resumeGame() {
-  if (!paused) return;
   pauseScreen.classList.remove('on');
-  pausedFor += performance.now() - pausedAt; paused = false;
-  pausedAnims.forEach(a => { try { a.play(); } catch (err) {} });
-  pausedAnims = [];
+  startClock();
 }
 function view(v) { pauseScreen.dataset.view = v; syncPanel(); }
 function syncPanel() {
@@ -1243,9 +1293,8 @@ function restore(s) {
 $('quitBtn').addEventListener('click', () => {
   save();
   pauseScreen.classList.remove('on');
-  quitScreen.classList.add('on');
+  opener.open(startClock);                   // back to the title screen; PLAY carries on where you were
 });
-$('continueBtn').addEventListener('click', () => location.reload());
 $('newBtn').addEventListener('click', () => {
   resetting = true;
   try { localStorage.removeItem(SAVE); } catch (err) {}
@@ -1263,13 +1312,100 @@ addEventListener('resize', () => {
   if (step === 'free-menu') placeMenu();
 });
 
-/* ---------- start: carry on from a save, or begin the tutorial ---------- */
+/* ---------- the opener ----------
+   Copied from index.html, with the same timings: the logo clip, RAWSON VAULT, the forest
+   clip, then the title and PLAY. Click anywhere to skip. It plays when the game loads and
+   again after Save and Quit. */
+const opener = (() => {
+  const INTRO = {
+    screen1On:   200,    /* the logo clip starts */
+    brand:      6100,    /* RAWSON VAULT comes up, drawn in code so it is sharp */
+    screen1Off: 8500,
+    screen2On:  9000,    /* the forest clip starts; the title and PLAY wait for it to end */
+  };
+  const box = $('opener'), s1 = $('screen1'), s2 = $('screen2'), skipHint = $('skip');
+  const clip1 = $('clip1'), clip2 = $('clip2'), brand = $('brand'), title = $('title'), play = $('play');
+  for (const ch of 'RAWSON VAULT') {
+    const sp = document.createElement('span');
+    sp.textContent = ch === ' ' ? '\u00a0' : ch;
+    brand.appendChild(sp);
+  }
+  const brandLetters = brand.querySelectorAll('span');
+  let timers = [], onPlay = null;
+  const at = (t, fn) => timers.push(setTimeout(fn, t));
+
+  /* put the crisp title exactly over the one in the clip (drawn at 1280x720, 104px, 13% down) */
+  function placeTitle() {
+    const vw = clip2.videoWidth || 1280, vh = clip2.videoHeight || 720;
+    const r = clip2.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const scale = Math.max(r.width / vw, r.height / vh);   /* object-fit: cover */
+    const topOfFrame = r.top + (r.height - vh * scale) / 2;
+    title.style.fontSize = (104 * scale) + 'px';
+    title.style.top = (topOfFrame + .13 * vh * scale) + 'px';
+    title.style.left = '50%';
+    title.style.transform = 'translateX(-50%)';
+    title.style.textShadow = `0 ${4 * scale}px 0 #145121, 0 ${6 * scale}px ${16 * scale}px rgba(0,0,0,.28)`;
+  }
+  clip2.addEventListener('loadedmetadata', placeTitle);
+  addEventListener('resize', placeTitle);
+  clip2.addEventListener('ended', () => {        /* the video says when the title is finished */
+    placeTitle();
+    title.classList.add('on');
+    at(700, () => play.classList.add('on'));
+  });
+
+  function skip() {
+    timers.forEach(clearTimeout); timers = [];
+    s1.classList.remove('on'); s2.classList.add('on');
+    clip1.pause();
+    clip2.play().catch(() => {});             /* stopped straight away below; that's fine */
+    if (clip2.readyState >= 1) clip2.currentTime = Math.max(0, clip2.duration - 0.05);
+    else clip2.addEventListener('loadedmetadata', () => { clip2.currentTime = Math.max(0, clip2.duration - 0.05); }, { once: true });
+    clip2.pause();
+    placeTitle();
+    title.classList.add('on'); play.classList.add('on');
+    skipHint.style.display = 'none';
+  }
+  box.addEventListener('click', e => { if (e.target !== play) skip(); });
+  play.addEventListener('click', () => {
+    timers.forEach(clearTimeout); timers = [];
+    clip1.pause(); clip2.pause();
+    box.classList.remove('on');
+    if (onPlay) onPlay();
+  });
+
+  return {
+    open(then) {
+      onPlay = then;
+      timers.forEach(clearTimeout); timers = [];
+      s1.classList.remove('on'); s2.classList.remove('on');
+      title.classList.remove('on'); play.classList.remove('on');
+      skipHint.style.display = '';
+      brandLetters.forEach(sp => { sp.style.transition = 'none'; sp.style.opacity = '0'; sp.style.transform = 'translateY(14px)'; });
+      clip1.pause(); clip2.pause();
+      box.classList.add('on');
+      at(INTRO.screen1On, () => { s1.classList.add('on'); clip1.currentTime = 0; clip1.play().catch(() => {}); });
+      at(INTRO.brand, () => brandLetters.forEach((sp, i) => setTimeout(() => {
+        sp.style.transition = 'opacity 400ms ease, transform 500ms cubic-bezier(.2,1.4,.4,1)';
+        sp.style.opacity = '1'; sp.style.transform = 'translateY(0)';
+      }, i * 65)));
+      at(INTRO.screen1Off, () => s1.classList.remove('on'));
+      at(INTRO.screen2On, () => s2.classList.add('on'));
+      at(INTRO.screen2On + 40, () => { clip2.currentTime = 0; clip2.play().catch(() => {}); });
+    },
+  };
+})();
+
+/* ---------- start: everything waits behind the opener until PLAY ---------- */
 Object.assign(settings, readJSON(PREFS) || {});
 syncPanel();
 drawSoil();
 applyCam();
+stopClock();
 const saved = readJSON(SAVE);
 if (saved && (saved.v === 1 || saved.v === 2)) restore(saved); else tutorialNext(T.darkenAfter);
+opener.open(startClock);
 </script>
 </body>
 </html>
