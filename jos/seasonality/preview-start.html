@@ -267,8 +267,9 @@ html, body {
   color: #1f6b2a; opacity: 0; transition: opacity 220ms ease;
 }
 #title.on { opacity: 1; }
+#buttons { position: absolute; bottom: 9%; z-index: 5; display: flex; gap: 18px; }
 #play {
-  z-index: 5; position: absolute; bottom: 9%; padding: 16px 52px;
+  z-index: 5; position: relative; padding: 16px 52px;
   font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 26px; letter-spacing: .12em;
   color: #fff; background: #2e8b3d; border: none; border-bottom: 5px solid #1c5c27; border-radius: 14px;
   cursor: pointer; opacity: 0; transition: opacity 600ms ease, transform 120ms ease;
@@ -276,6 +277,17 @@ html, body {
 #play.on { opacity: 1; }
 #play:hover { background: #35a247; }
 #play:active { transform: translateY(3px); border-bottom-width: 2px; }
+#newGame {
+  position: relative; padding: 16px 34px;
+  font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 26px; letter-spacing: .12em;
+  color: #5a4a30; background: #f3ead6; border: none; border-bottom: 5px solid #c9b48a; border-radius: 14px;
+  cursor: pointer; opacity: 0; transition: opacity 600ms ease, transform 120ms ease, background .2s;
+}
+#newGame.on { opacity: 1; }
+#newGame:hover { background: #fff6e2; }
+#newGame:active { transform: translateY(3px); border-bottom-width: 2px; }
+#newGame.sure { background: #c0392b; color: #fff; border-bottom-color: #8e2a20; }
+#newGame[hidden] { display: none; }
 #skip {
   z-index: 9; position: absolute; right: 18px; bottom: 14px;
   font-size: 13px; letter-spacing: .14em; color: rgba(255, 255, 255, .4);
@@ -431,7 +443,6 @@ html, body {
     <label class="switch-row">Sapling growing <input type="checkbox" id="growOn"><span class="switch"></span></label>
     <label class="switch-row">Sun cooldown <input type="checkbox" id="coolOn"><span class="switch"></span></label>
     <button class="pbtn ed" id="skipBtn">Skip tutorial</button>
-    <button class="pbtn quit" id="newBtn">New game</button>
     <button class="pbtn back" data-back>Back</button>
   </div>
 </div>
@@ -447,7 +458,10 @@ html, body {
   <div class="screen" id="screen2">
     <video id="clip2" class="clip" src="video/intro-forest.mp4" muted playsinline preload="auto"></video>
     <h1 id="title">SEASONALITY!</h1>
-    <button id="play">PLAY</button>
+    <div id="buttons">
+      <button id="play">PLAY</button>
+      <button id="newGame" hidden>NEW GAME</button>
+    </div>
   </div>
   <div id="skip">CLICK TO SKIP</div>
 </div>
@@ -1295,11 +1309,11 @@ $('quitBtn').addEventListener('click', () => {
   pauseScreen.classList.remove('on');
   opener.open(startClock);                   // back to the title screen; PLAY carries on where you were
 });
-$('newBtn').addEventListener('click', () => {
+function newGameNow() {                     // wipe the save and come straight back into a fresh game
   resetting = true;
-  try { localStorage.removeItem(SAVE); } catch (err) {}
+  try { localStorage.removeItem(SAVE); sessionStorage.setItem('seasonality-new', '1'); } catch (err) {}
   location.reload();
-});
+}
 
 addEventListener('resize', () => {
   plots.forEach(placePlot);
@@ -1324,7 +1338,7 @@ const opener = (() => {
     screen2On:  9000,    /* the forest clip starts; the title and PLAY wait for it to end */
   };
   const box = $('opener'), s1 = $('screen1'), s2 = $('screen2'), skipHint = $('skip');
-  const clip1 = $('clip1'), clip2 = $('clip2'), brand = $('brand'), title = $('title'), play = $('play');
+  const clip1 = $('clip1'), clip2 = $('clip2'), brand = $('brand'), title = $('title'), play = $('play'), newGame = $('newGame');
   for (const ch of 'RAWSON VAULT') {
     const sp = document.createElement('span');
     sp.textContent = ch === ' ' ? '\u00a0' : ch;
@@ -1352,7 +1366,7 @@ const opener = (() => {
   clip2.addEventListener('ended', () => {        /* the video says when the title is finished */
     placeTitle();
     title.classList.add('on');
-    at(700, () => play.classList.add('on'));
+    at(700, () => { play.classList.add('on'); newGame.classList.add('on'); });
   });
 
   function skip() {
@@ -1364,10 +1378,17 @@ const opener = (() => {
     else clip2.addEventListener('loadedmetadata', () => { clip2.currentTime = Math.max(0, clip2.duration - 0.05); }, { once: true });
     clip2.pause();
     placeTitle();
-    title.classList.add('on'); play.classList.add('on');
+    title.classList.add('on'); play.classList.add('on'); newGame.classList.add('on');
     skipHint.style.display = 'none';
   }
-  box.addEventListener('click', e => { if (e.target !== play) skip(); });
+  box.addEventListener('click', e => { if (!e.target.closest('#buttons')) skip(); });
+  let sureTimer = null;
+  newGame.addEventListener('click', () => {
+    if (newGame.classList.contains('sure')) return newGameNow();
+    newGame.classList.add('sure'); newGame.textContent = 'START OVER?';   // one more click to be sure: it wipes your forest
+    clearTimeout(sureTimer);
+    sureTimer = setTimeout(() => { newGame.classList.remove('sure'); newGame.textContent = 'NEW GAME'; }, 3000);
+  });
   play.addEventListener('click', () => {
     timers.forEach(clearTimeout); timers = [];
     clip1.pause(); clip2.pause();
@@ -1381,6 +1402,8 @@ const opener = (() => {
       timers.forEach(clearTimeout); timers = [];
       s1.classList.remove('on'); s2.classList.remove('on');
       title.classList.remove('on'); play.classList.remove('on');
+      newGame.classList.remove('on', 'sure'); newGame.textContent = 'NEW GAME';
+      newGame.hidden = !readJSON(SAVE);        // only when there's a saved game to start over from
       skipHint.style.display = '';
       brandLetters.forEach(sp => { sp.style.transition = 'none'; sp.style.opacity = '0'; sp.style.transform = 'translateY(14px)'; });
       clip1.pause(); clip2.pause();
@@ -1405,7 +1428,14 @@ applyCam();
 stopClock();
 const saved = readJSON(SAVE);
 if (saved && (saved.v === 1 || saved.v === 2)) restore(saved); else tutorialNext(T.darkenAfter);
-opener.open(startClock);
+let straightIn = false;                      // true just after NEW GAME: skip the opener this once
+try { straightIn = sessionStorage.getItem('seasonality-new') === '1'; sessionStorage.removeItem('seasonality-new'); } catch (err) {}
+if (straightIn) {
+  const box = $('opener');
+  box.style.transition = 'none'; box.classList.remove('on');
+  requestAnimationFrame(() => { box.style.transition = ''; });
+  startClock();
+} else opener.open(startClock);
 </script>
 </body>
 </html>
