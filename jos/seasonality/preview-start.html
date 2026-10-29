@@ -22,7 +22,7 @@ html, body {
   background: linear-gradient(#74c2f4, #c4eaff 78%, #e2f5ff);
 }
 #sun {
-  position: fixed; top: 4vh; right: 4vw; width: 11vh; height: 11vh; border-radius: 50%;
+  position: fixed; top: 4vh; right: 4vw; z-index: 4; width: 11vh; height: 11vh; border-radius: 50%;
   background: radial-gradient(circle at 40% 38%, #fff7b8, #ffd23f 55%, #f6b400);
   box-shadow: 0 0 40px 14px rgba(255, 214, 70, .55);
   animation: glow 3s ease-in-out infinite;
@@ -37,13 +37,19 @@ html, body {
   content: ''; position: absolute; left: 0; right: 0; top: -11px; height: 12px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='12'%3E%3Cpath d='M0 12L4 2L8 12ZM8 12L13 0L17 12ZM16 12L21 3L26 12Z' fill='%2372c34c'/%3E%3C/svg%3E") repeat-x;
   background-size: 26px 12px;
+  background-position-x: var(--gx, 0px);   /* slides with the world when you drag */
 }
 #soil {
   position: fixed; left: 0; right: 0; top: 75vh; bottom: 0;
   background: linear-gradient(#4b3120, #2e1c10);
   border-top: 3px solid #3a2414;
 }
-#under { position: absolute; left: 0; top: 0; }
+/* everything that belongs to the land slides sideways together when you drag */
+#world {
+  position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 3;
+  pointer-events: none; transform: translateX(0);
+}
+#under { position: absolute; }
 #under .root { fill: none; stroke: #e7d3a7; stroke-linecap: round; }
 #under .link { stroke: #f6e7c1; }
 
@@ -149,7 +155,30 @@ html, body {
 }
 
 /* ---------- the sun's energy ---------- */
-#energy { position: fixed; left: 0; top: 0; z-index: 4; pointer-events: none; overflow: visible; }
+#energy { position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; overflow: visible; }
+
+/* ---------- the gates, and the haze over the land past them ---------- */
+.gate { position: absolute; z-index: 6; transform-origin: 50% 100%; overflow: visible; }
+.fog {
+  position: absolute; top: 0; height: 100vh; z-index: 5; display: none; pointer-events: none;
+  transition: left .8s ease, width .8s ease;
+}
+#fogL { background: linear-gradient(to left, rgba(238, 245, 250, 0), rgba(238, 245, 250, .5) 70px); }
+#fogR { background: linear-gradient(to right, rgba(238, 245, 250, 0), rgba(238, 245, 250, .5) 70px); }
+
+/* ---------- the little arrow back to the willow ---------- */
+#toWillow {
+  position: fixed; top: 42vh; z-index: 12; display: none; align-items: center; gap: 6px;
+  padding: 8px 12px; border: 0; border-radius: 999px; cursor: pointer;
+  background: rgba(255, 255, 255, .92); box-shadow: 0 3px 10px rgba(0, 0, 0, .2);
+}
+#toWillow.on { display: flex; }
+#toWillow.left  { left: 16px; }
+#toWillow.right { right: 16px; flex-direction: row-reverse; }
+#toWillow svg { width: 40px; height: 40px; }
+#toWillow .arrow { width: 0; height: 0; border: 11px solid transparent; }
+#toWillow.left  .arrow { border-left: 0;  border-right: 16px solid #3f8a2c; }
+#toWillow.right .arrow { border-right: 0; border-left: 16px solid #3f8a2c; }
 .plus {
   position: fixed; z-index: 25; font-size: 24px; font-weight: 700; color: #ffe066; white-space: nowrap;
   text-shadow: 0 2px 3px rgba(0, 0, 0, .5); pointer-events: none;
@@ -235,9 +264,41 @@ html, body {
 <div id="sky"></div>
 <div id="sun"></div>
 <div id="grass"></div>
-<div id="soil"><svg id="under"></svg></div>
-<div id="plants"></div>
-<svg id="energy"><defs><filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs></svg>
+<div id="soil"></div>
+<div id="world">
+  <svg id="under"></svg>
+  <div id="fogL" class="fog"></div>
+  <div id="fogR" class="fog"></div>
+  <div id="gates"></div>
+  <div id="plants"></div>
+  <svg id="energy"><defs><filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs></svg>
+</div>
+
+<!-- a wooden gate: posts, two rails and a brace -->
+<template id="gateArt">
+  <svg class="gate" viewBox="0 0 80 90" preserveAspectRatio="none">
+    <path d="M15,58 L65,27" stroke="#5c3a1a" stroke-width="10" stroke-linecap="round"/>
+    <path d="M15,58 L65,27" stroke="#a8743d" stroke-width="6" stroke-linecap="round"/>
+    <rect x="13" y="22" width="54" height="9" fill="#a8743d" stroke="#5c3a1a" stroke-width="2"/>
+    <rect x="13" y="52" width="54" height="9" fill="#a8743d" stroke="#5c3a1a" stroke-width="2"/>
+    <rect x="3" y="8" width="10" height="82" rx="2" fill="#8a5a2b" stroke="#5c3a1a" stroke-width="2.5"/>
+    <rect x="67" y="8" width="10" height="82" rx="2" fill="#8a5a2b" stroke="#5c3a1a" stroke-width="2.5"/>
+    <path d="M1,9 L8,2 L15,9 Z M65,9 L72,2 L79,9 Z" fill="#6b4423"/>
+  </svg>
+</template>
+
+<!-- shows when the willow is off the screen; click it to go back -->
+<button id="toWillow" aria-label="Back to the willow">
+  <span class="arrow"></span>
+  <svg viewBox="0 0 40 40">
+    <path d="M18,39 L19,21 L21,21 L22,39 Z" fill="#6b4423"/>
+    <g stroke="#5aa437" stroke-width="2" stroke-linecap="round" fill="none">
+      <path d="M6,16 q-1,9 0,17"/><path d="M11,19 q-1,8 0,15"/><path d="M29,19 q1,8 0,15"/><path d="M34,16 q1,9 0,17"/>
+    </g>
+    <ellipse cx="20" cy="14" rx="17" ry="10" fill="#4b8f2f"/>
+    <ellipse cx="20" cy="10" rx="11" ry="7" fill="#6db842"/>
+  </svg>
+</button>
 
 <!-- the sapling: brown stem, two green leaves. Copied for every new plant. -->
 <template id="saplingArt">
@@ -364,6 +425,7 @@ const T = {
   underClickSeeds:  2,   //   ... if it was planted under the willow
   clickCooldown:    5,   // seconds before the same tree pays out again (never shown)
   sunCooldown:     30,   // seconds before the willow's leaves bring the sun again (never shown)
+  gate:             5,   // meters past your last tree that you can go before the gate
   autoSaveEvery:    5,   // seconds
   darkenAfter:    900,   // wait before the screen goes dark the first time
   darkenAgain:   2200,   // wait after a plant grows before the screen goes dark again
@@ -402,15 +464,25 @@ const settings = { autoSave: true, growOn: true, cooldownOn: true };
 let seeds = T.startSeeds, step = 'start', tutorialDone = false;
 let pending = 0;                             // seeds spent on a plant that hasn't appeared yet
 
-/* where things go. The willow is in the middle; the tutorial's tree is beside it, to the right. */
+/* ---------- the world is measured in meters, with the willow at 0 ----------
+   The camera says which meter is in the middle of the screen; dragging moves it. */
+const M = () => innerHeight * .05;                    // pixels in one meter
+let cam = 0;
+const wx = m => innerWidth / 2 + m * M();             // where meter m is drawn inside the world layer
+const sx = m => wx(m) - cam * M();                    // where meter m is on the screen right now
+const toM = x => (x - innerWidth / 2) / M() + cam;    // a point on the screen, in meters
+const BESIDE = 7.6;                                   // the tutorial's tree, meters right of the willow
+const WORLD = 400;                                    // meters each way that get drawn at all
+
 const ground = () => innerHeight * .75;
-const willowSpot = () => ({ x: innerWidth / 2, y: ground() });
-const treeSpot   = () => ({ x: innerWidth / 2 + innerHeight * .38, y: ground() });
+const willowSpot = () => ({ x: sx(0), y: ground() });
+const treeSpot   = () => ({ x: sx(BESIDE), y: ground() });
 let target = willowSpot;          // what the glove points at: a spot, or 'willow' for the whole tree
 const R = () => Math.min(80, innerHeight * .09);   // radius of the bright circle
 
 const willowH = () => innerHeight * .44, willowW = () => willowH() * 400 / 360;
 const treeH   = () => innerHeight * .24, treeW   = () => treeH() * 200 / 240;
+const halfM = kind => (kind === 'willow' ? willowW() : treeW()) / 2 / M();   // half a plant's width, in meters
 
 /* same "random" every time, so the trees and roots always look the same */
 function seeded(n) {
@@ -420,23 +492,24 @@ function seeded(n) {
 }
 
 /* ---------- plants ----------
-   A plant's place is kept as { willow }, { beside } (the tutorial's tree) or { f } (a fraction
-   of the screen width), so it can be saved and comes back in the same place. */
+   A plant's place is kept as { willow }, { beside } (the tutorial's tree) or { m } (meters
+   from the willow), so it can be saved and comes back in the same place. */
 const plots = [];
 let willowPlot = null;
-const spotOf = pos => pos.willow ? willowSpot : pos.beside ? treeSpot : () => ({ x: pos.f * innerWidth, y: ground() });
-const treeSeed = pos => pos.beside ? 11 : 17 + Math.round(pos.f * 997);
+const mOf = pos => pos.willow ? 0 : pos.beside ? BESIDE : pos.m;
+const treeSeed = pos => pos.beside ? 11 : 17 + Math.round((pos.m + WORLD) * 31);
 
 function makePlot(pos, kind) {
   const el = document.createElement('div');
   el.className = 'plot';
   $('plants').appendChild(el);
-  const p = { el, pos, kind, at: spotOf(pos), growEnd: null };
+  const p = { el, pos, kind, m: mOf(pos), growEnd: null };
+  p.at = () => ({ x: sx(p.m), y: ground() });          // where it stands on the screen
   plots.push(p); placePlot(p);
   return p;
 }
 function placePlot(p) {
-  p.el.style.left = p.at().x + 'px';
+  p.el.style.left = wx(p.m) + 'px';
   if (p.art) sizeArt(p);
   if (p.timer) placeTimer(p);
 }
@@ -525,7 +598,7 @@ function ownRoots(cx, H, reach, depth, angles, width, seed) {
 }
 
 /* the root from the willow to a plant: down through the soil and up into it.
-   Further-away plants get a deeper root. y0 shifts it onto the screen for the energy layer. */
+   Further-away plants get a deeper root. y0 moves it down onto the ground for the energy layer. */
 function linkD(x1, x2, H, y0 = 0) {
   const dx = x2 - x1, f = v => v.toFixed(1);
   const dip = H * (.4 + .3 * Math.min(1, Math.abs(dx) / (innerWidth * .5)));
@@ -534,30 +607,31 @@ function linkD(x1, x2, H, y0 = 0) {
 
 function rootsFor(r, H) {
   if (r.kind === 'willow')
-    return ownRoots(r.at().x, H, innerHeight * .3, H * .85, [-80, -57, -33, -11, 12, 35, 58, 81], 5, 3);
+    return ownRoots(wx(0), H, innerHeight * .3, H * .85, [-80, -57, -33, -11, 12, 35, 58, 81], 5, 3);
   if (r.kind === 'tree')
-    return ownRoots(r.at().x, H, innerHeight * .12, H * .5, [-70, -38, -8, 22, 52, 78], 3.2, r.seed);
-  return `<path class="root link" style="stroke-width:5.5" d="${linkD(r.from().x, r.to().x, H)}"/>`;
+    return ownRoots(wx(r.m), H, innerHeight * .12, H * .5, [-70, -38, -8, 22, 52, 78], 3.2, r.seed);
+  return `<path class="root link" style="stroke-width:5.5" d="${linkD(wx(0), wx(r.to), H)}"/>`;
 }
 
-function soilSize() {
-  const under = $('under'), W = innerWidth, H = innerHeight * .25;
+function soilSize() {                        // the soil layer covers the whole world, not just the screen
+  const under = $('under'), L = wx(-WORLD), W = 2 * WORLD * M(), H = innerHeight * .25;
+  Object.assign(under.style, { left: L + 'px', top: ground() + 'px' });
   under.setAttribute('width', W); under.setAttribute('height', H);
-  under.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  return [W, H];
+  under.setAttribute('viewBox', `${L} 0 ${W} ${H}`);
+  return [L, W, H];
 }
 function drawSoil() {                        // everything at once, no animation
-  const [W, H] = soilSize(), rnd = seeded(5);
+  const [L, W, H] = soilSize(), rnd = seeded(5);
   let pebbles = '';
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0, n = Math.round(W / 20); i < n; i++) {
     const shade = rnd() < .5 ? 'rgba(0,0,0,.2)' : 'rgba(255,235,200,.07)';
-    pebbles += `<ellipse cx="${(rnd() * W).toFixed(0)}" cy="${(8 + rnd() * (H - 12)).toFixed(0)}" rx="${(2 + rnd() * 5).toFixed(1)}" ry="${(1.5 + rnd() * 3).toFixed(1)}" fill="${shade}"/>`;
+    pebbles += `<ellipse cx="${(L + rnd() * W).toFixed(0)}" cy="${(8 + rnd() * (H - 12)).toFixed(0)}" rx="${(2 + rnd() * 5).toFixed(1)}" ry="${(1.5 + rnd() * 3).toFixed(1)}" fill="${shade}"/>`;
   }
   $('under').innerHTML = pebbles + rootSets.map(r => `<g>${rootsFor(r, H)}</g>`).join('');
 }
 function growRoots(r) {                      // add one set and let it grow out
   rootSets.push(r);
-  const [, H] = soilSize();
+  const [, , H] = soilSize();
   const g = document.createElementNS(NS, 'g');
   g.innerHTML = rootsFor(r, H);
   $('under').appendChild(g);
@@ -571,6 +645,89 @@ function growRoots(r) {                      // add one set and let it grow out
   });
 }
 const addRoots = (r, animate) => animate ? growRoots(r) : rootSets.push(r);
+
+/* ---------- gates: 5 meters past your furthest tree on each side ----------
+   Plant a tree further out and the gate falls over, and a new one comes up 5 meters past it. */
+let gL = null, gR = null, gateElL = null, gateElR = null;
+function gateSpots() {
+  if (!willowPlot) return null;
+  let l = Infinity, r = -Infinity;
+  for (const p of plots) { l = Math.min(l, p.m - halfM(p.kind)); r = Math.max(r, p.m + halfM(p.kind)); }
+  return [l - T.gate, r + T.gate];
+}
+function placeGate(g) {
+  const w = 1.6 * M(), h = 1.8 * M();
+  Object.assign(g.style, { left: wx(+g.dataset.m) - w / 2 + 'px', top: ground() - h + 'px', width: w + 'px', height: h + 'px' });
+}
+function makeGate(m, animate) {
+  const g = $('gateArt').content.firstElementChild.cloneNode(true);
+  g.dataset.m = m;
+  $('gates').appendChild(g);
+  placeGate(g);
+  if (animate) g.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1.12)', offset: .7 }, { transform: 'scaleY(1)' }],
+                         { duration: 650, delay: 500, easing: 'ease-out', fill: 'backwards' });
+  return g;
+}
+function dropGate(g, side) {                 // falls over, away from the forest, and fades
+  g.animate([{ transform: 'rotate(0deg)', opacity: 1 }, { transform: `rotate(${side * 90}deg)`, opacity: 1, offset: .55 },
+             { transform: `rotate(${side * 90}deg)`, opacity: 0 }],
+            { duration: 1000, easing: 'ease-in', fill: 'forwards' }).onfinish = () => g.remove();
+}
+function updateGates(animate) {
+  const s = gateSpots();
+  if (!s) return;
+  const [l, r] = s;
+  if (r !== gR) {
+    if (gateElR) animate ? dropGate(gateElR, 1) : gateElR.remove();
+    gateElR = makeGate(r, animate); gR = r;
+  }
+  if (l !== gL) {
+    if (gateElL) animate ? dropGate(gateElL, -1) : gateElL.remove();
+    gateElL = makeGate(l, animate); gL = l;
+  }
+  placeFog();
+}
+function placeFog() {                        // a light haze over the land past each gate
+  const fl = $('fogL'), fr = $('fogR');
+  if (gL == null) return;
+  const L = wx(-WORLD), Rr = wx(WORLD);
+  Object.assign(fl.style, { display: 'block', left: L + 'px', width: Math.max(0, wx(gL) - L) + 'px' });
+  Object.assign(fr.style, { display: 'block', left: wx(gR) + 'px', width: Math.max(0, Rr - wx(gR)) + 'px' });
+}
+
+/* ---------- the camera ---------- */
+function clampCam() {                        // never more than a meter past a gate
+  if (gL == null) { cam = 0; return; }
+  const hw = innerWidth / 2 / M();
+  let lo = gL - 1 + hw, hi = gR + 1 - hw;
+  if (lo > hi) [lo, hi] = [hi, lo];          // the whole forest fits on the screen: keep both gates in view
+  cam = Math.min(hi, Math.max(lo, cam));
+}
+function applyCam() {
+  const px = cam * M();
+  $('world').style.transform = `translateX(${-px}px)`;
+  $('grass').style.setProperty('--gx', -px + 'px');
+  updateArrow();
+}
+function updateArrow() {                     // the little willow arrow, when the willow is off the screen
+  const a = $('toWillow');
+  const x = willowPlot && willowPlot.art ? sx(0) : null;
+  const side = x == null ? '' : x < 0 ? 'left' : x > innerWidth ? 'right' : '';
+  a.className = side ? 'on ' + side : '';
+}
+$('toWillow').addEventListener('click', () => {
+  if (step === 'free-menu') closePlantMenu();
+  const from = cam;
+  cam = 0; clampCam();
+  const to = cam, t0 = performance.now();
+  cam = from;
+  (function glide(t) {
+    const k = Math.min(1, (t - t0) / 700), e = 1 - (1 - k) ** 3;
+    cam = from + (to - from) * e;
+    applyCam();
+    if (k < 1) requestAnimationFrame(glide);
+  })(t0);
+});
 
 /* ---------- the leafy poof ---------- */
 function poof(x, y, big) {
@@ -623,15 +780,12 @@ function addSeeds(n, x, y) {
 function setSeeds(n) { seeds = n; $('seeds').textContent = n; }
 
 /* ---------- what the pointer is on ---------- */
-function onLeaves(x, y) {                    // the willow's leaves: its crown and hanging strands, not its trunk
+function onLeaves(x, y) {                    // the willow's leaves: its green crown, not the strands below or the trunk
   if (!willowPlot || !willowPlot.art) return false;
   const r = willowPlot.art.getBoundingClientRect(), k = r.height / 360;
   const vx = (x - r.left) / k, vy = (y - r.top) / k;
   const inside = (cx, cy, rx, ry) => ((vx - cx) / rx) ** 2 + ((vy - cy) / ry) ** 2 <= 1;
-  if (inside(200, 120, 158, 76) || inside(134, 136, 80, 50) || inside(268, 133, 82, 52) || inside(200, 90, 112, 60)) return true;
-  const strands = Math.abs(vx - 200) <= 172 && vy >= 110 && vy <= 346;
-  const trunk = vx >= 170 && vx <= 232 && vy >= 190;
-  return strands && !trunk;
+  return inside(200, 120, 158, 76) || inside(134, 136, 80, 50) || inside(268, 133, 82, 52) || inside(200, 90, 112, 60);
 }
 function treeAt(x, y) {                      // the grown tree under the pointer, front-most first
   for (const p of [...plots].reverse()) {
@@ -641,11 +795,10 @@ function treeAt(x, y) {                      // the grown tree under the pointer
   }
   return null;
 }
-const isUnder = x => Math.abs(x - willowSpot().x) < willowW() / 2;
-function canPlantAt(x) {                     // on the screen, and not on top of another plant or the willow's trunk
-  const half = treeW() / 2;
-  if (x < half || x > innerWidth - half) return false;
-  return plots.every(p => Math.abs(x - p.at().x) >= half * (p.kind === 'willow' ? 1.6 : 1.2));
+const isUnder = m => Math.abs(m) < halfM('willow');
+function canPlant(m) {                       // inside the gates, and not on top of another tree
+  if (gL == null || m < gL + .5 || m > gR - .5) return false;
+  return plots.every(p => p.kind === 'willow' || Math.abs(m - p.m) >= halfM('tree') * 1.2);
 }
 
 /* ---------- the dark screen, the glove and the menu ---------- */
@@ -663,7 +816,7 @@ function holeOnSpot() {
     const b = willowBox();
     setHole(b.x, b.y, b.w, b.h, 40);
     mx = b.x + b.w / 2; my = b.y - 16;
-    gx = b.x + b.w * .62; gy = b.y + b.h * .36;
+    gx = b.x + b.w * .62; gy = b.y + b.h * .3;
   } else {
     const s = target(), r = R();
     setHole(s.x - r, s.y - r, 2 * r, 2 * r, r);
@@ -746,8 +899,7 @@ blocker.addEventListener('click', e => {
 /* ---------- growing: sapling, clock, poof, grown plant ---------- */
 const label = n => n + (n === 1 ? ' second' : ' seconds');
 function placeTimer(p) {
-  const s = p.at();
-  Object.assign(p.timer.style, { left: s.x + 'px', top: s.y - 96 + 'px' });
+  Object.assign(p.timer.style, { left: wx(p.m) + 'px', top: ground() - 96 + 'px' });
 }
 // frac is how much of the growing is still to do: 1 for a new sapling, less for a saved one
 function growSapling(p, seconds, frac, done) {
@@ -760,7 +912,7 @@ function growSapling(p, seconds, frac, done) {
     p.el.appendChild(p.sapling);
     pop(p.sapling);
     const tm = p.timer = $('timerArt').content.firstElementChild.cloneNode(true);   // every sapling has its own clock
-    document.body.appendChild(tm);
+    $('world').appendChild(tm);
     placeTimer(p);
     p.timerText = tm.querySelector('span'); p.timerHand = tm.querySelector('.hand');
     later(() => tm.classList.add('on'), 300);
@@ -786,11 +938,12 @@ function growTick(p, t) {
 
 function willowGrown(p, animate) {
   showArt(p, willowArt(), animate);
-  addRoots({ kind: 'willow', at: willowSpot }, animate);
+  addRoots({ kind: 'willow' }, animate);
+  updateArrow();
 }
 function treeGrown(p, animate) {
   showArt(p, treeArt(), animate);
-  addRoots({ kind: 'tree', at: p.at, seed: treeSeed(p.pos) }, animate);   // it grows its own roots
+  addRoots({ kind: 'tree', m: p.m, seed: treeSeed(p.pos) }, animate);   // it grows its own roots
 }
 const whenGrown = p => () => {
   if (p.kind === 'willow') willowGrown(p, true); else treeGrown(p, true);
@@ -799,12 +952,14 @@ const whenGrown = p => () => {
 function newWillow() {
   pending = 0;
   const p = willowPlot = makePlot({ willow: true }, 'willow');
+  updateGates(true);
   growSapling(p, T.willowGrow, 1, whenGrown(p));
 }
 function newTree(pos) {
   pending = 0;
   const p = makePlot(pos, 'tree');
-  growRoots({ kind: 'link', from: willowSpot, to: p.at });          // the willow reaches out to it
+  updateGates(true);                                                // further out? the gate moves
+  growRoots({ kind: 'link', to: p.m });                             // the willow reaches out to it
   growSapling(p, T.treeGrow, 1, whenGrown(p));
 }
 
@@ -816,7 +971,7 @@ $('willowBtn').addEventListener('click', () => {
   later(() => closeMenu(() => { if (!willowPlot) newWillow(); }), 600);
 });
 
-let plantAt = 0;                             // where the open menu will plant, as a fraction of the width
+let plantM = 0;                              // where the open menu will plant, in meters
 saplingBtn.addEventListener('click', () => {
   if (step === 'menu-sapling') {             // the tutorial's tree
     step = 'growing-tree';
@@ -824,9 +979,8 @@ saplingBtn.addEventListener('click', () => {
     later(() => closeMenu(() => { if (!plots.some(p => p.pos.beside)) newTree({ beside: true }); }), 300);
   } else if (step === 'free-menu' && seeds >= T.saplingCost) {
     addSeeds(-T.saplingCost);
-    menu.classList.remove('on');
-    step = 'free';
-    newTree({ f: plantAt, under: isUnder(plantAt * innerWidth) });
+    closePlantMenu();
+    newTree({ m: plantM, under: isUnder(plantM) });
   }
 });
 
@@ -842,13 +996,14 @@ function clickTree(p) {
 
 /* ---------- the sun's energy ----------
    A very faint stream from the sun into the willow, yellow lines down its trunk, then one
-   line along the roots to every grown tree. Each tree it reaches earns seeds. */
+   line along the roots to every grown tree. Each tree it reaches earns seeds.
+   It is drawn in the world layer, so it moves with the forest if you drag. */
 let sunReadyAt = 0, activeSuns = 0, sunCount = 0;
 
 function sendSun(after) {
   activeSuns++; sunCount++;
   energy.setAttribute('width', innerWidth); energy.setAttribute('height', innerHeight);
-  const made = [];
+  const made = [], camPx = cam * M();
   const line = (d, stroke, width, growMs, delay, filter) => {
     const p = document.createElementNS(NS, 'path');
     p.setAttribute('d', d);
@@ -865,11 +1020,11 @@ function sendSun(after) {
 
   // 1. from the sun into the top of the willow: barely there
   const sun = $('sun').getBoundingClientRect();
-  const sx = sun.left + sun.width / 2, sy = sun.top + sun.height / 2;
+  const sx0 = sun.left + sun.width / 2 + camPx, sy0 = sun.top + sun.height / 2;
   const w = willowPlot.art.getBoundingClientRect(), k = w.height / 360;
-  const at = (vx, vy) => [w.left + vx * k, w.top + vy * k];
+  const at = (vx, vy) => [w.left + camPx + vx * k, w.top + vy * k];
   const [cx, cy] = at(200, 95);
-  const beam = line(`M${sx},${sy} Q${(sx + cx) / 2},${(sy + cy) / 2 - 60} ${cx},${cy}`,
+  const beam = line(`M${sx0},${sy0} Q${(sx0 + cx) / 2},${(sy0 + cy) / 2 - 60} ${cx},${cy}`,
                     'rgba(255,226,110,.16)', 12, 1000, 0, 'url(#soft)');
   fade(beam, 1300);
   const BL = beam.getTotalLength();
@@ -893,9 +1048,9 @@ function sendSun(after) {
     .forEach(pts => fade(line(path(pts), 'rgba(255,214,51,.55)', 3, 800, 1000), 3400));
 
   // 3. split along the roots to every grown tree; seeds when it arrives
-  const H = innerHeight * .25, wx = willowSpot().x;
+  const H = innerHeight * .25;
   plots.filter(p => p.kind === 'tree' && p.art).forEach(p => {
-    fade(line(linkD(wx, p.at().x, H, ground()), 'rgba(255,214,51,.6)', 4, 1300, 1800), 3400);
+    fade(line(linkD(wx(0), wx(p.m), H, ground()), 'rgba(255,214,51,.6)', 4, 1300, 1800), 3400);
     later(() => {
       const r = p.art.getBoundingClientRect();
       addSeeds(p.pos.under ? T.underSunSeeds : T.sunSeeds, r.left + r.width / 2, r.top - 8);
@@ -914,29 +1069,57 @@ function trySun() {
   sendSun();
 }
 
-/* ---------- after the tutorial: click a tree, the willow's leaves, or the ground ---------- */
-function openPlantMenu(x) {
-  plantAt = x / innerWidth;
-  target = () => ({ x: plantAt * innerWidth, y: ground() });
+/* ---------- after the tutorial ----------
+   Click a tree for seeds, the willow's leaves for sun, anywhere else to plant.
+   Drag to move along the forest. */
+function openPlantMenu(m) {
+  plantM = m;
+  target = () => ({ x: sx(plantM), y: ground() });
   willowRow.style.display = 'none';
   saplingBtn.disabled = seeds < T.saplingCost;                 // grey when you can't afford it
   placeMenu();
   menu.classList.add('on');
   step = 'free-menu';
 }
+function closePlantMenu() { menu.classList.remove('on'); step = 'free'; }
+
+const notWorld = '#menu, #hud, #pauseBtn, #pauseScreen, #quitScreen, #toWillow';
+let drag = null, justDragged = false;
+document.addEventListener('mousedown', e => {
+  justDragged = false;
+  if (paused || e.button !== 0 || (step !== 'free' && step !== 'free-menu') || e.target.closest(notWorld)) return;
+  drag = { x: e.clientX, cam, moved: false };
+});
+document.addEventListener('mousemove', e => {
+  if (drag) {
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 6) {
+      drag.moved = true;
+      if (step === 'free-menu') closePlantMenu();
+    }
+    if (drag.moved) {
+      cam = drag.cam - dx / M(); clampCam(); applyCam();
+      document.body.style.cursor = 'grabbing';
+    }
+    return;
+  }
+  if (step !== 'free' || paused) return;
+  const x = e.clientX, y = e.clientY;
+  document.body.style.cursor = treeAt(x, y) || onLeaves(x, y) || canPlant(toM(x)) ? 'pointer' : 'grab';
+});
+addEventListener('mouseup', () => {
+  if (drag && drag.moved) { justDragged = true; document.body.style.cursor = ''; }
+  drag = null;
+});
 document.addEventListener('click', e => {
-  if (paused || e.target.closest('#menu, #hud, #pauseBtn, #pauseScreen, #quitScreen')) return;
-  if (step === 'free-menu') { menu.classList.remove('on'); step = 'free'; return; }   // click away to close
+  if (justDragged) { justDragged = false; return; }          // that was a drag, not a click
+  if (paused || e.target.closest(notWorld)) return;
+  if (step === 'free-menu') { closePlantMenu(); return; }    // click away to close
   if (step !== 'free') return;
   const x = e.clientX, y = e.clientY, tree = treeAt(x, y);
   if (tree) clickTree(tree);
   else if (onLeaves(x, y)) trySun();
-  else if (canPlantAt(x)) openPlantMenu(x);
-});
-document.addEventListener('mousemove', e => {
-  if (step !== 'free' || paused) return;
-  const x = e.clientX, y = e.clientY;
-  document.body.style.cursor = treeAt(x, y) || onLeaves(x, y) || canPlantAt(x) ? 'pointer' : '';
+  else if (canPlant(toM(x))) openPlantMenu(toM(x));
 });
 
 /* ---------- pause ----------
@@ -945,6 +1128,7 @@ let pausedAnims = [], editorOpen = false;
 function pauseGame() {
   if (paused) return;
   paused = true; pausedAt = performance.now();
+  drag = null;
   pausedAnims = document.getAnimations().filter(a => a.playState === 'running');
   pausedAnims.forEach(a => a.pause());
   view('main');
@@ -1006,10 +1190,11 @@ function skipTutorial() {
   const tree = plots.find(p => p.pos.beside);
   if (!tree) {
     const p = makePlot({ beside: true }, 'tree');
-    rootSets.push({ kind: 'link', from: willowSpot, to: p.at });
+    rootSets.push({ kind: 'link', to: p.m });
     treeGrown(p, false);
   } else if (tree.growEnd != null) tree.growEnd = now();
   drawSoil();
+  updateGates(false);
   pending = 0;
   setSeeds(T.startSeeds - T.willowCost - T.saplingCost + T.sunSeeds);
   step = 'free';
@@ -1021,7 +1206,7 @@ let resetting = false;
 function snapshot() {
   const t = now();
   return {
-    v: 1, seeds: seeds + pending, tutorialDone,
+    v: 2, seeds: seeds + pending, tutorialDone, cam,
     sunWait: Math.max(0, sunReadyAt - t) / ms(T.sunCooldown),     // how much of the cooldown is left
     plants: plots.map(p => ({ kind: p.kind, pos: p.pos,
       left: p.growEnd != null && p.growMs > 0 ? Math.max(0, (p.growEnd - t) / p.growMs) : 0 })),
@@ -1039,14 +1224,18 @@ function restore(s) {
   setSeeds(s.seeds);
   tutorialDone = !!s.tutorialDone;
   for (const d of s.plants) {
-    const p = makePlot(d.pos, d.kind);
+    const pos = { ...d.pos };
+    if (pos.f != null) { pos.m = (pos.f - .5) * innerWidth / M(); delete pos.f; }   // saves from before meters
+    const p = makePlot(pos, d.kind);
     if (d.kind === 'willow') willowPlot = p;
-    else rootSets.push({ kind: 'link', from: willowSpot, to: p.at });
+    else rootSets.push({ kind: 'link', to: p.m });
     if (d.left > 0) growSapling(p, d.kind === 'willow' ? T.willowGrow : T.treeGrow, d.left, whenGrown(p));
     else if (d.kind === 'willow') willowGrown(p, false);
     else treeGrown(p, false);
   }
   drawSoil();
+  updateGates(false);
+  cam = s.cam || 0; clampCam(); applyCam();
   sunReadyAt = now() + (s.sunWait || 0) * ms(T.sunCooldown);
   if (tutorialDone) step = 'free'; else tutorialNext(T.darkenAfter);
 }
@@ -1066,6 +1255,9 @@ $('newBtn').addEventListener('click', () => {
 addEventListener('resize', () => {
   plots.forEach(placePlot);
   drawSoil();
+  [gateElL, gateElR].forEach(g => g && placeGate(g));
+  placeFog();
+  clampCam(); applyCam();
   if (hinting()) holeOnSpot();
   if (step === 'menu-willow' || step === 'menu-sapling') holeOnMenu();
   if (step === 'free-menu') placeMenu();
@@ -1075,8 +1267,9 @@ addEventListener('resize', () => {
 Object.assign(settings, readJSON(PREFS) || {});
 syncPanel();
 drawSoil();
+applyCam();
 const saved = readJSON(SAVE);
-if (saved && saved.v === 1) restore(saved); else tutorialNext(T.darkenAfter);
+if (saved && (saved.v === 1 || saved.v === 2)) restore(saved); else tutorialNext(T.darkenAfter);
 </script>
 </body>
 </html>
