@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEASONALITY! — start preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  user-select: none; -webkit-user-select: none;
+  background: #7cc8f7;
+}
+
+/* ---------- the map: top 3/4 above ground, bottom 1/4 soil ---------- */
+#sky {
+  position: fixed; left: 0; right: 0; top: 0; height: 75vh;
+  background: linear-gradient(#74c2f4, #c4eaff 78%, #e2f5ff);
+}
+#sun {
+  position: fixed; top: 4vh; right: 4vw; width: 11vh; height: 11vh; border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fff7b8, #ffd23f 55%, #f6b400);
+  box-shadow: 0 0 40px 14px rgba(255, 214, 70, .55);
+  animation: glow 3s ease-in-out infinite;
+}
+@keyframes glow { 50% { box-shadow: 0 0 58px 22px rgba(255, 214, 70, .72); } }
+
+#grass {
+  position: fixed; left: 0; right: 0; top: calc(75vh - 4vh); height: 4vh;
+  background: linear-gradient(#72c34c, #4a9a30);
+}
+#grass::before {            /* little blades along the top edge */
+  content: ''; position: absolute; left: 0; right: 0; top: -11px; height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='12'%3E%3Cpath d='M0 12L4 2L8 12ZM8 12L13 0L17 12ZM16 12L21 3L26 12Z' fill='%2372c34c'/%3E%3C/svg%3E") repeat-x;
+  background-size: 26px 12px;
+}
+#soil {
+  position: fixed; left: 0; right: 0; top: 75vh; bottom: 0;
+  background: linear-gradient(#4b3120, #2e1c10);
+  border-top: 3px solid #3a2414;
+}
+#under { position: absolute; left: 0; top: 0; }
+#under .root { fill: none; stroke: #e7d3a7; stroke-linecap: round; }
+
+/* the planting spot: a zero-size anchor sitting on the ground line */
+#plot { position: fixed; left: 50%; top: 75vh; width: 0; height: 0; z-index: 3; }
+#plot svg { position: absolute; bottom: 0; transform-origin: 50% 100%; }
+#sapling { opacity: 0; }
+#willow  { opacity: 0; }
+#willow .sway {
+  transform-box: view-box; transform-origin: 200px 110px;
+  animation: sway 4.5s ease-in-out infinite;
+}
+@keyframes sway { 0%, 100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.1deg); } }
+
+/* ---------- seeds: the money ---------- */
+#hud {
+  position: fixed; top: 16px; left: 16px; z-index: 10;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px 8px 12px; border-radius: 999px;
+  background: rgba(255, 255, 255, .92); box-shadow: 0 3px 10px rgba(0, 0, 0, .18);
+  font-size: 22px; font-weight: 600; color: #5a3b1a;
+}
+#hud .ic { font-size: 24px; }
+#hud b { font-weight: 700; min-width: 1.4em; text-align: right; }
+.minus {
+  position: fixed; z-index: 25; font-size: 22px; font-weight: 700; color: #e74c3c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+  pointer-events: none;
+}
+
+/* ---------- the tutorial: darkness with one bright hole ---------- */
+#blocker { position: fixed; inset: 0; z-index: 20; display: none; }
+#hole {
+  position: fixed; z-index: 21; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 300vmax rgba(8, 16, 8, .64);
+  transition: left .5s ease, top .5s ease, width .5s ease, height .5s ease,
+              border-radius .5s ease, opacity .5s ease;
+}
+#hole.on { opacity: 1; }
+
+.box {
+  position: fixed; z-index: 22; transform: translate(-50%, -100%) scale(.85);
+  padding: 10px 18px; border-radius: 14px;
+  background: #fff; color: #2b3a24; font-size: 20px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+  opacity: 0; transition: opacity .35s ease, transform .35s ease; pointer-events: none;
+}
+.box::after {               /* the little tail pointing down */
+  content: ''; position: absolute; left: 50%; bottom: -9px; margin-left: -9px;
+  border: 9px solid transparent; border-bottom: 0; border-top-color: #fff;
+}
+.box.on { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+
+#glove {
+  position: fixed; z-index: 23; width: 64px; pointer-events: none; opacity: 0;
+  transform-origin: 47% 3%;           /* the fingertip */
+  transition: opacity .35s ease;
+}
+#glove.on { opacity: 1; animation: tap 1.1s ease-in-out infinite; }
+@keyframes tap {
+  0%, 100% { transform: translate(14px, 18px) rotate(-22deg); }
+  50%      { transform: translate(0, 0) rotate(-22deg) scale(.93); }
+}
+
+#menu {
+  position: fixed; z-index: 24; width: 290px; padding: 14px;
+  border-radius: 16px; background: #fffdf7; box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+  opacity: 0; transform: scale(.9); pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+#menu.on { opacity: 1; transform: scale(1); pointer-events: auto; }
+#menu .row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+}
+#menu .title { font-size: 21px; font-weight: 700; color: #2d5a1e; }
+#menu .cost {
+  font-size: 16px; font-weight: 600; color: #6b4a22;
+  background: #f3e6cf; padding: 4px 10px; border-radius: 999px;
+}
+#willowBtn {
+  display: block; width: 100%; padding: 12px; border: 0; border-radius: 12px;
+  background: #3fa34d; border-bottom: 4px solid #2c7a37; color: #fff;
+  font: 600 20px 'Fredoka', system-ui, sans-serif; cursor: pointer;
+  transition: opacity .5s ease, transform .5s ease;
+}
+#willowBtn:hover { background: #47b356; }
+#willowBtn.gone { opacity: 0; transform: scale(.85); pointer-events: none; }
+
+/* ---------- the growing clock ---------- */
+#timer {
+  display: flex; align-items: center; gap: 10px; font-size: 18px; z-index: 6;
+}
+.clock {
+  position: relative; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; border: 2.5px solid #2b3a24;
+}
+.clock::after {             /* the centre dot */
+  content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px;
+  margin: -2px 0 0 -2px; border-radius: 50%; background: #2b3a24;
+}
+.clock .hand {
+  position: absolute; left: 50%; top: 2px; width: 2.5px; height: 8.5px; margin-left: -1.25px;
+  background: #c0392b; border-radius: 2px; transform-origin: 50% 100%;
+}
+
+/* ---------- the leafy poof ---------- */
+.leaf {
+  position: fixed; z-index: 7; pointer-events: none;
+  border-radius: 0 100% 0 100%;
+}
+.puff {
+  position: fixed; z-index: 7; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .95), rgba(190, 240, 160, .6) 55%, rgba(190, 240, 160, 0) 72%);
+}
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="sun"></div>
+<div id="grass"></div>
+<div id="soil"><svg id="under"></svg></div>
+
+<div id="plot">
+  <!-- the sapling: brown stem, two green leaves -->
+  <svg id="sapling" viewBox="0 0 54 64" width="70" height="83" style="left:-35px">
+    <ellipse cx="27" cy="61" rx="17" ry="5" fill="#5e3d20"/>
+    <path d="M27,61 C27,50 24,42 28,28" stroke="#7a4b25" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+    <path d="M26.5,42 C18,41 11,34 12,26 C20,27 26,33 26.5,42 Z" fill="#5fb43a"/>
+    <path d="M26.5,42 C21,37 17,32 13.5,27.5" stroke="#8fd46a" stroke-width="1.2" fill="none"/>
+    <path d="M28,32 C36,29 42,21 41,12 C33,14 28,22 28,32 Z" fill="#4f9f31"/>
+    <path d="M28,32 C33,26 37,20 40.5,13.5" stroke="#86c962" stroke-width="1.2" fill="none"/>
+    <path d="M28,28 C26,24 26,20 28,16 C30,20 30,24 28,28 Z" fill="#6fc246"/>
+  </svg>
+  <svg id="willow" viewBox="0 0 400 360"></svg>
+</div>
+
+<div id="hud"><span class="ic">🌰</span><b id="seeds">70</b><span>seeds</span></div>
+
+<div id="blocker"></div>
+<div id="hole"></div>
+<div id="msg" class="box">Click on the middle of the screen</div>
+
+<!-- the white glove, pointing up; its fingertip is the top-centre -->
+<svg id="glove" viewBox="0 0 100 130">
+  <g fill="#1f2a1f" stroke="#1f2a1f" stroke-width="7" stroke-linejoin="round">
+    <rect x="37" y="4" width="20" height="66" rx="10"/>
+    <rect x="55" y="50" width="18" height="30" rx="9"/>
+    <rect x="69" y="56" width="16" height="28" rx="8"/>
+    <rect x="81" y="64" width="14" height="26" rx="7"/>
+    <rect x="30" y="56" width="62" height="52" rx="20"/>
+    <rect x="14" y="58" width="18" height="40" rx="9" transform="rotate(-28 23 78)"/>
+  </g>
+  <g fill="#fff">
+    <rect x="37" y="4" width="20" height="66" rx="10"/>
+    <rect x="55" y="50" width="18" height="30" rx="9"/>
+    <rect x="69" y="56" width="16" height="28" rx="8"/>
+    <rect x="81" y="64" width="14" height="26" rx="7"/>
+    <rect x="30" y="56" width="62" height="52" rx="20"/>
+    <rect x="14" y="58" width="18" height="40" rx="9" transform="rotate(-28 23 78)"/>
+  </g>
+  <g stroke="#c4ccd4" stroke-width="2.5" stroke-linecap="round" fill="none">
+    <path d="M42,44 h10"/>
+    <path d="M69.5,60 v14"/>
+    <path d="M82.5,67 v13"/>
+    <path d="M36,80 C40,86 44,88 50,88"/>
+  </g>
+  <rect x="34" y="104" width="52" height="20" rx="5" fill="#fff" stroke="#1f2a1f" stroke-width="3.5"/>
+  <path d="M40,111 h40 M40,117 h40" stroke="#c4ccd4" stroke-width="2" stroke-linecap="round"/>
+</svg>
+
+<div id="menu">
+  <div class="row">
+    <span class="title">Plant Sapling</span>
+    <span class="cost">🌰 10 seeds</span>
+  </div>
+  <button id="willowBtn">Plant Willow</button>
+</div>
+
+<div id="timer" class="box"><div class="clock"><div class="hand"></div></div><span id="secs">30 seconds</span></div>
+
+<script>
+/* ---------- numbers to tune (milliseconds unless it says otherwise) ---------- */
+const T = {
+  startSeeds:   70,     // the money you begin with
+  saplingCost:  10,     // seeds to plant a sapling
+  growSeconds:  30,     // sapling -> willow
+  darkenAfter:  900,    // wait before the screen goes dark the first time
+};
+// ?fast shrinks the 30 seconds to 4, for testing. The clock still counts from 30.
+const FAST = new URLSearchParams(location.search).has('fast');
+const growMs = (FAST ? 4 : T.growSeconds) * 1000;
+
+const $ = id => document.getElementById(id);
+const blocker = $('blocker'), hole = $('hole'), msg = $('msg'), glove = $('glove');
+const menu = $('menu'), btn = $('willowBtn'), timer = $('timer');
+const sapling = $('sapling'), willow = $('willow');
+
+let seeds = T.startSeeds;
+$('seeds').textContent = seeds;
+let step = 0;
+
+const R = () => Math.min(80, innerHeight * .09);          // radius of the bright circle
+const spot = () => ({ x: innerWidth / 2, y: innerHeight * .75 });
+
+/* same "random" every time, so the willow and roots always look the same */
+function seeded(n) {
+  return () => { n |= 0; n = n + 0x6D2B79F5 | 0;
+    let t = Math.imul(n ^ n >>> 15, 1 | n); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+
+/* ---------- the willow ---------- */
+function buildWillow() {
+  const rnd = seeded(7), cx = 200;
+  const greens = ['#3d7a27', '#4b8f2f', '#5aa437', '#6db842', '#83c94f'];
+  let back = '', front = '';
+  for (let i = 0; i < 74; i++) {
+    const dx = (rnd() * 2 - 1) * 152;
+    const x0 = cx + dx;
+    const y0 = 112 + 52 * Math.sqrt(Math.max(0, 1 - (dx / 160) ** 2)) - rnd() * 26;
+    const y1 = Math.min(y0 + 150 + rnd() * 80 - Math.abs(dx) * .25, 344);
+    const bend = Math.sign(dx || 1) * (8 + rnd() * 18);
+    const d = `M${x0.toFixed(1)},${y0.toFixed(1)} Q${(x0 + bend * 1.2).toFixed(1)},${((y0 + y1) / 2).toFixed(1)} ${(x0 + bend).toFixed(1)},${y1.toFixed(1)}`;
+    const col = greens[Math.floor(rnd() * greens.length)];
+    const leafy = greens[Math.min(4, greens.indexOf(col) + 1)];
+    const w = 2 + rnd() * 1.5;
+    const strand = `<path d="${d}" stroke="${col}" stroke-width="${w.toFixed(1)}"/>` +
+                   `<path d="${d}" stroke="${leafy}" stroke-width="${(w + 3).toFixed(1)}" stroke-dasharray="5 5"/>`;
+    if (i % 2) back += strand; else front += strand;
+  }
+  willow.innerHTML = `
+    <g fill="none" stroke-linecap="round">
+      <g class="sway">${back}</g>
+    </g>
+    <path d="M176,360 C186,320 190,280 186,240 C183,215 170,195 150,178 L158,170 C176,184 189,198 195,214
+             C197,190 194,168 186,146 L198,142 C206,166 208,190 205,214 C213,194 226,180 246,166 L253,174
+             C234,190 220,206 214,232 C210,270 214,318 226,360 Z"
+          fill="#6b4423" stroke="#4e3018" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M196,350 C198,320 197,290 199,262 M188,330 C190,310 190,290 192,276" stroke="#4e3018" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="200" cy="120" rx="158" ry="76" fill="#3f7d2a"/>
+    <ellipse cx="134" cy="136" rx="80" ry="50" fill="#4b8f2f"/>
+    <ellipse cx="268" cy="133" rx="82" ry="52" fill="#4b8f2f"/>
+    <ellipse cx="200" cy="90" rx="112" ry="60" fill="#579f35"/>
+    <ellipse cx="168" cy="72" rx="60" ry="32" fill="#6db842" opacity=".8"/>
+    <ellipse cx="242" cy="80" rx="48" ry="26" fill="#6db842" opacity=".7"/>
+    <g fill="none" stroke-linecap="round">
+      <g class="sway">${front}</g>
+    </g>`;
+}
+
+/* ---------- soil: pebbles always, roots once the willow is up ---------- */
+function buildSoil() {
+  const W = innerWidth, H = innerHeight * .25, cx = W / 2;
+  const under = $('under');
+  under.setAttribute('width', W); under.setAttribute('height', H);
+  under.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const rnd = seeded(3);
+  let pebbles = '';
+  for (let i = 0; i < 70; i++) {
+    const shade = rnd() < .5 ? 'rgba(0,0,0,.2)' : 'rgba(255,235,200,.07)';
+    pebbles += `<ellipse cx="${(rnd() * W).toFixed(0)}" cy="${(8 + rnd() * (H - 12)).toFixed(0)}" rx="${(2 + rnd() * 5).toFixed(1)}" ry="${(1.5 + rnd() * 3).toFixed(1)}" fill="${shade}"/>`;
+  }
+  const bez = (a, b, c, d, t) => { const u = 1 - t; return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d; };
+  let roots = '';
+  for (const deg of [-80, -57, -33, -11, 12, 35, 58, 81]) {
+    const a = deg * Math.PI / 180;
+    const len = H * (.9 + rnd() * .5) * (1 + Math.abs(deg) / 90 * 2.2);
+    const ex = cx + Math.sin(a) * len, ey = Math.min(H - 10, Math.cos(a) * len * .5 + 14);
+    const c1x = cx + Math.sin(a) * len * .2, c1y = ey * .6 + rnd() * 10;
+    const c2x = cx + Math.sin(a) * len * .65 + (rnd() * 30 - 15), c2y = ey * .85;
+    roots += `<path class="root" data-w="5" d="M${cx},0 C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}"/>`;
+    // one smaller root branching off the middle of each big one
+    const mx = bez(cx, c1x, c2x, ex, .5), my = bez(0, c1y, c2y, ey, .5);
+    const b = a + (rnd() < .5 ? -1 : 1) * .55, bl = len * .32;
+    const bx = mx + Math.sin(b) * bl, by = Math.min(H - 6, my + Math.cos(b) * bl * .5 + 8);
+    roots += `<path class="root" data-w="2.6" data-late="1" d="M${mx.toFixed(1)},${my.toFixed(1)} Q${((mx + bx) / 2).toFixed(1)},${((my + by) / 2 + 8).toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}"/>`;
+  }
+  under.innerHTML = pebbles + `<g id="roots" style="display:none">${roots}</g>`;
+  under.querySelectorAll('.root').forEach(p => {
+    p.style.strokeWidth = p.dataset.w;
+    const L = p.getTotalLength();
+    p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+  });
+}
+
+function growRoots() {
+  const g = $('roots'); g.style.display = '';
+  g.querySelectorAll('.root').forEach(p => {
+    p.getBoundingClientRect();
+    p.style.transition = `stroke-dashoffset 1.6s ease-out ${p.dataset.late ? .9 : .15}s`;
+    p.style.strokeDashoffset = 0;
+  });
+}
+
+/* ---------- the leafy poof ---------- */
+function poof(x, y, big) {
+  const rnd = Math.random, n = big ? 28 : 12, reach = big ? 150 : 60;
+  const size = big ? 180 : 80;
+  const puff = document.createElement('div');
+  puff.className = 'puff';
+  Object.assign(puff.style, { left: x - size / 2 + 'px', top: y - size / 2 + 'px', width: size + 'px', height: size + 'px' });
+  document.body.appendChild(puff);
+  puff.animate([{ transform: 'scale(.2)', opacity: .95 }, { transform: 'scale(1)', opacity: 0 }],
+               { duration: big ? 800 : 600, easing: 'ease-out' }).onfinish = () => puff.remove();
+  const greens = ['#3d7a27', '#5aa437', '#6db842', '#83c94f', '#a5dc6e'];
+  for (let i = 0; i < n; i++) {
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+    const w = (big ? 15 : 10) + rnd() * 6, h = w * .55;
+    Object.assign(leaf.style, { left: x - w / 2 + 'px', top: y - h / 2 + 'px', width: w + 'px', height: h + 'px',
+                                background: greens[Math.floor(rnd() * greens.length)] });
+    document.body.appendChild(leaf);
+    const ang = rnd() * Math.PI * 2, d = reach * (.5 + rnd() * .6);
+    const dx = Math.cos(ang) * d, dy = Math.sin(ang) * d * .8 - reach * .3;
+    const r0 = rnd() * 360, r1 = r0 + (rnd() * 2 - 1) * 300;
+    leaf.animate([
+      { transform: `translate(0,0) rotate(${r0}deg) scale(.5)`, opacity: 1 },
+      { transform: `translate(${dx}px,${dy}px) rotate(${r1}deg) scale(1)`, opacity: 1, offset: .6 },
+      { transform: `translate(${dx * 1.1}px,${dy + reach * .35}px) rotate(${r1 + 60}deg) scale(.9)`, opacity: 0 },
+    ], { duration: 800 + rnd() * 450, easing: 'cubic-bezier(.2,.7,.35,1)' }).onfinish = () => leaf.remove();
+  }
+}
+
+/* ---------- seeds ---------- */
+function spend(n) {
+  const from = seeds; seeds -= n;
+  const el = $('seeds'), t0 = performance.now();
+  (function tick(now) {
+    const k = Math.min(1, (now - t0) / 500);
+    el.textContent = Math.round(from - n * k);
+    if (k < 1) requestAnimationFrame(tick);
+  })(t0);
+  const r = el.getBoundingClientRect();
+  const m = document.createElement('div');
+  m.className = 'minus'; m.textContent = '−' + n;
+  Object.assign(m.style, { left: r.left + 52 + 'px', top: r.bottom + 4 + 'px' });
+  document.body.appendChild(m);
+  m.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(26px)', opacity: 0 }],
+            { duration: 1100, easing: 'ease-out' }).onfinish = () => m.remove();
+}
+
+/* ---------- placing things ---------- */
+function setHole(x, y, w, h, radius) {
+  Object.assign(hole.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: radius + 'px' });
+}
+function holeOnSpot() {
+  const s = spot(), r = R();
+  setHole(s.x - r, s.y - r, 2 * r, 2 * r, r);
+  Object.assign(msg.style, { left: s.x + 'px', top: s.y - r - 16 + 'px' });
+  const gw = 64, gh = gw * 130 / 100;
+  Object.assign(glove.style, { left: s.x - .47 * gw + 'px', top: s.y - .03 * gh + 'px' });
+}
+function holeOnMenu() {
+  const s = spot(), w = menu.offsetWidth, h = menu.offsetHeight;
+  const x = s.x - w / 2, y = s.y - h - 34;
+  Object.assign(menu.style, { left: x + 'px', top: y + 'px' });
+  setHole(x - 12, y - 12, w + 24, h + 24, 26);
+}
+function placeTimer() {
+  const s = spot();
+  Object.assign(timer.style, { left: s.x + 'px', top: s.y - 96 + 'px' });
+}
+function sizeWillow() {
+  const h = innerHeight * .44, w = h * 400 / 360;
+  Object.assign(willow.style, { width: w + 'px', height: h + 'px', left: -w / 2 + 'px' });
+}
+
+/* ---------- the start of the game ---------- */
+function stepClickMiddle() {
+  step = 1;
+  blocker.style.display = 'block';
+  holeOnSpot();
+  hole.classList.add('on'); msg.classList.add('on'); glove.classList.add('on');
+}
+
+blocker.addEventListener('mousemove', e => {
+  const s = spot();
+  blocker.style.cursor = step === 1 && Math.hypot(e.clientX - s.x, e.clientY - s.y) <= R() ? 'pointer' : 'default';
+});
+blocker.addEventListener('click', e => {
+  if (step !== 1) return;
+  const s = spot();
+  if (Math.hypot(e.clientX - s.x, e.clientY - s.y) > R()) return;
+  step = 2;
+  blocker.style.cursor = 'default';
+  msg.classList.remove('on'); glove.classList.remove('on');
+  holeOnMenu();
+  menu.classList.add('on');
+});
+
+btn.addEventListener('click', () => {
+  if (step !== 2) return;
+  step = 3;
+  btn.classList.add('gone');                 // the willow can only be planted once
+  spend(T.saplingCost);
+  setTimeout(() => {
+    menu.classList.remove('on'); hole.classList.remove('on');
+    setTimeout(() => { blocker.style.display = 'none'; plantSapling(); }, 450);
+  }, 600);
+});
+
+function plantSapling() {
+  const s = spot();
+  poof(s.x, s.y - 30, false);
+  sapling.animate([{ transform: 'scale(0)', opacity: 0 }, { transform: 'scale(1.15)', opacity: 1, offset: .7 },
+                   { transform: 'scale(1)', opacity: 1 }], { duration: 500, easing: 'ease-out', fill: 'forwards' });
+  placeTimer();
+  setTimeout(() => timer.classList.add('on'), 300);
+  timer.querySelector('.hand').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+                                       { duration: growMs, easing: 'linear', fill: 'forwards' });
+  const t0 = performance.now(), secs = $('secs');
+  const iv = setInterval(() => {
+    const left = Math.max(0, Math.ceil(T.growSeconds * (1 - (performance.now() - t0) / growMs)));
+    secs.textContent = left + (left === 1 ? ' second' : ' seconds');
+    if (left === 0) { clearInterval(iv); growWillow(); }
+  }, 100);
+}
+
+function growWillow() {
+  step = 4;
+  const s = spot();
+  timer.classList.remove('on');
+  poof(s.x, s.y - innerHeight * .12, true);
+  sapling.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+  willow.animate([{ transform: 'scale(.15)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: .7 },
+                  { transform: 'scale(1)', opacity: 1 }],
+                 { duration: 900, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+  growRoots();
+}
+
+addEventListener('resize', () => {
+  sizeWillow();
+  if (step === 1) holeOnSpot();
+  if (step === 2) holeOnMenu();
+  if (step === 3) placeTimer();
+});
+
+buildWillow(); sizeWillow(); buildSoil();
+setTimeout(stepClickMiddle, T.darkenAfter);
+</script>
+</body>
+</html>
