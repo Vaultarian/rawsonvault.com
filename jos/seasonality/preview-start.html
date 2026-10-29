@@ -108,28 +108,29 @@ html, body {
 }
 
 #menu {
-  position: fixed; z-index: 24; width: 290px; padding: 14px;
+  position: fixed; z-index: 24; width: 310px; padding: 14px;
   border-radius: 16px; background: #fffdf7; box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
   opacity: 0; transform: scale(.9); pointer-events: none;
   transition: opacity .35s ease, transform .35s ease;
 }
 #menu.on { opacity: 1; transform: scale(1); pointer-events: auto; }
 #menu .row {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
-}
-#menu .title { font-size: 21px; font-weight: 700; color: #2d5a1e; }
-#menu .cost {
-  font-size: 16px; font-weight: 600; color: #6b4a22;
-  background: #f3e6cf; padding: 4px 10px; border-radius: 999px;
-}
-#willowBtn {
-  display: block; width: 100%; padding: 12px; border: 0; border-radius: 12px;
-  background: #3fa34d; border-bottom: 4px solid #2c7a37; color: #fff;
-  font: 600 20px 'Fredoka', system-ui, sans-serif; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
   transition: opacity .5s ease, transform .5s ease;
 }
-#willowBtn:hover { background: #47b356; }
-#willowBtn.gone { opacity: 0; transform: scale(.85); pointer-events: none; }
+#menu .row + .row { margin-top: 10px; }
+#menu .row.gone { opacity: 0; transform: scale(.85); pointer-events: none; }
+#menu .cost {
+  font-size: 16px; font-weight: 600; color: #6b4a22; white-space: nowrap;
+  background: #f3e6cf; padding: 4px 10px; border-radius: 999px;
+}
+.pick {
+  flex: 1; padding: 11px 8px; border: 0; border-radius: 12px;
+  background: #3fa34d; border-bottom: 4px solid #2c7a37; color: #fff;
+  font: 600 19px 'Fredoka', system-ui, sans-serif; cursor: pointer;
+}
+.pick:hover { background: #47b356; }
+.pick:disabled { background: #c4c4c4; border-bottom-color: #a2a2a2; color: #f4f4f4; cursor: not-allowed; }
 
 /* ---------- the growing clock ---------- */
 #timer {
@@ -216,10 +217,13 @@ html, body {
 
 <div id="menu">
   <div class="row">
-    <span class="title">Plant Sapling</span>
+    <button class="pick" id="saplingBtn" disabled>Plant Sapling</button>
     <span class="cost">🌰 10 seeds</span>
   </div>
-  <button id="willowBtn">Plant Willow</button>
+  <div class="row" id="willowRow">
+    <button class="pick" id="willowBtn">Plant Willow</button>
+    <span class="cost">🌰 50 seeds</span>
+  </div>
 </div>
 
 <div id="timer" class="box"><div class="clock"><div class="hand"></div></div><span id="secs">30 seconds</span></div>
@@ -228,7 +232,8 @@ html, body {
 /* ---------- numbers to tune (milliseconds unless it says otherwise) ---------- */
 const T = {
   startSeeds:   70,     // the money you begin with
-  saplingCost:  10,     // seeds to plant a sapling
+  saplingCost:  10,     // seeds to plant a sapling (greyed out during the start)
+  willowCost:   50,     // seeds to plant the willow
   growSeconds:  30,     // sapling -> willow
   darkenAfter:  900,    // wait before the screen goes dark the first time
 };
@@ -437,8 +442,8 @@ blocker.addEventListener('click', e => {
 btn.addEventListener('click', () => {
   if (step !== 2) return;
   step = 3;
-  btn.classList.add('gone');                 // the willow can only be planted once
-  spend(T.saplingCost);
+  $('willowRow').classList.add('gone');      // the willow can only be planted once
+  spend(T.willowCost);
   setTimeout(() => {
     menu.classList.remove('on'); hole.classList.remove('on');
     setTimeout(() => { blocker.style.display = 'none'; plantSapling(); }, 450);
