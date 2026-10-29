@@ -45,13 +45,12 @@ html, body {
 }
 #under { position: absolute; left: 0; top: 0; }
 #under .root { fill: none; stroke: #e7d3a7; stroke-linecap: round; }
+#under .link { stroke: #f6e7c1; }
 
-/* the planting spot: a zero-size anchor sitting on the ground line */
-#plot { position: fixed; left: 50%; top: 75vh; width: 0; height: 0; z-index: 3; }
-#plot svg { position: absolute; bottom: 0; transform-origin: 50% 100%; }
-#sapling { opacity: 0; }
-#willow  { opacity: 0; }
-#willow .sway {
+/* every plant stands on a zero-size anchor sitting on the ground line */
+.plot { position: fixed; top: 75vh; width: 0; height: 0; z-index: 3; }
+.plot svg { position: absolute; bottom: 0; transform-origin: 50% 100%; opacity: 0; }
+.plot .sway {
   transform-box: view-box; transform-origin: 200px 110px;
   animation: sway 4.5s ease-in-out infinite;
 }
@@ -166,10 +165,11 @@ html, body {
 <div id="sun"></div>
 <div id="grass"></div>
 <div id="soil"><svg id="under"></svg></div>
+<div id="plants"></div>
 
-<div id="plot">
-  <!-- the sapling: brown stem, two green leaves -->
-  <svg id="sapling" viewBox="0 0 54 64" width="70" height="83" style="left:-35px">
+<!-- the sapling: brown stem, two green leaves. Copied for every new plant. -->
+<template id="saplingArt">
+  <svg viewBox="0 0 54 64" width="70" height="83" style="left:-35px">
     <ellipse cx="27" cy="61" rx="17" ry="5" fill="#5e3d20"/>
     <path d="M27,61 C27,50 24,42 28,28" stroke="#7a4b25" stroke-width="3.6" fill="none" stroke-linecap="round"/>
     <path d="M26.5,42 C18,41 11,34 12,26 C20,27 26,33 26.5,42 Z" fill="#5fb43a"/>
@@ -178,8 +178,26 @@ html, body {
     <path d="M28,32 C33,26 37,20 40.5,13.5" stroke="#86c962" stroke-width="1.2" fill="none"/>
     <path d="M28,28 C26,24 26,20 28,16 C30,20 30,24 28,28 Z" fill="#6fc246"/>
   </svg>
-  <svg id="willow" viewBox="0 0 400 360"></svg>
-</div>
+</template>
+
+<!-- a regular tree: smaller than the willow, round and leafy -->
+<template id="treeArt">
+  <svg viewBox="0 0 200 240">
+    <path d="M89,240 C93,212 94,186 92,162 C88,150 80,142 72,136 L78,130 C86,135 93,142 97,150
+             C98,140 98,132 96,122 L104,121 C106,132 106,142 104,152 C110,142 118,135 128,130 L132,137
+             C122,143 112,152 108,164 C106,190 107,214 113,240 Z"
+          fill="#7a4b25" stroke="#58341a" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M100,232 C101,214 100,196 102,180" stroke="#58341a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="100" cy="112" r="56" fill="#367a25"/>
+    <circle cx="60"  cy="112" r="40" fill="#43922f"/>
+    <circle cx="140" cy="110" r="42" fill="#43922f"/>
+    <circle cx="100" cy="80"  r="54" fill="#4fa636"/>
+    <circle cx="66"  cy="78"  r="30" fill="#5cb53f"/>
+    <circle cx="134" cy="82"  r="30" fill="#5cb53f"/>
+    <circle cx="86"  cy="58"  r="26" fill="#6fc64b" opacity=".85"/>
+    <circle cx="124" cy="66"  r="18" fill="#6fc64b" opacity=".7"/>
+  </svg>
+</template>
 
 <div id="hud"><span class="ic">🌰</span><b id="seeds">70</b><span>seeds</span></div>
 
@@ -232,36 +250,64 @@ html, body {
 /* ---------- numbers to tune (milliseconds unless it says otherwise) ---------- */
 const T = {
   startSeeds:   70,     // the money you begin with
-  saplingCost:  10,     // seeds to plant a sapling (greyed out during the start)
   willowCost:   50,     // seeds to plant the willow
-  growSeconds:  30,     // sapling -> willow
+  saplingCost:  10,     // seeds to plant a sapling
+  willowGrow:   30,     // seconds, sapling -> willow
+  treeGrow:     15,     // seconds, sapling -> regular tree
   darkenAfter:  900,    // wait before the screen goes dark the first time
+  darkenAgain:  2200,   // wait after the willow appears before it goes dark again
 };
-// ?fast shrinks the 30 seconds to 4, for testing. The clock still counts from 30.
+// ?fast squeezes the growing time down, for testing. The clock still counts the real seconds.
 const FAST = new URLSearchParams(location.search).has('fast');
-const growMs = (FAST ? 4 : T.growSeconds) * 1000;
 
 const $ = id => document.getElementById(id);
 const blocker = $('blocker'), hole = $('hole'), msg = $('msg'), glove = $('glove');
-const menu = $('menu'), btn = $('willowBtn'), timer = $('timer');
-const sapling = $('sapling'), willow = $('willow');
+const menu = $('menu'), timer = $('timer'), hand = timer.querySelector('.hand');
 
 let seeds = T.startSeeds;
 $('seeds').textContent = seeds;
-let step = 0;
+let step = 'start';
 
-const R = () => Math.min(80, innerHeight * .09);          // radius of the bright circle
-const spot = () => ({ x: innerWidth / 2, y: innerHeight * .75 });
+/* where things go. The willow is in the middle; the first tree is beside it, to the right. */
+const ground = () => innerHeight * .75;
+const willowSpot = () => ({ x: innerWidth / 2, y: ground() });
+const treeSpot   = () => ({ x: innerWidth / 2 + innerHeight * .38, y: ground() });
+let target = willowSpot;                      // the spot the glove is pointing at right now
+const R = () => Math.min(80, innerHeight * .09);   // radius of the bright circle
 
-/* same "random" every time, so the willow and roots always look the same */
+/* same "random" every time, so the trees and roots always look the same */
 function seeded(n) {
   return () => { n |= 0; n = n + 0x6D2B79F5 | 0;
     let t = Math.imul(n ^ n >>> 15, 1 | n); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
     return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
 
-/* ---------- the willow ---------- */
-function buildWillow() {
+/* ---------- plants ---------- */
+const plots = [];
+function makePlot(at, kind) {
+  const el = document.createElement('div');
+  el.className = 'plot';
+  $('plants').appendChild(el);
+  const p = { el, at, kind };
+  plots.push(p); placePlot(p);
+  return p;
+}
+function placePlot(p) {
+  p.el.style.left = p.at().x + 'px';
+  if (p.art) sizeArt(p);
+}
+function sizeArt(p) {
+  // the willow is the big one; a regular tree is about half its height
+  const h = innerHeight * (p.kind === 'willow' ? .44 : .24);
+  const w = h * (p.kind === 'willow' ? 400 / 360 : 200 / 240);
+  Object.assign(p.art.style, { width: w + 'px', height: h + 'px', left: -w / 2 + 'px' });
+}
+const pop = el => el.animate(
+  [{ transform: 'scale(.15)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: .7 },
+   { transform: 'scale(1)', opacity: 1 }],
+  { duration: 800, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+
+function willowArt() {
   const rnd = seeded(7), cx = 200;
   const greens = ['#3d7a27', '#4b8f2f', '#5aa437', '#6db842', '#83c94f'];
   let back = '', front = '';
@@ -279,10 +325,10 @@ function buildWillow() {
                    `<path d="${d}" stroke="${leafy}" stroke-width="${(w + 3).toFixed(1)}" stroke-dasharray="5 5"/>`;
     if (i % 2) back += strand; else front += strand;
   }
-  willow.innerHTML = `
-    <g fill="none" stroke-linecap="round">
-      <g class="sway">${back}</g>
-    </g>
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 400 360');
+  svg.innerHTML = `
+    <g fill="none" stroke-linecap="round"><g class="sway">${back}</g></g>
     <path d="M176,360 C186,320 190,280 186,240 C183,215 170,195 150,178 L158,170 C176,184 189,198 195,214
              C197,190 194,168 186,146 L198,142 C206,166 208,190 205,214 C213,194 226,180 246,166 L253,174
              C234,190 220,206 214,232 C210,270 214,318 226,360 Z"
@@ -294,51 +340,72 @@ function buildWillow() {
     <ellipse cx="200" cy="90" rx="112" ry="60" fill="#579f35"/>
     <ellipse cx="168" cy="72" rx="60" ry="32" fill="#6db842" opacity=".8"/>
     <ellipse cx="242" cy="80" rx="48" ry="26" fill="#6db842" opacity=".7"/>
-    <g fill="none" stroke-linecap="round">
-      <g class="sway">${front}</g>
-    </g>`;
+    <g fill="none" stroke-linecap="round"><g class="sway">${front}</g></g>`;
+  return svg;
 }
 
-/* ---------- soil: pebbles always, roots once the willow is up ---------- */
-function buildSoil() {
-  const W = innerWidth, H = innerHeight * .25, cx = W / 2;
-  const under = $('under');
+/* ---------- roots ----------
+   Each plant has its own roots, and every new plant gets a root running to it from the
+   willow. They are kept in a list so they can all be redrawn if the window changes size. */
+const rootSets = [];
+const bez = (a, b, c, d, t) => { const u = 1 - t; return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d; };
+
+function ownRoots(cx, H, reach, depth, angles, width, seed) {
+  const rnd = seeded(seed);
+  let out = '';
+  for (const deg of angles) {
+    const a = deg * Math.PI / 180;
+    const ex = cx + reach * Math.sin(a) * (.7 + rnd() * .3);
+    const ey = Math.min(H - 10, depth * Math.cos(a) * (.7 + rnd() * .3) + 14);
+    const c1x = cx + (ex - cx) * .15, c1y = ey * .6 + rnd() * 10;
+    const c2x = cx + (ex - cx) * .6 + (rnd() * 20 - 10), c2y = ey * .9;
+    out += `<path class="root" style="stroke-width:${width}" d="M${cx.toFixed(1)},0 C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}"/>`;
+    // one smaller root branching off the middle of each big one
+    const mx = bez(cx, c1x, c2x, ex, .5), my = bez(0, c1y, c2y, ey, .5);
+    const b = a + (rnd() < .5 ? -1 : 1) * .55, bl = Math.hypot(ex - cx, ey) * .32;
+    const bx = mx + Math.sin(b) * bl, by = Math.min(H - 6, my + Math.cos(b) * bl * .5 + 8);
+    out += `<path class="root late" style="stroke-width:${(width * .52).toFixed(1)}" d="M${mx.toFixed(1)},${my.toFixed(1)} Q${((mx + bx) / 2).toFixed(1)},${((my + by) / 2 + 8).toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}"/>`;
+  }
+  return out;
+}
+
+function rootsFor(r, H) {
+  if (r.kind === 'willow')
+    return ownRoots(r.at().x, H, innerHeight * .3, H * .85, [-80, -57, -33, -11, 12, 35, 58, 81], 5, 3);
+  if (r.kind === 'tree')
+    return ownRoots(r.at().x, H, innerHeight * .12, H * .5, [-70, -38, -8, 22, 52, 78], 3.2, r.seed);
+  // a link: from the willow's base, down through the soil, and up into the new plant
+  const x1 = r.from().x, x2 = r.to().x, dx = x2 - x1;
+  return `<path class="root link" style="stroke-width:5.5" d="M${x1.toFixed(1)},2 C${(x1 + dx * .2).toFixed(1)},${(H * .6).toFixed(1)} ${(x2 - dx * .3).toFixed(1)},${(H * .55).toFixed(1)} ${x2.toFixed(1)},2"/>`;
+}
+
+function soilSize() {
+  const under = $('under'), W = innerWidth, H = innerHeight * .25;
   under.setAttribute('width', W); under.setAttribute('height', H);
   under.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  const rnd = seeded(3);
+  return [W, H];
+}
+function drawSoil() {                        // everything at once, no animation
+  const [W, H] = soilSize(), rnd = seeded(5);
   let pebbles = '';
   for (let i = 0; i < 70; i++) {
     const shade = rnd() < .5 ? 'rgba(0,0,0,.2)' : 'rgba(255,235,200,.07)';
     pebbles += `<ellipse cx="${(rnd() * W).toFixed(0)}" cy="${(8 + rnd() * (H - 12)).toFixed(0)}" rx="${(2 + rnd() * 5).toFixed(1)}" ry="${(1.5 + rnd() * 3).toFixed(1)}" fill="${shade}"/>`;
   }
-  const bez = (a, b, c, d, t) => { const u = 1 - t; return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d; };
-  let roots = '';
-  for (const deg of [-80, -57, -33, -11, 12, 35, 58, 81]) {
-    const a = deg * Math.PI / 180;
-    const len = H * (.9 + rnd() * .5) * (1 + Math.abs(deg) / 90 * 2.2);
-    const ex = cx + Math.sin(a) * len, ey = Math.min(H - 10, Math.cos(a) * len * .5 + 14);
-    const c1x = cx + Math.sin(a) * len * .2, c1y = ey * .6 + rnd() * 10;
-    const c2x = cx + Math.sin(a) * len * .65 + (rnd() * 30 - 15), c2y = ey * .85;
-    roots += `<path class="root" data-w="5" d="M${cx},0 C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}"/>`;
-    // one smaller root branching off the middle of each big one
-    const mx = bez(cx, c1x, c2x, ex, .5), my = bez(0, c1y, c2y, ey, .5);
-    const b = a + (rnd() < .5 ? -1 : 1) * .55, bl = len * .32;
-    const bx = mx + Math.sin(b) * bl, by = Math.min(H - 6, my + Math.cos(b) * bl * .5 + 8);
-    roots += `<path class="root" data-w="2.6" data-late="1" d="M${mx.toFixed(1)},${my.toFixed(1)} Q${((mx + bx) / 2).toFixed(1)},${((my + by) / 2 + 8).toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}"/>`;
-  }
-  under.innerHTML = pebbles + `<g id="roots" style="display:none">${roots}</g>`;
-  under.querySelectorAll('.root').forEach(p => {
-    p.style.strokeWidth = p.dataset.w;
+  $('under').innerHTML = pebbles + rootSets.map(r => `<g>${rootsFor(r, H)}</g>`).join('');
+}
+function growRoots(r) {                      // add one set and let it grow out
+  rootSets.push(r);
+  const [, H] = soilSize();
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.innerHTML = rootsFor(r, H);
+  $('under').appendChild(g);
+  const secs = r.kind === 'link' ? 2.2 : 1.6;
+  g.querySelectorAll('.root').forEach(p => {
     const L = p.getTotalLength();
     p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
-  });
-}
-
-function growRoots() {
-  const g = $('roots'); g.style.display = '';
-  g.querySelectorAll('.root').forEach(p => {
     p.getBoundingClientRect();
-    p.style.transition = `stroke-dashoffset 1.6s ease-out ${p.dataset.late ? .9 : .15}s`;
+    p.style.transition = `stroke-dashoffset ${secs}s ease-out ${p.classList.contains('late') ? .9 : .15}s`;
     p.style.strokeDashoffset = 0;
   });
 }
@@ -390,104 +457,133 @@ function spend(n) {
             { duration: 1100, easing: 'ease-out' }).onfinish = () => m.remove();
 }
 
-/* ---------- placing things ---------- */
+/* ---------- the dark screen, the glove and the menu ---------- */
 function setHole(x, y, w, h, radius) {
   Object.assign(hole.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: radius + 'px' });
 }
 function holeOnSpot() {
-  const s = spot(), r = R();
+  const s = target(), r = R();
   setHole(s.x - r, s.y - r, 2 * r, 2 * r, r);
   Object.assign(msg.style, { left: s.x + 'px', top: s.y - r - 16 + 'px' });
   const gw = 64, gh = gw * 130 / 100;
   Object.assign(glove.style, { left: s.x - .47 * gw + 'px', top: s.y - .03 * gh + 'px' });
 }
 function holeOnMenu() {
-  const s = spot(), w = menu.offsetWidth, h = menu.offsetHeight;
-  const x = s.x - w / 2, y = s.y - h - 34;
+  const s = target(), w = menu.offsetWidth, h = menu.offsetHeight;
+  const x = Math.min(innerWidth - w - 16, Math.max(16, s.x - w / 2)), y = s.y - h - 34;
   Object.assign(menu.style, { left: x + 'px', top: y + 'px' });
   setHole(x - 12, y - 12, w + 24, h + 24, 26);
 }
-function placeTimer() {
-  const s = spot();
-  Object.assign(timer.style, { left: s.x + 'px', top: s.y - 96 + 'px' });
-}
-function sizeWillow() {
-  const h = innerHeight * .44, w = h * 400 / 360;
-  Object.assign(willow.style, { width: w + 'px', height: h + 'px', left: -w / 2 + 'px' });
-}
 
-/* ---------- the start of the game ---------- */
-function stepClickMiddle() {
-  step = 1;
+function showHint(text, spot, next) {        // darken, point the glove at a spot
+  step = next; target = spot;
+  msg.textContent = text;
   blocker.style.display = 'block';
   holeOnSpot();
   hole.classList.add('on'); msg.classList.add('on'); glove.classList.add('on');
 }
-
-blocker.addEventListener('mousemove', e => {
-  const s = spot();
-  blocker.style.cursor = step === 1 && Math.hypot(e.clientX - s.x, e.clientY - s.y) <= R() ? 'pointer' : 'default';
-});
-blocker.addEventListener('click', e => {
-  if (step !== 1) return;
-  const s = spot();
-  if (Math.hypot(e.clientX - s.x, e.clientY - s.y) > R()) return;
-  step = 2;
+function openMenu(next) {
+  step = next;
   blocker.style.cursor = 'default';
   msg.classList.remove('on'); glove.classList.remove('on');
   holeOnMenu();
   menu.classList.add('on');
+}
+function closeMenu(then) {
+  menu.classList.remove('on'); hole.classList.remove('on');
+  setTimeout(() => { blocker.style.display = 'none'; then(); }, 450);
+}
+
+const onSpot = e => { const s = target(); return Math.hypot(e.clientX - s.x, e.clientY - s.y) <= R(); };
+blocker.addEventListener('mousemove', e => {
+  blocker.style.cursor = (step === 'click-middle' || step === 'click-beside') && onSpot(e) ? 'pointer' : 'default';
+});
+blocker.addEventListener('click', e => {
+  if (!onSpot(e)) return;
+  if (step === 'click-middle') openMenu('menu-willow');
+  if (step === 'click-beside') {
+    $('willowRow').style.display = 'none';   // only one willow, ever
+    $('saplingBtn').disabled = false;
+    openMenu('menu-sapling');
+  }
 });
 
-btn.addEventListener('click', () => {
-  if (step !== 2) return;
-  step = 3;
-  $('willowRow').classList.add('gone');      // the willow can only be planted once
-  spend(T.willowCost);
-  setTimeout(() => {
-    menu.classList.remove('on'); hole.classList.remove('on');
-    setTimeout(() => { blocker.style.display = 'none'; plantSapling(); }, 450);
-  }, 600);
-});
-
-function plantSapling() {
-  const s = spot();
+/* ---------- growing: sapling, clock, poof, grown plant ---------- */
+let handAnim = null;
+function growSapling(p, seconds, done) {
+  const s = p.at();
   poof(s.x, s.y - 30, false);
-  sapling.animate([{ transform: 'scale(0)', opacity: 0 }, { transform: 'scale(1.15)', opacity: 1, offset: .7 },
-                   { transform: 'scale(1)', opacity: 1 }], { duration: 500, easing: 'ease-out', fill: 'forwards' });
-  placeTimer();
+  const sap = $('saplingArt').content.firstElementChild.cloneNode(true);
+  p.el.appendChild(sap);
+  pop(sap);
+  Object.assign(timer.style, { left: s.x + 'px', top: s.y - 96 + 'px' });
+  const label = n => n + (n === 1 ? ' second' : ' seconds');
+  $('secs').textContent = label(seconds);
   setTimeout(() => timer.classList.add('on'), 300);
-  timer.querySelector('.hand').animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
-                                       { duration: growMs, easing: 'linear', fill: 'forwards' });
-  const t0 = performance.now(), secs = $('secs');
+  const ms = (FAST ? seconds * .13 : seconds) * 1000;
+  if (handAnim) handAnim.cancel();
+  handAnim = hand.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+                          { duration: ms, easing: 'linear', fill: 'forwards' });
+  const t0 = performance.now();
   const iv = setInterval(() => {
-    const left = Math.max(0, Math.ceil(T.growSeconds * (1 - (performance.now() - t0) / growMs)));
-    secs.textContent = left + (left === 1 ? ' second' : ' seconds');
-    if (left === 0) { clearInterval(iv); growWillow(); }
+    const left = Math.max(0, Math.ceil(seconds * (1 - (performance.now() - t0) / ms)));
+    $('secs').textContent = label(left);
+    if (left > 0) return;
+    clearInterval(iv);
+    timer.classList.remove('on');
+    sap.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }).onfinish = () => sap.remove();
+    done();
   }, 100);
 }
 
-function growWillow() {
-  step = 4;
-  const s = spot();
-  timer.classList.remove('on');
-  poof(s.x, s.y - innerHeight * .12, true);
-  sapling.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
-  willow.animate([{ transform: 'scale(.15)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: .7 },
-                  { transform: 'scale(1)', opacity: 1 }],
-                 { duration: 900, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
-  growRoots();
+function grown(p, art) {
+  const s = p.at();
+  poof(s.x, s.y - innerHeight * (p.kind === 'willow' ? .12 : .08), true);
+  p.art = art;
+  p.el.appendChild(art);
+  sizeArt(p);
+  pop(art);
 }
 
-addEventListener('resize', () => {
-  sizeWillow();
-  if (step === 1) holeOnSpot();
-  if (step === 2) holeOnMenu();
-  if (step === 3) placeTimer();
+$('willowBtn').addEventListener('click', () => {
+  if (step !== 'menu-willow') return;
+  step = 'growing-willow';
+  $('willowRow').classList.add('gone');      // the willow can only be planted once
+  spend(T.willowCost);
+  setTimeout(() => closeMenu(() => {
+    const p = makePlot(willowSpot, 'willow');
+    growSapling(p, T.willowGrow, () => {
+      grown(p, willowArt());
+      growRoots({ kind: 'willow', at: willowSpot });
+      setTimeout(() => showHint('Click beside the tree', treeSpot, 'click-beside'), T.darkenAgain);
+    });
+  }), 600);
 });
 
-buildWillow(); sizeWillow(); buildSoil();
-setTimeout(stepClickMiddle, T.darkenAfter);
+$('saplingBtn').addEventListener('click', () => {
+  if (step !== 'menu-sapling') return;
+  step = 'growing-tree';
+  spend(T.saplingCost);
+  setTimeout(() => closeMenu(() => {
+    const p = makePlot(treeSpot, 'tree');
+    growRoots({ kind: 'link', from: willowSpot, to: treeSpot });   // the willow reaches out to it
+    growSapling(p, T.treeGrow, () => {
+      grown(p, $('treeArt').content.firstElementChild.cloneNode(true));
+      growRoots({ kind: 'tree', at: treeSpot, seed: 11 });         // and it grows its own
+      step = 'done';
+    });
+  }), 300);
+});
+
+addEventListener('resize', () => {
+  plots.forEach(placePlot);
+  drawSoil();
+  if (step === 'click-middle' || step === 'click-beside') holeOnSpot();
+  if (step === 'menu-willow' || step === 'menu-sapling') holeOnMenu();
+});
+
+drawSoil();
+setTimeout(() => showHint('Click on the middle of the screen', willowSpot, 'click-middle'), T.darkenAfter);
 </script>
 </body>
 </html>
