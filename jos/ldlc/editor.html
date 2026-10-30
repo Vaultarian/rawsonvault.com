@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDLC Creator — Jos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== LDLC — Level Devil Level Creator =====
+   Jos's level creator. Pick a block on the left, click or drag on the grid to put it
+   down, then press TEST to play your level. The design is in DESIGN.md. */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family:'Nunito', sans-serif; color:#fff; user-select:none; overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%, #3a000c 0%, #14000a 60%, #000 100%);
+  display:flex; flex-direction:column;
+}
+button {
+  font-family:'Fredoka One', cursive; font-size:1rem; color:#fff; cursor:pointer;
+  border:none; border-radius:12px; padding:.5rem 1rem;
+  background:#3a0010; box-shadow:0 3px 0 #000;
+}
+button:hover { background:#5a0018; }
+button:active { transform:translateY(2px); box-shadow:0 1px 0 #000; }
+button.on { background:#ff2a3d; }
+button.soon { opacity:.45; }
+
+/* ---------- top bar ---------- */
+#topbar {
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+  padding:10px 16px; background:#0c0006; border-bottom:2px solid #ff2a3d55;
+}
+.back-link {
+  font-family:'Fredoka One', cursive; color:#ffffff66; text-decoration:none; margin-right:.6rem;
+}
+.back-link:hover { color:#fff; }
+.title { font-family:'Fredoka One', cursive; font-size:1.4rem; color:#ff2a3d; margin-right:1rem;
+         text-shadow:0 0 14px rgba(255,42,61,.5); }
+.spacer { flex:1; }
+#deaths { font-family:'Fredoka One', cursive; color:#ffb3ba; font-size:1.1rem; margin-right:.5rem; }
+#testBtn { background:#2e9e4f; font-size:1.15rem; padding:.55rem 1.4rem; }
+#testBtn:hover { background:#38c261; }
+#testBtn.stop { background:#ff2a3d; }
+
+/* ---------- blocks down the left ---------- */
+#body { flex:1; display:flex; min-height:0; }
+#palette {
+  width:176px; background:#0c0006; border-right:2px solid #ff2a3d33;
+  overflow-y:auto; padding:8px; display:grid; grid-template-columns:1fr 1fr;
+  gap:6px; align-content:start;
+  scrollbar-width:thin; scrollbar-color:#ff2a3d55 transparent;
+}
+#palette h3 { grid-column:1 / -1; font-family:'Fredoka One', cursive; font-size:.7rem; letter-spacing:1px;
+              color:#ff8a94; text-align:center; margin:4px 0 2px; }
+.block {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:6px 2px; border-radius:10px; background:#1c0008; box-shadow:none;
+  font-family:'Nunito', sans-serif; font-weight:900; font-size:.72rem; line-height:1.1;
+}
+.block canvas { width:40px; height:40px; }
+.block .soon-tag { font-size:.6rem; color:#ff8a94; }
+.block.on { background:#ff2a3d; }
+
+/* ---------- the level ---------- */
+#stageWrap { flex:1; display:flex; align-items:center; justify-content:center;
+             padding:16px 16px 70px; min-width:0; }
+#level { display:block; border-radius:6px; box-shadow:0 0 0 2px #ff2a3d66, 0 0 40px rgba(255,42,61,.25); }
+body.testing #palette { pointer-events:none; opacity:.35; }
+body.testing .tool { pointer-events:none; opacity:.35; }
+
+#toast {
+  position:fixed; left:50%; top:0; z-index:300;
+  transform:translate(-50%, -150%); transition:transform .3s cubic-bezier(.3,1.6,.5,1);
+  background:#ff2a3d; color:#fff; font-family:'Fredoka One', cursive; font-size:1.2rem;
+  padding:.7rem 1.4rem; border-radius:999px; box-shadow:0 6px 0 #7a0012; white-space:nowrap;
+}
+#toast.show { transform:translate(-50%, 70px); }
+#toast.win { background:#2e9e4f; box-shadow:0 6px 0 #145a28; }
+</style>
+</head>
+<body>
+
+  <div id="topbar">
+    <a class="back-link" href="index.html">← Back</a>
+    <span class="title">LDLC CREATOR</span>
+    <button class="tool soon" data-tool="cursor">🖱 Cursor</button>
+    <button class="tool soon" data-tool="select">✋ Select blocks</button>
+    <button class="tool soon" data-tool="link">🔗 Trigger to block</button>
+    <button class="tool" data-tool="erase">🧽 Eraser</button>
+    <span class="spacer"></span>
+    <span id="deaths"></span>
+    <button class="tool" id="clearBtn">🗑 Clear</button>
+    <button id="testBtn">▶ TEST</button>
+  </div>
+
+  <div id="body">
+    <div id="palette"><h3>BLOCKS</h3></div>
+    <div id="stageWrap"><canvas id="level"></canvas></div>
+  </div>
+
+  <div id="toast"></div>
+
+<script src="editor.js"></script>
+</body>
+</html>
