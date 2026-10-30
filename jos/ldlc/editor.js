@@ -17,7 +17,7 @@ const T = {
   respawn:    0.6,   // seconds before he tries again
   springBoot: 22,    // how hard a spring boots you up
   sawSpin:    8,     // how fast a sawblade spins
-  moveSpeed:  2,     // Movement speed 1 = 2 blocks a second, speed 2 = 4, and so on
+  moveSpeed:  .22,   // Movement speed 1 = 0.22 blocks a second, measured from Jos's recording
   portalFlip: 0.30   // Jos: the portal switches colours every 0.30 seconds
 };
 
@@ -742,7 +742,7 @@ function actionBox(link, a, j, target) {
     box.append(row('Go', pick([['left', 'Left'], ['right', 'Right'], ['up', 'Up'], ['down', 'Down']], a.dir,
                               v => { a.dir = v; save(); })));
     box.append(row('How many blocks', number(a.n, 1, 31, 1, v => { a.n = v; save(); })));
-    box.append(row('Speed', number(a.speed, 1, 10, 1, v => { a.speed = v; save(); })));
+    box.append(row('Speed', number(a.speed, 1, 50, 1, v => { a.speed = v; save(); })));
   }
   if (a.do === 'props') {
     box.append(el('div', { className:'p-mini', textContent:'New properties' }));

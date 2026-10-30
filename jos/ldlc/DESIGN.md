@@ -160,7 +160,9 @@ Click a block with the cursor and you see its properties, each with a little swi
 - In Trigger to block, **click a connected block again to disconnect it.**
 - Pressing **Done** opens the **last block you connected**, ready for + Add.
 - The trigger's own properties list the blocks it's connected to. Click one to go to it.
-- **Speed 1 = 2 blocks a second.** Speed goes up to 10.
+- **Speed 1 = about 0.22 blocks a second.** Jos sent a recording of how fast speed 1 is; Carl
+  measured the yellow lines in it (6.5 pixels a second, with 30 pixels between grid lines).
+  Speed goes up to **50** (about 11 blocks a second), so traps can still be fast.
 - A block that changes size **grows from its bottom middle**, so it stays on the floor.
 - Portals pair up **in the order you put them down**: the 1st and 2nd are a pair, then the 3rd and
   4th. **Show portal connections** gives each pair a number and a dotted line. A portal with no
