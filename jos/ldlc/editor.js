@@ -34,7 +34,7 @@ const BLOCKS = [
   { id:'portal',     name:'Portal',        ready:true },
   { id:'trigger',    name:'Trigger',       ready:true },
   { id:'button',     name:'Button',        ready:true },
-  { id:'controls',   name:'Edit controls' }
+  { id:'controls',   name:'Edit controls', ready:true }
 ];
 const NAME = {};
 BLOCKS.forEach(b => { NAME[b.id] = b.name; });
@@ -49,6 +49,7 @@ const DEFAULTS = {
   spring:     { collision:false, deadly:false, action:true },
   coin:       { collision:false, deadly:false, action:true },
   trigger:    { visible:false, action:true },   // Jos: invisible when you play, like G-dash
+  controls:   { visible:false, action:true },   // Jos: like the trigger, but it changes the controls
   button:     { collision:false, deadly:false, action:true },
   portal:     { collision:false, deadly:false, action:true }
 };
@@ -58,6 +59,12 @@ const HITBOX = {
   smallspike: [.32, .7,  .36, .3]
 };
 const ONLY_ONE = ['hero', 'door'];   // placing another one moves it
+
+/* the normal controls. An Edit controls block swaps these for its own when you touch it.
+   Jos: keys don't all have to be different, and the hero can be set to always go one way
+   (auto: -1 = always left, 1 = always right). */
+const CONTROLS = { left:['ArrowLeft', 'KeyA'], right:['ArrowRight', 'KeyD'],
+                   up:['ArrowUp', 'Space', 'KeyW'], auto:0 };
 
 /* ---------- the level ---------- */
 const SAVE_KEY = 'jos-ldlc-level';
@@ -171,6 +178,22 @@ function drawTrigger(c, x, y, s) {
   c.lineTo(x + s * .54, y + s * .6); c.lineTo(x + s * .46, y + s * .6);
   c.fill();
   c.fillRect(x + s * .44, y + s * .67, s * .12, s * .12);
+}
+function drawControls(c, x, y, s) {
+  /* Jos: like the trigger, but with left, right, up and down arrows instead of the "!" */
+  c.fillStyle = COL.green;
+  roundRect(c, x + s * .08, y + s * .08, s * .84, s * .84, s * .12); c.fill();
+  c.fillStyle = '#000';
+  const m = .5, a = .13, d = .3;            // middle, arrow size, how far out each arrow sits
+  const tri = (x1, y1, x2, y2, x3, y3) => {
+    c.beginPath();
+    c.moveTo(x + s * x1, y + s * y1); c.lineTo(x + s * x2, y + s * y2); c.lineTo(x + s * x3, y + s * y3);
+    c.fill();
+  };
+  tri(m, m - d, m - a, m - d + a, m + a, m - d + a);   // up
+  tri(m, m + d, m - a, m + d - a, m + a, m + d - a);   // down
+  tri(m - d, m, m - d + a, m - a, m - d + a, m + a);   // left
+  tri(m + d, m, m + d - a, m - a, m + d - a, m + a);   // right
 }
 function drawButton(c, x, y, s) {
   /* Jos's button: a dome on a base. Brown, not green. */
@@ -286,6 +309,7 @@ function drawBlock(c, type, x, y, s, time) {
   else if (type === 'coin') drawCoin(c, x, y, s, time);
   else if (type === 'oneway') drawOneWay(c, x, y, s);
   else if (type === 'trigger') drawTrigger(c, x, y, s);
+  else if (type === 'controls') drawControls(c, x, y, s);
   else if (type === 'button') drawButton(c, x, y, s);
   else if (type === 'door') drawDoor(c, x, y, s);
   else if (type === 'portal') drawPortal(c, x, y, s, time);
@@ -328,10 +352,6 @@ function drawIcons(time) {
     c.clearRect(0, 0, 80, 80);
     if (id === 'hero') drawHero(c, 31, 12, 60, 1, Math.floor(time / .25) % 2);   // running on the spot
     else drawBlock(c, id, 8, 8, 64, time);
-    if (id === 'controls') {                     // Jos hasn't said what this one looks like yet
-      c.fillStyle = '#ff8a94'; c.font = 'bold 40px Nunito'; c.textAlign = 'center';
-      c.fillText('?', 40, 54);
-    }
   });
 }
 
@@ -578,11 +598,13 @@ function step(dt) {
     if (p.wonT > DOOR.shut + DOOR.sink + 0.3) stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
-  const left  = keys.ArrowLeft || keys.KeyA;
-  const right = keys.ArrowRight || keys.KeyD;
-  const up    = keys.ArrowUp || keys.Space || keys.KeyW;
+  const ctl = p.controls || CONTROLS;
+  const held  = list => list.some(k => keys[k]);
+  const left  = held(ctl.left);
+  const right = held(ctl.right);
+  const up    = held(ctl.up);
 
-  p.vx = ((right ? 1 : 0) - (left ? 1 : 0)) * T.speed;
+  p.vx = (ctl.auto || ((right ? 1 : 0) - (left ? 1 : 0))) * T.speed;
   if (p.vx) p.face = Math.sign(p.vx);
   if (up && p.ground) { p.vy = -T.jump; p.ground = false; p.booted = false; }
   if (!up && !p.booted && p.vy < -T.jump * .4) p.vy = -T.jump * .4;   // let go early = smaller jump
@@ -656,6 +678,11 @@ function step(dt) {
         bits.push({ x:cx + .5, y:cy + .5, vx:(Math.random() - .5) * 6, vy:-3 - Math.random() * 4,
                     life:.5, col:COL.gold });
       }
+    }
+
+    if (c.t === 'controls' && pr.action) {
+      // touching an Edit controls block swaps in its controls (set in Block properties)
+      p.controls = Object.assign({}, CONTROLS, c.controls || {});
     }
 
     if (c.t === 'door' && boxesTouch(p.x, p.y, W, H, cx + .2, cy + .2, .6, .8)) {

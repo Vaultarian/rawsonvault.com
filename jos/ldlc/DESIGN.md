@@ -52,6 +52,7 @@ Jos sent a picture of each block. Carl drew them in LDLC's colours. The pictures
 | **One way** | three short dashes | jump up through it, you don't go back down |
 | **Trigger** | a green square with a black **!** | **invisible when you play**, "like a trigger in G-dash" |
 | **Button** | a dome, **brown** (not green) | (connects to blocks, still to build) |
+| **Edit controls** | like the trigger, but with **← → ↑ ↓ arrows** instead of the **!** | touch it and the controls change to what it's set to |
 
 **Do action** (Jos): any block that does something, like a spring or a coin, has a **Do action**
 switch in its properties. Turn it off and it doesn't do it: the spring won't boot you, the coin
@@ -64,6 +65,10 @@ won't collect.
 before LDLC goes on the website.
 
 ## The edit controls block
+
+**Its properties** (Jos): the controls settings below, **plus Do action and Visible.**
+(Carl's choice: it starts invisible, like the trigger.) It works when you touch it while playing,
+but the settings can only be changed once Block properties is built.
 
 Jos: it "will say left equals left arrow, right equals right arrow, up equals space or up
 arrow, and they can change that, and they don't all have to be different."
