@@ -347,11 +347,8 @@ function step(dt) {
     return;
   }
   if (p.state === 'won') {
-    const before = p.wonT;
     p.wonT += dt;
-    const gone = DOOR.shut + DOOR.sink;
-    if (before < gone && p.wonT >= gone) say('LEVEL COMPLETE! 🎉', true);
-    if (p.wonT > gone + 1.4) stopTest();
+    if (p.wonT > DOOR.shut + DOOR.sink + 0.6) stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
   const left  = keys.ArrowLeft || keys.KeyA;

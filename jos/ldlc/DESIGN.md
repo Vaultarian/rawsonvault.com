@@ -47,7 +47,7 @@ arrow, and they can change that, and they don't all have to be different."
 
 Jos showed Carl a video of how the door works: when you reach it, **it pulls you into the
 middle of the door**, **a shutter comes down over you**, and then **the whole door sinks into
-the ground**. Then LEVEL COMPLETE.
+the ground**. **No LEVEL COMPLETE message** (Jos said take it out); you go back to the creator.
 
 ## The tile
 
