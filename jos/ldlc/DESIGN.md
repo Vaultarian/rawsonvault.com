@@ -108,6 +108,32 @@ red edge only on the outside.
 - **Trigger to block**: connect a trigger or a button to a block.
 - **Eraser**.
 
+## The three tools, as Jos explained them (30 Oct)
+
+**Cursor**: "just click on a block and it shows its properties."
+
+**Select blocks**: "a box where you can just click and drag with your cursor and it shows a
+dotted box and it selects objects in it." Then you can move them and delete them.
+
+**Trigger to block**:
+
+1. A little message pops up from the top: **choose a trigger**. You click one of your triggers.
+2. It says **click on a block/blocks**. You click a block.
+3. Once you've clicked a block it says **done**, but you can still click other blocks too.
+
+When a trigger is connected to something, it has an **Add** button. Click it and it puts in
+**Do [blank ▾]**, and you choose **Change size**, **Movement** or **Change properties**:
+
+- **Change size**: it says **New size [blank]** and you choose a number.
+- **Movement**: **Left, Right, Up or Down** on one line, and on another line **how many blocks**
+  (it says 1, with up and down arrows to change it). It also says **Speed**, and you can change
+  that too. It starts on **Up, 1 block, speed 1**, and it shows **a little green dot where it
+  will go, with little yellow lines going to that green dot** at the speed it's going, "so you
+  can see how fast it's going and where it's going."
+- **Change properties**: it says **New properties** and gets the properties from that block.
+  "It's not always the same properties, so make the machine look what properties it has."
+  They come out with switches, and you turn them on and off.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
