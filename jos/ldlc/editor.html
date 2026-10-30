@@ -71,8 +71,18 @@ button.soon { opacity:.45; }
 #stageWrap { flex:1; display:flex; align-items:center; justify-content:center;
              padding:16px 16px 70px; min-width:0; }
 #level { display:block; border-radius:6px; box-shadow:0 0 0 2px #ff2a3d66, 0 0 40px rgba(255,42,61,.25); }
-body.testing #palette { pointer-events:none; opacity:.35; }
-body.testing .tool { pointer-events:none; opacity:.35; }
+
+/* ---------- TEST: the level fills the screen ---------- */
+body.testing #topbar, body.testing #palette { display:none; }
+body.testing #stageWrap { padding:0; }
+/* the site's Mods and Language buttons would sit on top of the door, so they hide while you play */
+body.testing #modsBtn, body.testing #modsPanel, body.testing #langBtn,
+body.testing #langPanel, body.testing #estFps { display:none !important; }
+body.testing #level { box-shadow:none; border-radius:0; }
+#testBar { position:fixed; top:14px; left:14px; z-index:200; display:none; align-items:center; gap:8px; }
+body.testing #testBar { display:flex; }
+#testBar button { font-size:1.3rem; padding:.35rem .7rem; }
+#mouth { position:fixed; inset:0; width:100%; height:100%; z-index:250; pointer-events:none; display:none; }
 
 #toast {
   position:fixed; left:50%; top:0; z-index:300;
@@ -94,7 +104,6 @@ body.testing .tool { pointer-events:none; opacity:.35; }
     <button class="tool soon" data-tool="link">🔗 Trigger to block</button>
     <button class="tool" data-tool="erase">🧽 Eraser</button>
     <span class="spacer"></span>
-    <span id="deaths"></span>
     <button class="tool" id="clearBtn">🗑 Clear</button>
     <button id="testBtn">▶ TEST</button>
   </div>
@@ -104,6 +113,12 @@ body.testing .tool { pointer-events:none; opacity:.35; }
     <div id="stageWrap"><canvas id="level"></canvas></div>
   </div>
 
+  <div id="testBar">
+    <button id="editBtn" title="Back to the creator">✏️</button>
+    <button id="restartBtn" title="Start again">🔄</button>
+    <span id="deaths"></span>
+  </div>
+  <canvas id="mouth"></canvas>
   <div id="toast"></div>
 
 <script src="editor.js"></script>

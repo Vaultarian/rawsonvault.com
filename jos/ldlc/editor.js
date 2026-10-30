@@ -254,7 +254,9 @@ let cell = 30, hover = null, painting = false;
 
 function fit() {
   const r = wrap.getBoundingClientRect();
-  cell = Math.max(10, Math.floor(Math.min((r.width - 32) / T.cols, (r.height - 86) / T.rows)));
+  const testing = document.body.classList.contains('testing');
+  const padX = testing ? 0 : 32, padY = testing ? 0 : 86;
+  cell = Math.max(10, Math.floor(Math.min((r.width - padX) / T.cols, (r.height - padY) / T.rows)));
   const dpr = window.devicePixelRatio || 1;
   cv.style.width = cell * T.cols + 'px';
   cv.style.height = cell * T.rows + 'px';
@@ -309,9 +311,12 @@ function startTest() {
   deaths = 0;
   deathsEl.textContent = '💀 0';
   spawn();
+  play.state = 'intro';           // nothing moves until the devil has opened its mouth
   document.body.classList.add('testing');
-  testBtn.textContent = '■ STOP';
-  testBtn.classList.add('stop');
+  fit();
+  intro = 0;
+  sizeMouth();
+  mouth.style.display = 'block';
 }
 function spawn() {
   const h = find('hero');
@@ -319,12 +324,82 @@ function spawn() {
            ground:false, state:'play', timer:0, face:1 };
 }
 function stopTest() {
-  play = null; bits = [];
+  play = null; bits = []; intro = null;
+  mouth.style.display = 'none';
   deathsEl.textContent = '';
   document.body.classList.remove('testing');
-  testBtn.textContent = '▶ TEST';
-  testBtn.classList.remove('stop');
+  fit();
 }
+document.getElementById('editBtn').addEventListener('click', e => { stopTest(); e.target.blur(); });
+document.getElementById('restartBtn').addEventListener('click', e => {
+  if (play && play.state !== 'intro') spawn();
+  e.target.blur();
+});
+
+/* ---------- pressing TEST: the devil blinks, then opens its mouth, and your level is inside ---------- */
+const mouth = document.getElementById('mouth');
+const mctx = mouth.getContext('2d');
+const INTRO = { blinkOff:0.45, blinkOn:0.6, teeth:0.85, open:1.05, done:1.6 };
+let intro = null;
+
+function sizeMouth() {
+  const dpr = window.devicePixelRatio || 1;
+  mouth.width = innerWidth * dpr;
+  mouth.height = innerHeight * dpr;
+  mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function drawMouth(t) {
+  const W = innerWidth, H = innerHeight, c = mctx;
+  c.clearRect(0, 0, W, H);
+  const k = Math.max(0, Math.min(1, (t - INTRO.open) / (INTRO.done - INTRO.open)));
+  const tooth = Math.max(40, W / 22), toothH = tooth * .9;
+  const gap = k * k * (H / 2 + toothH);    // starts slow, then the jaws fly open
+  const mid = H / 2;
+
+  // the two halves of the face
+  c.fillStyle = '#3a000c';
+  c.fillRect(0, 0, W, mid - gap);
+  c.fillRect(0, mid + gap, W, H - mid - gap);
+
+  // the eyes sit on the top half and go up with it
+  const eyesOn = t > 0.15 && (t < INTRO.blinkOff || t > INTRO.blinkOn);
+  if (eyesOn) {
+    const ey = H * .26 - gap, ew = W * .13, eh = ew * .55;
+    [W * .32, W * .68].forEach((ex, i) => {
+      c.save();
+      c.translate(ex, ey);
+      c.scale(i ? -1 : 1, 1);                 // the right eye is the left one flipped
+      c.shadowColor = '#ff2a3d'; c.shadowBlur = 30;
+      c.fillStyle = '#ff2a3d';
+      c.beginPath();                          // an angry eye: flat bottom, slanted top
+      c.moveTo(-ew / 2, -eh * .25);
+      c.lineTo(ew / 2, eh * .35);
+      c.quadraticCurveTo(ew / 2, eh, 0, eh);
+      c.quadraticCurveTo(-ew / 2, eh, -ew / 2, -eh * .25);
+      c.fill();
+      c.restore();
+    });
+  }
+
+  // white fangs, top row and bottom row, closed together then pulled apart
+  if (t > INTRO.teeth) {
+    c.fillStyle = '#f2f2f2';
+    for (let x = -tooth; x < W + tooth; x += tooth) {
+      c.beginPath();                          // top teeth point down
+      c.moveTo(x, mid - gap);
+      c.lineTo(x + tooth / 2, mid - gap + toothH);
+      c.lineTo(x + tooth, mid - gap);
+      c.fill();
+      const bx = x + tooth / 2;               // bottom teeth sit in the gaps
+      c.beginPath();
+      c.moveTo(bx, mid + gap);
+      c.lineTo(bx + tooth / 2, mid + gap - toothH);
+      c.lineTo(bx + tooth, mid + gap);
+      c.fill();
+    }
+  }
+}
+window.addEventListener('resize', sizeMouth);
 
 function solid(x, y) {
   if (x < 0 || x >= T.cols || y < 0 || y >= T.rows) return false;
@@ -341,6 +416,7 @@ function boxesTouch(ax, ay, aw, ah, bx, by, bw, bh) {
 
 function step(dt) {
   const p = play, S = T.hero;
+  if (p.state === 'intro') return;
   if (p.state === 'dead') {
     p.timer -= dt;
     if (p.timer <= 0) spawn();
@@ -444,7 +520,7 @@ function render(time) {
     }
   }
 
-  if (play && play.state === 'play') {
+  if (play && (play.state === 'play' || play.state === 'intro')) {
     drawHero(ctx, play.x * cell, play.y * cell, T.hero * cell);
   }
   ctx.fillStyle = '#ff4d5e';
@@ -461,6 +537,15 @@ function loop(now) {
   last = now;
   const time = now / 1000;
   if (play) step(dt);
+  if (intro !== null) {
+    intro += dt;
+    drawMouth(intro);
+    if (intro > INTRO.done) {
+      intro = null;
+      mouth.style.display = 'none';
+      if (play) play.state = 'play';
+    }
+  }
   bits = bits.filter(b => {
     b.life -= dt; b.vy += T.gravity * .6 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
     return b.life > 0;
