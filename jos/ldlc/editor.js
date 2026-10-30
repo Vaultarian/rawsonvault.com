@@ -539,9 +539,10 @@ function deleteSelected() {
 
 /* ---------- Trigger to block ---------- */
 let linkFrom = null;   // the trigger (or button) being connected
+let linkedLast = null; // the last block it was connected to
 function linkClick(c) {
   if (!linkFrom) {
-    if (c && LINKERS.includes(c.t)) { linkFrom = c.id; banner('Click on a block/blocks'); }
+    if (c && LINKERS.includes(c.t)) { linkFrom = c.id; linkedLast = null; banner('Click on a block/blocks'); }
     else say('Click on one of your triggers (or a button) 😈');
     return;
   }
@@ -550,14 +551,25 @@ function linkClick(c) {
   tr.links = tr.links || [];
   const i = tr.links.findIndex(l => l.id === c.id);
   if (i >= 0) tr.links.splice(i, 1);               // click a connected block again to undo it
-  else tr.links.push({ id:c.id, actions:[] });
+  else { tr.links.push({ id:c.id, actions:[] }); linkedLast = c.id; }
   save();
   banner('Click on a block/blocks', tr.links.length ? [['Done', finishLinking]] : []);
 }
 function finishLinking() {
-  const id = linkFrom;
+  // Jos: the Add is in the connected block, so Done opens the block you just connected
+  const id = linkedLast && byId(linkedLast) ? linkedLast : linkFrom;
   setTool('cursor');
   openPanel(id);
+}
+/* every trigger or button connected to this block */
+function linksTo(id) {
+  const out = [];
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++) {
+      const c = grid[y][x];
+      if (c && c.links) c.links.forEach(l => { if (l.id === id) out.push({ x, y, c, l }); });
+    }
+  return out;
 }
 
 /* ---------- the message bar at the top ---------- */
@@ -644,6 +656,7 @@ function renderPanel() {
 
   if (c.t === 'controls') controlsSection(c);
   if (LINKERS.includes(c.t)) linksSection(c);
+  triggersSection(c);
   panel.scrollTop = scroll;
   if (!wasOpen) fit();
 }
@@ -668,19 +681,41 @@ function linksSection(c) {
   if (!links.length) {
     panel.append(el('p', { className:'p-note', textContent:'Use 🔗 Trigger to block to connect this to blocks.' }));
   }
-  links.forEach((l, i) => {
+  links.forEach(l => {
     const t = byId(l.id);
     if (!t) return;
-    const card = el('div', { className:'p-card' });
+    const card = el('div', { className:'p-card p-go', title:'Go to this block',
+                             onclick:() => openPanel(l.id) });
     card.addEventListener('mouseenter', () => { hoverLink = l.id; });
     card.addEventListener('mouseleave', () => { hoverLink = null; });
     card.append(el('div', { className:'p-card-top' }, [
       el('span', { textContent:'→ ' + NAME[t.c.t] }),
       el('button', { className:'p-x', textContent:'✕', title:'Disconnect',
-                     onclick:() => { c.links.splice(i, 1); save(); renderPanel(); } })
+                     onclick:e => { e.stopPropagation(); c.links = c.links.filter(k => k !== l); save(); renderPanel(); } })
+    ]));
+    panel.append(card);
+  });
+  if (links.length) {
+    panel.append(el('p', { className:'p-note', textContent:'Click a connected block to Add what it does.' }));
+  }
+}
+/* Jos: the Add goes in the connected block, not in the trigger */
+function triggersSection(c) {
+  const from = linksTo(c.id);
+  if (!from.length) return;
+  panel.append(el('div', { className:'p-sub', textContent:'Connected triggers' }));
+  from.forEach(f => {
+    const l = f.l;
+    const card = el('div', { className:'p-card' });
+    card.addEventListener('mouseenter', () => { hoverLink = f.c.id; });
+    card.addEventListener('mouseleave', () => { hoverLink = null; });
+    card.append(el('div', { className:'p-card-top' }, [
+      el('span', { textContent:'← ' + NAME[f.c.t] }),
+      el('button', { className:'p-x', textContent:'✕', title:'Disconnect',
+                     onclick:() => { f.c.links = f.c.links.filter(k => k !== l); save(); renderPanel(); } })
     ]));
     l.actions = l.actions || [];
-    l.actions.forEach((a, j) => card.append(actionBox(l, a, j, t.c)));
+    l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c)));
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
     panel.append(card);
@@ -1189,37 +1224,40 @@ function drawCell(c, x, y, time) {
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
   }
 }
+/* the open block's connections: to the blocks it sets off, and from the triggers that set it off */
 function drawLinks(f, time) {
-  const c = f.c;
-  (c.links || []).forEach(l => {
+  (f.c.links || []).forEach(l => {
     const t = byId(l.id);
-    if (!t) return;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = l.id === hoverLink ? '#fff' : 'rgba(93,255,138,.85)'; ctx.lineWidth = 2;
-    line((f.x + .5) * cell, (f.y + .5) * cell, (t.x + .5) * cell, (t.y + .5) * cell);
-    ctx.setLineDash([]);
-    outline(t.x, t.y, l.id === hoverLink ? '#fff' : COL.green);
-    (l.actions || []).forEach(a => {
-      if (a.do === 'move') {
-        // Jos: a little green dot where it will go, yellow lines going to it at its speed
-        const d = DIRS[a.dir || 'up'], n = a.n || 1;
-        const sx = (t.x + .5) * cell, sy = (t.y + .5) * cell;
-        const ex = sx + d[0] * n * cell, ey = sy + d[1] * n * cell;
-        ctx.strokeStyle = COL.gold; ctx.lineWidth = 3;
-        ctx.setLineDash([cell * .22, cell * .18]);
-        ctx.lineDashOffset = -time * (a.speed || 1) * T.moveSpeed * cell;
-        line(sx, sy, ex, ey);
-        ctx.setLineDash([]); ctx.lineDashOffset = 0;
-        ctx.fillStyle = COL.green;
-        ctx.beginPath(); ctx.arc(ex, ey, cell * .16, 0, Math.PI * 2); ctx.fill();
-      }
-      if (a.do === 'size') {                     // a dashed outline of its new size
-        const s = (a.size || 1) * cell;
-        ctx.strokeStyle = COL.gold; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
-        ctx.strokeRect((t.x + .5) * cell - s / 2, (t.y + 1) * cell - s, s, s);
-        ctx.setLineDash([]);
-      }
-    });
+    if (t) drawLink(f, t, l, l.id === hoverLink, t, time);
+  });
+  linksTo(f.c.id).forEach(g => drawLink(g, f, g.l, g.c.id === hoverLink, g, time));
+}
+function drawLink(f, t, l, lit, mark, time) {
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = lit ? '#fff' : 'rgba(93,255,138,.85)'; ctx.lineWidth = 2;
+  line((f.x + .5) * cell, (f.y + .5) * cell, (t.x + .5) * cell, (t.y + .5) * cell);
+  ctx.setLineDash([]);
+  outline(mark.x, mark.y, lit ? '#fff' : COL.green);
+  (l.actions || []).forEach(a => {
+    if (a.do === 'move') {
+      // Jos: a little green dot where it will go, yellow lines going to it at its speed
+      const d = DIRS[a.dir || 'up'], n = a.n || 1;
+      const sx = (t.x + .5) * cell, sy = (t.y + .5) * cell;
+      const ex = sx + d[0] * n * cell, ey = sy + d[1] * n * cell;
+      ctx.strokeStyle = COL.gold; ctx.lineWidth = 3;
+      ctx.setLineDash([cell * .22, cell * .18]);
+      ctx.lineDashOffset = -time * (a.speed || 1) * T.moveSpeed * cell;
+      line(sx, sy, ex, ey);
+      ctx.setLineDash([]); ctx.lineDashOffset = 0;
+      ctx.fillStyle = COL.green;
+      ctx.beginPath(); ctx.arc(ex, ey, cell * .16, 0, Math.PI * 2); ctx.fill();
+    }
+    if (a.do === 'size') {                     // a dashed outline of its new size
+      const s = (a.size || 1) * cell;
+      ctx.strokeStyle = COL.gold; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+      ctx.strokeRect((t.x + .5) * cell - s / 2, (t.y + 1) * cell - s, s, s);
+      ctx.setLineDash([]);
+    }
   });
 }
 function drawPortalLinks() {

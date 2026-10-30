@@ -121,7 +121,9 @@ dotted box and it selects objects in it." Then you can move them and delete them
 2. It says **click on a block/blocks**. You click a block.
 3. Once you've clicked a block it says **done**, but you can still click other blocks too.
 
-When a trigger is connected to something, it has an **Add** button. Click it and it puts in
+When a trigger is connected to something, **that something** gets an **Add** button. Jos: "the
+add is in the selected block, not in the connected trigger." So you click the connected block with
+the Cursor, and under its properties there's the trigger with **+ Add**. Click it and it puts in
 **Do [blank ▾]**, and you choose **Change size**, **Movement** or **Change properties**:
 
 - **Change size**: it says **New size [blank]** and you choose a number.
@@ -156,6 +158,8 @@ Click a block with the cursor and you see its properties, each with a little swi
 - A trigger or a button goes off **once per try**. The button **stays down** after you've stood on it.
 - A **button can be connected to blocks too**, the same way as a trigger.
 - In Trigger to block, **click a connected block again to disconnect it.**
+- Pressing **Done** opens the **last block you connected**, ready for + Add.
+- The trigger's own properties list the blocks it's connected to. Click one to go to it.
 - **Speed 1 = 2 blocks a second.** Speed goes up to 10.
 - A block that changes size **grows from its bottom middle**, so it stays on the floor.
 - Portals pair up **in the order you put them down**: the 1st and 2nd are a pair, then the 3rd and
