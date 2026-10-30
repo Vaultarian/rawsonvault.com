@@ -272,7 +272,7 @@ function cellAt(e) {
   return (x >= 0 && y >= 0 && x < T.cols && y < T.rows) ? { x, y } : null;
 }
 function paint(at) {
-  if (!at || play) return;
+  if (!at || play || chomp) return;
   if (tool === 'erase') { grid[at.y][at.x] = null; save(); return; }
   if (tool !== 'place') return;
   if (ONLY_ONE.includes(chosen)) {
@@ -307,16 +307,17 @@ addEventListener('keyup', e => { keys[e.code] = false; });
 testBtn.addEventListener('click', () => { play ? stopTest() : startTest(); testBtn.blur(); });
 
 function startTest() {
+  if (chomp) return;
   if (!find('hero')) { say('Put a Hero in first 😈'); return; }
-  deaths = 0;
-  deathsEl.textContent = '💀 0';
-  spawn();
-  play.state = 'intro';           // nothing moves until the devil has opened its mouth
-  document.body.classList.add('testing');
-  fit();
-  intro = 0;
-  sizeMouth();
-  mouth.style.display = 'block';
+  // the devil closes his mouth over the creator, and opens it onto your level
+  startChomp(() => {
+    deaths = 0;
+    deathsEl.textContent = '💀 0';
+    spawn();
+    play.state = 'intro';         // nothing moves until his mouth is open
+    document.body.classList.add('testing');
+    fit();
+  }, () => { if (play) play.state = 'play'; });
 }
 function spawn() {
   const h = find('hero');
@@ -324,23 +325,46 @@ function spawn() {
            ground:false, state:'play', timer:0, face:1 };
 }
 function stopTest() {
-  play = null; bits = []; intro = null;
-  mouth.style.display = 'none';
-  deathsEl.textContent = '';
-  document.body.classList.remove('testing');
-  fit();
+  if (chomp) return;
+  // and the same on the way back: he closes over the level and opens onto the creator
+  startChomp(() => {
+    play = null; bits = [];
+    deathsEl.textContent = '';
+    document.body.classList.remove('testing');
+    fit();
+  });
 }
 document.getElementById('editBtn').addEventListener('click', e => { stopTest(); e.target.blur(); });
 document.getElementById('restartBtn').addEventListener('click', e => {
-  if (play && play.state !== 'intro') spawn();
+  if (play && !chomp) spawn();
   e.target.blur();
 });
 
-/* ---------- pressing TEST: the devil blinks, then opens its mouth, and your level is inside ---------- */
+/* ---------- the devil's mouth: closes, blinks, opens. Whatever is behind it changes while it's shut ---------- */
 const mouth = document.getElementById('mouth');
 const mctx = mouth.getContext('2d');
-const INTRO = { blinkOff:0.45, blinkOn:0.6, teeth:0.85, open:1.05, done:1.6 };
-let intro = null;
+const CHOMP = { close:0.4, blinkOff:0.65, blinkOn:0.8, open:1.0, done:1.55 };
+let chomp = null;
+
+function startChomp(whenShut, whenOpen) {
+  chomp = { t:0, whenShut, whenOpen, shut:false };
+  sizeMouth();
+  mouth.style.display = 'block';
+}
+function chompStep(dt) {
+  chomp.t += dt;
+  if (!chomp.shut && chomp.t >= CHOMP.close) {
+    chomp.shut = true;
+    if (chomp.whenShut) chomp.whenShut();
+  }
+  drawMouth(chomp.t);
+  if (chomp.t > CHOMP.done) {
+    const whenOpen = chomp.whenOpen;
+    chomp = null;
+    mouth.style.display = 'none';
+    if (whenOpen) whenOpen();
+  }
+}
 
 function sizeMouth() {
   const dpr = window.devicePixelRatio || 1;
@@ -351,9 +375,16 @@ function sizeMouth() {
 function drawMouth(t) {
   const W = innerWidth, H = innerHeight, c = mctx;
   c.clearRect(0, 0, W, H);
-  const k = Math.max(0, Math.min(1, (t - INTRO.open) / (INTRO.done - INTRO.open)));
   const tooth = Math.max(40, W / 22), toothH = tooth * .9;
-  const gap = k * k * (H / 2 + toothH);    // starts slow, then the jaws fly open
+  const wide = H / 2 + toothH;              // jaws this far apart = off the screen
+  let gap = 0;
+  if (t < CHOMP.close) {                    // closing: slow, then SNAP shut
+    const k = t / CHOMP.close;
+    gap = (1 - k * k) * wide;
+  } else if (t > CHOMP.open) {              // opening: slow, then the jaws fly apart
+    const k = Math.min(1, (t - CHOMP.open) / (CHOMP.done - CHOMP.open));
+    gap = k * k * wide;
+  }
   const mid = H / 2;
 
   // the two halves of the face
@@ -362,7 +393,7 @@ function drawMouth(t) {
   c.fillRect(0, mid + gap, W, H - mid - gap);
 
   // the eyes sit on the top half and go up with it
-  const eyesOn = t > 0.15 && (t < INTRO.blinkOff || t > INTRO.blinkOn);
+  const eyesOn = t < CHOMP.blinkOff || t > CHOMP.blinkOn;
   if (eyesOn) {
     const ey = H * .26 - gap, ew = W * .13, eh = ew * .55;
     [W * .32, W * .68].forEach((ex, i) => {
@@ -381,8 +412,8 @@ function drawMouth(t) {
     });
   }
 
-  // white fangs, top row and bottom row, closed together then pulled apart
-  if (t > INTRO.teeth) {
+  // white fangs on the edge of each jaw, biting together in the middle
+  {
     c.fillStyle = '#f2f2f2';
     for (let x = -tooth; x < W + tooth; x += tooth) {
       c.beginPath();                          // top teeth point down
@@ -424,7 +455,7 @@ function step(dt) {
   }
   if (p.state === 'won') {
     p.wonT += dt;
-    if (p.wonT > DOOR.shut + DOOR.sink + 0.6) stopTest();   // Jos: no LEVEL COMPLETE message
+    if (p.wonT > DOOR.shut + DOOR.sink + 0.3) stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
   const left  = keys.ArrowLeft || keys.KeyA;
@@ -537,15 +568,7 @@ function loop(now) {
   last = now;
   const time = now / 1000;
   if (play) step(dt);
-  if (intro !== null) {
-    intro += dt;
-    drawMouth(intro);
-    if (intro > INTRO.done) {
-      intro = null;
-      mouth.style.display = 'none';
-      if (play) play.state = 'play';
-    }
-  }
+  if (chomp) chompStep(dt);
   bits = bits.filter(b => {
     b.life -= dt; b.vy += T.gravity * .6 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
     return b.life > 0;

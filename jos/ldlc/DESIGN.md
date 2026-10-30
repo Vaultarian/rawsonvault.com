@@ -53,8 +53,10 @@ the ground**. **No LEVEL COMPLETE message** (Jos said take it out); you go back 
 
 Jos showed Carl a video of how it should look. Built in LDLC's own style:
 
-- The screen goes dark red and **a devil's eyes blink**, then **white fangs** appear and the
-  **mouth opens**, and your level is inside.
+- Jos: **the devil closes his mouth, then reopens it.** His jaws close over the creator, his
+  eyes blink, then the mouth opens and your level is inside.
+- **The same when you finish** (or press ✏️): he closes over the level and opens onto the
+  creator again. (Carl made ✏️ do it too.)
 - The level **fills the whole screen**. Nothing moves until the mouth is open.
 - Two buttons in the top corner: **✏️ back to the creator** and **🔄 start again** (Carl's
   choice for the second one), plus the 💀 death counter.
