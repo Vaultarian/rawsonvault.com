@@ -43,6 +43,17 @@ arrow, and they can change that, and they don't all have to be different."
 - Keys don't have to be different. Two moves can share a key.
 - It can also change what the character does: **always going left**, or **always going right**.
 
+## The door
+
+Jos showed Carl a video of how the door works: when you reach it, **it pulls you into the
+middle of the door**, **a shutter comes down over you**, and then **the whole door sinks into
+the ground**. Then LEVEL COMPLETE.
+
+## The tile
+
+Jos: **"tile is a block, not a slab."** Tiles that touch join up into one solid block, with the
+red edge only on the outside.
+
 ## The tools
 
 - **Cursor**: click a block to see its **block properties**.

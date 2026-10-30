@@ -71,10 +71,18 @@ function find(type) {
 }
 
 /* ---------- drawing the blocks ---------- */
-function drawTile(c, x, y, s) {
+/* Jos: a tile is a block, not a slab. Tiles that touch join up into one solid block,
+   with the red edge only on the outside. gx, gy = where it is on the grid (if it is). */
+function drawTile(c, x, y, s, gx, gy) {
+  const isTile = (ax, ay) => gx !== undefined && ax >= 0 && ay >= 0 && ax < T.cols && ay < T.rows
+                             && grid[ay][ax] && grid[ay][ax].t === 'tile';
   c.fillStyle = '#2a0008'; c.fillRect(x, y, s, s);
-  c.strokeStyle = '#45000f'; c.lineWidth = 1; c.strokeRect(x + .5, y + .5, s - 1, s - 1);
-  c.fillStyle = '#ff2a3d'; c.fillRect(x, y, s, Math.max(2, s * .1));
+  const e = Math.max(2, s * .1);
+  c.fillStyle = '#ff2a3d';
+  if (!isTile(gx, gy - 1)) c.fillRect(x, y, s, e);
+  if (!isTile(gx, gy + 1)) c.fillRect(x, y + s - e, s, e);
+  if (!isTile(gx - 1, gy)) c.fillRect(x, y, e, s);
+  if (!isTile(gx + 1, gy)) c.fillRect(x + s - e, y, e, s);
 }
 function drawSpike(c, x, y, s) {
   c.fillStyle = '#e6e6e6';
@@ -87,19 +95,51 @@ function drawSpike(c, x, y, s) {
     c.fill();
   }
 }
-function drawDoor(c, x, y, s, open) {
+function doorPath(c, x, y, s) {
   const w = s * .7, h = s * .95, dx = x + (s - w) / 2, dy = y + s - h;
-  c.fillStyle = '#14000a';
-  c.strokeStyle = open ? '#5dff8a' : '#ffd23f';
-  c.lineWidth = Math.max(2, s * .08);
   c.beginPath();
   c.moveTo(dx, y + s);
   c.lineTo(dx, dy + w / 2);
   c.arc(dx + w / 2, dy + w / 2, w / 2, Math.PI, 0);
   c.lineTo(dx + w, y + s);
+  return { w, h, dx, dy };
+}
+function drawDoor(c, x, y, s) {
+  c.fillStyle = '#14000a';
+  c.strokeStyle = '#ffd23f';
+  c.lineWidth = Math.max(2, s * .08);
+  const { w, h, dx, dy } = doorPath(c, x, y, s);
   c.fill(); c.stroke();
   c.fillStyle = c.strokeStyle;
   c.beginPath(); c.arc(dx + w * .75, dy + h * .58, Math.max(1.5, s * .05), 0, Math.PI * 2); c.fill();
+}
+/* Jos's door: it pulls you into the middle, a shutter comes down over you,
+   then the whole door sinks into the ground. t = seconds since you touched it. */
+const DOOR = { shut:0.35, sink:0.5 };
+function drawDoorClosing(c, x, y, s, t, heroDraw) {
+  const down = Math.max(0, Math.min(1, (t - DOOR.shut) / DOOR.sink)) * s;
+  c.save();
+  c.beginPath(); c.rect(x - s, y - s, s * 3, s * 2); c.clip();   // nothing shows below the ground
+  c.translate(0, down);
+  c.fillStyle = '#14000a';
+  c.strokeStyle = '#ffd23f';
+  c.lineWidth = Math.max(2, s * .08);
+  const { w, h, dx, dy } = doorPath(c, x, y, s);
+  c.fill();
+  heroDraw();
+  const f = Math.min(1, t / DOOR.shut);                          // the shutter coming down
+  c.save();
+  doorPath(c, x, y, s); c.clip();
+  c.fillStyle = '#ffd23f';
+  c.fillRect(dx, dy, w, h * f * .25 + 1);
+  c.lineWidth = Math.max(1.5, s * .05);
+  for (let i = 1; i < 4; i++) {
+    const bx = dx + w * i / 4;
+    c.beginPath(); c.moveTo(bx, dy); c.lineTo(bx, dy + h * f); c.stroke();
+  }
+  c.restore();
+  doorPath(c, x, y, s); c.stroke();
+  c.restore();
 }
 function drawHero(c, x, y, size) {
   const s = size;
@@ -136,10 +176,10 @@ function roundRect(c, x, y, w, h, r) {
   c.arcTo(x, y, x + w, y, r);
   c.closePath();
 }
-function drawBlock(c, type, x, y, s, time) {
-  if (type === 'tile') drawTile(c, x, y, s);
+function drawBlock(c, type, x, y, s, time, gx, gy) {
+  if (type === 'tile') drawTile(c, x, y, s, gx, gy);
   else if (type === 'spike') drawSpike(c, x, y, s);
-  else if (type === 'door') drawDoor(c, x, y, s, false);
+  else if (type === 'door') drawDoor(c, x, y, s);
   else if (type === 'portal') drawPortal(c, x, y, s, time);
   else if (type === 'hero') {
     const h = s * T.hero;
@@ -301,9 +341,17 @@ function boxesTouch(ax, ay, aw, ah, bx, by, bw, bh) {
 
 function step(dt) {
   const p = play, S = T.hero;
-  if (p.state === 'dead' || p.state === 'won') {
+  if (p.state === 'dead') {
     p.timer -= dt;
-    if (p.timer <= 0) { if (p.state === 'won') stopTest(); else spawn(); }
+    if (p.timer <= 0) spawn();
+    return;
+  }
+  if (p.state === 'won') {
+    const before = p.wonT;
+    p.wonT += dt;
+    const gone = DOOR.shut + DOOR.sink;
+    if (before < gone && p.wonT >= gone) say('LEVEL COMPLETE! 🎉', true);
+    if (p.wonT > gone + 1.4) stopTest();
     return;
   }
   const left  = keys.ArrowLeft || keys.KeyA;
@@ -346,8 +394,9 @@ function step(dt) {
         : true;
       if (hit) die();
     } else if (c.t === 'door' && boxesTouch(p.x, p.y, S, S, cx + .2, cy + .2, .6, .8)) {
-      p.state = 'won'; p.timer = 1.6;
-      say('LEVEL COMPLETE! 🎉', true);
+      // pulled into the middle of the door
+      p.state = 'won'; p.wonT = 0; p.door = { x:cx, y:cy };
+      p.x = cx + (1 - S) / 2; p.y = cy + 1 - S; p.vx = p.vy = 0;
     }
   });
 }
@@ -381,8 +430,12 @@ function render(time) {
       const c = grid[y][x];
       if (!c) continue;
       if (play && c.t === 'hero') continue;      // the real hero is the moving one
-      if (c.t === 'door') drawDoor(ctx, x * cell, y * cell, cell, play && play.state === 'won');
-      else drawBlock(ctx, c.t, x * cell, y * cell, cell, time);
+      if (play && play.state === 'won' && c.t === 'door') {
+        drawDoorClosing(ctx, x * cell, y * cell, cell, play.wonT,
+          () => drawHero(ctx, play.x * cell, play.y * cell, T.hero * cell));
+        continue;
+      }
+      drawBlock(ctx, c.t, x * cell, y * cell, cell, time, x, y);
     }
 
   if (!play && hover) {                          // preview where the block will go
@@ -394,7 +447,7 @@ function render(time) {
     }
   }
 
-  if (play && play.state !== 'dead' && !(play.state === 'won' && play.timer < 1.2)) {
+  if (play && play.state === 'play') {
     drawHero(ctx, play.x * cell, play.y * cell, T.hero * cell);
   }
   ctx.fillStyle = '#ff4d5e';
