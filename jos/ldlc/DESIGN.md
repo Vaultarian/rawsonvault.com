@@ -51,7 +51,7 @@ Jos sent a picture of each block. Carl drew them in LDLC's colours. The pictures
 | **Coin** | a coin | you collect it, with **Jos's coin sound** |
 | **One way** | three short dashes | jump up through it, you don't go back down |
 | **Trigger** | a green square with a black **!** | **invisible when you play**, "like a trigger in G-dash" |
-| **Button** | a dome, **brown** (not green) | (connects to blocks, still to build) |
+| **Button** | a dome, **brown** (not green) | **goes down when you stand on it**, and sets off whatever it's connected to |
 | **Edit controls** | like the trigger, but with **← → ↑ ↓ arrows** instead of the **!** | touch it and the controls change to what it's set to |
 
 **Do action** (Jos): any block that does something, like a spring or a coin, has a **Do action**
@@ -67,8 +67,8 @@ before LDLC goes on the website.
 ## The edit controls block
 
 **Its properties** (Jos): the controls settings below, **plus Do action and Visible.**
-(Carl's choice: it starts invisible, like the trigger.) It works when you touch it while playing,
-but the settings can only be changed once Block properties is built.
+(Carl's choice: it starts invisible, like the trigger.) It works when you touch it while playing.
+Click it with the Cursor to change its settings.
 
 Jos: it "will say left equals left arrow, right equals right arrow, up equals space or up
 arrow, and they can change that, and they don't all have to be different."
@@ -152,7 +152,17 @@ Click a block with the cursor and you see its properties, each with a little swi
 - Controls when you TEST: **← →** (or A D) to move, **↑ or Space** (or W) to jump. Let go of
   jump early for a smaller jump. These are what the Edit controls block will change.
 - The hero has **tiny devil horns** and one eye, looking the way he runs.
-- A **🪙 coin counter** sits next to the 💀 when you TEST. Coins come back when you die.
+- Jos: **no coin counter.** Coins come back when you die.
+- A trigger or a button goes off **once per try**. The button **stays down** after you've stood on it.
+- A **button can be connected to blocks too**, the same way as a trigger.
+- In Trigger to block, **click a connected block again to disconnect it.**
+- **Speed 1 = 2 blocks a second.** Speed goes up to 10.
+- A block that changes size **grows from its bottom middle**, so it stays on the floor.
+- Portals pair up **in the order you put them down**: the 1st and 2nd are a pair, then the 3rd and
+  4th. **Show portal connections** gives each pair a number and a dotted line. A portal with no
+  partner shows **?**.
+- A block in disguise shows a little **🎭** in the creator, so you know. You can't see it when you play.
+- In Select blocks, the **Delete** key deletes too.
 
 ## Build log
 
@@ -164,3 +174,8 @@ Click a block with the cursor and you see its properties, each with a little swi
   Working: **Tile, Hero, Door, Spike**, the **Eraser**, **Clear**, and **▶ TEST** (play your
   level, 💀 death counter, LEVEL COMPLETE at the door). The level saves itself in the browser.
   The portal shows Jos's drawing, flashing, but doesn't work yet. Everything else says "soon".
+- **30 Oct**: **Cursor, Select blocks and Trigger to block** built, with Block properties (switches,
+  Disguise as block), the Edit controls settings, and **+ Add** (Change size, Movement with the green
+  dot and yellow lines, Change properties). Jos's three fixes: **the button goes down**, **portals
+  connect in pairs and teleport you** (with the Show portal connections switch), and **the coin
+  counter is gone** (coins already had Do action). Not published.

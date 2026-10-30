@@ -43,7 +43,6 @@ button.soon { opacity:.45; }
 .title { font-family:'Fredoka One', cursive; font-size:1.4rem; color:#ff2a3d; margin-right:1rem;
          text-shadow:0 0 14px rgba(255,42,61,.5); }
 .spacer { flex:1; }
-#coins { font-family:'Fredoka One', cursive; color:#ffd23f; font-size:1.1rem; }
 #deaths { font-family:'Fredoka One', cursive; color:#ffb3ba; font-size:1.1rem; margin-right:.5rem; }
 #testBtn { background:#2e9e4f; font-size:1.15rem; padding:.55rem 1.4rem; }
 #testBtn:hover { background:#38c261; }
@@ -85,6 +84,62 @@ body.testing #testBar { display:flex; }
 #testBar button { font-size:1.3rem; padding:.35rem .7rem; }
 #mouth { position:fixed; inset:0; width:100%; height:100%; z-index:250; pointer-events:none; display:none; }
 
+/* ---------- the message bar (Select blocks, Trigger to block) ---------- */
+#banner {
+  position:fixed; left:50%; top:0; z-index:280; display:flex; align-items:center; gap:.7rem;
+  transform:translate(-50%, -150%); transition:transform .3s cubic-bezier(.3,1.6,.5,1);
+  background:#1c0008; border:2px solid #5dff8a; color:#fff; border-radius:999px;
+  font-family:'Fredoka One', cursive; font-size:1.05rem; padding:.45rem .6rem .45rem 1.2rem;
+  white-space:nowrap; box-shadow:0 6px 20px rgba(0,0,0,.5);
+}
+#banner.show { transform:translate(-50%, 70px); }
+#banner button { background:#2e9e4f; padding:.35rem .9rem; border-radius:999px; }
+#banner button:hover { background:#38c261; }
+body.testing #banner { display:none; }
+
+/* ---------- switches (Block properties and Show portal connections) ---------- */
+.knob { position:relative; width:38px; height:22px; border-radius:11px; background:#4a2a30;
+        flex:none; transition:background .2s; }
+.knob::after { content:''; position:absolute; left:3px; top:3px; width:16px; height:16px;
+               border-radius:50%; background:#fff; transition:transform .2s; }
+input:checked + .knob { background:#2e9e4f; }
+input:checked + .knob::after { transform:translateX(16px); }
+.p-switch input, .topswitch input { position:absolute; opacity:0; pointer-events:none; }
+.topswitch { display:flex; align-items:center; gap:.45rem; cursor:pointer; position:relative;
+             font-family:'Fredoka One', cursive; font-size:.85rem; color:#ffb3ba; margin-right:.4rem; }
+
+/* ---------- the Block properties panel ---------- */
+#panel { display:none; width:300px; flex:none; overflow-y:auto; background:#0c0006;
+         border-left:2px solid #ff2a3d33; padding:12px 14px 80px;
+         scrollbar-width:thin; scrollbar-color:#ff2a3d55 transparent; }
+#panel.open { display:block; }
+body.testing #panel { display:none; }
+.p-head { display:flex; align-items:center; gap:.6rem; margin-bottom:.4rem; }
+.p-icon { width:40px; height:40px; background:#1c0008; border-radius:8px; }
+.p-title { font-family:'Fredoka One', cursive; font-size:1.3rem; flex:1; }
+.p-close, .p-x { background:transparent; box-shadow:none; padding:.2rem .45rem; font-size:1rem; }
+.p-close:hover, .p-x:hover { background:#3a0010; }
+.p-sub { font-family:'Fredoka One', cursive; font-size:.8rem; letter-spacing:1px; color:#ff8a94;
+         text-transform:uppercase; margin:1rem 0 .4rem; }
+.p-mini { font-family:'Fredoka One', cursive; font-size:.85rem; color:#ffd23f; margin:.4rem 0 .1rem; }
+.p-row { display:flex; align-items:center; gap:.5rem; padding:.35rem 0; font-weight:700; font-size:.92rem; }
+.p-label { flex:1; }
+.p-switch { cursor:pointer; position:relative; }
+.p-or { color:#ff8a94; font-size:.8rem; }
+.p-note { color:#ffb3ba; font-size:.85rem; margin:.3rem 0; }
+#panel select, #panel input[type=number] {
+  font-family:'Nunito', sans-serif; font-weight:700; font-size:.9rem; color:#fff;
+  background:#1c0008; border:2px solid #ff2a3d66; border-radius:8px; padding:.25rem .4rem;
+}
+#panel input[type=number] { width:64px; }
+.p-card { background:#1c0008; border:2px solid #5dff8a55; border-radius:12px; padding:.5rem .7rem; margin:.5rem 0; }
+.p-card:hover { border-color:#5dff8a; }
+.p-card-top { display:flex; align-items:center; justify-content:space-between;
+              font-family:'Fredoka One', cursive; color:#5dff8a; }
+.p-action { border-top:1px dashed #ff2a3d44; margin-top:.4rem; padding-top:.3rem; }
+.p-add { margin-top:.5rem; background:#2e9e4f; font-size:.9rem; padding:.35rem .9rem; }
+.p-add:hover { background:#38c261; }
+
 #toast {
   position:fixed; left:50%; top:0; z-index:300;
   transform:translate(-50%, -150%); transition:transform .3s cubic-bezier(.3,1.6,.5,1);
@@ -100,11 +155,12 @@ body.testing #testBar { display:flex; }
   <div id="topbar">
     <a class="back-link" href="index.html">← Back</a>
     <span class="title">LDLC CREATOR</span>
-    <button class="tool soon" data-tool="cursor">🖱 Cursor</button>
-    <button class="tool soon" data-tool="select">✋ Select blocks</button>
-    <button class="tool soon" data-tool="link">🔗 Trigger to block</button>
+    <button class="tool" data-tool="cursor">🖱 Cursor</button>
+    <button class="tool" data-tool="select">✋ Select blocks</button>
+    <button class="tool" data-tool="link">🔗 Trigger to block</button>
     <button class="tool" data-tool="erase">🧽 Eraser</button>
     <span class="spacer"></span>
+    <label class="topswitch"><input type="checkbox" id="portalLinks"><span class="knob"></span>Show portal connections</label>
     <button class="tool" id="clearBtn">🗑 Clear</button>
     <button id="testBtn">▶ TEST</button>
   </div>
@@ -112,13 +168,14 @@ body.testing #testBar { display:flex; }
   <div id="body">
     <div id="palette"><h3>BLOCKS</h3></div>
     <div id="stageWrap"><canvas id="level"></canvas></div>
+    <aside id="panel"></aside>
   </div>
+  <div id="banner"></div>
 
   <div id="testBar">
     <button id="editBtn" title="Back to the creator">✏️</button>
     <button id="restartBtn" title="Start again">🔄</button>
     <span id="deaths"></span>
-    <span id="coins"></span>
   </div>
   <canvas id="mouth"></canvas>
   <div id="toast"></div>

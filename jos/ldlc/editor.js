@@ -17,6 +17,7 @@ const T = {
   respawn:    0.6,   // seconds before he tries again
   springBoot: 22,    // how hard a spring boots you up
   sawSpin:    8,     // how fast a sawblade spins
+  moveSpeed:  2,     // Movement speed 1 = 2 blocks a second, speed 2 = 4, and so on
   portalFlip: 0.30   // Jos: the portal switches colours every 0.30 seconds
 };
 
@@ -74,6 +75,7 @@ function emptyGrid() {
   return Array.from({ length:T.rows }, () => Array(T.cols).fill(null));
 }
 function save() {
+  fixPortals();
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(grid)); } catch (e) {}
 }
 function load() {
@@ -83,7 +85,7 @@ function load() {
   } catch (e) {}
 }
 function props(cell) {
-  return Object.assign({ collision:false, deadly:false, visible:true, action:false },
+  return Object.assign({ collision:false, deadly:false, visible:true, action:false, disguise:false },
                        DEFAULTS[cell.t] || {}, cell.p || {});
 }
 function find(type) {
@@ -195,15 +197,16 @@ function drawControls(c, x, y, s) {
   tri(m - d, m, m - d + a, m - a, m - d + a, m + a);   // left
   tri(m + d, m, m + d - a, m - a, m + d - a, m + a);   // right
 }
-function drawButton(c, x, y, s) {
-  /* Jos's button: a dome on a base. Brown, not green. */
+function drawButton(c, x, y, s, pressed) {
+  /* Jos's button: a dome on a base. Brown, not green. It squashes down when you stand on it. */
+  const top = pressed ? .8 : .58;
   c.fillStyle = COL.brownDark;
   c.fillRect(x + s * .05, y + s * .9, s * .9, s * .1);
   c.fillStyle = COL.brown;
   c.beginPath();
   c.moveTo(x + s * .14, y + s * .9);
-  c.quadraticCurveTo(x + s * .18, y + s * .58, x + s * .5, y + s * .58);
-  c.quadraticCurveTo(x + s * .82, y + s * .58, x + s * .86, y + s * .9);
+  c.quadraticCurveTo(x + s * .18, y + s * top, x + s * .5, y + s * top);
+  c.quadraticCurveTo(x + s * .82, y + s * top, x + s * .86, y + s * .9);
   c.fill();
 }
 function doorPath(c, x, y, s) {
@@ -319,49 +322,91 @@ function drawBlock(c, type, x, y, s, time) {
   }
 }
 
+/* ---------- Block properties: which switches each block has ----------
+   Jos: "it's not always the same properties, so make the machine look what properties it has" */
+const SWITCHES = {
+  tile:       ['deadly', 'collision', 'disguise'],
+  spike:      ['deadly', 'collision', 'disguise'],
+  smallspike: ['deadly', 'collision', 'disguise'],
+  sawblade:   ['deadly', 'collision', 'disguise'],
+  oneway:     ['deadly', 'disguise'],
+  spring:     ['deadly', 'collision', 'disguise', 'action'],
+  coin:       ['deadly', 'collision', 'disguise', 'action'],
+  button:     ['deadly', 'collision', 'disguise', 'action'],
+  portal:     ['deadly', 'collision', 'disguise', 'action'],
+  door:       ['disguise'],
+  hero:       [],
+  trigger:    ['visible', 'action'],        // Jos: the trigger only has these two
+  controls:   ['visible', 'action']
+};
+const LABEL = { deadly:'Deadly', collision:'Collision', disguise:'Disguise as block',
+                action:'Do action', visible:'Visible' };
+const LINKERS = ['trigger', 'button'];    // the blocks you can connect to other blocks
+const KEYS = [['ArrowLeft', '← arrow'], ['ArrowRight', '→ arrow'], ['ArrowUp', '↑ arrow'],
+              ['ArrowDown', '↓ arrow'], ['Space', 'Space'], ['KeyA', 'A'], ['KeyD', 'D'],
+              ['KeyW', 'W'], ['KeyS', 'S']];
+/* a new Edit controls block starts with Jos's example: left = ←, right = →, up = Space or ↑ */
+const BLOCK_CONTROLS = { left:['ArrowLeft'], right:['ArrowRight'], up:['Space', 'ArrowUp'], auto:0 };
+const DIRS = { left:[-1, 0], right:[1, 0], up:[0, -1], down:[0, 1] };
+
+/* every block gets its own number, so connections still work after a block is moved */
+let nextId = 1;
+function giveIds() {
+  grid.flat().forEach(c => { if (c && c.id) nextId = Math.max(nextId, c.id + 1); });
+  grid.flat().forEach(c => { if (c && !c.id) c.id = nextId++; });
+}
+function byId(id) {
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++)
+      if (grid[y][x] && grid[y][x].id === id) return { x, y, c:grid[y][x] };
+  return null;
+}
+function forgetLinksTo(ids) {
+  grid.flat().forEach(c => { if (c && c.links) c.links = c.links.filter(l => !ids.has(l.id)); });
+}
+function looksLike(c) { return props(c).disguise ? (c.as || 'tile') : c.t; }
+
 /* ---------- the blocks bar ---------- */
 const palette = document.getElementById('palette');
 const icons = [];
 let chosen = 'tile', tool = 'place';
 
+function drawIcon(c, type, time) {
+  c.clearRect(0, 0, 80, 80);
+  if (type === 'hero') drawHero(c, 31, 12, 60, 1, Math.floor(time / .25) % 2);   // running on the spot
+  else drawBlock(c, type, 8, 8, 64, time);
+}
+
 BLOCKS.forEach(b => {
   const btn = document.createElement('button');
-  btn.className = 'block' + (b.ready ? '' : ' soon');
+  btn.className = 'block';
   btn.dataset.id = b.id;
   const cv = document.createElement('canvas');
   cv.width = cv.height = 80;
   btn.appendChild(cv);
   btn.appendChild(document.createTextNode(b.name));
-  if (!b.ready) {
-    const tag = document.createElement('span');
-    tag.className = 'soon-tag'; tag.textContent = 'soon';
-    btn.appendChild(tag);
-  }
-  btn.addEventListener('click', () => {
-    if (!b.ready) { say(b.name + ' is coming soon 😈'); return; }
-    chosen = b.id; tool = 'place';
-    refreshButtons();
-  });
+  btn.addEventListener('click', () => { chosen = b.id; setTool('place'); });
   palette.appendChild(btn);
   icons.push({ id:b.id, cv });
 });
-
 function drawIcons(time) {
-  icons.forEach(({ id, cv }) => {
-    const c = cv.getContext('2d');
-    c.clearRect(0, 0, 80, 80);
-    if (id === 'hero') drawHero(c, 31, 12, 60, 1, Math.floor(time / .25) % 2);   // running on the spot
-    else drawBlock(c, id, 8, 8, 64, time);
-  });
+  icons.forEach(({ id, cv }) => drawIcon(cv.getContext('2d'), id, time));
 }
 
 document.querySelectorAll('.tool[data-tool]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.classList.contains('soon')) { say(btn.textContent.slice(2).trim() + ' is coming soon 😈'); return; }
-    tool = btn.dataset.tool;
-    refreshButtons();
-  });
+  btn.addEventListener('click', () => setTool(btn.dataset.tool));
 });
+function setTool(t) {
+  tool = t;
+  sel.clear(); boxDrag = moveDrag = null;
+  linkFrom = null;
+  hideBanner();
+  if (t !== 'cursor') closePanel();
+  if (t === 'select') banner('Click and drag to make a box round the blocks you want');
+  if (t === 'link') banner('Choose a trigger');
+  cv.style.cursor = t === 'select' ? 'crosshair' : t === 'cursor' || t === 'link' ? 'pointer' : 'default';
+  refreshButtons();
+}
 function refreshButtons() {
   document.querySelectorAll('.block').forEach(b =>
     b.classList.toggle('on', tool === 'place' && b.dataset.id === chosen));
@@ -371,7 +416,7 @@ function refreshButtons() {
 
 document.getElementById('clearBtn').addEventListener('click', () => {
   if (!confirm('Clear the whole level?')) return;
-  grid = emptyGrid(); save();
+  grid = emptyGrid(); save(); closePanel(); sel.clear();
 });
 
 /* ---------- the level canvas ---------- */
@@ -394,44 +439,306 @@ function fit() {
 }
 window.addEventListener('resize', fit);
 
-function cellAt(e) {
+function pointAt(e) {
   const r = cv.getBoundingClientRect();
-  const x = Math.floor((e.clientX - r.left) / cell), y = Math.floor((e.clientY - r.top) / cell);
+  return { x:(e.clientX - r.left) / cell, y:(e.clientY - r.top) / cell };
+}
+function cellAt(e) {
+  const p = pointAt(e), x = Math.floor(p.x), y = Math.floor(p.y);
   return (x >= 0 && y >= 0 && x < T.cols && y < T.rows) ? { x, y } : null;
 }
-function paint(at) {
-  if (!at || play || chomp) return;
-  if (tool === 'erase') { grid[at.y][at.x] = null; save(); return; }
-  if (tool !== 'place') return;
-  if (ONLY_ONE.includes(chosen)) {
-    const old = find(chosen);
-    if (old) grid[old.y][old.x] = null;
+function paint(a) {
+  if (!a || play || chomp) return;
+  const old = grid[a.y][a.x];
+  if (tool === 'erase') {
+    if (old) { grid[a.y][a.x] = null; forgetLinksTo(new Set([old.id])); save(); }
+    return;
   }
-  grid[at.y][at.x] = { t:chosen };
+  if (tool !== 'place' || (old && old.t === chosen)) return;   // same block already there: leave it be
+  if (ONLY_ONE.includes(chosen)) {
+    const was = find(chosen);
+    if (was) grid[was.y][was.x] = null;
+  }
+  if (old) forgetLinksTo(new Set([old.id]));
+  grid[a.y][a.x] = { t:chosen, id:nextId++ };
   save();
 }
+
 cv.addEventListener('pointerdown', e => {
-  painting = true; cv.setPointerCapture(e.pointerId); paint(cellAt(e));
+  if (play || chomp) return;
+  const a = cellAt(e), c = a && grid[a.y][a.x];
+  cv.setPointerCapture(e.pointerId);
+  if (tool === 'place' || tool === 'erase') { painting = true; paint(a); return; }
+  if (tool === 'cursor') { c ? openPanel(c.id) : closePanel(); return; }
+  if (tool === 'link') { linkClick(c); return; }
+  if (tool === 'select') {
+    if (c && sel.has(c.id)) moveDrag = { from:a, off:{ x:0, y:0 } };
+    else { const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y }; sel.clear(); }
+  }
 });
 cv.addEventListener('pointermove', e => {
   hover = cellAt(e);
   if (painting && !ONLY_ONE.includes(chosen)) paint(hover);
+  if (boxDrag) { const p = pointAt(e); boxDrag.x1 = p.x; boxDrag.y1 = p.y; }
+  if (moveDrag && hover) moveDrag.off = { x:hover.x - moveDrag.from.x, y:hover.y - moveDrag.from.y };
 });
-cv.addEventListener('pointerup', () => { painting = false; });
+cv.addEventListener('pointerup', () => {
+  painting = false;
+  if (boxDrag) { finishBox(); boxDrag = null; }
+  if (moveDrag) { moveSelected(moveDrag.off); moveDrag = null; }
+});
 cv.addEventListener('pointerleave', () => { hover = null; });
+
+/* ---------- Select blocks: drag a dotted box, then move or delete what's in it ---------- */
+const sel = new Set();
+let boxDrag = null, moveDrag = null;
+
+function finishBox() {
+  const x0 = Math.min(boxDrag.x0, boxDrag.x1), x1 = Math.max(boxDrag.x0, boxDrag.x1);
+  const y0 = Math.min(boxDrag.y0, boxDrag.y1), y1 = Math.max(boxDrag.y0, boxDrag.y1);
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++)
+      if (grid[y][x] && x < x1 && x + 1 > x0 && y < y1 && y + 1 > y0) sel.add(grid[y][x].id);
+  selectionBanner();
+}
+function selectionBanner() {
+  if (!sel.size) { banner('Click and drag to make a box round the blocks you want'); return; }
+  banner(sel.size + (sel.size === 1 ? ' block' : ' blocks') + ' selected · drag them to move',
+         [['🗑 Delete', deleteSelected]]);
+}
+function moveSelected(off) {
+  if (!off.x && !off.y) return;
+  const moving = [];
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++)
+      if (grid[y][x] && sel.has(grid[y][x].id)) moving.push({ x, y, c:grid[y][x] });
+  if (moving.some(m => m.x + off.x < 0 || m.y + off.y < 0 ||
+                       m.x + off.x >= T.cols || m.y + off.y >= T.rows)) {
+    say('That would go off the edge 😈'); return;
+  }
+  moving.forEach(m => { grid[m.y][m.x] = null; });
+  const squashed = new Set();
+  moving.forEach(m => {
+    const under = grid[m.y + off.y][m.x + off.x];
+    if (under) squashed.add(under.id);
+    grid[m.y + off.y][m.x + off.x] = m.c;
+  });
+  if (squashed.size) forgetLinksTo(squashed);
+  save();
+}
+function deleteSelected() {
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++)
+      if (grid[y][x] && sel.has(grid[y][x].id)) grid[y][x] = null;
+  forgetLinksTo(sel);
+  if (sel.has(openId)) closePanel();
+  sel.clear();
+  save();
+  selectionBanner();
+}
+
+/* ---------- Trigger to block ---------- */
+let linkFrom = null;   // the trigger (or button) being connected
+function linkClick(c) {
+  if (!linkFrom) {
+    if (c && LINKERS.includes(c.t)) { linkFrom = c.id; banner('Click on a block/blocks'); }
+    else say('Click on one of your triggers (or a button) 😈');
+    return;
+  }
+  if (!c || c.id === linkFrom || c.t === 'hero') return;
+  const tr = byId(linkFrom).c;
+  tr.links = tr.links || [];
+  const i = tr.links.findIndex(l => l.id === c.id);
+  if (i >= 0) tr.links.splice(i, 1);               // click a connected block again to undo it
+  else tr.links.push({ id:c.id, actions:[] });
+  save();
+  banner('Click on a block/blocks', tr.links.length ? [['Done', finishLinking]] : []);
+}
+function finishLinking() {
+  const id = linkFrom;
+  setTool('cursor');
+  openPanel(id);
+}
+
+/* ---------- the message bar at the top ---------- */
+const bannerEl = document.getElementById('banner');
+function banner(text, buttons) {
+  bannerEl.innerHTML = '';
+  bannerEl.append(el('span', { textContent:text }));
+  (buttons || []).forEach(([label, fn]) => bannerEl.append(el('button', { textContent:label, onclick:fn })));
+  bannerEl.classList.add('show');
+}
+function hideBanner() { bannerEl.classList.remove('show'); }
+
+/* ---------- the Block properties panel ---------- */
+const panel = document.getElementById('panel');
+let openId = null, hoverLink = null;
+
+function el(tag, attrs, kids) {
+  const e = Object.assign(document.createElement(tag), attrs || {});
+  (kids || []).forEach(k => e.append(k));
+  return e;
+}
+function row(label, ...kids) {
+  return el('div', { className:'p-row' }, [el('span', { className:'p-label', textContent:label }), ...kids]);
+}
+function toggle(label, on, change) {
+  const box = el('input', { type:'checkbox', checked:!!on });
+  box.addEventListener('change', () => change(box.checked));
+  return el('label', { className:'p-row p-switch' },
+            [el('span', { className:'p-label', textContent:label }), box, el('span', { className:'knob' })]);
+}
+function pick(options, value, change) {
+  const s = el('select');
+  options.forEach(([v, t]) => s.append(el('option', { value:v, textContent:t })));
+  s.value = value;
+  s.addEventListener('change', () => change(s.value));
+  return s;
+}
+function number(value, min, max, step, change) {
+  const n = el('input', { type:'number', min, max, step, value });
+  n.addEventListener('input', () => {
+    const v = parseFloat(n.value);
+    if (!isNaN(v)) change(Math.max(min, Math.min(max, v)));
+  });
+  return n;
+}
+
+function openPanel(id) { openId = id; renderPanel(); }
+function closePanel() {
+  if (!panel.classList.contains('open')) return;
+  openId = null; hoverLink = null;
+  panel.classList.remove('open');
+  panel.innerHTML = '';
+  fit();
+}
+function renderPanel() {
+  const f = byId(openId);
+  if (!f) { closePanel(); return; }
+  const c = f.c, wasOpen = panel.classList.contains('open');
+  const scroll = panel.scrollTop;
+  panel.innerHTML = '';
+  panel.classList.add('open');
+
+  const icon = el('canvas', { width:80, height:80, className:'p-icon' });
+  drawIcon(icon.getContext('2d'), c.t, 0);
+  panel.append(el('div', { className:'p-head' }, [
+    icon, el('span', { className:'p-title', textContent:NAME[c.t] }),
+    el('button', { className:'p-close', textContent:'✕', title:'Close', onclick:closePanel })
+  ]));
+
+  panel.append(el('div', { className:'p-sub', textContent:'Block properties' }));
+  const pr = props(c), sw = SWITCHES[c.t] || [];
+  if (!sw.length) panel.append(el('p', { className:'p-note', textContent:'The hero has no properties.' }));
+  sw.forEach(k => {
+    panel.append(toggle(LABEL[k], pr[k], v => {
+      c.p = Object.assign({}, c.p, { [k]:v });
+      if (k === 'disguise' && v && !c.as) c.as = 'tile';
+      save(); renderPanel();
+    }));
+    if (k === 'disguise' && pr.disguise) {
+      panel.append(row('Block', pick(BLOCKS.map(b => [b.id, b.name]), c.as || 'tile',
+                                     v => { c.as = v; save(); })));
+    }
+  });
+
+  if (c.t === 'controls') controlsSection(c);
+  if (LINKERS.includes(c.t)) linksSection(c);
+  panel.scrollTop = scroll;
+  if (!wasOpen) fit();
+}
+
+function controlsSection(c) {
+  panel.append(el('div', { className:'p-sub', textContent:'Controls' }));
+  if (!c.controls) { c.controls = JSON.parse(JSON.stringify(BLOCK_CONTROLS)); save(); }
+  const ctl = c.controls;
+  [['left', 'Left ='], ['right', 'Right ='], ['up', 'Up =']].forEach(([k, label]) => {
+    const first = pick(KEYS, ctl[k][0], v => { ctl[k][0] = v; save(); });
+    const second = pick([['', '—']].concat(KEYS), ctl[k][1] || '',
+                        v => { ctl[k] = [ctl[k][0]].concat(v ? [v] : []); save(); });
+    panel.append(row(label, first, el('span', { className:'p-or', textContent:'or' }), second));
+  });
+  panel.append(row('Always going', pick([['0', 'No'], ['-1', 'Left'], ['1', 'Right']], String(ctl.auto || 0),
+                                        v => { ctl.auto = +v; save(); })));
+}
+
+function linksSection(c) {
+  panel.append(el('div', { className:'p-sub', textContent:'Connected blocks' }));
+  const links = c.links || [];
+  if (!links.length) {
+    panel.append(el('p', { className:'p-note', textContent:'Use 🔗 Trigger to block to connect this to blocks.' }));
+  }
+  links.forEach((l, i) => {
+    const t = byId(l.id);
+    if (!t) return;
+    const card = el('div', { className:'p-card' });
+    card.addEventListener('mouseenter', () => { hoverLink = l.id; });
+    card.addEventListener('mouseleave', () => { hoverLink = null; });
+    card.append(el('div', { className:'p-card-top' }, [
+      el('span', { textContent:'→ ' + NAME[t.c.t] }),
+      el('button', { className:'p-x', textContent:'✕', title:'Disconnect',
+                     onclick:() => { c.links.splice(i, 1); save(); renderPanel(); } })
+    ]));
+    l.actions = l.actions || [];
+    l.actions.forEach((a, j) => card.append(actionBox(l, a, j, t.c)));
+    card.append(el('button', { className:'p-add', textContent:'+ Add',
+                               onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
+    panel.append(card);
+  });
+}
+function actionBox(link, a, j, target) {
+  const box = el('div', { className:'p-action' });
+  box.append(row('Do', pick([['', '—'], ['size', 'Change size'], ['move', 'Movement'], ['props', 'Change properties']],
+    a.do, v => {
+      a.do = v;
+      if (v === 'size' && a.size === undefined) a.size = 2;
+      if (v === 'move') { a.dir = a.dir || 'up'; a.n = a.n || 1; a.speed = a.speed || 1; }   // Jos: starts on up, 1, speed 1
+      if (v === 'props' && !a.props) {
+        const tp = props(target);
+        a.props = {};
+        (SWITCHES[target.t] || []).filter(k => k !== 'disguise').forEach(k => { a.props[k] = !!tp[k]; });
+      }
+      save(); renderPanel();
+    }),
+    el('button', { className:'p-x', textContent:'🗑', title:'Remove',
+                   onclick:() => { link.actions.splice(j, 1); save(); renderPanel(); } })));
+  if (a.do === 'size') box.append(row('New size', number(a.size, .5, 6, .5, v => { a.size = v; save(); })));
+  if (a.do === 'move') {
+    box.append(row('Go', pick([['left', 'Left'], ['right', 'Right'], ['up', 'Up'], ['down', 'Down']], a.dir,
+                              v => { a.dir = v; save(); })));
+    box.append(row('How many blocks', number(a.n, 1, 31, 1, v => { a.n = v; save(); })));
+    box.append(row('Speed', number(a.speed, 1, 10, 1, v => { a.speed = v; save(); })));
+  }
+  if (a.do === 'props') {
+    box.append(el('div', { className:'p-mini', textContent:'New properties' }));
+    const keys = Object.keys(a.props || {});
+    if (!keys.length) box.append(el('p', { className:'p-note', textContent:'This block has no properties to change.' }));
+    keys.forEach(k => box.append(toggle(LABEL[k], a.props[k], v => { a.props[k] = v; save(); })));
+  }
+  return box;
+}
+
+/* ---------- keys ---------- */
+const keys = {};
+addEventListener('keydown', e => {
+  const typing = /INPUT|SELECT|TEXTAREA/.test(e.target.tagName);
+  if (play && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
+  if (play && e.code === 'Escape') stopTest();
+  if (!play && !typing) {
+    if (tool === 'select' && sel.size && (e.code === 'Delete' || e.code === 'Backspace')) {
+      e.preventDefault(); deleteSelected();
+    }
+    if (e.code === 'Escape') { if (sel.size || linkFrom) setTool(tool); else closePanel(); }
+  }
+  keys[e.code] = true;
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
 
 /* ---------- TEST: play your own level ---------- */
 const testBtn = document.getElementById('testBtn');
 const deathsEl = document.getElementById('deaths');
-const keys = {};
 let play = null, deaths = 0, bits = [];
 
-addEventListener('keydown', e => {
-  if (play && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
-  if (play && e.code === 'Escape') stopTest();
-  keys[e.code] = true;
-});
-addEventListener('keyup', e => { keys[e.code] = false; });
 testBtn.addEventListener('click', () => { play ? stopTest() : startTest(); testBtn.blur(); });
 
 function startTest() {
@@ -441,22 +748,36 @@ function startTest() {
   startChomp(() => {
     deaths = 0;
     deathsEl.textContent = '💀 0';
+    hideBanner();
     spawn();
     play.state = 'intro';         // nothing moves until his mouth is open
     document.body.classList.add('testing');
     fit();
   }, () => { if (play) play.state = 'play'; });
 }
+/* when you play, every block becomes a thing that can move, grow and change */
+function makeThings() {
+  const list = [];
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++) {
+      const c = grid[y][x];
+      if (!c || c.t === 'hero') continue;
+      const pr = props(c);
+      list.push({ id:c.id, t:c.t, x, y, w:1, h:1, pr, as:pr.disguise ? (c.as || 'tile') : null,
+                  links:c.links || [], controls:c.controls, pair:c.pair, dx:0, dy:0 });
+    }
+  return list;
+}
 function spawn() {
-  // every try starts fresh: coins come back, springs settle
+  // every try starts fresh: coins come back, traps reset
   const h = find('hero');
   play = { x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
-           ground:false, state:'play', timer:0, face:1, walkT:0,
-           got:{}, coins:0, springs:{} };
-  coinsEl.textContent = '🪙 0';
+           ground:false, state:'play', timer:0, face:1, walkT:0, coins:0,
+           things:makeThings(), on:null };
+  play.byId = {};
+  play.things.forEach(t => { play.byId[t.id] = t; });
 }
 
-const coinsEl = document.getElementById('coins');
 const coinSound = new Audio('sounds/coin.wav');   // Jos's coin sound
 function playCoin() {
   try { const s = coinSound.cloneNode(); s.play().catch(() => {}); } catch (e) {}
@@ -467,9 +788,10 @@ function stopTest() {
   startChomp(() => {
     play = null; bits = [];
     deathsEl.textContent = '';
-    coinsEl.textContent = '';
     document.body.classList.remove('testing');
     fit();
+    if (tool === 'select') selectionBanner();
+    if (tool === 'link') setTool('link');
   });
 }
 document.getElementById('editBtn').addEventListener('click', e => { stopTest(); e.target.blur(); });
@@ -570,23 +892,76 @@ function drawMouth(t) {
 }
 window.addEventListener('resize', sizeMouth);
 
-function solid(x, y) {
-  if (x < 0 || x >= T.cols || y < 0 || y >= T.rows) return false;
-  const c = grid[y][x];
-  return !!c && props(c).collision;
+/* ---------- portals come in pairs ----------
+   Jos: like Marble Run Builder, a portal needs a partner. The 1st and 2nd portals you put
+   down are a pair, then the 3rd and 4th. Delete one and its partner waits for a new one. */
+function fixPortals() {
+  const portals = grid.flat().filter(c => c && c.t === 'portal').sort((a, b) => a.id - b.id);
+  portals.forEach(c => {
+    const q = portals.find(o => o.id === c.pair);
+    if (!q || q.pair !== c.id) c.pair = null;
+  });
+  let waiting = null;
+  portals.forEach(c => {
+    if (c.pair) return;
+    if (waiting) { waiting.pair = c.id; c.pair = waiting.id; waiting = null; }
+    else waiting = c;
+  });
 }
-function eachCell(x, y, w, h, fn) {
-  for (let cy = Math.floor(y); cy <= Math.floor(y + h - 1e-6); cy++)
-    for (let cx = Math.floor(x); cx <= Math.floor(x + w - 1e-6); cx++) fn(cx, cy);
-}
+const portalSwitch = document.getElementById('portalLinks');
+try { portalSwitch.checked = localStorage.getItem('jos-ldlc-portal-links') === '1'; } catch (e) {}
+portalSwitch.addEventListener('change', () => {
+  try { localStorage.setItem('jos-ldlc-portal-links', portalSwitch.checked ? '1' : '0'); } catch (e) {}
+});
+
+/* ---------- playing: blocks move, grow and change when a trigger fires ---------- */
 function boxesTouch(ax, ay, aw, ah, bx, by, bw, bh) {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+function touching(x, y, w, h, fn) {
+  for (const t of play.things) if (!t.gone && boxesTouch(x, y, w, h, t.x, t.y, t.w, t.h)) fn(t);
+}
+function fire(t) {
+  if (t.fired) return;            // a trigger goes off once per try
+  t.fired = true;
+  t.links.forEach(l => {
+    const g = play.byId[l.id];
+    if (!g) return;
+    (l.actions || []).forEach(a => {
+      if (a.do === 'size') g.grow = { from:g.w, to:a.size || 1, t:0 };
+      if (a.do === 'move') {
+        // a distance to travel, not a spot to reach, so it still works if it grows too
+        const d = DIRS[a.dir || 'up'];
+        g.move = { dx:d[0], dy:d[1], left:a.n || 1, v:(a.speed || 1) * T.moveSpeed };
+      }
+      if (a.do === 'props') g.pr = Object.assign({}, g.pr, a.props || {});
+    });
+  });
+}
+function moveThings(dt) {
+  play.things.forEach(t => {
+    const ox = t.x, oy = t.y;
+    if (t.grow) {
+      t.grow.t += dt;
+      const k = Math.min(1, t.grow.t / .25), s = t.grow.from + (t.grow.to - t.grow.from) * k;
+      const mid = t.x + t.w / 2, bottom = t.y + t.h;        // it grows from its bottom middle
+      t.w = t.h = s; t.x = mid - s / 2; t.y = bottom - s;
+      if (k >= 1) t.grow = null;
+    }
+    if (t.move) {
+      const go = Math.min(t.move.left, t.move.v * dt);
+      t.x += t.move.dx * go; t.y += t.move.dy * go;
+      t.move.left -= go;
+      if (t.move.left <= 0) t.move = null;
+    }
+    t.dx = t.x - ox; t.dy = t.y - oy;
+    if (t.ext !== undefined) { t.ext += dt; if (t.ext > .5) t.ext = undefined; }
+  });
 }
 
 function step(dt) {
   const p = play, W = T.heroW, H = T.heroH;
-  // springs settle back down after they boot you
-  for (const k in p.springs) { p.springs[k] += dt; if (p.springs[k] > .5) delete p.springs[k]; }
+  moveThings(dt);
   if (p.state === 'intro') return;
   if (p.state === 'dead') {
     p.timer -= dt;
@@ -598,6 +973,17 @@ function step(dt) {
     if (p.wonT > DOOR.shut + DOOR.sink + 0.3) stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
+
+  // ride along on whatever you're standing on
+  if (p.on && p.ground) { p.x += p.on.dx; p.y += p.on.dy; }
+  // a moving block that runs into you pushes you out of the way
+  touching(p.x, p.y, W, H, t => {
+    if (!t.pr.collision) return;
+    const l = p.x + W - t.x, r = t.x + t.w - p.x, u = p.y + H - t.y, d = t.y + t.h - p.y;
+    const m = Math.min(l, r, u, d);
+    if (m === l) p.x -= l; else if (m === r) p.x += r; else if (m === u) p.y -= u; else p.y += d;
+  });
+
   const ctl = p.controls || CONTROLS;
   const held  = list => list.some(k => keys[k]);
   const left  = held(ctl.left);
@@ -613,87 +999,89 @@ function step(dt) {
 
   p.x += p.vx * dt;
   p.x = Math.max(0, Math.min(T.cols - W, p.x));
-  eachCell(p.x, p.y, W, H, (cx, cy) => {
-    if (!solid(cx, cy)) return;
-    if (p.vx > 0) p.x = cx - W;
-    else if (p.vx < 0) p.x = cx + 1;
+  touching(p.x, p.y, W, H, t => {
+    if (!t.pr.collision) return;
+    if (p.vx > 0) p.x = t.x - W;
+    else if (p.vx < 0) p.x = t.x + t.w;
   });
 
   const oldBottom = p.y + H;
   p.y += p.vy * dt;
-  p.ground = false;
+  p.ground = false; p.on = null;
   if (p.y < 0) { p.y = 0; p.vy = 0; }
-  eachCell(p.x, p.y, W, H, (cx, cy) => {
-    if (!solid(cx, cy)) return;
-    if (p.vy > 0) { p.y = cy - H; p.vy = 0; p.ground = true; }
-    else if (p.vy < 0) { p.y = cy + 1; p.vy = 0; }
+  touching(p.x, p.y, W, H, t => {
+    if (!t.pr.collision) return;
+    if (p.vy > 0) { p.y = t.y - H; p.vy = 0; p.ground = true; p.on = t; }
+    else if (p.vy < 0) { p.y = t.y + t.h; p.vy = 0; }
   });
-
   // one way: you only land on it coming down from above
   if (p.vy >= 0) {
-    eachCell(p.x, p.y, W, H, (cx, cy) => {
-      const c = at(cx, cy);
-      if (!c || c.t !== 'oneway') return;
-      const top = cy + .1;
-      if (oldBottom <= top + .01 && p.y + H >= top) {
-        p.y = top - H; p.vy = 0; p.ground = true;
-      }
+    touching(p.x, p.y, W, H, t => {
+      if (t.t !== 'oneway') return;
+      const top = t.y + .1 * t.h;
+      if (oldBottom <= top + .01 && p.y + H >= top) { p.y = top - H; p.vy = 0; p.ground = true; p.on = t; }
     });
   }
 
   if (p.y > T.rows + 1) { die(); return; }
 
-  eachCell(p.x, p.y, W, H, (cx, cy) => {
+  let inPortal = null;
+  touching(p.x, p.y, W, H, t => {
     if (p.state !== 'play') return;
-    const c = at(cx, cy);
-    if (!c) return;
-    const pr = props(c), key = cx + ',' + cy;
+    const pr = t.pr;
 
     if (pr.deadly) {
       let hit;
-      if (c.t === 'sawblade') {                   // round blade: only the circle gets you
-        const nx = Math.max(p.x, Math.min(cx + .5, p.x + W));
-        const ny = Math.max(p.y, Math.min(cy + .5, p.y + H));
-        hit = Math.hypot(nx - cx - .5, ny - cy - .5) < .42;
-      } else if (HITBOX[c.t]) {                   // a spike only gets you on the pointy part
-        const [bx, by, bw, bh] = HITBOX[c.t];
-        hit = boxesTouch(p.x, p.y, W, H, cx + bx, cy + by, bw, bh);
+      if (t.t === 'sawblade') {                   // round blade: only the circle gets you
+        const cx = t.x + t.w / 2, cy = t.y + t.h / 2;
+        const nx = Math.max(p.x, Math.min(cx, p.x + W)), ny = Math.max(p.y, Math.min(cy, p.y + H));
+        hit = Math.hypot(nx - cx, ny - cy) < .42 * t.w;
+      } else if (HITBOX[t.t]) {                   // a spike only gets you on the pointy part
+        const [bx, by, bw, bh] = HITBOX[t.t];
+        hit = boxesTouch(p.x, p.y, W, H, t.x + bx * t.w, t.y + by * t.h, bw * t.w, bh * t.h);
       } else hit = true;
       if (hit) { die(); return; }
     }
-
-    if (c.t === 'spring' && pr.action && p.vy >= 0 && p.y + H > cy + .75) {
+    if (t.t === 'spring' && pr.action && p.vy >= 0 && p.y + H > t.y + .75 * t.h) {
       // land on the slab: the bar shoots up and boots you
       p.vy = -T.springBoot; p.ground = false; p.booted = true;
-      p.springs[key] = 0;
+      t.ext = 0;
     }
-
-    if (c.t === 'coin' && pr.action && !p.got[key] &&
-        boxesTouch(p.x, p.y, W, H, cx + .3, cy + .3, .4, .4)) {
-      p.got[key] = true;
-      p.coins++;
-      coinsEl.textContent = '🪙 ' + p.coins;
+    if (t.t === 'coin' && pr.action && !t.gone &&
+        boxesTouch(p.x, p.y, W, H, t.x + .3 * t.w, t.y + .3 * t.h, .4 * t.w, .4 * t.h)) {
+      t.gone = true;
       playCoin();
       for (let k = 0; k < 8; k++) {
-        bits.push({ x:cx + .5, y:cy + .5, vx:(Math.random() - .5) * 6, vy:-3 - Math.random() * 4,
-                    life:.5, col:COL.gold });
+        bits.push({ x:t.x + t.w / 2, y:t.y + t.h / 2, vx:(Math.random() - .5) * 6,
+                    vy:-3 - Math.random() * 4, life:.5, col:COL.gold });
       }
     }
-
-    if (c.t === 'controls' && pr.action) {
-      // touching an Edit controls block swaps in its controls (set in Block properties)
-      p.controls = Object.assign({}, CONTROLS, c.controls || {});
+    if (t.t === 'controls' && pr.action) p.controls = Object.assign({}, BLOCK_CONTROLS, t.controls || {});
+    if (t.t === 'trigger' && pr.action) fire(t);
+    if (t.t === 'button' && boxesTouch(p.x, p.y, W, H, t.x + .14 * t.w, t.y + .5 * t.h, .72 * t.w, .5 * t.h)) {
+      t.pressed = true;                           // Jos: it goes down when you stand on it
+      if (pr.action) fire(t);
     }
-
-    if (c.t === 'door' && boxesTouch(p.x, p.y, W, H, cx + .2, cy + .2, .6, .8)) {
+    if (t.t === 'portal' && pr.action &&
+        boxesTouch(p.x, p.y, W, H, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .6 * t.h)) inPortal = t;
+    if (t.t === 'door' && boxesTouch(p.x, p.y, W, H, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .8 * t.h)) {
       // pulled into the middle of the door
-      p.state = 'won'; p.wonT = 0; p.door = { x:cx, y:cy };
-      p.x = cx + (1 - W) / 2; p.y = cy + 1 - H; p.vx = p.vy = 0;
+      p.state = 'won'; p.wonT = 0; p.door = t;
+      p.x = t.x + (t.w - W) / 2; p.y = t.y + t.h - H; p.vx = p.vy = 0;
     }
   });
-}
-function at(x, y) {
-  return (x < 0 || y < 0 || x >= T.cols || y >= T.rows) ? null : grid[y][x];
+
+  // portals: step in one, come out of its partner (and don't bounce straight back)
+  if (p.state === 'play' && inPortal) {
+    if (inPortal.id !== p.portalLock) {
+      const out = play.byId[inPortal.pair];
+      if (out) {
+        p.x = out.x + (out.w - W) / 2;
+        p.y = out.y + (out.h - H) / 2;
+        p.portalLock = out.id;
+      }
+    }
+  } else p.portalLock = null;
 }
 
 function die() {
@@ -719,52 +1107,148 @@ function springExt(t) {
   if (t < .16) return 1;              // holds
   return Math.max(0, 1 - (t - .16) / .3);   // settles back
 }
+function line(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+function outline(x, y, col, w) {
+  ctx.strokeStyle = col; ctx.lineWidth = w || 2;
+  ctx.strokeRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+}
+
 function render(time) {
-  const W = cell * T.cols, H = cell * T.rows;
-  ctx.fillStyle = '#12000a'; ctx.fillRect(0, 0, W, H);
-
-  if (!play) {                                   // faint grid while you build
-    ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 1; x < T.cols; x++) { ctx.moveTo(x * cell + .5, 0); ctx.lineTo(x * cell + .5, H); }
-    for (let y = 1; y < T.rows; y++) { ctx.moveTo(0, y * cell + .5); ctx.lineTo(W, y * cell + .5); }
-    ctx.stroke();
-  }
-
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++) {
-      const c = grid[y][x];
-      if (!c) continue;
-      const key = x + ',' + y;
-      if (play) {
-        if (c.t === 'hero') continue;            // the real hero is the moving one
-        if (!props(c).visible) continue;         // triggers can't be seen when you play
-        if (c.t === 'coin' && play.got[key]) continue;
-        if (c.t === 'spring') { drawSpring(ctx, x * cell, y * cell, cell, springExt(play.springs[key])); continue; }
-        if (play.state === 'won' && c.t === 'door') {
-          drawDoorClosing(ctx, x * cell, y * cell, cell, play.wonT, heroNow);
-          continue;
-        }
-      }
-      drawBlock(ctx, c.t, x * cell, y * cell, cell, time);
-    }
-
-  if (!play && hover) {                          // preview where the block will go
-    const hx = hover.x * cell, hy = hover.y * cell;
-    if (tool === 'erase') {
-      ctx.strokeStyle = '#ff2a3d'; ctx.lineWidth = 2; ctx.strokeRect(hx + 1, hy + 1, cell - 2, cell - 2);
-    } else if (tool === 'place') {
-      ctx.globalAlpha = .45; drawBlock(ctx, chosen, hx, hy, cell, time); ctx.globalAlpha = 1;
-    }
-  }
-
-  if (play && (play.state === 'play' || play.state === 'intro')) heroNow();
+  ctx.fillStyle = '#12000a'; ctx.fillRect(0, 0, cell * T.cols, cell * T.rows);
+  if (play) renderPlay(time); else renderEditor(time);
   bits.forEach(b => {
     ctx.fillStyle = b.col || '#fff';
     ctx.globalAlpha = Math.max(0, b.life);
     ctx.fillRect(b.x * cell - cell * .08, b.y * cell - cell * .08, cell * .16, cell * .16);
   });
   ctx.globalAlpha = 1;
+}
+
+function renderPlay(time) {
+  for (const t of play.things) {
+    if (t.gone || !t.pr.visible) continue;       // triggers can't be seen when you play
+    const X = t.x * cell, Y = t.y * cell, S = t.w * cell;
+    if (play.state === 'won' && play.door === t) { drawDoorClosing(ctx, X, Y, S, play.wonT, heroNow); continue; }
+    if (!t.as && t.t === 'spring') { drawSpring(ctx, X, Y, S, springExt(t.ext)); continue; }
+    if (!t.as && t.t === 'button') { drawButton(ctx, X, Y, S, t.pressed); continue; }
+    drawBlock(ctx, t.as || t.t, X, Y, S, time);
+  }
+  if (play.state === 'play' || play.state === 'intro') heroNow();
+}
+
+function renderEditor(time) {
+  const W = cell * T.cols, H = cell * T.rows;
+  ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;    // faint grid while you build
+  ctx.beginPath();
+  for (let x = 1; x < T.cols; x++) { ctx.moveTo(x * cell + .5, 0); ctx.lineTo(x * cell + .5, H); }
+  for (let y = 1; y < T.rows; y++) { ctx.moveTo(0, y * cell + .5); ctx.lineTo(W, y * cell + .5); }
+  ctx.stroke();
+
+  const off = moveDrag ? moveDrag.off : { x:0, y:0 };
+  const drawn = [];
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++) {
+      const c = grid[y][x];
+      if (!c) continue;
+      if (sel.has(c.id)) { drawn.push({ x:x + off.x, y:y + off.y, c }); continue; }   // selected ones go on top
+      drawCell(c, x, y, time);
+    }
+  drawn.forEach(d => {
+    drawCell(d.c, d.x, d.y, time);
+    ctx.fillStyle = 'rgba(93,200,255,.22)'; ctx.fillRect(d.x * cell, d.y * cell, cell, cell);
+    outline(d.x, d.y, '#5dc8ff');
+  });
+
+  if (boxDrag) {                                 // Jos: a dotted box
+    ctx.setLineDash([6, 4]); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(Math.min(boxDrag.x0, boxDrag.x1) * cell, Math.min(boxDrag.y0, boxDrag.y1) * cell,
+                   Math.abs(boxDrag.x1 - boxDrag.x0) * cell, Math.abs(boxDrag.y1 - boxDrag.y0) * cell);
+    ctx.setLineDash([]);
+  }
+
+  if (portalSwitch.checked) drawPortalLinks();
+
+  const open = openId && byId(openId);
+  if (open) { drawLinks(open, time); outline(open.x, open.y, COL.gold, 3); }
+  const from = linkFrom && byId(linkFrom);
+  if (from) { drawLinks(from, time); outline(from.x, from.y, COL.green, 3); }
+
+  if (hover) {                                   // what's under the mouse
+    const hx = hover.x * cell, hy = hover.y * cell;
+    if (tool === 'erase') outline(hover.x, hover.y, '#ff2a3d');
+    else if (tool === 'place') { ctx.globalAlpha = .45; drawBlock(ctx, chosen, hx, hy, cell, time); ctx.globalAlpha = 1; }
+    else if ((tool === 'cursor' || tool === 'link') && grid[hover.y][hover.x]) outline(hover.x, hover.y, '#fff');
+  }
+}
+function drawCell(c, x, y, time) {
+  drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time);
+  if (props(c).disguise) {                       // a little mask, so you know it's in disguise
+    ctx.font = Math.round(cell * .38) + 'px sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.fillText('🎭', (x + 1) * cell - 1, y * cell + 1);
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+  }
+}
+function drawLinks(f, time) {
+  const c = f.c;
+  (c.links || []).forEach(l => {
+    const t = byId(l.id);
+    if (!t) return;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = l.id === hoverLink ? '#fff' : 'rgba(93,255,138,.85)'; ctx.lineWidth = 2;
+    line((f.x + .5) * cell, (f.y + .5) * cell, (t.x + .5) * cell, (t.y + .5) * cell);
+    ctx.setLineDash([]);
+    outline(t.x, t.y, l.id === hoverLink ? '#fff' : COL.green);
+    (l.actions || []).forEach(a => {
+      if (a.do === 'move') {
+        // Jos: a little green dot where it will go, yellow lines going to it at its speed
+        const d = DIRS[a.dir || 'up'], n = a.n || 1;
+        const sx = (t.x + .5) * cell, sy = (t.y + .5) * cell;
+        const ex = sx + d[0] * n * cell, ey = sy + d[1] * n * cell;
+        ctx.strokeStyle = COL.gold; ctx.lineWidth = 3;
+        ctx.setLineDash([cell * .22, cell * .18]);
+        ctx.lineDashOffset = -time * (a.speed || 1) * T.moveSpeed * cell;
+        line(sx, sy, ex, ey);
+        ctx.setLineDash([]); ctx.lineDashOffset = 0;
+        ctx.fillStyle = COL.green;
+        ctx.beginPath(); ctx.arc(ex, ey, cell * .16, 0, Math.PI * 2); ctx.fill();
+      }
+      if (a.do === 'size') {                     // a dashed outline of its new size
+        const s = (a.size || 1) * cell;
+        ctx.strokeStyle = COL.gold; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+        ctx.strokeRect((t.x + .5) * cell - s / 2, (t.y + 1) * cell - s, s, s);
+        ctx.setLineDash([]);
+      }
+    });
+  });
+}
+function drawPortalLinks() {
+  const portals = [];
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++)
+      if (grid[y][x] && grid[y][x].t === 'portal') portals.push({ x, y, c:grid[y][x] });
+  const done = new Set();
+  let n = 0;
+  portals.sort((a, b) => a.c.id - b.c.id).forEach(a => {
+    if (done.has(a.c.id)) return;
+    const b = portals.find(q => q.c.id === a.c.pair);
+    const label = b ? String(++n) : '?';
+    [a, b].forEach(q => {
+      if (!q) return;
+      done.add(q.c.id);
+      ctx.fillStyle = '#5dc8ff';
+      ctx.beginPath(); ctx.arc((q.x + .85) * cell, (q.y + .15) * cell, cell * .2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.font = 'bold ' + Math.round(cell * .28) + 'px Nunito';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, (q.x + .85) * cell, (q.y + .15) * cell + 1);
+      ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+    });
+    if (b) {
+      ctx.strokeStyle = '#5dc8ff'; ctx.lineWidth = 2; ctx.setLineDash([3, 5]);
+      line((a.x + .5) * cell, (a.y + .5) * cell, (b.x + .5) * cell, (b.y + .5) * cell);
+      ctx.setLineDash([]);
+    }
+  });
 }
 
 let last = performance.now();
@@ -796,12 +1280,14 @@ function say(msg, win) {
 
 /* ---------- start ---------- */
 load();
-if (!find('hero') && !grid.some(r => r.some(Boolean))) {
+giveIds();
+if (!grid.some(r => r.some(Boolean))) {
   // a brand-new level starts with a floor, the hero and the door, so TEST works straight away
-  for (let x = 0; x < T.cols; x++) grid[T.rows - 1][x] = { t:'tile' };
-  grid[T.rows - 2][1] = { t:'hero' };
-  grid[T.rows - 2][T.cols - 2] = { t:'door' };
+  for (let x = 0; x < T.cols; x++) grid[T.rows - 1][x] = { t:'tile', id:nextId++ };
+  grid[T.rows - 2][1] = { t:'hero', id:nextId++ };
+  grid[T.rows - 2][T.cols - 2] = { t:'door', id:nextId++ };
 }
+fixPortals();
 refreshButtons();
 fit();
 requestAnimationFrame(loop);
