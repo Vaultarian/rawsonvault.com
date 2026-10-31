@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDLC Levels — Jos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== LDLC — your levels =====
+   Jos: CREATE A LEVEL shows every level you made. None yet? It says Create a level now, with an
+   arrow to the Create button in the corner. */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family:'Nunito', sans-serif; color:#fff; overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%, #4a0010 0%, #1a0005 55%, #000 100%);
+}
+.back-link {
+  position:fixed; top:20px; left:20px; z-index:10; font-family:'Fredoka One', cursive;
+  color:#ffffff44; text-decoration:none; font-size:1rem; transition:color .2s;
+}
+.back-link:hover { color:#fff; }
+h1 {
+  position:fixed; top:56px; left:24px; font-family:'Fredoka One', cursive; font-weight:400;
+  font-size:2.2rem; color:#ff2a3d; text-shadow:0 0 18px #ff2a3d88;
+}
+
+/* ---- the levels ---- */
+#list {
+  position:absolute; top:120px; left:0; right:200px; bottom:0; overflow-y:auto;
+  padding:0 24px 40px; display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  gap:18px; align-content:start;
+}
+.level {
+  display:flex; flex-direction:column; gap:8px; padding:10px; border-radius:14px;
+  background:#1c0008; border:2px solid #ff2a3d55; color:#fff; text-decoration:none;
+  font-family:'Fredoka One', cursive; font-size:1.15rem; transition:transform .15s, border-color .15s;
+}
+.level:hover { transform:translateY(-4px); border-color:#ff2a3d; }
+.level canvas { width:100%; aspect-ratio:16 / 9; border-radius:8px; display:block; }
+
+/* ---- no levels yet ---- */
+#empty {
+  display:none; position:absolute; top:46%; left:50%; transform:translate(-50%, -50%);
+  font-family:'Fredoka One', cursive; font-size:clamp(2rem, 5vw, 3.4rem); white-space:nowrap;
+  text-shadow:0 0 24px #ff2a3d;
+}
+#arrow { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; animation:nudge 1s ease-in-out infinite; }
+body.none #empty, body.none #arrow { display:block; }
+@keyframes nudge { 50% { transform:translate(10px, -8px); } }
+
+/* ---- Jos's Create button: a black square with a white circle, and the word Create ---- */
+#createBtn {
+  position:fixed; top:18px; right:24px; z-index:20; width:160px; display:flex; flex-direction:column; align-items:center;
+  gap:6px; padding:14px 18px 10px; border:none; border-radius:18px; cursor:pointer;
+  background:#fbfaf7; box-shadow:0 8px 24px rgba(0,0,0,.45); transition:transform .15s;
+}
+#createBtn:hover { transform:scale(1.04); }
+#createBtn canvas { width:120px; height:120px; display:block; }
+#createBtn span {
+  font-family:'Nunito', sans-serif; font-weight:900; font-size:1.5rem; color:#111;
+  letter-spacing:.02em; white-space:nowrap; transition:letter-spacing .25s;
+}
+</style>
+</head>
+<body>
+  <a class="back-link" href="index.html">← Back</a>
+  <h1>MY LEVELS</h1>
+  <div id="list"></div>
+  <div id="empty">Create a level now</div>
+  <svg id="arrow"><defs><marker id="head" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#fff"/></marker></defs>
+    <path id="arrowPath" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" marker-end="url(#head)"/></svg>
+  <button id="createBtn"><canvas width="240" height="240"></canvas><span>Create</span></button>
+
+<script src="levels.js"></script>
+<script>
+/* ---------- your levels, each with a little picture of it ---------- */
+const LOOK = { tile:'#ff2a3d', spike:'#ececf2', smallspike:'#ececf2', sawblade:'#ececf2', spring:'#ffd23f',
+               coin:'#ffd23f', oneway:'#9a9aa8', portal:'#fff', button:'#9a6233', door:'#ffd23f', hero:'#fff' };
+function thumb(c, grid) {
+  const s = 10;                                   // 32 × 18 squares → 320 × 180
+  c.fillStyle = '#12000a'; c.fillRect(0, 0, 320, 180);
+  (grid || []).forEach((row, y) => (row || []).forEach((cell, x) => {
+    [cell, cell && cell.inner].forEach(b => {
+      if (!b || (b.p && b.p.visible === false)) return;
+      const t = b.p && b.p.disguise ? (b.as || 'tile') : b.t;
+      c.fillStyle = LOOK[t] || LOOK.coin;
+      if (!LOOK[t]) return;                       // triggers and Edit controls can't be seen
+      if (t === 'tile') c.fillRect(x * s, y * s, s + .5, s + .5);
+      else if (t === 'coin') { c.beginPath(); c.arc(x * s + 5, y * s + 5, 2.5, 0, 7); c.fill(); }
+      else if (t.includes('spike')) { c.beginPath(); c.moveTo(x * s + 1, y * s + s); c.lineTo(x * s + 5, y * s + 3); c.lineTo(x * s + 9, y * s + s); c.fill(); }
+      else if (t === 'hero') c.fillRect(x * s + 3, y * s + 2, 4, 8);
+      else if (t === 'door') c.fillRect(x * s + 1, y * s, 8, s);
+      else c.fillRect(x * s + 2, y * s + 2, 6, 6);
+    });
+  }));
+}
+const levels = LDLC.list();
+const listEl = document.getElementById('list');
+levels.forEach(l => {
+  const a = document.createElement('a');
+  a.className = 'level';
+  a.href = 'editor.html?level=' + encodeURIComponent(l.id);
+  const cv = document.createElement('canvas');
+  cv.width = 320; cv.height = 180;
+  thumb(cv.getContext('2d'), LDLC.read(LDLC.key('level', l.id)));
+  a.append(cv, Object.assign(document.createElement('span'), { textContent:l.name }));
+  listEl.append(a);
+});
+if (!levels.length) document.body.classList.add('none');
+
+/* ---------- Jos's Create button ----------
+   It starts as a black square with a white circle. Point at it and its animation plays from the
+   start: the square turns into lots of different pictures, then back to black and white, and again. */
+const btn = document.getElementById('createBtn');
+const word = btn.querySelector('span');
+const c = btn.querySelector('canvas').getContext('2d');
+const Z = 240, LOOP = 6;                          // 240 × 240 canvas; the whole animation is 6 seconds
+const SCENES = [                                  // starts at (seconds), which picture, how big the square is
+  [0, 'rest', .72], [.25, 'picker', .96], [1, 'code', .96], [1.75, 'ball', .96], [2.5, 'indigo', .8],
+  [3, 'dusk', .86], [3.5, 'gold', .76], [3.8, 'ribbons', .8], [4.4, 'sunset', .76], [4.7, 'orbit', .76],
+  [5, 'steel', .72], [5.35, 'rest', .72]
+];
+const CODE = ['const coin = level.find(b => b.t === "coin");', 'if (coin.needed) door.sink = 1;',
+  'hero.vy = -Math.sqrt(2 * g * strength);', 'for (const t of play.things) {', '  if (t.fired) return;',
+  'devil.say("Noooooo");', 'spike.deadly = true;', 'trigger.links.push({ id, delay });',
+  'portal.out = "left";', 'level.edges.floor = "edge";', '}', 'save();'];
+
+function grad(x0, y0, x1, y1, stops) {
+  const g = c.createLinearGradient(x0, y0, x1, y1);
+  stops.forEach((col, i) => g.addColorStop(i / (stops.length - 1), col));
+  return g;
+}
+function ball(x, y, r, fill) { c.fillStyle = fill; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
+function sphere(x, y, r, light, dark) {
+  const g = c.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r);
+  g.addColorStop(0, light); g.addColorStop(1, dark);
+  ball(x, y, r, g);
+}
+const DRAW = {
+  rest(x, y, S, k, m) { c.fillStyle = '#000'; c.fillRect(x, y, S, S); ball(m, m, S * .32, '#fff'); },
+  picker(x, y, S, k, m) {
+    c.fillStyle = grad(x, y, x + S, y + S, ['#3b2bb8', '#8b74d6', '#f2a23a']); c.fillRect(x, y, S, S);
+    c.fillStyle = '#fffdf8'; c.fillRect(m - S * .34, m - S * .34, S * .68, S * .68);
+    const g = c.createConicGradient(k * 2, m, m);
+    ['#6a5cf0', '#c27ad8', '#f2a23a', '#9be05a', '#4fb3e0', '#6a5cf0'].forEach((col, i, a) => g.addColorStop(i / (a.length - 1), col));
+    ball(m, m, S * .25, g);
+    c.strokeStyle = '#fff'; c.lineWidth = 3;
+    for (let i = 0; i < 5; i++) {
+      const a = i * 1.26 + k * 1.5, d = S * (i ? .17 : 0);
+      c.beginPath(); c.arc(m + Math.cos(a) * d, m + Math.sin(a) * d, 5, 0, Math.PI * 2); c.stroke();
+    }
+  },
+  code(x, y, S, k, m) {
+    c.fillStyle = '#0d1710'; c.fillRect(x, y, S, S);
+    c.font = '11px monospace';
+    const lines = (col, step, off) => {
+      c.fillStyle = col;
+      for (let i = -1; i < S / step + 1; i++) c.fillText(CODE[(i + 40 + Math.floor(off / step)) % CODE.length], x + 4, y + i * step - off % step + step);
+    };
+    lines('#4fae6a66', 13, k * 60);
+    c.save(); c.beginPath(); c.arc(m, m, S * .3, 0, Math.PI * 2); c.clip();
+    c.fillStyle = '#0d1710cc'; c.fillRect(x, y, S, S);
+    lines('#c8ffd6', 9, k * 90);
+    c.restore();
+  },
+  ball(x, y, S, k, m) {
+    c.fillStyle = grad(x, y, x, y + S, ['#3f33c9', '#9c94ff']); c.fillRect(x, y, S, S);
+    c.strokeStyle = '#ffffff40'; c.lineWidth = 1.5;
+    for (let i = 1; i < 4; i++) {
+      c.beginPath(); c.moveTo(x + S * i / 4, y); c.lineTo(x + S * i / 4, y + S);
+      c.moveTo(x, y + S * i / 4); c.lineTo(x + S, y + S * i / 4); c.stroke();
+    }
+    const p = Math.min(1, k / .6), e = 1 - (1 - p) ** 3;
+    const bx = x + S * (.3 + .2 * e), by = y + S * (.75 - .27 * e), r = S * (.17 + .09 * e);
+    c.fillStyle = '#ffffff40';                    // its light trail
+    c.beginPath(); c.moveTo(x, y + S); c.lineTo(bx - r, by); c.lineTo(bx + r * .7, by + r * .7); c.lineTo(x + S * .35, y + S); c.fill();
+    sphere(bx, by, r, '#fff', '#8f86ea');
+  },
+  indigo(x, y, S, k, m) { c.fillStyle = grad(x, y, x + S, y + S, ['#2c1fb0', '#7468f2']); c.fillRect(x, y, S, S); ball(m, m, S * .32, '#fff'); },
+  dusk(x, y, S, k, m) {
+    c.fillStyle = grad(x, y, x, y + S, ['#c9c5ff', '#4b43d6', '#0b0b2a']); c.fillRect(x, y, S, S);
+    ball(m, m, S * .16, grad(m, m - S * .16, m, m + S * .16, ['#fff', '#8f88ff']));
+  },
+  gold(x, y, S, k, m) {
+    c.fillStyle = grad(x, y, x + S, y + S, ['#ffe74a', '#f6b23a', '#f07a24']); c.fillRect(x, y, S, S);
+    sphere(m, m, S * .2, '#ffd27a', '#8a64d0');
+  },
+  ribbons(x, y, S, k, m) {
+    c.fillStyle = '#cfcdff'; c.fillRect(x, y, S, S);
+    ['#3d2fd0', '#8fd14f', '#6a5cf0', '#4a3cc8', '#b2a9ff', '#5b4ee8'].forEach((col, i) => {
+      c.fillStyle = col; c.beginPath();
+      const top = y + S * (i / 6) - S * .1;
+      c.moveTo(x, y + S);
+      for (let px = 0; px <= S; px += 6) c.lineTo(x + px, top + Math.sin(px / S * 6 + k * 3 + i) * S * .12);
+      c.lineTo(x + S, y + S); c.fill();
+    });
+    ball(m, m, S * .26, '#fff');
+  },
+  sunset(x, y, S, k, m) { c.fillStyle = grad(x, y, x + S, y, ['#f2481d', '#f6a07a', '#d9d9ff']); c.fillRect(x, y, S, S); ball(m, m, S * .27, '#fff'); },
+  orbit(x, y, S, k, m) {
+    c.fillStyle = '#1b1a6a'; c.fillRect(x, y, S, S);
+    c.fillStyle = '#ffffff70';
+    for (let i = 1; i < 6; i++) for (let j = 1; j < 6; j++) ball(x + S * i / 6, y + S * j / 6, 1.6, '#ffffff70');
+    c.strokeStyle = '#ffffffaa'; c.lineWidth = 1.5; c.beginPath(); c.arc(m, m, S * .36, 0, Math.PI * 2); c.stroke();
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + k * 2; ball(m + Math.cos(a) * S * .36, m + Math.sin(a) * S * .36, 4, '#fff'); }
+    sphere(m, m, S * .24, '#f0eeff', '#7d74f0');
+  },
+  steel(x, y, S, k, m) {
+    c.fillStyle = grad(x, y, x + S, y + S, ['#7d8898', '#dfe3ea']); c.fillRect(x, y, S, S);
+    c.strokeStyle = '#4a7dff'; c.lineWidth = 2; c.setLineDash([6, 5]);
+    c.beginPath(); c.moveTo(x + S * .5, y); c.lineTo(x + S * .5, m - S * .25); c.moveTo(m + S * .25, m); c.lineTo(x + S, m); c.stroke();
+    c.setLineDash([]);
+    ball(m, m, S * .25, '#fff');
+  }
+};
+function drawCreate(t) {
+  let i = SCENES.length - 1;
+  while (SCENES[i][0] > t) i--;
+  const [start, name, size] = SCENES[i];
+  const S = Z * size, x = (Z - S) / 2, y = (Z - S) / 2;
+  c.clearRect(0, 0, Z, Z);
+  c.save();
+  c.beginPath(); c.rect(x, y, S, S); c.clip();
+  DRAW[name](x, y, S, t - start, Z / 2);
+  c.restore();
+  word.style.letterSpacing = name === 'dusk' ? '.45em' : '';   // the word spreads out for a moment
+}
+let t0 = 0, raf = 0;
+function frame(now) {
+  drawCreate((Math.max(0, now - t0) / 1000) % LOOP);   // back to black and white, then it plays again
+  raf = requestAnimationFrame(frame);
+}
+btn.addEventListener('mouseenter', () => {        // from the start every time you point at it
+  cancelAnimationFrame(raf);
+  t0 = performance.now();
+  raf = requestAnimationFrame(frame);
+});
+btn.addEventListener('mouseleave', () => { cancelAnimationFrame(raf); drawCreate(0); });
+btn.addEventListener('click', () => {
+  const level = LDLC.make();
+  location.href = 'editor.html?level=' + encodeURIComponent(level.id);
+});
+drawCreate(0);
+
+/* ---------- no levels yet: an arrow from the words to the Create button ---------- */
+function pointArrow() {
+  const m = document.getElementById('empty').getBoundingClientRect(), b = btn.getBoundingClientRect();
+  const x1 = m.right - m.width * .15, y1 = m.top - 14, x2 = b.left - 26, y2 = b.top + b.height * .55;
+  document.getElementById('arrowPath').setAttribute('d',
+    `M${x1},${y1} Q${x1 + (x2 - x1) * .2},${y2} ${x2},${y2}`);
+}
+if (!levels.length) { pointArrow(); addEventListener('resize', pointArrow); }
+</script>
+</body>
+</html>

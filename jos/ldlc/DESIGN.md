@@ -316,6 +316,26 @@ triggers/buttons."*
 - Click as many triggers and buttons as you like (each one goes green). Click one again to drop it.
 - Then click blocks: every chosen trigger/button connects to each block. Click a block again to undo it.
 
+## My levels and the Create button (31 Oct)
+
+Jos: *"when you click create a level, it will show a list of all the levels you created. If you
+haven't created any, it will say create a level now and it will have an arrow pointing towards the
+corner where a create button is."*
+
+- **CREATE A LEVEL** now opens **MY LEVELS** (`levels.html`): a card for every level you made, with
+  a little picture of it. Click a card to open that level in the creator.
+- No levels yet: it says **Create a level now**, with an arrow to the Create button.
+- Every level saves itself, on its own: its blocks, its edges and its Start pos.
+- **The Create button**, from Jos's screen recording: *"change 'Wix studio' to create. and don't add
+  that 'Go to link' button… The create button starts as just the black background and white
+  circle… when you hover your cursor over it, it does the animation from the start. And once it
+  gets back to the black background and white circle, the video restarts and plays again."*
+  Carl drew the pictures to match the video: a colour wheel, a circle made of code, a shiny ball on
+  a grid, indigo, a purple sunset (the word spreads out), gold, wavy ribbons, orange, an orbit, grey
+  with guide lines, then back to black and white. 6 seconds, then again.
+- Click **Create**: a new level (Level 1, Level 2…) opens in the creator.
+- The level you had before today became **Level 1**, so nothing was lost.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -355,6 +375,11 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- The Create button is in the **top right** corner, because LANGUAGE and MODS are in the bottom
+  right.
+- Levels are called Level 1, Level 2… There is no way to rename or delete a level yet.
+- The creator's **← Back** now goes to My levels, not the front page.
 
 - Start pos is not in the disguise list (it is an editor block, not a real one).
 

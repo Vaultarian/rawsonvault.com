@@ -70,8 +70,12 @@ const ONLY_ONE = ['hero', 'door'];   // placing another one moves it
 const CONTROLS = { left:['ArrowLeft', 'KeyA'], right:['ArrowRight', 'KeyD'],
                    up:['ArrowUp', 'Space', 'KeyW'], auto:0 };
 
-/* ---------- the level ---------- */
-const SAVE_KEY = 'jos-ldlc-level';
+/* ---------- the level ----------
+   Jos: every level is kept (levels.js). editor.html?level=L… opens one of them. */
+const params = new URLSearchParams(location.search);
+let levelId = params.get('level');
+if (!levelId) { location.replace('levels.html'); throw new Error('no level: back to the levels page'); }
+LDLC.ensure(levelId);
 let grid = emptyGrid();
 
 function emptyGrid() {
@@ -79,11 +83,11 @@ function emptyGrid() {
 }
 function save() {
   fixPortals();
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(grid)); } catch (e) {}
+  try { localStorage.setItem(LDLC.key('level', levelId), JSON.stringify(grid)); } catch (e) {}
 }
 function load() {
   try {
-    const g = JSON.parse(localStorage.getItem(SAVE_KEY));
+    const g = JSON.parse(localStorage.getItem(LDLC.key('level', levelId)));
     if (Array.isArray(g) && g.length === T.rows && g[0].length === T.cols) grid = g;
   } catch (e) {}
 }
@@ -709,12 +713,12 @@ function deleteSelected() {
 /* ---------- the edges of the level ----------
    Jos: each edge has an edit button. The floor, walls and roof can be solid (you stand on them,
    bump into them) or the edge of the screen (go onto it and you die). */
-const EDGE_KEY = 'jos-ldlc-edges';
 const EDGE_NAME = { top:'roof', bottom:'floor', left:'wall', right:'wall' };
 const EDGE_START = { top:'solid', bottom:'edge', left:'solid', right:'solid' };   // what LDLC did before
 let edges = Object.assign({}, EDGE_START);
-try { Object.assign(edges, JSON.parse(localStorage.getItem(EDGE_KEY)) || {}); } catch (e) {}
-function saveEdges() { try { localStorage.setItem(EDGE_KEY, JSON.stringify(edges)); } catch (e) {} }
+function loadEdges() { edges = Object.assign({}, EDGE_START, LDLC.read(LDLC.key('edges', levelId)) || {}); }
+function saveEdges() { try { localStorage.setItem(LDLC.key('edges', levelId), JSON.stringify(edges)); } catch (e) {} }
+loadEdges();
 document.querySelectorAll('.edgeBtn').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.edge;
   edges[k] = edges[k] === 'solid' ? 'edge' : 'solid';
@@ -1164,8 +1168,8 @@ addEventListener('keyup', e => { keys[e.code] = false; });
 /* ---------- Jos: a secret word. Type "editor" to show the editor commands ---------- */
 const SECRET = 'editor';
 let typed = '', editorOn = localStorage.getItem('jos-ldlc-editor') === '1';
-let startPos = JSON.parse(localStorage.getItem('jos-ldlc-start') || 'null');   // Jos's Start pos
-function saveStart() { localStorage.setItem('jos-ldlc-start', JSON.stringify(startPos)); }
+let startPos = LDLC.read(LDLC.key('start', levelId));   // Jos's Start pos (each level has its own)
+function saveStart() { localStorage.setItem(LDLC.key('start', levelId), JSON.stringify(startPos)); }
 function showEditor() {
   document.getElementById('editorCmds').hidden = !editorOn;
   document.querySelector('.block[data-id=startpos]').style.display = editorOn ? '' : 'none';
@@ -1972,6 +1976,7 @@ if (!grid.some(r => r.some(Boolean))) {
   for (let x = 0; x < T.cols; x++) grid[T.rows - 1][x] = { t:'tile', id:nextId++ };
   grid[T.rows - 2][1] = { t:'hero', id:nextId++ };
   grid[T.rows - 2][T.cols - 2] = { t:'door', id:nextId++ };
+  save();                       // so a brand-new level is in the list straight away
 }
 fixPortals();
 refreshButtons();
