@@ -137,6 +137,39 @@ the Cursor, and under its properties there's the trigger with **+ Add**. Click i
   "It's not always the same properties, so make the machine look what properties it has."
   They come out with switches, and you turn them on and off.
 
+## Spring strength (31 Oct)
+
+Jos: a spring has **Strength** in its properties, which is **how strong it is**: strength 1 boots
+you up 1 block, strength 30 boots you 30 blocks. It starts as the regular spring (Carl measured
+that as **5**). On its side, strength is how far it knocks you back.
+
+## The edges of the level (31 Oct)
+
+Jos: the walls, ceiling and floor each have an **edit button** beside them (on top, below, or at
+the side). Click it and a message pops up:
+
+- **"Switched to floor"** (or wall, or roof): the hero stands on it, or bumps into it.
+- Click again: **"Changed to edge of screen"**: if the hero goes onto it, **he dies**.
+
+They start as LDLC was before: **walls and roof solid, the bottom is the edge of the screen**. In
+the creator, a solid edge is a white line and an edge of screen is red dashes.
+
+## A block inside another block (31 Oct)
+
+Jos: "you can just place one block in another block." Say you want **a spring to come up out of
+the floor**: put the spring in the floor block, connect a trigger to it, and make it pop up. The
+hero and a trigger can go in the same square too.
+
+- Pick a block and click on a block that's already there: **it goes inside it**. A square holds 2.
+- In the creator, the block inside shows as **a small picture in the corner**.
+- Jos: when you point at a square with two blocks, **it says which block** (like **Tile**), and **if
+  you keep your cursor on it, it changes to the other one** (like **Spring**), and you can click on
+  that. The same with every other block, for the Cursor and for Trigger to block.
+- When you play, the block inside is **hidden behind** the other one until it moves out.
+
+Carl's choices: the **Eraser clears the whole square**. To swap a block for a different one, erase
+it first. Dragging the outside block out with the Cursor leaves the inside one behind.
+
 ## Changing lots of blocks at once (31 Oct)
 
 Jos: in **Select blocks**, left-click one of the selected blocks to change **all their properties
@@ -246,3 +279,5 @@ Jos: **every single block has Visible** in its properties, the portal and the he
   the **Cursor drags one block**. Not published.
 - **31 Oct**: **Select blocks → click a selected block** changes all their properties at once, with
   the half-green half-black switch for mixed. Not published.
+- **31 Oct**: spring **Strength**, the **✏️ edge buttons** (floor/wall/roof or edge of screen), and
+  **a block inside another block**. Not published.

@@ -70,6 +70,14 @@ button.soon { opacity:.45; }
 /* ---------- the level ---------- */
 #stageWrap { flex:1; display:flex; align-items:center; justify-content:center;
              padding:16px 16px 70px; min-width:0; }
+#stage { position:relative; }
+/* Jos: an edit button beside each edge of the level */
+.edgeBtn { position:absolute; font-size:.85rem; padding:.2rem .45rem; border-radius:999px; }
+.edgeBtn[data-edge=top]    { left:50%; top:-34px;    transform:translateX(-50%); }
+.edgeBtn[data-edge=bottom] { left:50%; bottom:-34px; transform:translateX(-50%); }
+.edgeBtn[data-edge=left]   { top:50%;  left:-40px;   transform:translateY(-50%); }
+.edgeBtn[data-edge=right]  { top:50%;  right:-40px;  transform:translateY(-50%); }
+body.testing .edgeBtn { display:none; }
 #level { display:block; border-radius:6px; box-shadow:0 0 0 2px #ff2a3d66, 0 0 40px rgba(255,42,61,.25); }
 
 /* ---------- TEST: the level fills the screen ---------- */
@@ -173,7 +181,13 @@ body.testing #panel { display:none; }
 
   <div id="body">
     <div id="palette"><h3>BLOCKS</h3></div>
-    <div id="stageWrap"><canvas id="level"></canvas></div>
+    <div id="stageWrap"><div id="stage">
+      <canvas id="level"></canvas>
+      <button class="edgeBtn" data-edge="top" title="Roof or edge of screen">✏️</button>
+      <button class="edgeBtn" data-edge="bottom" title="Floor or edge of screen">✏️</button>
+      <button class="edgeBtn" data-edge="left" title="Wall or edge of screen">✏️</button>
+      <button class="edgeBtn" data-edge="right" title="Wall or edge of screen">✏️</button>
+    </div></div>
     <aside id="panel"></aside>
   </div>
   <div id="banner"></div>

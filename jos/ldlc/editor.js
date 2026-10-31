@@ -15,13 +15,12 @@ const T = {
   heroH:      0.8,   // how tall the hero is, in blocks
   stride:     0.1,   // seconds per step of his running legs
   respawn:    0.6,   // seconds before he tries again
-  springBoot: 22,    // how hard a spring boots you up
-  springSide: 16,    // how hard a sideways spring knocks you back
   knockSlow:  30,    // how fast a sideways knock dies away
   portalSpit: 12,    // how hard a portal spits you out of its Output side
   sawSpin:    8,     // how fast a sawblade spins
   moveSpeed:  .22,   // Movement speed 1 = 0.22 blocks a second, measured from Jos's recording
-  portalFlip: 0.30   // Jos: the portal switches colours every 0.30 seconds
+  portalFlip: 0.30,  // Jos: the portal switches colours every 0.30 seconds
+  pickSwap:   0.9    // two blocks in one square: keep the mouse still this long and it picks the other
 };
 
 /* Jos's list of blocks, in his order */
@@ -50,7 +49,7 @@ const DEFAULTS = {
   spike:      { collision:false, deadly:true  },
   smallspike: { collision:false, deadly:true  },
   sawblade:   { collision:false, deadly:true  },
-  spring:     { collision:false, deadly:false, action:true },
+  spring:     { collision:false, deadly:false, action:true, strength:5 },   // Jos: strength 5 = boots you 5 blocks
   coin:       { collision:false, deadly:false, action:true },
   trigger:    { visible:false, action:true },   // Jos: invisible when you play, like G-dash
   controls:   { visible:false, action:true },   // Jos: like the trigger, but it changes the controls
@@ -91,11 +90,32 @@ function props(cell) {
   return Object.assign({ collision:false, deadly:false, visible:true, action:false, disguise:false },
                        DEFAULTS[cell.t] || {}, cell.p || {});
 }
-function find(type) {
+/* Jos: one block can go inside another, like a spring inside the floor.
+   A square holds its block, and the block can hold one more inside it (.inner). */
+function stackAt(x, y) {
+  const c = grid[y][x];
+  return c ? (c.inner ? [c, c.inner] : [c]) : [];
+}
+function allBlocks() {
+  const out = [];
   for (let y = 0; y < T.rows; y++)
     for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && grid[y][x].t === type) return { x, y };
+      stackAt(x, y).forEach((c, layer) => out.push({ x, y, c, layer }));
+  return out;
+}
+function takeOut(x, y, id) {        // take one block out of its square (the inner one moves up)
+  const c = grid[y][x];
+  if (!c) return null;
+  if (c.id === id) { grid[y][x] = c.inner || null; delete c.inner; return c; }
+  if (c.inner && c.inner.id === id) { const b = c.inner; delete c.inner; return b; }
   return null;
+}
+function putIn(x, y, b) {           // put a block into a square: on its own, or inside the one there
+  if (grid[y][x]) grid[y][x].inner = b; else grid[y][x] = b;
+}
+function find(type) {
+  const f = allBlocks().find(f => f.c.t === type);
+  return f ? { x:f.x, y:f.y, c:f.c } : null;
 }
 
 /* ---------- drawing the blocks ----------
@@ -379,17 +399,22 @@ const DIRS = { left:[-1, 0], right:[1, 0], up:[0, -1], down:[0, 1] };
 /* every block gets its own number, so connections still work after a block is moved */
 let nextId = 1;
 function giveIds() {
-  grid.flat().forEach(c => { if (c && c.id) nextId = Math.max(nextId, c.id + 1); });
-  grid.flat().forEach(c => { if (c && !c.id) c.id = nextId++; });
+  allBlocks().forEach(({ c }) => { if (c.id) nextId = Math.max(nextId, c.id + 1); });
+  allBlocks().forEach(({ c }) => { if (!c.id) c.id = nextId++; });
 }
 function byId(id) {
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && grid[y][x].id === id) return { x, y, c:grid[y][x] };
-  return null;
+  return allBlocks().find(f => f.c.id === id) || null;
 }
 function forgetLinksTo(ids) {
-  grid.flat().forEach(c => { if (c && c.links) c.links = c.links.filter(l => !ids.has(l.id)); });
+  allBlocks().forEach(({ c }) => { if (c.links) c.links = c.links.filter(l => !ids.has(l.id)); });
+}
+/* two blocks in one square: the name shows, and if you keep the mouse still it swaps to the other */
+let hoverSince = 0;
+function pickAt(x, y) {
+  const s = stackAt(x, y);
+  if (s.length < 2) return s[0] || null;
+  const held = hover && hover.x === x && hover.y === y ? (performance.now() - hoverSince) / 1000 : 0;
+  return s[Math.floor(held / T.pickSwap) % 2];
 }
 function looksLike(c) { return props(c).disguise ? (c.as || 'tile') : c.t; }
 
@@ -449,6 +474,7 @@ function refreshButtons() {
 document.getElementById('clearBtn').addEventListener('click', () => {
   if (!confirm('Clear the whole level?')) return;
   grid = emptyGrid(); save(); closePanel(); sel.clear();
+  edges = Object.assign({}, EDGE_START); saveEdges();
 });
 
 /* ---------- the level canvas ---------- */
@@ -460,7 +486,7 @@ let cell = 30, hover = null, painting = false;
 function fit() {
   const r = wrap.getBoundingClientRect();
   const testing = document.body.classList.contains('testing');
-  const padX = testing ? 0 : 32, padY = testing ? 0 : 86;
+  const padX = testing ? 0 : 104, padY = testing ? 0 : 126;   // room round the level for the ✏️ edge buttons
   cell = Math.max(10, Math.floor(Math.min((r.width - padX) / T.cols, (r.height - padY) / T.rows)));
   const dpr = window.devicePixelRatio || 1;
   cv.style.width = cell * T.cols + 'px';
@@ -481,24 +507,26 @@ function cellAt(e) {
 }
 function paint(a) {
   if (!a || play || chomp) return;
-  const old = grid[a.y][a.x];
-  if (tool === 'erase') {
-    if (old) { grid[a.y][a.x] = null; forgetLinksTo(new Set([old.id])); save(); }
+  const here = stackAt(a.x, a.y);
+  if (tool === 'erase') {                        // the eraser clears the whole square
+    if (here.length) { grid[a.y][a.x] = null; forgetLinksTo(new Set(here.map(b => b.id))); save(); }
     return;
   }
   if (tool !== 'place') return;
-  if (old && old.t === chosen) {                 // same block already there: just turn it to match
+  const same = here.find(b => b.t === chosen);
+  if (same) {                                    // same block already there: just turn it to match
     const r = TURNS.includes(chosen) ? chosenTurn : 0;
-    if ((old.r || 0) !== r) { old.r = r; save(); }
+    if ((same.r || 0) !== r) { same.r = r; save(); }
     return;
   }
+  if (here.length >= 2) { say('That square already has 2 blocks in it 😈'); return; }
   if (ONLY_ONE.includes(chosen)) {
     const was = find(chosen);
-    if (was) grid[was.y][was.x] = null;
+    if (was) takeOut(was.x, was.y, was.c.id);
   }
-  if (old) forgetLinksTo(new Set([old.id]));
-  grid[a.y][a.x] = { t:chosen, id:nextId++ };
-  if (TURNS.includes(chosen) && chosenTurn) grid[a.y][a.x].r = chosenTurn;
+  const b = { t:chosen, id:nextId++ };
+  if (TURNS.includes(chosen) && chosenTurn) b.r = chosenTurn;
+  putIn(a.x, a.y, b);                            // Jos: on an empty square, or inside the block there
   save();
 }
 /* R turns whatever you're working with: the block you're about to put down,
@@ -520,7 +548,7 @@ function turnKey() {
 
 cv.addEventListener('pointerdown', e => {
   if (play || chomp) return;
-  const a = cellAt(e), c = a && grid[a.y][a.x];
+  const a = cellAt(e), c = a && pickAt(a.x, a.y);
   cv.setPointerCapture(e.pointerId);
   if (tool === 'place' || tool === 'erase') { painting = true; paint(a); return; }
   if (tool === 'cursor') {
@@ -531,15 +559,17 @@ cv.addEventListener('pointerdown', e => {
     else closePanel();
     return;
   }
-  if (tool === 'link') { linkClick(c); return; }
+  if (tool === 'link') { linkClick(c, a && stackAt(a.x, a.y)); return; }
   if (tool === 'select') {
     // Jos: click one of the selected blocks (without dragging) to change all their properties
-    if (c && sel.has(c.id)) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel, click:true };
+    if (c && stackAt(a.x, a.y).some(b => sel.has(b.id))) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel, click:true };
     else { closePanel(); const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y }; sel.clear(); }
   }
 });
 cv.addEventListener('pointermove', e => {
-  hover = cellAt(e);
+  const h = cellAt(e);
+  if (!h || !hover || h.x !== hover.x || h.y !== hover.y) hoverSince = performance.now();
+  hover = h;
   if (painting && !ONLY_ONE.includes(chosen)) paint(hover);
   if (boxDrag) { const p = pointAt(e); boxDrag.x1 = p.x; boxDrag.y1 = p.y; }
   if (moveDrag && hover) moveDrag.off = { x:hover.x - moveDrag.from.x, y:hover.y - moveDrag.from.y };
@@ -566,7 +596,7 @@ function finishBox() {
   const y0 = Math.min(boxDrag.y0, boxDrag.y1), y1 = Math.max(boxDrag.y0, boxDrag.y1);
   for (let y = 0; y < T.rows; y++)
     for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && x < x1 && x + 1 > x0 && y < y1 && y + 1 > y0) sel.add(grid[y][x].id);
+      if (x < x1 && x + 1 > x0 && y < y1 && y + 1 > y0) stackAt(x, y).forEach(b => sel.add(b.id));
   selectionBanner();
 }
 function selectionBanner() {
@@ -576,28 +606,28 @@ function selectionBanner() {
 }
 function moveBlocks(ids, off) {
   if (!off.x && !off.y) return;
-  const moving = [];
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && ids.has(grid[y][x].id)) moving.push({ x, y, c:grid[y][x] });
+  const moving = allBlocks().filter(f => ids.has(f.c.id));
   if (moving.some(m => m.x + off.x < 0 || m.y + off.y < 0 ||
                        m.x + off.x >= T.cols || m.y + off.y >= T.rows)) {
     say('That would go off the edge 😈'); return;
   }
-  moving.forEach(m => { grid[m.y][m.x] = null; });
+  moving.sort((a, b) => b.layer - a.layer).forEach(m => takeOut(m.x, m.y, m.c.id));
+  moving.sort((a, b) => a.layer - b.layer);      // put them back down outer first, so they stay stacked
+  // a square only holds 2 blocks: if there isn't room, what was there gets squashed
+  const coming = {};
+  moving.forEach(m => { const k = (m.x + off.x) + ',' + (m.y + off.y); coming[k] = (coming[k] || 0) + 1; });
   const squashed = new Set();
-  moving.forEach(m => {
-    const under = grid[m.y + off.y][m.x + off.x];
-    if (under) squashed.add(under.id);
-    grid[m.y + off.y][m.x + off.x] = m.c;
+  Object.keys(coming).forEach(k => {
+    const [x, y] = k.split(',').map(Number);
+    if (stackAt(x, y).length + coming[k] > 2) { stackAt(x, y).forEach(b => squashed.add(b.id)); grid[y][x] = null; }
   });
+  moving.forEach(m => putIn(m.x + off.x, m.y + off.y, m.c));
   if (squashed.size) forgetLinksTo(squashed);
   save();
 }
 function deleteSelected() {
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && sel.has(grid[y][x].id)) grid[y][x] = null;
+  allBlocks().filter(f => sel.has(f.c.id)).sort((a, b) => b.layer - a.layer)
+    .forEach(f => takeOut(f.x, f.y, f.c.id));
   forgetLinksTo(sel);
   if (sel.has(openId) || openIds) closePanel();
   sel.clear();
@@ -605,11 +635,40 @@ function deleteSelected() {
   selectionBanner();
 }
 
+/* ---------- the edges of the level ----------
+   Jos: each edge has an edit button. The floor, walls and roof can be solid (you stand on them,
+   bump into them) or the edge of the screen (go onto it and you die). */
+const EDGE_KEY = 'jos-ldlc-edges';
+const EDGE_NAME = { top:'roof', bottom:'floor', left:'wall', right:'wall' };
+const EDGE_START = { top:'solid', bottom:'edge', left:'solid', right:'solid' };   // what LDLC did before
+let edges = Object.assign({}, EDGE_START);
+try { Object.assign(edges, JSON.parse(localStorage.getItem(EDGE_KEY)) || {}); } catch (e) {}
+function saveEdges() { try { localStorage.setItem(EDGE_KEY, JSON.stringify(edges)); } catch (e) {} }
+document.querySelectorAll('.edgeBtn').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.edge;
+  edges[k] = edges[k] === 'solid' ? 'edge' : 'solid';
+  saveEdges();
+  say(edges[k] === 'solid' ? 'Switched to ' + EDGE_NAME[k] : 'Changed to edge of screen');
+  b.blur();
+}));
+function drawEdges() {
+  const W = cell * T.cols, H = cell * T.rows;
+  [['top', 0, 1.5, W, 1.5], ['bottom', 0, H - 1.5, W, H - 1.5],
+   ['left', 1.5, 0, 1.5, H], ['right', W - 1.5, 0, W - 1.5, H]].forEach(([k, x1, y1, x2, y2]) => {
+    if (edges[k] === 'solid') { ctx.strokeStyle = COL.metal; ctx.lineWidth = 3; ctx.setLineDash([]); }
+    else { ctx.strokeStyle = COL.tile; ctx.lineWidth = 3; ctx.setLineDash([8, 6]); }
+    line(x1, y1, x2, y2);
+  });
+  ctx.setLineDash([]);
+}
+
 /* ---------- Trigger to block ---------- */
 let linkFrom = null;   // the trigger (or button) being connected
 let linkedLast = null; // the last block it was connected to
-function linkClick(c) {
+function linkClick(c, stack) {
   if (!linkFrom) {
+    // a trigger with something else in its square (like the hero) still counts
+    if (c && !LINKERS.includes(c.t)) c = (stack || []).find(b => LINKERS.includes(b.t)) || c;
     if (c && LINKERS.includes(c.t)) { linkFrom = c.id; linkedLast = null; banner('Click on a block/blocks'); }
     else say('Click on one of your triggers (or a button) 😈');
     return;
@@ -632,11 +691,9 @@ function finishLinking() {
 /* every trigger or button connected to this block */
 function linksTo(id) {
   const out = [];
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++) {
-      const c = grid[y][x];
-      if (c && c.links) c.links.forEach(l => { if (l.id === id) out.push({ x, y, c, l }); });
-    }
+  allBlocks().forEach(({ x, y, c }) => {
+    if (c.links) c.links.forEach(l => { if (l.id === id) out.push({ x, y, c, l }); });
+  });
   return out;
 }
 
@@ -678,7 +735,8 @@ function pick(options, value, change) {
   return s;
 }
 function number(value, min, max, step, change) {
-  const n = el('input', { type:'number', min, max, step, value });
+  const n = el('input', { type:'number', min, max, step, value:value === null ? '' : value });
+  if (value === null) n.placeholder = 'Mixed';
   n.addEventListener('input', () => {
     const v = parseFloat(n.value);
     if (!isNaN(v)) change(Math.max(min, Math.min(max, v)));
@@ -749,6 +807,13 @@ function renderPanel() {
     panel.append(row('Turn', el('span', { className:'p-face', textContent:r === null ? 'Mixed' : FACE_NAME[r] }),
       el('button', { className:'p-turn', textContent:'↺', title:'Turn left', onclick:() => go(-1) }),
       el('button', { className:'p-turn', textContent:'↻', title:'Turn right (R)', onclick:() => go(1) })));
+  }
+  if (cells.every(x => x.t === 'spring')) {
+    // Jos: strength = how many blocks it boots you
+    const n = common(cells.map(x => props(x).strength));
+    panel.append(row('Strength', number(n, 1, 100, 1, v => {
+      cells.forEach(x => { x.p = Object.assign({}, x.p, { strength:v }); }); save();
+    })));
   }
   if (cells.every(x => x.t === 'portal')) {
     // Jos: Output = which way you come out of this portal
@@ -903,21 +968,20 @@ function startTest() {
 function makeThings() {
   const list = [];
   for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++) {
-      const c = grid[y][x];
-      if (!c || c.t === 'hero') continue;
-      const pr = props(c);
-      list.push({ id:c.id, t:c.t, x, y, w:1, h:1, pr, as:pr.disguise ? (c.as || 'tile') : null,
-                  links:c.links || [], controls:c.controls, pair:c.pair, r:c.r || 0, out:c.out || '',
-                  dx:0, dy:0 });
-    }
+    for (let x = 0; x < T.cols; x++)
+      stackAt(x, y).reverse().forEach(c => {     // the inside block first, so it's drawn behind
+        if (c.t === 'hero') return;
+        const pr = props(c);
+        list.push({ id:c.id, t:c.t, x, y, w:1, h:1, pr, as:pr.disguise ? (c.as || 'tile') : null,
+                    links:c.links || [], controls:c.controls, pair:c.pair, r:c.r || 0, out:c.out || '',
+                    dx:0, dy:0 });
+      });
   return list;
 }
 function spawn() {
   // every try starts fresh: coins come back, traps reset
   const h = find('hero');
-  const hc = grid[h.y][h.x];
-  play = { hidden:!props(hc).visible, x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
+  play = { hidden:!props(h.c).visible, x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
            ground:false, state:'play', timer:0, face:1, walkT:0, coins:0, kx:0,
            things:makeThings(), on:null };
   play.byId = {};
@@ -1042,7 +1106,7 @@ window.addEventListener('resize', sizeMouth);
    Jos: like Marble Run Builder, a portal needs a partner. The 1st and 2nd portals you put
    down are a pair, then the 3rd and 4th. Delete one and its partner waits for a new one. */
 function fixPortals() {
-  const portals = grid.flat().filter(c => c && c.t === 'portal').sort((a, b) => a.id - b.id);
+  const portals = allBlocks().map(f => f.c).filter(c => c.t === 'portal').sort((a, b) => a.id - b.id);
   portals.forEach(c => {
     const q = portals.find(o => o.id === c.pair);
     if (!q || q.pair !== c.id) c.pair = null;
@@ -1147,7 +1211,9 @@ function step(dt) {
   if (p.kx) { const k = T.knockSlow * dt; p.kx = Math.abs(p.kx) <= k ? 0 : p.kx - Math.sign(p.kx) * k; }
   const mx = p.vx + p.kx, oldX = p.x;
   p.x += mx * dt;
-  p.x = Math.max(0, Math.min(T.cols - W, p.x));
+  // the walls: solid, or the edge of the screen (Jos: go onto it and you die)
+  if (p.x < 0) { if (edges.left === 'solid') { p.x = 0; p.kx = 0; } else { die(); return; } }
+  if (p.x + W > T.cols) { if (edges.right === 'solid') { p.x = T.cols - W; p.kx = 0; } else { die(); return; } }
   touching(p.x, p.y, W, H, t => {
     if (!t.pr.collision) return;
     if (mx > 0) p.x = t.x - W;
@@ -1170,7 +1236,7 @@ function step(dt) {
   const oldBottom = p.y + H, oldTop = p.y;
   p.y += p.vy * dt;
   p.ground = false; p.on = null;
-  if (p.y < 0) { p.y = 0; p.vy = 0; }
+  if (p.y < 0) { if (edges.top === 'solid') { p.y = 0; p.vy = 0; } else { die(); return; } }
   touching(p.x, p.y, W, H, t => {
     if (!t.pr.collision) return;
     if (p.vy > 0) { p.y = t.y - H; p.vy = 0; p.ground = true; p.on = t; }
@@ -1193,7 +1259,8 @@ function step(dt) {
     });
   }
 
-  if (p.y > T.rows + 1) { die(); return; }
+  if (p.y + H > T.rows && edges.bottom === 'solid') { p.y = T.rows - H; p.vy = 0; p.ground = true; p.on = null; }
+  if (p.y > T.rows) { die(); return; }
 
   let inPortal = null;
   touching(p.x, p.y, W, H, t => {
@@ -1217,8 +1284,11 @@ function step(dt) {
       const f = FACING[t.r], [zx, zy, zw, zh] = turnBox([0, .75, 1, .25], t.r);
       const comingIn = (p.vx + p.kx) * f[0] + p.vy * f[1] <= 0;
       if (comingIn && boxesTouch(p.x, p.y, W, H, t.x + zx * t.w, t.y + zy * t.h, zw * t.w, zh * t.h)) {
-        if (f[1]) { p.vy = f[1] * T.springBoot; p.ground = false; p.booted = true; }
-        else p.kx = f[0] * T.springSide;          // Jos: on its side, it bounces you back
+        // Jos: strength = how many blocks it boots you. Up or down: the speed that rises that high.
+        // On its side: the knock that slides you that far.
+        const n = Math.max(1, pr.strength || 5);
+        if (f[1]) { p.vy = f[1] * Math.sqrt(2 * T.gravity * n); p.ground = false; p.booted = true; }
+        else p.kx = f[0] * Math.sqrt(2 * T.knockSlow * n);   // Jos: on its side, it bounces you back
         t.ext = 0;
       }
     }
@@ -1349,15 +1419,16 @@ function renderEditor(time) {
   const drawn = [];
   for (let y = 0; y < T.rows; y++)
     for (let x = 0; x < T.cols; x++) {
-      const c = grid[y][x];
-      if (!c) continue;
-      if (dragging.has(c.id)) { drawn.push({ x:x + off.x, y:y + off.y, c }); continue; }
-      if (sel.has(c.id)) { drawn.push({ x, y, c }); continue; }
-      drawCell(c, x, y, time);
+      const s = stackAt(x, y);
+      if (!s.length) continue;
+      const going = s.filter(b => dragging.has(b.id)), staying = s.filter(b => !dragging.has(b.id));
+      if (going.length) drawn.push({ x:x + off.x, y:y + off.y, s:going });
+      if (staying.some(b => sel.has(b.id))) drawn.push({ x, y, s:staying });
+      else if (staying.length) drawStack(staying, x, y, time);
     }
   drawn.forEach(d => {
-    drawCell(d.c, d.x, d.y, time);
-    if (sel.has(d.c.id)) {
+    drawStack(d.s, d.x, d.y, time);
+    if (d.s.some(b => sel.has(b.id))) {
       ctx.fillStyle = 'rgba(93,200,255,.22)'; ctx.fillRect(d.x * cell, d.y * cell, cell, cell);
       outline(d.x, d.y, '#5dc8ff');
     }
@@ -1370,6 +1441,7 @@ function renderEditor(time) {
     ctx.setLineDash([]);
   }
 
+  drawEdges();
   if (portalSwitch.checked) drawPortalLinks();
 
   const open = openId && byId(openId);
@@ -1385,7 +1457,38 @@ function renderEditor(time) {
     const hx = hover.x * cell, hy = hover.y * cell;
     if (tool === 'erase') outline(hover.x, hover.y, '#ff2a3d');
     else if (tool === 'place') { ctx.globalAlpha = .45; drawBlock(ctx, chosen, hx, hy, cell, time, chosenTurn); ctx.globalAlpha = 1; }
-    else if ((tool === 'cursor' || tool === 'link') && grid[hover.y][hover.x]) outline(hover.x, hover.y, '#fff');
+    else if ((tool === 'cursor' || tool === 'link') && grid[hover.y][hover.x] && !moveDrag) {
+      const s = stackAt(hover.x, hover.y);
+      if (s.length < 2) outline(hover.x, hover.y, '#fff');
+      else {
+        // Jos: it says which block; keep the mouse still and it changes to the other one
+        const b = pickAt(hover.x, hover.y), inner = b === s[1];
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+        if (inner) ctx.strokeRect((hover.x + .48) * cell, (hover.y + .48) * cell, cell * .5, cell * .5);
+        else outline(hover.x, hover.y, '#fff');
+        namePill(NAME[b.t], (hover.x + .5) * cell, hover.y * cell - 4);
+      }
+    }
+  }
+}
+/* the little name that pops up over a square with two blocks in it */
+function namePill(text, cx, bottom) {
+  ctx.font = 'bold ' + Math.max(11, Math.round(cell * .4)) + 'px Nunito';
+  const w = ctx.measureText(text).width + 14, h = Math.max(16, cell * .55);
+  const x = Math.max(2, Math.min(cell * T.cols - w - 2, cx - w / 2)), y = Math.max(2, bottom - h);
+  ctx.fillStyle = '#fff'; roundRect(ctx, x, y, w, h, h / 2); ctx.fill();
+  ctx.fillStyle = '#12000a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x + w / 2, y + h / 2 + 1);
+  ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+}
+/* a square in the creator: its block, and a small picture of the block inside it in the corner */
+function drawStack(s, x, y, time) {
+  drawCell(s[0], x, y, time);
+  if (s[1]) {
+    const X = (x + .48) * cell, Y = (y + .48) * cell, S = cell * .5;
+    ctx.fillStyle = 'rgba(18,0,10,.85)'; roundRect(ctx, X - 1, Y - 1, S + 2, S + 2, 3); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; roundRect(ctx, X - 1, Y - 1, S + 2, S + 2, 3); ctx.stroke();
+    drawBlock(ctx, looksLike(s[1]), X, Y, S, time, s[1].r);
   }
 }
 function drawCell(c, x, y, time) {
@@ -1403,7 +1506,6 @@ function drawCell(c, x, y, time) {
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
   }
 }
-/* the open block's connections: to the blocks it sets off, and from the triggers that set it off */
 /* a little arrow on the portal's Output side, in the creator only */
 function drawOutput(dir, x, y) {
   const d = { up:[0, -1], down:[0, 1], left:[-1, 0], right:[1, 0] }[dir];
@@ -1415,6 +1517,7 @@ function drawOutput(dir, x, y) {
   ctx.lineTo(cx - d[0] * a - d[1] * a, cy - d[1] * a - d[0] * a);
   ctx.fill();
 }
+/* the open block's connections: to the blocks it sets off, and from the triggers that set it off */
 function drawLinks(f, time) {
   (f.c.links || []).forEach(l => {
     const t = byId(l.id);
@@ -1456,10 +1559,7 @@ function drawLink(f, t, l, lit, mark, time) {
   });
 }
 function drawPortalLinks() {
-  const portals = [];
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && grid[y][x].t === 'portal') portals.push({ x, y, c:grid[y][x] });
+  const portals = allBlocks().filter(f => f.c.t === 'portal');
   const done = new Set();
   let n = 0;
   portals.sort((a, b) => a.c.id - b.c.id).forEach(a => {
