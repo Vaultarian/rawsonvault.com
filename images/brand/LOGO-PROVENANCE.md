@@ -79,6 +79,40 @@ byte-identical copies under `~/Pictures/` were deleted 2026-06-18, along with st
 `~/Downloads/mobius.png`/`.psd` pair (md5-identical to `_masters/vault-ring-noshine.*`) and
 a regenerable build output (`the-vault-logo.png`). One archive, no duplicates.
 
+## The spinning ring (2026-10-31)
+
+An animated version of the mark: a **true 3D Möbius strip** turning round its vertical axis.
+Asked for by Alex for the **Create** button in Jos's LDLC (Level Devil Level Creator), chosen by
+him because it *"most clearly shows the Möbius strip as precessing"*, and saved here as an
+official logo.
+
+| File | Role |
+|---|---|
+| `vault-ring-spin.webp` (256×256, 48 frames, one turn in 2.16 s, loops, transparent) | **Drop-in animated logo.** Use as a plain `<img>`; it spins forever. |
+| `vault-ring-spin-strip.webp` (12288×256: 48 frames of 256×256 in one row, transparent) | **Picture strip** for a CSS spin that starts on hover from the first frame (`background-size` 48× the box, `animation: … steps(48)`). Jos's LDLC Create button uses a copy (`jos/ldlc/ring-spin.webp`). |
+
+**How it is made: from the maths, not from a picture.** three.js `ParametricGeometry` of the
+standard Möbius strip, x = (R + v·cos(u/2))·cos u, y = (R + v·cos(u/2))·sin u, z = v·sin(u/2),
+with R = 1 and v from −0.32 to 0.32. It is rendered in bronze (`#c8884a`, metalness 0.7) with
+three lights so the band never goes black, and tilted (−0.7, 0.3, 0.5 rad) to sit like the
+logo while facing the viewer enough for the hole to show. The strip is one rigid object: only
+the turn changes, so the shape never morphs. Alex asked for the hole to show more and a 10%
+faster turn; that is this version (`HALF = .32`, 45 ms a frame). Files to remake it:
+`render.html` and `capture.mjs` in
+`~/vault/04-Resources/brand/rawsonvault/logos/spinning-ring-2026-10-31/`. Serve the folder over
+http, run headless Chrome with remote debugging on 9333, then run
+`node capture.mjs http://127.0.0.1:<port>/render.html frames 48`.
+
+⚠️ **It is a new 3D model, not the vector master.** The band's proportions and shading are the
+render's, not Martha's artwork. Use it as the moving mark only, never in place of `vault-icon.svg`.
+
+**Alternatives, kept in the same archive folder, not on the site:**
+- `alternative-coin-flip/`: the real logo picture squashed and flipped like a coin. Good, but
+  Alex preferred the 3D turn.
+- `fal-attempt-rejected/`: a fal.ai video (`fal-ai/pixverse/v6/transition`, about $0.18). The
+  model reshaped the ring as it turned, so Alex rejected it. Lesson: a rigid spin of an
+  existing shape is geometry, not generation.
+
 ## Where the mark is referenced
 
 This list must stay complete: every place that renders the mark belongs here, or the
@@ -95,6 +129,7 @@ All now resolve to the canonical file:
 - `~/AlfredOS/agents/scribe/weekly_grid.py` → `~/assets/vault-logo.png` (Scribe's weekly-calendar `LOGO_PATH`). Repointed 2026-06-18 from the old `~/vault/04-Resources/brand/rawsonvault/logos/icon only/TheVaultD29aR04aP01ZL_icon.png`; that stale path is why the weekly calendar PDFs were still stamping the pre-canon mark.
 - AI Club S4E2 lesson ("Set the icon" deploy step) → `~/rawsonvault/images/brand/vault-icon.png`. Repointed 2026-06-18 from the old `~/Pictures/vault_logos/icon only/vault_icon_transparent.png`.
 - Alfred's web front door → `~/AlfredOS/agents/alfred-web/web/` (`favicon.ico` and `apple-touch-icon.png` copied byte-identical from the site root; `vault-icon-192.png` for the in-page mark). Added 2026-09-13 when that service got its icon.
+- **The spinning ring** (not the still mark): Jos's LDLC Create button → `jos/ldlc/ring-spin.webp`, a copy of `vault-ring-spin-strip.webp`. Added 2026-10-31.
 
 ## Brand bronze palette
 
