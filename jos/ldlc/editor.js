@@ -1130,7 +1130,11 @@ function startTest() {
     play.state = 'intro';         // nothing moves until his mouth is open
     document.body.classList.add('testing');
     fit();
-  }, () => { if (play) play.state = 'play'; });
+  }, () => {
+    if (!play) return;
+    play.state = 'play';
+    if (play.things.some(t => t.t === 'coin' && t.pr.needed)) play.devil = { t:0, words:'A coin is hidden' };
+  });
 }
 /* when you play, every block becomes a thing that can move, grow and change */
 function makeThings() {
@@ -1178,6 +1182,43 @@ document.getElementById('restartBtn').addEventListener('click', e => {
   e.target.blur();
 });
 
+/* ---------- Jos: a Needed coin on the board, and the devil pops up over the whole board.
+   Words fade in: A coin is hidden. When you get the coin he comes back: Noooooo ---------- */
+const DEVIL = { pop:.3, words:.45, gone:2.3, done:2.6 };
+function drawDevil(c, d) {
+  const W = cell * T.cols, H = cell * T.rows, t = d.t;
+  const back = k => 1 + 2.7 * (k - 1) ** 3 + 1.7 * (k - 1) ** 2;      // a bit too big, then settles
+  const k = t < DEVIL.pop ? back(t / DEVIL.pop) : t > DEVIL.gone ? 1 - (t - DEVIL.gone) / (DEVIL.done - DEVIL.gone) : 1;
+  c.save();
+  c.translate(W / 2, H / 2); c.scale(k, k); c.translate(-W / 2, -H / 2);
+  c.fillStyle = '#3a000c'; c.fillRect(0, 0, W, H);
+  c.fillStyle = COL.tile;                                              // horns
+  [[.2, 1], [.8, -1]].forEach(([hx, f]) => {
+    c.beginPath();
+    c.moveTo(W * hx - f * W * .07, H * .2);
+    c.quadraticCurveTo(W * hx - f * W * .06, H * .06, W * hx - f * W * .1, H * .02);
+    c.quadraticCurveTo(W * hx + f * W * .03, H * .08, W * hx + f * W * .03, H * .2);
+    c.fill();
+  });
+  [W * .32, W * .68].forEach((ex, i) => devilEye(c, ex, H * .26, W * .13, i));
+  const mx = W * .22, mw = W * .56, my = H * .74, mh = H * .16, n = 8, tw = mw / n;   // the grin
+  c.fillStyle = '#000'; roundRect(c, mx, my, mw, mh, mh * .3); c.fill();
+  c.fillStyle = '#f2f2f2';
+  for (let i = 0; i < n; i++) {
+    c.beginPath(); c.moveTo(mx + i * tw, my); c.lineTo(mx + (i + .5) * tw, my + mh * .45); c.lineTo(mx + (i + 1) * tw, my); c.fill();
+    c.beginPath(); c.moveTo(mx + i * tw, my + mh); c.lineTo(mx + (i + .5) * tw, my + mh * .55); c.lineTo(mx + (i + 1) * tw, my + mh); c.fill();
+  }
+  // the words fade in, as wide as they can go
+  c.globalAlpha = Math.max(0, Math.min(1, (t - DEVIL.words) / .4));
+  c.font = "100px 'Fredoka One', cursive";
+  const size = Math.min(H * .24, 100 * W * .8 / c.measureText(d.words).width);
+  c.font = size + "px 'Fredoka One', cursive";
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.shadowColor = '#ff2a3d'; c.shadowBlur = 24;
+  c.fillStyle = '#fff'; c.fillText(d.words, W / 2, H * .55);
+  c.restore();
+}
+
 /* ---------- the devil's mouth: closes, blinks, opens. Whatever is behind it changes while it's shut ---------- */
 const mouth = document.getElementById('mouth');
 const mctx = mouth.getContext('2d');
@@ -1210,6 +1251,21 @@ function sizeMouth() {
   mouth.height = innerHeight * dpr;
   mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+function devilEye(c, x, y, ew, flip) {
+  const eh = ew * .55;
+  c.save();
+  c.translate(x, y);
+  c.scale(flip ? -1 : 1, 1);                  // the right eye is the left one flipped
+  c.shadowColor = '#ff2a3d'; c.shadowBlur = 30;
+  c.fillStyle = '#ff2a3d';
+  c.beginPath();                              // an angry eye: flat bottom, slanted top
+  c.moveTo(-ew / 2, -eh * .25);
+  c.lineTo(ew / 2, eh * .35);
+  c.quadraticCurveTo(ew / 2, eh, 0, eh);
+  c.quadraticCurveTo(-ew / 2, eh, -ew / 2, -eh * .25);
+  c.fill();
+  c.restore();
+}
 function drawMouth(t) {
   const W = innerWidth, H = innerHeight, c = mctx;
   c.clearRect(0, 0, W, H);
@@ -1232,23 +1288,7 @@ function drawMouth(t) {
 
   // the eyes sit on the top half and go up with it
   const eyesOn = t < CHOMP.blinkOff || t > CHOMP.blinkOn;
-  if (eyesOn) {
-    const ey = H * .26 - gap, ew = W * .13, eh = ew * .55;
-    [W * .32, W * .68].forEach((ex, i) => {
-      c.save();
-      c.translate(ex, ey);
-      c.scale(i ? -1 : 1, 1);                 // the right eye is the left one flipped
-      c.shadowColor = '#ff2a3d'; c.shadowBlur = 30;
-      c.fillStyle = '#ff2a3d';
-      c.beginPath();                          // an angry eye: flat bottom, slanted top
-      c.moveTo(-ew / 2, -eh * .25);
-      c.lineTo(ew / 2, eh * .35);
-      c.quadraticCurveTo(ew / 2, eh, 0, eh);
-      c.quadraticCurveTo(-ew / 2, eh, -ew / 2, -eh * .25);
-      c.fill();
-      c.restore();
-    });
-  }
+  if (eyesOn) [W * .32, W * .68].forEach((ex, i) => devilEye(c, ex, H * .26 - gap, W * .13, i));
 
   // white fangs on the edge of each jaw, biting together in the middle
   {
@@ -1350,6 +1390,11 @@ function moveThings(dt) {
 
 function step(dt) {
   const p = play, W = T.heroW, H = T.heroH;
+  if (p.devil) {                  // everything waits while the devil is on the screen
+    p.devil.t += dt;
+    if (p.devil.t > DEVIL.done) p.devil = null;
+    return;
+  }
   moveThings(dt);
   if (p.state === 'intro') return;
   if (p.state === 'dead') {
@@ -1483,6 +1528,7 @@ function step(dt) {
         boxesTouch(p.x, p.y, W, H, t.x + .3 * t.w, t.y + .3 * t.h, .4 * t.w, .4 * t.h)) {
       t.gone = true;
       playCoin();
+      if (pr.needed) p.devil = { t:0, words:'Noooooo' };
       for (let k = 0; k < 8; k++) {
         bits.push({ x:t.x + t.w / 2, y:t.y + t.h / 2, vx:(Math.random() - .5) * 6,
                     vy:-3 - Math.random() * 4, life:.5, col:COL.gold });
@@ -1577,6 +1623,7 @@ function render(time) {
     ctx.fillRect(b.x * cell - cell * .08, b.y * cell - cell * .08, cell * .16, cell * .16);
   });
   ctx.globalAlpha = 1;
+  if (play && play.devil) drawDevil(ctx, play.devil);
 }
 
 function renderPlay(time) {

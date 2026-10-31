@@ -274,6 +274,13 @@ will come up again."*
 - On: when you play, the door sinks into the ground at the start, and a green circle with spikes
   spins round the coin. Collect it and the door comes back up, so you can finish.
 - The green circle shows in the creator too, so you can see which coins are needed.
+- **The devil.** Jos: *"If the coin needed for finish is on the board, then the devil will pop up on
+  your screen covering the whole board and words will fade onto the screen saying a coin is hidden
+  and then it will disappear and then when you get the coin, the devil will come up again and words
+  will fill your screen again. Noooooo"*
+  When TEST starts, the devil pops up over the whole board (horns, angry eyes, a fang grin) and
+  **A coin is hidden** fades in. When you get a Needed coin he pops up again: **Noooooo**.
+  Everything waits while he is on the screen (about 2½ seconds).
 
 ## Block properties
 
@@ -314,6 +321,10 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- The devil says *A coin is hidden* when TEST starts, not every time you die.
+- *Noooooo* comes for every Needed coin you get, not just the last one.
+- Nothing moves while the devil is on the screen, so he can't make you die.
 
 - With more than one Needed coin, the door comes up when **all** of them are collected.
 - A Needed coin that is disguised as a block has no green circle (it is in disguise).
