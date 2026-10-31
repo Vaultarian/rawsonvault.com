@@ -393,6 +393,11 @@ teacher."*
 - The level travels as a **level code** (`LDLC1.…`). The friend never sees it. Jos and Dad see it
   in the form's answers.
 - Send only works when the level has a **hero and a door**.
+- **The banner**: Dad asked for the Google Form to look like LDLC, with the Möbius logo, *"bit more
+  josish"*. Carl drew it with the game's own blocks: the hero shoots out of a **dash orb**
+  straight through the **Möbius ring**, **LDLC** in the middle, spikes, coins, a saw, a spring and
+  the door along the ground, and the **devil** peeking in on the right. The same picture sits at the
+  top of the Send to Jos box (`banner.webp`).
 - **Right-click → 🔗 Copy level link** is Jos's fail-safe. It copies a link with the level inside it.
   Open the link and LDLC asks **"Add this level to My levels?"**. A level that came from someone
   else says **by** their nickname on its card.

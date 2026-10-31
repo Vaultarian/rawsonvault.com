@@ -78,6 +78,7 @@ h1 {
   border:2px solid #ff2a3d; box-shadow:0 14px 40px rgba(0,0,0,.6); font-family:'Fredoka One', cursive;
 }
 #modal h2 { font-weight:400; font-size:1.5rem; margin-bottom:14px; }
+#modal .banner { display:block; width:calc(100% + 48px); margin:-22px -24px 16px; border-radius:14px 14px 0 0; }
 #modal p { font-family:'Nunito', sans-serif; font-weight:700; margin-bottom:14px; line-height:1.4; }
 #modal label { display:block; margin-bottom:12px; }
 #modal label small { display:block; font-family:'Nunito', sans-serif; font-size:.8rem; color:#ffffffaa; }
@@ -250,6 +251,8 @@ function note(msg) {
   n.textContent = msg; n.classList.add('show');
   clearTimeout(noteTimer); noteTimer = setTimeout(() => n.classList.remove('show'), 3200);
 }
+// the LDLC banner (the same picture as the top of Dad's Google Form)
+const banner = () => make('img', { className:'banner', src:'banner.webp', alt:'LDLC: Level Devil Level Creator' });
 function sendBox(l) {
   const by = make('input', { maxLength:40, placeholder:'e.g. SpikeMaster9' });
   const name = make('input', { maxLength:40, value:l.name });
@@ -271,7 +274,7 @@ function sendBox(l) {
     Object.entries(FORM.rate).forEach(([q, entry]) => body.append(entry, rates[q]));
     try {
       await fetch(FORM.url, { method:'POST', mode:'no-cors', body });
-      openModal(make('h2', { textContent:'Sent! 🎉' }),
+      openModal(banner(), make('h2', { textContent:'Sent! 🎉' }),
                 make('p', { textContent:'Jos will see your level soon. If he likes it, it might go on his website.' }),
                 make('div', { className:'go' }, [make('button', { type:'button', className:'main', textContent:'OK', onclick:closeModal })]));
     } catch (e) {
@@ -279,7 +282,7 @@ function sendBox(l) {
       note("Couldn't send it. Check the internet, or use Copy level link.");
     }
   });
-  openModal(make('h2', { textContent:'Thanks for making a level! 🎉' }),
+  openModal(banner(), make('h2', { textContent:'Thanks for making a level! 🎉' }),
     make('label', {}, [document.createTextNode('Who made it?'), make('small', { textContent:'A username or nickname, not your real name' }), by]),
     make('label', {}, [document.createTextNode('Level name'), name]),
     ...rows,
