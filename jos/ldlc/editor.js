@@ -570,7 +570,8 @@ cv.addEventListener('pointerdown', e => {
   if (tool === 'select') {
     // Jos: click one of the selected blocks (without dragging) to change all their properties
     if (c && stackAt(a.x, a.y).some(b => sel.has(b.id))) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel, click:true };
-    else { closePanel(); const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y }; sel.clear(); }
+    // Jos: another box, or a click on another block, adds to what's already selected
+    else { closePanel(); const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y, block:c }; }
   }
 });
 cv.addEventListener('pointermove', e => {
@@ -601,9 +602,14 @@ let boxDrag = null, moveDrag = null;
 function finishBox() {
   const x0 = Math.min(boxDrag.x0, boxDrag.x1), x1 = Math.max(boxDrag.x0, boxDrag.x1);
   const y0 = Math.min(boxDrag.y0, boxDrag.y1), y1 = Math.max(boxDrag.y0, boxDrag.y1);
-  for (let y = 0; y < T.rows; y++)
-    for (let x = 0; x < T.cols; x++)
-      if (x < x1 && x + 1 > x0 && y < y1 && y + 1 > y0) stackAt(x, y).forEach(b => sel.add(b.id));
+  if (x1 - x0 < .2 && y1 - y0 < .2) {           // a click, not a box
+    if (boxDrag.block) sel.add(boxDrag.block.id);   // only that block
+    else sel.clear();                             // a click on nothing: nothing selected
+  } else {
+    for (let y = 0; y < T.rows; y++)
+      for (let x = 0; x < T.cols; x++)
+        if (x < x1 && x + 1 > x0 && y < y1 && y + 1 > y0) stackAt(x, y).forEach(b => sel.add(b.id));
+  }
   selectionBanner();
 }
 function selectionBanner() {

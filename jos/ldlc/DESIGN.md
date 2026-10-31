@@ -240,6 +240,17 @@ commands, not in the real game as the button."*
   delays to 0, 1, 2, 3… seconds, in the order you connected the blocks to the trigger.
 - Nobody sees these unless they know the word.
 
+## Adding to what's selected (31 Oct)
+
+Jos: *"In select blocks, if you select blocks, you can click on another block to put that in the
+selected area too, but only that block, so you can drag twice and not having to do it separately."*
+
+- With **Select blocks**, a second box **adds** to what is already selected.
+- A click on another block adds **only that block**. On a tile with a spring inside, it adds the
+  one you are pointing at.
+- A click on a selected block still opens the properties, and dragging still moves them all.
+- To start again: click on an empty square, or press Esc.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -279,6 +290,8 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- A click on an empty square clears the selection, so there is still a way to start again.
 
 - Editor commands stay on after a refresh, until **editor** is typed again.
 - Up 1 stops at 30 seconds, because that is as long as a delay goes.
