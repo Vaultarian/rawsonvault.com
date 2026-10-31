@@ -988,6 +988,13 @@ function triggersSection(c) {
     l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c)));
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
+    // Jos's editor command: every trigger connected to this block does what this one does
+    // (only for this block, and the delays stay as they are)
+    if (editorOn && from.length > 1) card.append(el('button', { className:'p-cmd', textContent:'🛠 Do same with all triggers',
+      onclick:() => {
+        from.forEach(o => { if (o.l !== l) o.l.actions = JSON.parse(JSON.stringify(l.actions)); });
+        save(); renderPanel(); say('All ' + from.length + ' do the same now');
+      } }));
     panel.append(card);
   });
 }
