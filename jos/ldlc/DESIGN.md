@@ -218,6 +218,12 @@ and when they click that it will show the properties."*
   shows **Select inside blocks**, **Select all blocks** and **Select outside blocks**.
 - Click one and the properties open for just those blocks. Change a switch and only they change.
 - Dragging still moves everything in the box.
+- The properties for lots of blocks show their **Connected triggers** too. Jos: *"I have a trigger
+  connected to lots of inside blocks… it didn't have any connected triggers. Make connected
+  triggers be in there."* One card per trigger (**← Trigger · 25 blocks**). Delay, **+ Add** and
+  every action change all of those blocks at once. ✕ disconnects the trigger from all of them.
+- If the blocks already do different things, the card says *"These blocks do different things,
+  so they can't be changed together 😈"*, and Delay shows Mixed.
 - Select all blocks follows the old rule: if the blocks are different (a tile and a spring),
   it says *"These blocks have different properties 😈"*.
 

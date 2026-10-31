@@ -847,6 +847,7 @@ function renderPanel() {
   }
   if (many) {
     panel.append(el('p', { className:'p-note', textContent:'Changing a switch changes all ' + cells.length + ' blocks.' }));
+    manyTriggersSection(cells);
   } else {
     if (c.t === 'controls') controlsSection(c);
     if (LINKERS.includes(c.t)) linksSection(c);
@@ -918,7 +919,45 @@ function triggersSection(c) {
     panel.append(card);
   });
 }
-function actionBox(link, a, j, target) {
+/* Jos: lots of blocks connected to the same trigger: one card changes all of them */
+function manyTriggersSection(cells) {
+  const ids = new Set(cells.map(x => x.id)), groups = new Map();
+  allBlocks().forEach(({ c }) => (c.links || []).forEach(l => {
+    if (!ids.has(l.id)) return;
+    if (!groups.has(c)) groups.set(c, []);
+    groups.get(c).push(l);
+  }));
+  if (!groups.size) return;
+  panel.append(el('div', { className:'p-sub', textContent:'Connected triggers' }));
+  groups.forEach((links, tr) => {
+    const card = el('div', { className:'p-card' });
+    card.addEventListener('mouseenter', () => { hoverLink = tr.id; });
+    card.addEventListener('mouseleave', () => { hoverLink = null; });
+    const count = links.length + (links.length < cells.length ? ' of ' + cells.length : '') + ' blocks';
+    card.append(el('div', { className:'p-card-top' }, [
+      el('span', { textContent:'← ' + NAME[tr.t] + ' · ' + count }),
+      el('button', { className:'p-x', textContent:'✕', title:'Disconnect all of them',
+                     onclick:() => { tr.links = tr.links.filter(k => !links.includes(k)); save(); renderPanel(); } })
+    ]));
+    card.append(row('Delay', number(common(links.map(l => l.delay || 0)), 0, 30, .1,
+                                    v => { links.forEach(l => { l.delay = v; }); save(); }),
+                    el('span', { className:'p-or', textContent:'seconds' })));
+    const same = common(links.map(l => JSON.stringify(l.actions || [])));
+    if (same === null) {
+      card.append(el('p', { className:'p-note', textContent:'These blocks do different things, so they can\'t be changed together 😈' }));
+      panel.append(card);
+      return;
+    }
+    // change one copy, then give every block its own copy of it
+    const g = { actions:JSON.parse(same) };
+    const saved = () => { links.forEach(l => { l.actions = JSON.parse(JSON.stringify(g.actions)); }); save(); };
+    g.actions.forEach((a, j) => card.append(actionBox(g, a, j, cells[0], saved)));
+    card.append(el('button', { className:'p-add', textContent:'+ Add',
+                               onclick:() => { g.actions.push({ do:'' }); saved(); renderPanel(); } }));
+    panel.append(card);
+  });
+}
+function actionBox(link, a, j, target, saved = save) {
   const box = el('div', { className:'p-action' });
   box.append(row('Do', pick([['', '—'], ['size', 'Change size'], ['move', 'Movement'], ['props', 'Change properties']],
     a.do, v => {
@@ -930,22 +969,22 @@ function actionBox(link, a, j, target) {
         a.props = {};
         (SWITCHES[target.t] || []).filter(k => k !== 'disguise').forEach(k => { a.props[k] = !!tp[k]; });
       }
-      save(); renderPanel();
+      saved(); renderPanel();
     }),
     el('button', { className:'p-x', textContent:'🗑', title:'Remove',
-                   onclick:() => { link.actions.splice(j, 1); save(); renderPanel(); } })));
-  if (a.do === 'size') box.append(row('New size', number(a.size, .5, 6, .5, v => { a.size = v; save(); })));
+                   onclick:() => { link.actions.splice(j, 1); saved(); renderPanel(); } })));
+  if (a.do === 'size') box.append(row('New size', number(a.size, .5, 6, .5, v => { a.size = v; saved(); })));
   if (a.do === 'move') {
     box.append(row('Go', pick([['left', 'Left'], ['right', 'Right'], ['up', 'Up'], ['down', 'Down']], a.dir,
-                              v => { a.dir = v; save(); })));
-    box.append(row('How many blocks', number(a.n, 1, 31, 1, v => { a.n = v; save(); })));
-    box.append(row('Speed', number(a.speed, 1, 50, 1, v => { a.speed = v; save(); })));
+                              v => { a.dir = v; saved(); })));
+    box.append(row('How many blocks', number(a.n, 1, 31, 1, v => { a.n = v; saved(); })));
+    box.append(row('Speed', number(a.speed, 1, 50, 1, v => { a.speed = v; saved(); })));
   }
   if (a.do === 'props') {
     box.append(el('div', { className:'p-mini', textContent:'New properties' }));
     const keys = Object.keys(a.props || {});
     if (!keys.length) box.append(el('p', { className:'p-note', textContent:'This block has no properties to change.' }));
-    keys.forEach(k => box.append(toggle(LABEL[k], a.props[k], v => { a.props[k] = v; save(); })));
+    keys.forEach(k => box.append(toggle(LABEL[k], a.props[k], v => { a.props[k] = v; saved(); })));
   }
   return box;
 }
