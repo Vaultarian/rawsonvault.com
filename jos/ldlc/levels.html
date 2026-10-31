@@ -104,19 +104,23 @@ h1 {
 body.none #empty, body.none #arrow { display:block; }
 @keyframes nudge { 50% { transform:translate(-10px, 8px); } }
 
-/* ---- The Create button, bottom left. Dad: our own, not Wix's. The ring spins like a coin when you
-   point at it (the spinning Möbius ring goes here next) ---- */
+/* ---- The Create button, bottom left. Dad: our own, not Wix's. Point at it and the Möbius ring spins
+   like a coin (made with fal.ai; ring-spin.webp is 60 pictures in a row, played with CSS) ---- */
 #createBtn {
   position:fixed; bottom:18px; left:24px; z-index:20; width:182px; height:166px; border-radius:18px;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
   cursor:pointer; background:#1c0008; border:3px solid #ff2a3d; color:#fff;
   font-family:'Fredoka One', cursive; font-size:1.6rem;
   box-shadow:0 8px 24px rgba(0,0,0,.45), 0 0 18px rgba(255,42,61,.35); transition:transform .15s;
 }
 #createBtn:hover { transform:scale(1.04); }
-#createBtn .ring { width:66px; height:66px; border-radius:50%; border:9px solid #fff; box-sizing:border-box; }
-#createBtn:hover .ring { animation:coinSpin 1.2s linear infinite; }
-@keyframes coinSpin { to { transform:rotateY(360deg); } }
+#createBtn .ring {
+  width:110px; height:110px; background:url(ring-spin.webp) 0 0 / 6600px 110px no-repeat;
+  -webkit-mask-image:radial-gradient(closest-side, #000 80%, transparent);
+          mask-image:radial-gradient(closest-side, #000 80%, transparent);
+}
+#createBtn:hover .ring { animation:ringSpin 3.5s steps(60) infinite; }
+@keyframes ringSpin { to { background-position:-6600px 0; } }
 </style>
 </head>
 <body>

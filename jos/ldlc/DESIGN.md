@@ -342,9 +342,11 @@ corner where a create button is."*
   *"create is in the bottom left, not the top right"*. The button is now **his own screen
   recording** (`create.mp4`) with **Create** drawn over WIX STUDIO in every frame, and the go-to-link
   icon cut off. It sits in the **bottom left**.
-- **Dad (31 Oct): our own Create button, not Wix's video.** For now it is an LDLC box with a white ring
-  that spins like a coin when you point at it, and the word Create. Next: a **spinning Möbius ring**
-  made with fal.ai goes in its place. Jos's Wix recording is kept in `~/jos/ldlc-refs/`, off the website.
+- **Dad (31 Oct): our own Create button, not Wix's video.** It is the family's **Möbius ring**,
+  spinning like a coin when you point at it, with the word Create. Dad asked for it; Carl made it
+  with fal.ai (about $0.18). It is 60 pictures in one strip (`ring-spin.webp`), played with CSS, so it
+  starts from the first picture every time. The official copy is in `images/brand/` with Dad's other
+  logos. Jos's Wix recording is kept in `~/jos/ldlc-refs/`, off the website.
 - **Right-click a level** (Jos: *"you can rename it, delete it, or play it"*): **▶ Play** plays just
   that level, **✏️ Rename** (Enter keeps it, Escape doesn't), **🗑 Delete** (it asks first).
 - Click **Create**: a new level (Level 1, Level 2…) opens in the creator.
