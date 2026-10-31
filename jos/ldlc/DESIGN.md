@@ -302,6 +302,10 @@ will come up again."*
   When you get a Needed coin he says one of: **Noooooo, My door!, The coin!** (Jos's), Give it back!,
   Not fair!, How did you find it?!, That was MY coin!, Grrrrr!, Impossible!, Next time…
   Never the same one twice in a row. *A coin is hidden* stays the same.
+- **Disguise as Coin for finish.** Jos: *"In disguise as block, can you make coin for finish as a
+  disguise option?"* Any block can now be disguised as a **Coin for finish**: a coin with the green
+  spiky circle. It only looks like one. A spike in disguise still kills you, and the door doesn't
+  wait for it.
 
 ## Trigger to block: lots of triggers and buttons at once (31 Oct)
 
@@ -351,6 +355,8 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Start pos is not in the disguise list (it is an editor block, not a real one).
 
 - Do same with other triggers copies the Do (the actions), not the Delay, so Up 1 delays stay.
 - Done and Cancel sit under the last card, after the tick boxes.

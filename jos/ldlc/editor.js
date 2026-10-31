@@ -393,6 +393,7 @@ function drawBlock(c, type, x, y, s, time, r) {
   else if (type === 'sawblade') drawSaw(c, x, y, s, time);
   else if (type === 'spring') drawSpring(c, x, y, s, 0);
   else if (type === 'coin') drawCoin(c, x, y, s, time);
+  else if (type === 'neededcoin') { drawCoin(c, x, y, s, time); drawNeededRing(c, x, y, s, time); }
   else if (type === 'oneway') drawOneWay(c, x, y, s);
   else if (type === 'trigger') drawTrigger(c, x, y, s);
   else if (type === 'controls') drawControls(c, x, y, s);
@@ -426,6 +427,9 @@ const SWITCHES = {
 };
 const LABEL = { deadly:'Deadly', collision:'Collision', disguise:'Disguise as block',
                 action:'Do action', visible:'Visible', needed:'Needed for finish' };
+// what a block can be disguised as. Jos: a Coin for finish too (a coin with the green spiky circle)
+const DISGUISES = BLOCKS.filter(b => b.id !== 'startpos').map(b => [b.id, b.name])
+                        .concat([['neededcoin', 'Coin for finish']]);
 const LINKERS = ['trigger', 'button'];    // the blocks you can connect to other blocks
 const KEYS = [['ArrowLeft', '← arrow'], ['ArrowRight', '→ arrow'], ['ArrowUp', '↑ arrow'],
               ['ArrowDown', '↓ arrow'], ['Space', 'Space'], ['KeyA', 'A'], ['KeyD', 'D'],
@@ -891,7 +895,7 @@ function renderPanel() {
       save(); renderPanel();
     }));
     if (k === 'disguise' && on === true) {
-      panel.append(row('Block', pick(BLOCKS.map(b => [b.id, b.name]), common(cells.map(x => x.as || 'tile')),
+      panel.append(row('Block', pick(DISGUISES, common(cells.map(x => x.as || 'tile')),
                                      v => { cells.forEach(x => { x.as = v; }); save(); renderPanel(); })));
     }
   });
