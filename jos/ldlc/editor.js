@@ -1192,7 +1192,10 @@ function showEditor() {
   document.getElementById('editorCmds').hidden = !editorOn;
   document.querySelector('.block[data-id=startpos]').style.display = editorOn ? '' : 'none';
   if (!editorOn && chosen === 'startpos') { chosen = 'tile'; refreshButtons(); }
-  if (openIds) renderPanel();
+  // Jos: off means off on the blocks too: the editor buttons in their properties go (and a
+  // half-done Do same with other triggers is cancelled)
+  if (!editorOn) copyFrom = null;
+  if (openId || openIds) renderPanel();
 }
 function secretKey(e) {             // true when this key finishes the secret word
   if (e.key.length !== 1 || e.metaKey || e.ctrlKey) return false;

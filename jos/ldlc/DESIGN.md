@@ -316,6 +316,11 @@ triggers/buttons."*
 - Click as many triggers and buttons as you like (each one goes green). Click one again to drop it.
 - Then click blocks: every chosen trigger/button connects to each block. Click a block again to undo it.
 
+- **Typing editor again turns them off on the blocks too.** Jos: *"editor commands should be able to
+  be turned off by typing editor again, but it doesn't turn off editor commands on the shapes. It
+  just stops you from seeing it."* The 🛠 buttons on an open block's properties (Do same with other
+  triggers, Up by) now go when you type editor again, and a half-done Do same is cancelled.
+
 ## My levels and the Create button (31 Oct)
 
 Jos: *"when you click create a level, it will show a list of all the levels you created. If you
