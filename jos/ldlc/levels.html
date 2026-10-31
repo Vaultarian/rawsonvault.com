@@ -67,6 +67,44 @@ h1 {
   border:2px solid #5dff8a; border-radius:6px; padding:0 .3rem; width:100%;
 }
 
+/* ---- Send to Jos, adding a shared level, and little messages ---- */
+#modal {
+  position:fixed; inset:0; z-index:40; display:flex; align-items:center; justify-content:center;
+  background:rgba(0, 0, 0, .7);
+}
+#modal[hidden] { display:none; }
+#modal .box {
+  width:min(440px, 92vw); padding:22px 24px; border-radius:16px; background:#1c0008;
+  border:2px solid #ff2a3d; box-shadow:0 14px 40px rgba(0,0,0,.6); font-family:'Fredoka One', cursive;
+}
+#modal h2 { font-weight:400; font-size:1.5rem; margin-bottom:14px; }
+#modal p { font-family:'Nunito', sans-serif; font-weight:700; margin-bottom:14px; line-height:1.4; }
+#modal label { display:block; margin-bottom:12px; }
+#modal label small { display:block; font-family:'Nunito', sans-serif; font-size:.8rem; color:#ffffffaa; }
+#modal input {
+  width:100%; margin-top:4px; padding:.45rem .6rem; border-radius:8px; border:2px solid #ff2a3d77;
+  background:#000; color:#fff; font-family:'Nunito', sans-serif; font-weight:700; font-size:1rem;
+}
+#modal input:focus { outline:none; border-color:#5dff8a; }
+#modal .rate { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+#modal .rate span { flex:1; }
+#modal button {
+  font-family:'Fredoka One', cursive; font-size:1rem; color:#fff; cursor:pointer;
+  border:2px solid #ff2a3d77; background:#000; border-radius:8px; padding:.35rem .7rem;
+}
+#modal .rate button.on { background:#2e9e4f; border-color:#5dff8a; }
+#modal .go { display:flex; gap:10px; margin-top:16px; }
+#modal .go button { flex:1; padding:.55rem; }
+#modal .go .main { background:#ff2a3d; border-color:#ff2a3d; }
+#modal .go .main:disabled { opacity:.4; cursor:default; }
+.level small { font-family:'Nunito', sans-serif; font-size:.8rem; color:#ffffffaa; margin-top:-6px; }
+#note {
+  position:fixed; left:50%; top:18px; z-index:50; transform:translate(-50%, -160%); transition:transform .3s;
+  background:#2e9e4f; color:#fff; font-family:'Fredoka One', cursive; padding:.6rem 1.2rem;
+  border-radius:999px; white-space:nowrap;
+}
+#note.show { transform:translate(-50%, 0); }
+
 /* ---- no levels yet ---- */
 #empty {
   display:none; position:absolute; top:46%; left:50%; transform:translate(-50%, -50%);
@@ -95,6 +133,8 @@ body.none #empty, body.none #arrow { display:block; }
     <path d="M0,0 L10,5 L0,10 z" fill="#fff"/></marker></defs>
     <path id="arrowPath" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" marker-end="url(#head)"/></svg>
   <div id="menu"></div>
+  <div id="modal" hidden><div class="box"></div></div>
+  <div id="note"></div>
   <button id="createBtn" title="Create a level"><video src="create.mp4" muted playsinline loop preload="auto"></video></button>
 
 <script src="levels.js"></script>
@@ -133,6 +173,7 @@ function showLevels() {
     cv.width = 320; cv.height = 180;
     thumb(cv.getContext('2d'), LDLC.read(LDLC.key('level', l.id)));
     a.append(cv, Object.assign(document.createElement('span'), { textContent:l.name }));
+    if (l.by) a.append(Object.assign(document.createElement('small'), { textContent:'by ' + l.by }));
     a.addEventListener('contextmenu', e => { e.preventDefault(); openMenu(l, a, e.clientX, e.clientY); });
     listEl.append(a);
   });
@@ -154,6 +195,9 @@ function openMenu(l, card, x, y) {
     item('▶ Play' + (canPlay ? '' : '<small>Needs a Hero and a Door</small>'),
          () => { location.href = 'editor.html?play=' + encodeURIComponent(l.id); }, !canPlay),
     item('✏️ Rename', () => { closeMenu(); renameCard(l, card); }),
+    item('📤 Send to Jos' + (canPlay ? '' : '<small>Needs a Hero and a Door</small>'),
+         () => { closeMenu(); sendBox(l); }, !canPlay),
+    item('🔗 Copy level link', () => { closeMenu(); copyLink(l); }),
     item('🗑 Delete', () => askDelete(l)));
   menu.classList.add('show');
   menu.style.left = Math.min(x, innerWidth - menu.offsetWidth - 8) + 'px';
@@ -189,8 +233,88 @@ function renameCard(l, card) {
   });
   box.addEventListener('blur', () => finish(true));
 }
+/* ---------- Dad's idea: Send to Jos. It fills in Dad's Google Form behind the scenes, with the
+   level hidden inside it. You only type who made it and what it's called. ---------- */
+const FORM = {
+  url:'https://docs.google.com/forms/d/e/1FAIpQLSehB-eeqS18QGWSY6LSh-llh8GTh213JEg_Dx3XGbDY1qeAOQ/formResponse',
+  by:'entry.1909688238', name:'entry.972832664', code:'entry.725860479',
+  rate:{ Difficulty:'entry.1927971596', Length:'entry.1344573086', Tricks:'entry.503476207' }
+};
+const modal = document.getElementById('modal'), box = modal.querySelector('.box');
+const make = (tag, props, kids) => { const e = Object.assign(document.createElement(tag), props || {}); (kids || []).forEach(k => e.append(k)); return e; };
+function openModal(...kids) { box.replaceChildren(...kids); modal.hidden = false; }
+function closeModal() { modal.hidden = true; box.replaceChildren(); }
+let noteTimer;
+function note(msg) {
+  const n = document.getElementById('note');
+  n.textContent = msg; n.classList.add('show');
+  clearTimeout(noteTimer); noteTimer = setTimeout(() => n.classList.remove('show'), 3200);
+}
+function sendBox(l) {
+  const by = make('input', { maxLength:40, placeholder:'e.g. SpikeMaster9' });
+  const name = make('input', { maxLength:40, value:l.name });
+  const rates = {};
+  const rows = Object.keys(FORM.rate).map(q => {
+    const btns = ['Easy', 'Medium', 'Hard'].map(v => make('button', { type:'button', textContent:v }));
+    btns.forEach(b => b.addEventListener('click', () => {
+      rates[q] = b.textContent; btns.forEach(x => x.classList.toggle('on', x === b)); ready();
+    }));
+    return make('div', { className:'rate' }, [make('span', { textContent:q === 'Tricks' ? 'Tricks (how hard)' : q }), ...btns]);
+  });
+  const send = make('button', { type:'button', className:'main', textContent:'📤 Send to Jos', disabled:true });
+  const ready = () => { send.disabled = !(by.value.trim() && name.value.trim() && Object.keys(rates).length === 3); };
+  by.addEventListener('input', ready); name.addEventListener('input', ready);
+  send.addEventListener('click', async () => {
+    send.disabled = true; send.textContent = 'Sending…';
+    const body = new URLSearchParams({ [FORM.by]:by.value.trim(), [FORM.name]:name.value.trim(),
+                                       [FORM.code]:await LDLC.pack(l.id, name.value.trim(), by.value.trim()) });
+    Object.entries(FORM.rate).forEach(([q, entry]) => body.append(entry, rates[q]));
+    try {
+      await fetch(FORM.url, { method:'POST', mode:'no-cors', body });
+      openModal(make('h2', { textContent:'Sent! 🎉' }),
+                make('p', { textContent:'Jos will see your level soon. If he likes it, it might go on his website.' }),
+                make('div', { className:'go' }, [make('button', { type:'button', className:'main', textContent:'OK', onclick:closeModal })]));
+    } catch (e) {
+      send.disabled = false; send.textContent = '📤 Send to Jos';
+      note("Couldn't send it. Check the internet, or use Copy level link.");
+    }
+  });
+  openModal(make('h2', { textContent:'Thanks for making a level! 🎉' }),
+    make('label', {}, [document.createTextNode('Who made it?'), make('small', { textContent:'A username or nickname, not your real name' }), by]),
+    make('label', {}, [document.createTextNode('Level name'), name]),
+    ...rows,
+    make('div', { className:'go' }, [send, make('button', { type:'button', textContent:'Cancel', onclick:closeModal })]));
+  by.focus();
+}
+
+/* ---------- Jos's idea: a level link. Copy it, send it any way you like ---------- */
+async function copyLink(l) {
+  const link = location.href.split('#')[0] + '#get=' + await LDLC.pack(l.id, l.name, l.by || '');
+  try { await navigator.clipboard.writeText(link); }
+  catch (e) {                       // older ways of copying, for browsers that say no
+    const t = make('textarea', { value:link }); document.body.append(t); t.select();
+    document.execCommand('copy'); t.remove();
+  }
+  note('🔗 Link copied! Paste it anywhere to share your level.');
+}
+/* opening a level link: it asks first, then the level goes into My levels */
+async function getShared() {
+  const m = location.hash.match(/^#get=(.+)$/);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  const level = await LDLC.unpack(decodeURIComponent(m[1]));
+  if (!level) { note("That level link doesn't work. Ask for a new one."); return; }
+  openModal(make('h2', { textContent:'Someone shared a level! 🎮' }),
+    make('p', { textContent:'Add "' + level.name + '"' + (level.by ? ' by ' + level.by : '') + ' to My levels?' }),
+    make('div', { className:'go' }, [
+      make('button', { type:'button', className:'main', textContent:'Add it', onclick:() => {
+        LDLC.addShared(level); closeModal(); showLevels(); note('Added! It’s in My levels.'); } }),
+      make('button', { type:'button', textContent:'No thanks', onclick:closeModal })]));
+}
+addEventListener('hashchange', getShared);
+
 addEventListener('click', e => { if (!menu.contains(e.target)) closeMenu(); });
-addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); if (!modal.hidden) closeModal(); } });
 addEventListener('contextmenu', e => { if (!e.target.closest('.level')) closeMenu(); });
 
 /* ---------- Jos's Create button: his video ----------
@@ -214,6 +338,7 @@ function pointArrow() {
 }
 addEventListener('resize', () => { if (document.body.classList.contains('none')) pointArrow(); });
 showLevels();
+getShared();
 </script>
 </body>
 </html>

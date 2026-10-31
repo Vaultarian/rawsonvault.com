@@ -379,6 +379,26 @@ level devil."* It is the **green dash orb** from Geometry Dash.
   pointing right, like Jos's picture.
 - It has Deadly, Collision, Visible, Disguise and Do action. Do action off: it does nothing.
 
+## Send to Jos and level links (31 Oct)
+
+Dad's idea: friends make levels and send them to Jos, through a **Google Form**, so nothing on the
+website can be used to change it. Jos: *"Doesn't that include a back door, I think? That's a safety
+problem, Dad told me."* So there is no password and no key in the page, and nobody can write to
+the website. Jos's fail-safe: *"copy this LDLC link, put it in a slide or document, send it to your
+teacher."*
+
+- **Right-click a level → 📤 Send to Jos.** A box asks for your **nickname**, the **level name**,
+  and Easy / Medium / Hard for **Difficulty**, **Length** and **Tricks**. Press Send: it goes into
+  Dad's Google Form, and it says **Sent! 🎉**. No new tab, no Google sign-in.
+- The level travels as a **level code** (`LDLC1.…`). The friend never sees it. Jos and Dad see it
+  in the form's answers.
+- Send only works when the level has a **hero and a door**.
+- **Right-click → 🔗 Copy level link** is Jos's fail-safe. It copies a link with the level inside it.
+  Open the link and LDLC asks **"Add this level to My levels?"**. A level that came from someone
+  else says **by** their nickname on its card.
+- A level code is **checked** before it goes in: unknown blocks are dropped, numbers are kept in
+  range, and anything strange is thrown away. So a made-up code can't break the game.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -506,6 +526,11 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 - A block with **Visible off** looks **see-through in the creator**, so you can still find it.
   (Triggers and Edit controls look normal, because they start invisible.)
 - Changing properties with a trigger can now switch **Visible**, so blocks can appear and vanish.
+- Send to Jos: the box asks for a **nickname**, not a real name. It lands in Dad's Google Form,
+  never on the website.
+- A level code is squashed small (compressed) so a big level still fits in one form answer. Codes
+  longer than 100,000 letters are refused.
+- Opening a level link **asks first** before adding the level. It never replaces one of your levels.
 
 ## Build log
 
