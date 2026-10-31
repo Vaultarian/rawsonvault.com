@@ -104,6 +104,9 @@ body.testing #banner { display:none; }
                border-radius:50%; background:#fff; transition:transform .2s; }
 input:checked + .knob { background:#2e9e4f; }
 input:checked + .knob::after { transform:translateX(16px); }
+/* Jos: some blocks on, some off: the switch sits in the middle, one side green, one side black */
+input:indeterminate + .knob { background:linear-gradient(90deg, #2e9e4f 50%, #000 50%); }
+input:indeterminate + .knob::after { transform:translateX(8px); }
 .p-switch input, .topswitch input { position:absolute; opacity:0; pointer-events:none; }
 .topswitch { display:flex; align-items:center; gap:.45rem; cursor:pointer; position:relative;
              font-family:'Fredoka One', cursive; font-size:.85rem; color:#ffb3ba; margin-right:.4rem; }

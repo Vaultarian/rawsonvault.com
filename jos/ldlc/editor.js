@@ -433,7 +433,7 @@ function setTool(t) {
   sel.clear(); boxDrag = moveDrag = null;
   linkFrom = null;
   hideBanner();
-  if (t !== 'cursor') closePanel();
+  if (t !== 'cursor' || openIds) closePanel();
   if (t === 'select') banner('Click and drag to make a box round the blocks you want');
   if (t === 'link') banner('Choose a trigger');
   cv.style.cursor = t === 'select' ? 'crosshair' : t === 'cursor' || t === 'link' ? 'pointer' : 'default';
@@ -515,7 +515,7 @@ function turnKey() {
     const f = byId(id);
     if (f && TURNS.includes(f.c.t)) { f.c.r = ((f.c.r || 0) + 1) % 4; turned++; }
   });
-  if (turned) { save(); if (openId) renderPanel(); }
+  if (turned) { save(); if (openId || openIds) renderPanel(); }
 }
 
 cv.addEventListener('pointerdown', e => {
@@ -533,8 +533,9 @@ cv.addEventListener('pointerdown', e => {
   }
   if (tool === 'link') { linkClick(c); return; }
   if (tool === 'select') {
-    if (c && sel.has(c.id)) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel };
-    else { const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y }; sel.clear(); }
+    // Jos: click one of the selected blocks (without dragging) to change all their properties
+    if (c && sel.has(c.id)) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel, click:true };
+    else { closePanel(); const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y }; sel.clear(); }
   }
 });
 cv.addEventListener('pointermove', e => {
@@ -547,8 +548,10 @@ cv.addEventListener('pointerup', () => {
   painting = false;
   if (boxDrag) { finishBox(); boxDrag = null; }
   if (moveDrag) {
+    const still = !moveDrag.off.x && !moveDrag.off.y;
     moveBlocks(moveDrag.ids, moveDrag.off);
     if (moveDrag.open) openPanel(moveDrag.open);
+    else if (moveDrag.click && still) openSelection();
     moveDrag = null;
   }
 });
@@ -596,7 +599,7 @@ function deleteSelected() {
     for (let x = 0; x < T.cols; x++)
       if (grid[y][x] && sel.has(grid[y][x].id)) grid[y][x] = null;
   forgetLinksTo(sel);
-  if (sel.has(openId)) closePanel();
+  if (sel.has(openId) || openIds) closePanel();
   sel.clear();
   save();
   selectionBanner();
@@ -649,7 +652,7 @@ function hideBanner() { bannerEl.classList.remove('show'); }
 
 /* ---------- the Block properties panel ---------- */
 const panel = document.getElementById('panel');
-let openId = null, hoverLink = null;
+let openId = null, openIds = null, hoverLink = null;   // openIds = lots of selected blocks at once
 
 function el(tag, attrs, kids) {
   const e = Object.assign(document.createElement(tag), attrs || {});
@@ -661,14 +664,16 @@ function row(label, ...kids) {
 }
 function toggle(label, on, change) {
   const box = el('input', { type:'checkbox', checked:!!on });
+  if (on === null) box.indeterminate = true;   // Jos: some on, some off: the switch sits in the middle
   box.addEventListener('change', () => change(box.checked));
   return el('label', { className:'p-row p-switch' },
             [el('span', { className:'p-label', textContent:label }), box, el('span', { className:'knob' })]);
 }
 function pick(options, value, change) {
   const s = el('select');
+  if (value === null) s.append(el('option', { value:'__mixed', textContent:'Mixed', disabled:true }));
   options.forEach(([v, t]) => s.append(el('option', { value:v, textContent:t })));
-  s.value = value;
+  s.value = value === null ? '__mixed' : value;
   s.addEventListener('change', () => change(s.value));
   return s;
 }
@@ -681,59 +686,85 @@ function number(value, min, max, step, change) {
   return n;
 }
 
-function openPanel(id) { openId = id; renderPanel(); }
+function openPanel(id) { openId = id; openIds = null; renderPanel(); }
+/* Jos: the selected blocks' properties, all at once. Only if they all have the same properties. */
+function openSelection() {
+  if (sel.size === 1) { openPanel([...sel][0]); return; }
+  const cells = [...sel].map(byId).filter(Boolean).map(f => f.c);
+  const list = c => (SWITCHES[c.t] || []).join();
+  if (!cells.every(c => list(c) === list(cells[0]))) {
+    say('These blocks have different properties 😈'); return;
+  }
+  openId = null; openIds = new Set(sel); renderPanel();
+}
+function panelCells() {
+  if (openIds) return [...openIds].map(byId).filter(Boolean).map(f => f.c);
+  const f = byId(openId);
+  return f ? [f.c] : [];
+}
+/* the same for every block → that; different → null, which shows as "in the middle" or Mixed */
+function common(vals) { return vals.every(v => v === vals[0]) ? vals[0] : null; }
 function closePanel() {
   if (!panel.classList.contains('open')) return;
-  openId = null; hoverLink = null;
+  openId = null; openIds = null; hoverLink = null;
   panel.classList.remove('open');
   panel.innerHTML = '';
   fit();
 }
 function renderPanel() {
-  const f = byId(openId);
-  if (!f) { closePanel(); return; }
-  const c = f.c, wasOpen = panel.classList.contains('open');
+  const cells = panelCells();
+  if (!cells.length) { closePanel(); return; }
+  const c = cells[0], many = cells.length > 1, wasOpen = panel.classList.contains('open');
   const scroll = panel.scrollTop;
   panel.innerHTML = '';
   panel.classList.add('open');
 
   const icon = el('canvas', { width:80, height:80, className:'p-icon' });
-  drawIcon(icon.getContext('2d'), c.t, 0, c.r);
+  drawIcon(icon.getContext('2d'), c.t, 0, many ? 0 : c.r);
   panel.append(el('div', { className:'p-head' }, [
-    icon, el('span', { className:'p-title', textContent:NAME[c.t] }),
+    icon, el('span', { className:'p-title', textContent:many ? cells.length + ' blocks' : NAME[c.t] }),
     el('button', { className:'p-close', textContent:'✕', title:'Close', onclick:closePanel })
   ]));
 
   panel.append(el('div', { className:'p-sub', textContent:'Block properties' }));
-  const pr = props(c), sw = SWITCHES[c.t] || [];
-  sw.forEach(k => {
-    panel.append(toggle(LABEL[k], pr[k], v => {
-      c.p = Object.assign({}, c.p, { [k]:v });
-      if (k === 'disguise' && v && !c.as) c.as = 'tile';
+  // Jos: turn one on and every selected block goes on; the same with off
+  (SWITCHES[c.t] || []).forEach(k => {
+    const on = common(cells.map(x => !!props(x)[k]));
+    panel.append(toggle(LABEL[k], on, v => {
+      cells.forEach(x => {
+        x.p = Object.assign({}, x.p, { [k]:v });
+        if (k === 'disguise' && v && !x.as) x.as = 'tile';
+      });
       save(); renderPanel();
     }));
-    if (k === 'disguise' && pr.disguise) {
-      panel.append(row('Block', pick(BLOCKS.map(b => [b.id, b.name]), c.as || 'tile',
-                                     v => { c.as = v; save(); })));
+    if (k === 'disguise' && on === true) {
+      panel.append(row('Block', pick(BLOCKS.map(b => [b.id, b.name]), common(cells.map(x => x.as || 'tile')),
+                                     v => { cells.forEach(x => { x.as = v; }); save(); renderPanel(); })));
     }
   });
 
-  if (TURNS.includes(c.t)) {
-    const go = by => { c.r = ((c.r || 0) + by + 4) % 4; save(); renderPanel(); };
-    panel.append(row('Turn', el('span', { className:'p-face', textContent:FACE_NAME[c.r || 0] }),
+  if (cells.every(x => TURNS.includes(x.t))) {
+    const go = by => { cells.forEach(x => { x.r = ((x.r || 0) + by + 4) % 4; }); save(); renderPanel(); };
+    const r = common(cells.map(x => x.r || 0));
+    panel.append(row('Turn', el('span', { className:'p-face', textContent:r === null ? 'Mixed' : FACE_NAME[r] }),
       el('button', { className:'p-turn', textContent:'↺', title:'Turn left', onclick:() => go(-1) }),
       el('button', { className:'p-turn', textContent:'↻', title:'Turn right (R)', onclick:() => go(1) })));
   }
-  if (c.t === 'portal') {
+  if (cells.every(x => x.t === 'portal')) {
     // Jos: Output = which way you come out of this portal
+    const out = common(cells.map(x => x.out || ''));
     panel.append(row('Output =', pick([['', '—'], ['up', 'Up'], ['down', 'Down'], ['left', 'Left'], ['right', 'Right']],
-                                      c.out || '', v => { c.out = v || undefined; save(); })));
-    if (!c.out) panel.append(el('p', { className:'p-note',
+                                      out, v => { cells.forEach(x => { x.out = v || undefined; }); save(); renderPanel(); })));
+    if (out === '') panel.append(el('p', { className:'p-note',
       textContent:'— means: out of the bottom, or out of the side if there is a block under it.' }));
   }
-  if (c.t === 'controls') controlsSection(c);
-  if (LINKERS.includes(c.t)) linksSection(c);
-  triggersSection(c);
+  if (many) {
+    panel.append(el('p', { className:'p-note', textContent:'Changing a switch changes all ' + cells.length + ' blocks.' }));
+  } else {
+    if (c.t === 'controls') controlsSection(c);
+    if (LINKERS.includes(c.t)) linksSection(c);
+    triggersSection(c);
+  }
   panel.scrollTop = scroll;
   if (!wasOpen) fit();
 }

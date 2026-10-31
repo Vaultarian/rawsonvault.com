@@ -137,6 +137,21 @@ the Cursor, and under its properties there's the trigger with **+ Add**. Click i
   "It's not always the same properties, so make the machine look what properties it has."
   They come out with switches, and you turn them on and off.
 
+## Changing lots of blocks at once (31 Oct)
+
+Jos: in **Select blocks**, left-click one of the selected blocks to change **all their properties
+at once**.
+
+- It only works if they **have the same properties**. If they're different, you can't.
+- A switch that's **on for some and off for others sits in the middle, one side green, one side
+  black**. All on = green. All off = off.
+- **Turn one on and all the selected blocks go on.** The same with off, and all the other
+  properties.
+
+Carl's choices: a click opens it, a drag still moves them. Different properties gives the message
+"These blocks have different properties 😈". Turn and Output work on all of them too, and say
+**Mixed** if they're different. Connections and Edit controls settings stay one block at a time.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -229,3 +244,5 @@ Jos: **every single block has Visible** in its properties, the portal and the he
   Block properties), **portal Output**, and **Visible on every block**. Not published.
 - **31 Oct**: hover a connected block or trigger in the properties and it **flashes red and green**;
   the **Cursor drags one block**. Not published.
+- **31 Oct**: **Select blocks → click a selected block** changes all their properties at once, with
+  the half-green half-black switch for mixed. Not published.
