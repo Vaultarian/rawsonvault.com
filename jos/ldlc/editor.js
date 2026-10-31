@@ -74,14 +74,16 @@ const CONTROLS = { left:['ArrowLeft', 'KeyA'], right:['ArrowRight', 'KeyD'],
    Jos: every level is kept (levels.js). editor.html?level=L… opens one of them. */
 const params = new URLSearchParams(location.search);
 // Jos: PLAY (editor.html?play) plays every level you made in a random order. At the end of the
-// list it mixes them up again and keeps going.
-const playAll = params.has('play');
+// list it mixes them up again and keeps going. Right-click → Play (editor.html?play=L…) plays just
+// that one level, then goes back to My levels.
+const playAll = params.has('play'), playOne = params.get('play') || null;
 let levelId = params.get('level'), queue = [];
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
 function nextLevel() {
+  if (playOne) return LDLC.playable(playOne) ? playOne : null;
   if (!queue.length) {
     queue = shuffle(LDLC.list().map(l => l.id).filter(LDLC.playable));
     if (queue.length > 1 && queue[0] === levelId) queue.push(queue.shift());   // never the same one twice in a row
@@ -89,7 +91,7 @@ function nextLevel() {
   return queue.shift();
 }
 if (playAll) levelId = nextLevel();
-if (!levelId) { location.replace(playAll ? 'index.html' : 'levels.html'); throw new Error('no level: back to the levels page'); }
+if (!levelId) { location.replace(playAll && !playOne ? 'index.html' : 'levels.html'); throw new Error('no level: back to the levels page'); }
 if (!playAll) LDLC.ensure(levelId);
 let grid = emptyGrid();
 
@@ -1247,6 +1249,7 @@ function letsGo() {
 /* PLAY: you got to the door, so the devil's mouth closes and opens onto the next level */
 function nextPlay() {
   if (chomp) return;
+  if (playOne) { startChomp(() => { location.href = 'levels.html'; }); return; }   // just one level: done
   startChomp(() => {
     levelId = nextLevel();
     grid = emptyGrid(); load(); loadEdges(); giveIds(); fixPortals();
@@ -1981,7 +1984,7 @@ function setPaused(on) {
 }
 document.getElementById('pauseBtn').addEventListener('click', e => { setPaused(!paused); e.currentTarget.blur(); });
 document.getElementById('resumeBtn').addEventListener('click', () => setPaused(false));
-document.getElementById('exitBtn').addEventListener('click', () => { location.href = 'index.html'; });
+document.getElementById('exitBtn').addEventListener('click', () => { location.href = playOne ? 'levels.html' : 'index.html'; });
 
 let last = performance.now(), clock = 0;
 function loop(now) {

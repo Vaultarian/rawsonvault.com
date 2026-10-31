@@ -48,6 +48,15 @@ const LDLC = (() => {
     return ['hero', 'door'].every(t => all.some(c => c && c.t === t));
   }
 
+  // Jos: right-click a level to rename it or delete it
+  function rename(id, name) {
+    keep(list().map(l => l.id === id ? Object.assign(l, { name }) : l));
+  }
+  function remove(id) {
+    keep(list().filter(l => l.id !== id));
+    ['level', 'edges', 'start'].forEach(w => localStorage.removeItem(key(w, id)));
+  }
+
   moveOldLevel();
-  return { list, make, ensure, key, read, playable };
+  return { list, make, ensure, key, read, playable, rename, remove };
 })();

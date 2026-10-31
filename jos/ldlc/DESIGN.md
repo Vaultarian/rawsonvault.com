@@ -333,6 +333,14 @@ corner where a create button is."*
   Carl drew the pictures to match the video: a colour wheel, a circle made of code, a shiny ball on
   a grid, indigo, a purple sunset (the word spreads out), gold, wavy ribbons, orange, an orbit, grey
   with guide lines, then back to black and white. 6 seconds, then again.
+- **Jos changed his mind (after lunch):** *"how about you just get the video and just put it in
+  there instead of making your own and just put create in front of Wix It'll look better"* and
+  *"create is in the bottom left, not the top right"*. The button is now **his own screen
+  recording** (`create.mp4`) with **Create** drawn over WIX STUDIO in every frame, and the go-to-link
+  icon cut off. It sits in the **bottom left**. ⚠️ The video is Wix's, so it needs Dad's OK before
+  it goes on the website.
+- **Right-click a level** (Jos: *"you can rename it, delete it, or play it"*): **▶ Play** plays just
+  that level, **✏️ Rename** (Enter keeps it, Escape doesn't), **🗑 Delete** (it asks first).
 - Click **Create**: a new level (Level 1, Level 2…) opens in the creator.
 - The level you had before today became **Level 1**, so nothing was lost.
 
@@ -399,8 +407,10 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 - PLAY starts the hero at the Hero block, never at the Start pos (that's for TEST).
 - ▶ is green and the exit door is red. No levels yet: PLAY says *Make a level first 😈*.
 
-- The Create button is in the **top right** corner, because LANGUAGE and MODS are in the bottom
-  right.
+- Right-click **Play** on one level: when you reach the door (or press the exit door) you go back to
+  My levels. It's greyed out until the level has a Hero and a Door.
+- Delete asks *Delete Level 2?* with **Delete** and **Keep it**, because it can't be undone.
+- An empty name when renaming keeps the old name.
 - Levels are called Level 1, Level 2… There is no way to rename or delete a level yet.
 - The creator's **← Back** now goes to My levels, not the front page.
 
