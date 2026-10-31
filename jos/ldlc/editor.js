@@ -1185,6 +1185,14 @@ document.getElementById('restartBtn').addEventListener('click', e => {
 /* ---------- Jos: a Needed coin on the board, and the devil pops up over the whole board.
    Words fade in: A coin is hidden. When you get the coin he comes back: Noooooo ---------- */
 const DEVIL = { pop:.3, words:.45, gone:2.3, done:2.6 };
+// what he says when you get a Needed coin: a different one each time (the first three are Jos's)
+const DEVIL_WORDS = ['Noooooo', 'My door!', 'The coin!', 'Give it back!', 'Not fair!',
+                     'How did you find it?!', 'That was MY coin!', 'Grrrrr!', 'Impossible!', 'Next time…'];
+let lastWords = '';
+function devilWords() {             // never the same one twice in a row
+  const choices = DEVIL_WORDS.filter(w => w !== lastWords);
+  return lastWords = choices[Math.floor(Math.random() * choices.length)];
+}
 function drawDevil(c, d) {
   const W = cell * T.cols, H = cell * T.rows, t = d.t;
   const back = k => 1 + 2.7 * (k - 1) ** 3 + 1.7 * (k - 1) ** 2;      // a bit too big, then settles
@@ -1528,7 +1536,7 @@ function step(dt) {
         boxesTouch(p.x, p.y, W, H, t.x + .3 * t.w, t.y + .3 * t.h, .4 * t.w, .4 * t.h)) {
       t.gone = true;
       playCoin();
-      if (pr.needed) p.devil = { t:0, words:'Noooooo' };
+      if (pr.needed) p.devil = { t:0, words:devilWords() };
       for (let k = 0; k < 8; k++) {
         bits.push({ x:t.x + t.w / 2, y:t.y + t.h / 2, vx:(Math.random() - .5) * 6,
                     vy:-3 - Math.random() * 4, life:.5, col:COL.gold });

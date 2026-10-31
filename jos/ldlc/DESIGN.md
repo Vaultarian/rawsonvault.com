@@ -281,6 +281,11 @@ will come up again."*
   When TEST starts, the devil pops up over the whole board (horns, angry eyes, a fang grin) and
   **A coin is hidden** fades in. When you get a Needed coin he pops up again: **Noooooo**.
   Everything waits while he is on the screen (about 2½ seconds).
+- **Random words.** Jos: *"give the devil different words, random each time… one of them is no,
+  another one is my door! or another one is the coin! (make about 10 random ones including mine)"*
+  When you get a Needed coin he says one of: **Noooooo, My door!, The coin!** (Jos's), Give it back!,
+  Not fair!, How did you find it?!, That was MY coin!, Grrrrr!, Impossible!, Next time…
+  Never the same one twice in a row. *A coin is hidden* stays the same.
 
 ## Block properties
 
