@@ -244,6 +244,9 @@ commands, not in the real game as the button."*
   on. If they double click it in one second, then it will turn off going up one."*
   First click: 0, 1, 2, 3… Next click: 1, 2, 3, 4… The button says **starting from N seconds**.
   Two clicks inside one second turn it off, and every delay goes back to 0.
+- **Up by any number.** Jos: *"if I do a decimal, let's say 0.1, it will change to going up 0.1 seconds
+  every time, starting from 0 seconds… clicking it again, it will say starting from 0.1 seconds."*
+  The **⏱ Up by** box sets the step (0.1 to 30). With 0.1: 0, 0.1, 0.2… then starting from 0.1, and so on.
 - **🔗 Picks In / Out** (editor command). Jos: *"if you have editor commands on, you can put it in or
   out, and if you click on a block in trigger to block, then it will always select the inside ones,
   and if it's set to out, then it will always select the outside ones."* With editor commands on,
@@ -299,6 +302,9 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Changing **Up by** while Up is on starts it again from 0 seconds with the new number.
+- The editor remembers the last Up by number you typed.
 
 - Turning Up 1 off puts every delay back to 0.
 

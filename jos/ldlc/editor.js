@@ -928,22 +928,39 @@ function triggersSection(c) {
   });
 }
 /* Jos's editor command: the first one you connected waits 0 s, the next 1 s, the next 2 s…
-   Click again: start from 1 s, then 2 s. Two clicks inside one second turn it off. */
-let upLast = { id:null, at:0 };
+   Click again: start from 1 s, then 2 s. Two clicks inside one second turn it off.
+   The 1 can be changed, like 0.1: 0, 0.1, 0.2… */
+let upLast = { id:null, at:0 }, upStep = +localStorage.getItem('jos-ldlc-upstep') || 1;
+const round2 = v => Math.round(v * 100) / 100;
+const secs = v => v + (v === 1 ? ' second' : ' seconds');
+function upPattern(links) {         // { start, step } when the delays go up evenly, or null
+  if (links.length < 2) return null;
+  const d = links.map(l => l.delay || 0), start = d[0], step = round2(d[1] - d[0]);
+  if (step <= 0) return null;
+  return d.every((v, i) => v === Math.min(30, round2(start + i * step))) ? { start, step } : null;
+}
 function upOneButton(card, links, tr) {
-  const start = links[0].delay || 0;
-  const on = links.length > 1 && links.every((l, i) => (l.delay || 0) === Math.min(30, start + i));
-  card.append(el('button', { className:'p-cmd',
-    textContent:on ? '⏱ Up 1 · starting from ' + start + (start === 1 ? ' second' : ' seconds') : '⏱ Up 1 second each',
-    onclick:() => {
-      const now = performance.now(), twice = upLast.id === tr.id && now - upLast.at < 1000;
-      upLast = { id:tr.id, at:twice ? 0 : now };
-      const from = twice ? null : on ? Math.min(30, start + 1) : 0;
-      links.forEach((l, i) => { l.delay = from === null ? 0 : Math.min(30, from + i); });
-      save(); renderPanel();
-    } }));
-  if (on) card.append(el('p', { className:'p-note',
-    textContent:'Click again to start 1 second later. Double-click to turn it off.' }));
+  const pat = upPattern(links);
+  const apply = (from, by) => { links.forEach((l, i) => { l.delay = Math.min(30, round2(from + i * by)); }); save(); };
+  const label = p => p ? '⏱ Up ' + p.step + ' · starting from ' + secs(p.start) : '⏱ Up ' + secs(upStep) + ' each';
+  card.append(row('⏱ Up by', number(pat ? pat.step : upStep, .1, 30, .1, v => {
+    upStep = v;
+    localStorage.setItem('jos-ldlc-upstep', v);
+    if (upPattern(links)) apply(0, v);          // Jos: a new number starts again from 0 seconds
+    btn.textContent = label(upPattern(links));
+  }), el('span', { className:'p-or', textContent:'seconds' })));
+  const btn = el('button', { className:'p-cmd', textContent:label(pat), onclick:() => {
+    const now = performance.now(), twice = upLast.id === tr.id && now - upLast.at < 1000;
+    upLast = { id:tr.id, at:twice ? 0 : now };
+    const p = upPattern(links);
+    if (twice) apply(0, 0);
+    else if (p) apply(Math.min(30, round2(p.start + p.step)), p.step);
+    else apply(0, upStep);
+    renderPanel();
+  } });
+  card.append(btn);
+  if (pat) card.append(el('p', { className:'p-note',
+    textContent:'Click again to start ' + secs(pat.step) + ' later. Double-click to turn it off.' }));
 }
 /* Jos: lots of blocks connected to the same trigger: one card changes all of them */
 function manyTriggersSection(cells) {
