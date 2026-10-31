@@ -494,6 +494,7 @@ function fit() {
   cv.width = cell * T.cols * dpr;
   cv.height = cell * T.rows * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  placeBanner();
 }
 window.addEventListener('resize', fit);
 
@@ -607,8 +608,15 @@ function finishBox() {
 }
 function selectionBanner() {
   if (!sel.size) { banner('Click and drag to make a box round the blocks you want'); return; }
+  // Jos: blocks with blocks inside them: choose the inside ones, all of them, or the outside ones
+  const layers = selLayer(1).size && [['Select inside blocks', () => openSelection(selLayer(1))],
+                                      ['Select all blocks', () => openSelection(sel)],
+                                      ['Select outside blocks', () => openSelection(selLayer(0))]];
   banner(sel.size + (sel.size === 1 ? ' block' : ' blocks') + ' selected · drag them to move',
-         [['🗑 Delete', deleteSelected]]);
+         [['🗑 Delete', deleteSelected]], layers || null);
+}
+function selLayer(layer) {          // 0 = the block in the square, 1 = the block inside it
+  return new Set(allBlocks().filter(f => f.layer === layer && sel.has(f.c.id)).map(f => f.c.id));
 }
 function moveBlocks(ids, off) {
   if (!off.x && !off.y) return;
@@ -705,11 +713,19 @@ function linksTo(id) {
 
 /* ---------- the message bar at the top ---------- */
 const bannerEl = document.getElementById('banner');
-function banner(text, buttons) {
+function banner(text, buttons, row2) {
   bannerEl.innerHTML = '';
   bannerEl.append(el('span', { textContent:text }));
-  (buttons || []).forEach(([label, fn]) => bannerEl.append(el('button', { textContent:label, onclick:fn })));
+  const button = ([label, fn]) => el('button', { textContent:label, onclick:fn });
+  (buttons || []).forEach(b => bannerEl.append(button(b)));
+  if (row2) bannerEl.append(el('div', { className:'row2' }, row2.map(button)));
+  bannerEl.classList.toggle('tall', !!row2);
   bannerEl.classList.add('show');
+  placeBanner();
+}
+function placeBanner() {            // over the middle of the level, so it doesn't cover the panel
+  const r = wrap.getBoundingClientRect();
+  document.getElementById('banner').style.left = r.left + r.width / 2 + 'px';
 }
 function hideBanner() { bannerEl.classList.remove('show'); }
 
@@ -752,14 +768,14 @@ function number(value, min, max, step, change) {
 
 function openPanel(id) { openId = id; openIds = null; renderPanel(); }
 /* Jos: the selected blocks' properties, all at once. Only if they all have the same properties. */
-function openSelection() {
-  if (sel.size === 1) { openPanel([...sel][0]); return; }
-  const cells = [...sel].map(byId).filter(Boolean).map(f => f.c);
+function openSelection(ids = sel) {
+  if (ids.size === 1) { openPanel([...ids][0]); return; }
+  const cells = [...ids].map(byId).filter(Boolean).map(f => f.c);
   const list = c => (SWITCHES[c.t] || []).join();
   if (!cells.every(c => list(c) === list(cells[0]))) {
     say('These blocks have different properties 😈'); return;
   }
-  openId = null; openIds = new Set(sel); renderPanel();
+  openId = null; openIds = new Set(ids); renderPanel();
 }
 function panelCells() {
   if (openIds) return [...openIds].map(byId).filter(Boolean).map(f => f.c);

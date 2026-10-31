@@ -208,6 +208,19 @@ the top bar, just make show portal connections go up a bit."*
   green line to each block it is connected to, with its ⏱ delay tag.
 - Remembers whether it was on.
 
+## Selecting blocks that have blocks inside them (31 Oct)
+
+Jos: *"If they select blocks with blocks inside of it using select blocks, it will say select
+inside blocks as a button, select all blocks as a button, or select outside blocks as a button,
+and when they click that it will show the properties."*
+
+- Box round some blocks with **Select blocks**. If any of them has a block inside, the bar
+  shows **Select inside blocks**, **Select all blocks** and **Select outside blocks**.
+- Click one and the properties open for just those blocks. Change a switch and only they change.
+- Dragging still moves everything in the box.
+- Select all blocks follows the old rule: if the blocks are different (a tile and a spring),
+  it says *"These blocks have different properties 😈"*.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -247,6 +260,11 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- **Outside blocks** means the block in the square, so a block with nothing inside it counts as
+  an outside block too.
+- The three Select buttons sit on a second line of the bar, and the bar sits over the level, so
+  it doesn't cover the properties.
 
 - The portal "switches colours" by **swapping its black and white**.
 - There is **one Hero and one Door** in a level. Putting down another one moves it.
