@@ -264,6 +264,9 @@ commands, not in the real game as the button."*
   In a block's Connected triggers (two or more connected). Click it on the card you set up: that card
   goes purple and every other card gets a **Do the same** tick box. Tick the ones you want, click
   **Done**, and they copy the Do. **Cancel** changes nothing. Only this block's connections change.
+  Jos: *"In select blocks… lots of small spikes, if I connect it to lots of triggers and it has a up by
+  with delay, there isn't a Do same with other triggers."* Now it is in the lots-of-blocks panel too:
+  the ticked triggers copy the Do for **those selected blocks** only, and keep their own delays.
 
 ## Adding to what's selected (31 Oct)
 

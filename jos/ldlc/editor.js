@@ -848,7 +848,7 @@ function openSelection(ids = sel) {
   if (!cells.every(c => list(c) === list(cells[0]))) {
     say('These blocks have different properties 😈'); return;
   }
-  openId = null; openIds = new Set(ids); renderPanel();
+  openId = null; openIds = new Set(ids); copyFrom = null; renderPanel();
 }
 function panelCells() {
   if (openIds) return [...openIds].map(byId).filter(Boolean).map(f => f.c);
@@ -984,11 +984,7 @@ function triggersSection(c) {
       el('button', { className:'p-x', textContent:'✕', title:'Disconnect',
                      onclick:() => { f.c.links = f.c.links.filter(k => k !== l); save(); renderPanel(); } })
     ]));
-    if (copying && copyFrom.l !== l) {           // Jos: a tick box on every other one
-      const box = el('input', { type:'checkbox', checked:copyFrom.to.has(l) });
-      box.addEventListener('change', () => { if (box.checked) copyFrom.to.add(l); else copyFrom.to.delete(l); });
-      card.append(el('label', { className:'p-tick' }, [box, el('span', { textContent:'Do the same' })]));
-    }
+    if (copying && copyFrom.l !== l) tickBox(card, l);
     card.append(row('Delay', number(l.delay || 0, 0, 30, .1, v => { l.delay = v; save(); }),
                     el('span', { className:'p-or', textContent:'seconds' })));
     l.actions = l.actions || [];
@@ -996,19 +992,32 @@ function triggersSection(c) {
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
     // Jos's editor command: choose which other triggers connected to this block do what this one does
-    if (editorOn && from.length > 1 && !copying) card.append(el('button', { className:'p-cmd',
-      textContent:'🛠 Do same with other triggers', onclick:() => { copyFrom = { id:c.id, l, to:new Set() }; renderPanel(); } }));
-    if (copying && copyFrom.l === l) {
-      card.classList.add('p-copying');
-      card.append(el('p', { className:'p-note', textContent:'Tick the ones that should do the same as this one, then click Done.' }));
-    }
+    if (editorOn && from.length > 1 && !copying) copyButton(card, { id:c.id, l });
+    if (copying && copyFrom.l === l) copySource(card);
     panel.append(card);
   });
-  if (copying) panel.append(el('div', { className:'p-copybar' }, [
+  // only this block's connections change, and their delays stay as they are
+  if (copying) copyBar(() => copyFrom.to.forEach(o => { o.actions = JSON.parse(JSON.stringify(copyFrom.l.actions)); }));
+}
+/* the pieces of Do same with other triggers, for one block and for lots of blocks */
+function copyButton(card, from) {
+  card.append(el('button', { className:'p-cmd', textContent:'🛠 Do same with other triggers',
+                             onclick:() => { copyFrom = Object.assign({ to:new Set() }, from); renderPanel(); } }));
+}
+function copySource(card) {
+  card.classList.add('p-copying');
+  card.append(el('p', { className:'p-note', textContent:'Tick the ones that should do the same as this one, then click Done.' }));
+}
+function tickBox(card, item) {      // Jos: a tick box on every other one
+  const box = el('input', { type:'checkbox', checked:copyFrom.to.has(item) });
+  box.addEventListener('change', () => { if (box.checked) copyFrom.to.add(item); else copyFrom.to.delete(item); });
+  card.append(el('label', { className:'p-tick' }, [box, el('span', { textContent:'Do the same' })]));
+}
+function copyBar(done) {
+  panel.append(el('div', { className:'p-copybar' }, [
     el('button', { className:'p-cmd', textContent:'Done', onclick:() => {
-      // only this block's connections change, and their delays stay as they are
-      copyFrom.to.forEach(o => { o.actions = JSON.parse(JSON.stringify(copyFrom.l.actions)); });
       const n = copyFrom.to.size;
+      done();
       copyFrom = null; save(); renderPanel();
       say(n ? n + (n === 1 ? ' does' : ' do') + ' the same now' : 'Nothing was ticked');
     } }),
@@ -1060,6 +1069,7 @@ function manyTriggersSection(cells) {
   }));
   if (!groups.size) return;
   panel.append(el('div', { className:'p-sub', textContent:'Connected triggers' }));
+  const copying = copyFrom && copyFrom.many && groups.has(copyFrom.tr);
   groups.forEach((links, tr) => {
     const card = el('div', { className:'p-card' });
     card.addEventListener('mouseenter', () => { hoverLink = tr.id; });
@@ -1070,6 +1080,7 @@ function manyTriggersSection(cells) {
       el('button', { className:'p-x', textContent:'✕', title:'Disconnect all of them',
                      onclick:() => { tr.links = tr.links.filter(k => !links.includes(k)); save(); renderPanel(); } })
     ]));
+    if (copying && copyFrom.tr !== tr) tickBox(card, tr);
     card.append(row('Delay', number(common(links.map(l => l.delay || 0)), 0, 30, .1,
                                     v => { links.forEach(l => { l.delay = v; }); save(); }),
                     el('span', { className:'p-or', textContent:'seconds' })));
@@ -1086,7 +1097,14 @@ function manyTriggersSection(cells) {
     g.actions.forEach((a, j) => card.append(actionBox(g, a, j, cells[0], saved)));
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { g.actions.push({ do:'' }); saved(); renderPanel(); } }));
+    if (editorOn && groups.size > 1 && !copying) copyButton(card, { many:true, tr });
+    if (copying && copyFrom.tr === tr) copySource(card);
     panel.append(card);
+  });
+  // Jos: the ticked triggers do the same to these blocks (their delays stay as they are)
+  if (copying) copyBar(() => {
+    const src = groups.get(copyFrom.tr)[0].actions || [];
+    copyFrom.to.forEach(tr => groups.get(tr).forEach(l => { l.actions = JSON.parse(JSON.stringify(src)); }));
   });
 }
 function actionBox(link, a, j, target, saved = save) {
