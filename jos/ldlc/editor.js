@@ -803,7 +803,8 @@ function hideBanner() { bannerEl.classList.remove('show'); }
 
 /* ---------- the Block properties panel ---------- */
 const panel = document.getElementById('panel');
-let openId = null, openIds = null, hoverLink = null;   // openIds = lots of selected blocks at once
+let openId = null, openIds = null, hoverLink = null;
+let copyFrom = null;   // Do same with other triggers: { id:the block, l:the one being copied, to:the ticked ones }   // openIds = lots of selected blocks at once
 
 function el(tag, attrs, kids) {
   const e = Object.assign(document.createElement(tag), attrs || {});
@@ -838,7 +839,7 @@ function number(value, min, max, step, change) {
   return n;
 }
 
-function openPanel(id) { openId = id; openIds = null; renderPanel(); }
+function openPanel(id) { openId = id; openIds = null; copyFrom = null; renderPanel(); }
 /* Jos: the selected blocks' properties, all at once. Only if they all have the same properties. */
 function openSelection(ids = sel) {
   if (ids.size === 1) { openPanel([...ids][0]); return; }
@@ -858,7 +859,7 @@ function panelCells() {
 function common(vals) { return vals.every(v => v === vals[0]) ? vals[0] : null; }
 function closePanel() {
   if (!panel.classList.contains('open')) return;
-  openId = null; openIds = null; hoverLink = null;
+  openId = null; openIds = null; hoverLink = null; copyFrom = null;
   panel.classList.remove('open');
   panel.innerHTML = '';
   fit();
@@ -972,6 +973,7 @@ function triggersSection(c) {
   const from = linksTo(c.id);
   if (!from.length) return;
   panel.append(el('div', { className:'p-sub', textContent:'Connected triggers' }));
+  const copying = copyFrom && copyFrom.id === c.id;
   from.forEach(f => {
     const l = f.l;
     const card = el('div', { className:'p-card' });
@@ -982,21 +984,36 @@ function triggersSection(c) {
       el('button', { className:'p-x', textContent:'✕', title:'Disconnect',
                      onclick:() => { f.c.links = f.c.links.filter(k => k !== l); save(); renderPanel(); } })
     ]));
+    if (copying && copyFrom.l !== l) {           // Jos: a tick box on every other one
+      const box = el('input', { type:'checkbox', checked:copyFrom.to.has(l) });
+      box.addEventListener('change', () => { if (box.checked) copyFrom.to.add(l); else copyFrom.to.delete(l); });
+      card.append(el('label', { className:'p-tick' }, [box, el('span', { textContent:'Do the same' })]));
+    }
     card.append(row('Delay', number(l.delay || 0, 0, 30, .1, v => { l.delay = v; save(); }),
                     el('span', { className:'p-or', textContent:'seconds' })));
     l.actions = l.actions || [];
     l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c)));
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
-    // Jos's editor command: every trigger connected to this block does what this one does
-    // (only for this block, and the delays stay as they are)
-    if (editorOn && from.length > 1) card.append(el('button', { className:'p-cmd', textContent:'🛠 Do same with all triggers',
-      onclick:() => {
-        from.forEach(o => { if (o.l !== l) o.l.actions = JSON.parse(JSON.stringify(l.actions)); });
-        save(); renderPanel(); say('All ' + from.length + ' do the same now');
-      } }));
+    // Jos's editor command: choose which other triggers connected to this block do what this one does
+    if (editorOn && from.length > 1 && !copying) card.append(el('button', { className:'p-cmd',
+      textContent:'🛠 Do same with other triggers', onclick:() => { copyFrom = { id:c.id, l, to:new Set() }; renderPanel(); } }));
+    if (copying && copyFrom.l === l) {
+      card.classList.add('p-copying');
+      card.append(el('p', { className:'p-note', textContent:'Tick the ones that should do the same as this one, then click Done.' }));
+    }
     panel.append(card);
   });
+  if (copying) panel.append(el('div', { className:'p-copybar' }, [
+    el('button', { className:'p-cmd', textContent:'Done', onclick:() => {
+      // only this block's connections change, and their delays stay as they are
+      copyFrom.to.forEach(o => { o.actions = JSON.parse(JSON.stringify(copyFrom.l.actions)); });
+      const n = copyFrom.to.size;
+      copyFrom = null; save(); renderPanel();
+      say(n ? n + (n === 1 ? ' does' : ' do') + ' the same now' : 'Nothing was ticked');
+    } }),
+    el('button', { className:'p-cmd p-cancel', textContent:'Cancel', onclick:() => { copyFrom = null; renderPanel(); } })
+  ]));
 }
 /* Jos's editor command: the first one you connected waits 0 s, the next 1 s, the next 2 s…
    Click again: start from 1 s, then 2 s. Two clicks inside one second turn it off.

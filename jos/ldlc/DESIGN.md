@@ -257,12 +257,13 @@ commands, not in the real game as the button."*
   off editor commands or you erase the start pos, the hero will start where it usually starts."*
   A green flag at the bottom of BLOCKS, only with editor commands on. TEST starts the hero at the flag.
   The eraser takes the flag first, then the block under it on the next click.
-- **🛠 Do same with all triggers** (editor command). Jos: *"if you choose the do and you do all the
-  things you need to do, it will show up with a do same with all triggers… all the triggers connected
-  to that block will do the same thing as the one you just edited, not any other blocks though, that
-  one block."* In a block's Connected triggers, when two or more are connected. Click it on the card
-  you set up, and every trigger/button connected to **this block** does the same. Other blocks they
-  are connected to don't change.
+- **🛠 Do same with other triggers** (editor command). Jos first asked for *"do same with all
+  triggers"*, then changed it: *"Instead it says do same with other triggers, and if you click that a
+  checkbox will appear on every button or trigger that is connected to it, and you can click on that,
+  and once you click done, it will add that same thing to all the checkbox ones."*
+  In a block's Connected triggers (two or more connected). Click it on the card you set up: that card
+  goes purple and every other card gets a **Do the same** tick box. Tick the ones you want, click
+  **Done**, and they copy the Do. **Cancel** changes nothing. Only this block's connections change.
 
 ## Adding to what's selected (31 Oct)
 
@@ -348,7 +349,8 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 
 ## Choices Carl made that Jos can change
 
-- Do same with all triggers copies the Do (the actions), not the Delay, so Up 1 delays stay.
+- Do same with other triggers copies the Do (the actions), not the Delay, so Up 1 delays stay.
+- Done and Cancel sit under the last card, after the tick boxes.
 
 - Once you have clicked a block, a click on another trigger connects it as a block (so a trigger can
   still turn another trigger on or off). Before that, a click on a trigger chooses it.
