@@ -150,6 +150,7 @@
 
   <div id="stage"></div>
 
+<script src="levels.js"></script>
 <script>
 (function () {
   'use strict';
@@ -370,8 +371,13 @@
     }
   });
 
+  /* Jos: PLAY plays every level you made, in a random order */
   play.addEventListener('click', function () {
-    say('Nice try! Coming soon 😈');
+    if (LDLC.list().some(function (l) { return LDLC.playable(l.id); })) {
+      location.href = 'editor.html?play';
+      return;
+    }
+    say('Make a level first 😈');
     dodged = 0;
     off = { x: 0, y: 0 };
     play.style.translate = '0px 0px';

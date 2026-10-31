@@ -90,6 +90,26 @@ body.testing #level { box-shadow:none; border-radius:0; }
 #testBar { position:fixed; top:14px; left:14px; z-index:200; display:none; align-items:center; gap:8px; }
 body.testing #testBar { display:flex; }
 #testBar button { font-size:1.3rem; padding:.35rem .7rem; }
+/* ---------- Jos: PLAY (editor.html?play), every level you made, mixed up ---------- */
+body.playall #topbar, body.playall #palette, body.playall #panel, body.playall #editorCmds,
+body.playall .edgeBtn, body.playall #editBtn { display:none; }
+body.playall #modsBtn, body.playall #modsPanel, body.playall #langBtn,
+body.playall #langPanel, body.playall #estFps { display:none !important; }
+#pauseBtn { display:none; }
+body.playall #pauseBtn { display:inline-block; }
+/* paused: ▶ to carry on, and the exit door */
+#pauseMenu {
+  position:fixed; inset:0; z-index:260; display:none; align-items:center; justify-content:center;
+  gap:56px; background:rgba(10, 0, 4, .6);
+}
+body.paused #pauseMenu { display:flex; }
+#pauseMenu button {
+  width:140px; height:140px; border:none; border-radius:50%; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center; transition:transform .15s;
+}
+#pauseMenu button:hover { transform:scale(1.08); }
+#resumeBtn { background:#2e9e4f; box-shadow:0 8px 0 #145a28; }
+#exitBtn { background:#ff2a3d; box-shadow:0 8px 0 #7a0012; }
 #mouth { position:fixed; inset:0; width:100%; height:100%; z-index:250; pointer-events:none; display:none; }
 
 /* ---------- the message bar (Select blocks, Trigger to block) ---------- */
@@ -238,9 +258,18 @@ body.testing #panel { display:none; }
   </div>
 
   <div id="testBar">
+    <button id="pauseBtn" title="Pause">⏸</button>
     <button id="editBtn" title="Back to the creator">✏️</button>
     <button id="restartBtn" title="Start again">🔄</button>
     <span id="deaths"></span>
+  </div>
+  <div id="pauseMenu">
+    <button id="resumeBtn" title="Carry on"><svg width="64" height="64" viewBox="0 0 64 64">
+      <path d="M20 10 L54 32 L20 54 Z" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></svg></button>
+    <!-- Jos's exit: a door with an arrow going into it -->
+    <button id="exitBtn" title="Exit"><svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#fff"
+      stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M30 20 V8 H55 V56 H30 V44"/><path d="M6 32 H40"/><path d="M29 21 L40 32 L29 43"/></svg></button>
   </div>
   <canvas id="mouth"></canvas>
   <div id="toast"></div>

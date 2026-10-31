@@ -336,6 +336,22 @@ corner where a create button is."*
 - Click **Create**: a new level (Level 1, Level 2…) opens in the creator.
 - The level you had before today became **Level 1**, so nothing was lost.
 
+## PLAY, pause and exit (31 Oct)
+
+Jos: *"when you press play, it will get all of the levels you created (They auto save) and place
+them in a random order until you get to the end, and then it restarts the list, and randomizes it
+again. Just press pause in the top left corner, and it will pause your game, all of the triggers,
+all of the movements, everything, and in the middle it will have two things, a play button and
+this (The exit button)"* — a door with an arrow going into it. *"make it any color you like, that
+feels right."*
+
+- **PLAY** on the front page plays every level you made, mixed up. Get to the door and the devil's
+  mouth closes and opens onto the next one. At the end of the list it mixes them up again.
+- **⏸ Pause**, top left, stops everything: the hero, triggers, delays, things moving, the devil,
+  the spinning saws.
+- In the middle: a green **▶** to carry on, and the red **exit door** to go back to the front page.
+- PLAY never changes your levels.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -375,6 +391,13 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- PLAY only uses levels with a **Hero and a Door** (you can't finish a level without a door).
+- A new shuffle never starts with the level you just finished, so you never get the same one twice
+  in a row.
+- **Escape** pauses too. 💀 deaths start at 0 on each new level. The 🔄 start-again button stays.
+- PLAY starts the hero at the Hero block, never at the Start pos (that's for TEST).
+- ▶ is green and the exit door is red. No levels yet: PLAY says *Make a level first 😈*.
 
 - The Create button is in the **top right** corner, because LANGUAGE and MODS are in the bottom
   right.

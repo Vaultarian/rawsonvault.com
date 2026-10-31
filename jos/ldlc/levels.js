@@ -41,6 +41,13 @@ const LDLC = (() => {
     keep(levels);
   }
 
+  // PLAY can use a level once it has a Hero and a Door
+  function playable(id) {
+    const g = read(key('level', id));
+    const all = Array.isArray(g) ? g.flat().flatMap(c => c ? [c, c.inner] : []) : [];
+    return ['hero', 'door'].every(t => all.some(c => c && c.t === t));
+  }
+
   moveOldLevel();
-  return { list, make, ensure, key, read };
+  return { list, make, ensure, key, read, playable };
 })();

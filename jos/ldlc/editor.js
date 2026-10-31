@@ -73,9 +73,24 @@ const CONTROLS = { left:['ArrowLeft', 'KeyA'], right:['ArrowRight', 'KeyD'],
 /* ---------- the level ----------
    Jos: every level is kept (levels.js). editor.html?level=L… opens one of them. */
 const params = new URLSearchParams(location.search);
-let levelId = params.get('level');
-if (!levelId) { location.replace('levels.html'); throw new Error('no level: back to the levels page'); }
-LDLC.ensure(levelId);
+// Jos: PLAY (editor.html?play) plays every level you made in a random order. At the end of the
+// list it mixes them up again and keeps going.
+const playAll = params.has('play');
+let levelId = params.get('level'), queue = [];
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function nextLevel() {
+  if (!queue.length) {
+    queue = shuffle(LDLC.list().map(l => l.id).filter(LDLC.playable));
+    if (queue.length > 1 && queue[0] === levelId) queue.push(queue.shift());   // never the same one twice in a row
+  }
+  return queue.shift();
+}
+if (playAll) levelId = nextLevel();
+if (!levelId) { location.replace(playAll ? 'index.html' : 'levels.html'); throw new Error('no level: back to the levels page'); }
+if (!playAll) LDLC.ensure(levelId);
 let grid = emptyGrid();
 
 function emptyGrid() {
@@ -83,6 +98,7 @@ function emptyGrid() {
 }
 function save() {
   fixPortals();
+  if (playAll) return;              // PLAY never changes your levels
   try { localStorage.setItem(LDLC.key('level', levelId), JSON.stringify(grid)); } catch (e) {}
 }
 function load() {
@@ -717,7 +733,7 @@ const EDGE_NAME = { top:'roof', bottom:'floor', left:'wall', right:'wall' };
 const EDGE_START = { top:'solid', bottom:'edge', left:'solid', right:'solid' };   // what LDLC did before
 let edges = Object.assign({}, EDGE_START);
 function loadEdges() { edges = Object.assign({}, EDGE_START, LDLC.read(LDLC.key('edges', levelId)) || {}); }
-function saveEdges() { try { localStorage.setItem(LDLC.key('edges', levelId), JSON.stringify(edges)); } catch (e) {} }
+function saveEdges() { if (playAll) return; try { localStorage.setItem(LDLC.key('edges', levelId), JSON.stringify(edges)); } catch (e) {} }
 loadEdges();
 document.querySelectorAll('.edgeBtn').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.edge;
@@ -1152,8 +1168,8 @@ const keys = {};
 addEventListener('keydown', e => {
   const typing = /INPUT|SELECT|TEXTAREA/.test(e.target.tagName);
   if (play && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
-  if (play && e.code === 'Escape') stopTest();
-  if (!play && !typing) {
+  if (play && e.code === 'Escape') playAll ? setPaused(!paused) : stopTest();
+  if (!play && !playAll && !typing) {
     if (tool === 'select' && sel.size && (e.code === 'Delete' || e.code === 'Backspace')) {
       e.preventDefault(); deleteSelected();
     }
@@ -1169,7 +1185,7 @@ addEventListener('keyup', e => { keys[e.code] = false; });
 const SECRET = 'editor';
 let typed = '', editorOn = localStorage.getItem('jos-ldlc-editor') === '1';
 let startPos = LDLC.read(LDLC.key('start', levelId));   // Jos's Start pos (each level has its own)
-function saveStart() { localStorage.setItem(LDLC.key('start', levelId), JSON.stringify(startPos)); }
+function saveStart() { if (playAll) return; localStorage.setItem(LDLC.key('start', levelId), JSON.stringify(startPos)); }
 function showEditor() {
   document.getElementById('editorCmds').hidden = !editorOn;
   document.querySelector('.block[data-id=startpos]').style.display = editorOn ? '' : 'none';
@@ -1221,11 +1237,26 @@ function startTest() {
     play.state = 'intro';         // nothing moves until his mouth is open
     document.body.classList.add('testing');
     fit();
-  }, () => {
-    if (!play) return;
-    play.state = 'play';
-    if (play.things.some(t => t.t === 'coin' && t.pr.needed)) play.devil = { t:0, words:'A coin is hidden' };
-  });
+  }, letsGo);
+}
+function letsGo() {
+  if (!play) return;
+  play.state = 'play';
+  if (play.things.some(t => t.t === 'coin' && t.pr.needed)) play.devil = { t:0, words:'A coin is hidden' };
+}
+/* PLAY: you got to the door, so the devil's mouth closes and opens onto the next level */
+function nextPlay() {
+  if (chomp) return;
+  startChomp(() => {
+    levelId = nextLevel();
+    grid = emptyGrid(); load(); loadEdges(); giveIds(); fixPortals();
+    deaths = 0;
+    deathsEl.textContent = '💀 0';
+    bits = [];
+    spawn();
+    play.state = 'intro';
+    fit();
+  }, letsGo);
 }
 /* when you play, every block becomes a thing that can move, grow and change */
 function makeThings() {
@@ -1243,7 +1274,7 @@ function makeThings() {
 }
 function spawn() {
   // every try starts fresh: coins come back, traps reset
-  const h = find('hero'), at = editorOn && startPos ? startPos : h;   // Jos: the Start pos wins
+  const h = find('hero'), at = !playAll && editorOn && startPos ? startPos : h;   // Jos: the Start pos wins (not in PLAY)
   play = { hidden:!props(h.c).visible, x:at.x + (1 - T.heroW) / 2, y:at.y + 1 - T.heroH, vx:0, vy:0,
            ground:false, state:'play', timer:0, face:1, walkT:0, coins:0, kx:0,
            things:makeThings(), on:null, later:[] };
@@ -1503,7 +1534,7 @@ function step(dt) {
   }
   if (p.state === 'won') {
     p.wonT += dt;
-    if (p.wonT > DOOR.shut + DOOR.sink + 0.3) stopTest();   // Jos: no LEVEL COMPLETE message
+    if (p.wonT > DOOR.shut + DOOR.sink + 0.3) playAll ? nextPlay() : stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
 
@@ -1941,17 +1972,31 @@ function drawPortalLinks() {
   });
 }
 
-let last = performance.now();
+/* ---------- Jos: pause, in the top left corner. It stops everything: the hero, the triggers, the
+   delays, the devil, the spinning saws. In the middle: ▶ to carry on, and the exit door ---------- */
+let paused = false;
+function setPaused(on) {
+  paused = on;
+  document.body.classList.toggle('paused', on);
+}
+document.getElementById('pauseBtn').addEventListener('click', e => { setPaused(!paused); e.currentTarget.blur(); });
+document.getElementById('resumeBtn').addEventListener('click', () => setPaused(false));
+document.getElementById('exitBtn').addEventListener('click', () => { location.href = 'index.html'; });
+
+let last = performance.now(), clock = 0;
 function loop(now) {
   const dt = Math.min(1 / 30, (now - last) / 1000);
   last = now;
-  const time = now / 1000;
-  if (play) step(dt);
-  if (chomp) chompStep(dt);
-  bits = bits.filter(b => {
-    b.life -= dt; b.vy += T.gravity * .6 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
-    return b.life > 0;
-  });
+  if (!paused) {
+    clock += dt;
+    if (play) step(dt);
+    if (chomp) chompStep(dt);
+    bits = bits.filter(b => {
+      b.life -= dt; b.vy += T.gravity * .6 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+      return b.life > 0;
+    });
+  }
+  const time = clock;             // spinning and glowing stop too
   render(time);
   drawIcons(time);
   requestAnimationFrame(loop);
@@ -1971,7 +2016,7 @@ function say(msg, win) {
 /* ---------- start ---------- */
 load();
 giveIds();
-if (!grid.some(r => r.some(Boolean))) {
+if (!playAll && !grid.some(r => r.some(Boolean))) {
   // a brand-new level starts with a floor, the hero and the door, so TEST works straight away
   for (let x = 0; x < T.cols; x++) grid[T.rows - 1][x] = { t:'tile', id:nextId++ };
   grid[T.rows - 2][1] = { t:'hero', id:nextId++ };
@@ -1980,5 +2025,10 @@ if (!grid.some(r => r.some(Boolean))) {
 }
 fixPortals();
 refreshButtons();
+if (playAll) {                  // PLAY: straight into the first level, the devil's mouth already shut
+  document.body.classList.add('playall');
+  startTest();
+  if (chomp) chomp.t = CHOMP.close;
+}
 fit();
 requestAnimationFrame(loop);
