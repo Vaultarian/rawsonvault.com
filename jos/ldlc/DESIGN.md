@@ -146,6 +146,34 @@ Click a block with the cursor and you see its properties, each with a little swi
   down arrow. Click the arrow and it lists all the blocks (Tile, Door, Hero…), and the block
   will **look like** the one you pick.
 
+## Turning blocks (31 Oct)
+
+Jos: make a rotation "for every block that can actually be rotated". **Sawblade, coin, portal and
+tile don't turn**, "because they'll just be the same". Turning a block **changes its hitbox and
+which way it's going**:
+
+- A **spring** boots you the way it's facing. Jos: if it's on its side and the hero walks into it,
+  **it bounces him back**, and the same with every other direction, **including down**.
+- A **spike** gets you on its new pointy side.
+- A **one way** on its side lets you through one way and stops you coming back.
+- A **button** on its side still presses.
+
+**How to turn** (Carl's choice): press **R** before you put a block down, or click it with the Cursor
+and use **↺ ↻** next to **Turn** (or press R).
+
+## Portal Output (31 Oct)
+
+Jos: each portal has **Output = [blank]**.
+
+- **Blank**: you're spat out **of the bottom** if there's no block under it, or **left or right**
+  if there is a block under it.
+- **Up, Down, Left or Right**: when you go through the other portal, you come out of this one
+  **whichever way Output says**.
+
+## Visible (31 Oct)
+
+Jos: **every single block has Visible** in its properties, the portal and the hero too.
+
 ## Choices Carl made that Jos can change
 
 - The portal "switches colours" by **swapping its black and white**.
@@ -169,6 +197,13 @@ Click a block with the cursor and you see its properties, each with a little swi
   partner shows **?**.
 - A block in disguise shows a little **🎭** in the creator, so you know. You can't see it when you play.
 - In Select blocks, the **Delete** key deletes too.
+- **Hero, Door, Trigger and Edit controls don't turn** either. Turning them wouldn't change what they do.
+- With a blank Output and a block under the portal, you come out **the way you were running**, or
+  the other side if that way is blocked.
+- A portal with an Output shows a little **blue arrow** on that side, in the creator only.
+- A block with **Visible off** looks **see-through in the creator**, so you can still find it.
+  (Triggers and Edit controls look normal, because they start invisible.)
+- Changing properties with a trigger can now switch **Visible**, so blocks can appear and vanish.
 
 ## Build log
 
@@ -185,3 +220,5 @@ Click a block with the cursor and you see its properties, each with a little swi
   dot and yellow lines, Change properties). Jos's three fixes: **the button goes down**, **portals
   connect in pairs and teleport you** (with the Show portal connections switch), and **the coin
   counter is gone** (coins already had Do action). Not published.
+- **31 Oct**: **turning blocks** (spike, small spike, spring, one way, button; R key or ↺ ↻ in
+  Block properties), **portal Output**, and **Visible on every block**. Not published.

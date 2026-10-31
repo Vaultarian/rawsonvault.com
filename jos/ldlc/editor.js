@@ -16,6 +16,9 @@ const T = {
   stride:     0.1,   // seconds per step of his running legs
   respawn:    0.6,   // seconds before he tries again
   springBoot: 22,    // how hard a spring boots you up
+  springSide: 16,    // how hard a sideways spring knocks you back
+  knockSlow:  30,    // how fast a sideways knock dies away
+  portalSpit: 12,    // how hard a portal spits you out of its Output side
   sawSpin:    8,     // how fast a sawblade spins
   moveSpeed:  .22,   // Movement speed 1 = 0.22 blocks a second, measured from Jos's recording
   portalFlip: 0.30   // Jos: the portal switches colours every 0.30 seconds
@@ -303,7 +306,30 @@ function roundRect(c, x, y, w, h, r) {
   c.arcTo(x, y, x + w, y, r);
   c.closePath();
 }
-function drawBlock(c, type, x, y, s, time) {
+/* ---------- turning blocks ----------
+   Jos: blocks that look the same whichever way round they are (tile, sawblade, coin, portal)
+   don't turn. r = how many quarter turns clockwise: 0 up, 1 right, 2 down, 3 left. */
+const TURNS = ['spike', 'smallspike', 'spring', 'oneway', 'button'];
+const FACING = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+const FACE_NAME = ['Up', 'Right', 'Down', 'Left'];
+function turn(c, x, y, s, r, draw) {
+  if (!r) { draw(); return; }
+  c.save();
+  c.translate(x + s / 2, y + s / 2); c.rotate(r * Math.PI / 2); c.translate(-x - s / 2, -y - s / 2);
+  draw();
+  c.restore();
+}
+/* a box inside a block's square (x, y, width, height, from 0 to 1), turned with the block,
+   so a turned spike gets you on its new pointy side */
+function turnBox(b, r) {
+  const [x, y, w, h] = b;
+  if (r === 1) return [1 - y - h, x, h, w];
+  if (r === 2) return [1 - x - w, 1 - y - h, w, h];
+  if (r === 3) return [y, 1 - x - w, h, w];
+  return b;
+}
+function drawBlock(c, type, x, y, s, time, r) {
+  if (r && TURNS.includes(type)) { turn(c, x, y, s, r, () => drawBlock(c, type, x, y, s, time)); return; }
   if (type === 'tile') drawTile(c, x, y, s);
   else if (type === 'spike') drawSpike(c, x, y, s);
   else if (type === 'smallspike') drawSmallSpike(c, x, y, s);
@@ -323,19 +349,20 @@ function drawBlock(c, type, x, y, s, time) {
 }
 
 /* ---------- Block properties: which switches each block has ----------
-   Jos: "it's not always the same properties, so make the machine look what properties it has" */
+   Jos: "it's not always the same properties, so make the machine look what properties it has"
+   Jos: every single block has Visible. */
 const SWITCHES = {
-  tile:       ['deadly', 'collision', 'disguise'],
-  spike:      ['deadly', 'collision', 'disguise'],
-  smallspike: ['deadly', 'collision', 'disguise'],
-  sawblade:   ['deadly', 'collision', 'disguise'],
-  oneway:     ['deadly', 'disguise'],
-  spring:     ['deadly', 'collision', 'disguise', 'action'],
-  coin:       ['deadly', 'collision', 'disguise', 'action'],
-  button:     ['deadly', 'collision', 'disguise', 'action'],
-  portal:     ['deadly', 'collision', 'disguise', 'action'],
-  door:       ['disguise'],
-  hero:       [],
+  tile:       ['deadly', 'collision', 'visible', 'disguise'],
+  spike:      ['deadly', 'collision', 'visible', 'disguise'],
+  smallspike: ['deadly', 'collision', 'visible', 'disguise'],
+  sawblade:   ['deadly', 'collision', 'visible', 'disguise'],
+  oneway:     ['deadly', 'visible', 'disguise'],
+  spring:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
+  coin:       ['deadly', 'collision', 'visible', 'disguise', 'action'],
+  button:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
+  portal:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
+  door:       ['visible', 'disguise'],
+  hero:       ['visible'],
   trigger:    ['visible', 'action'],        // Jos: the trigger only has these two
   controls:   ['visible', 'action']
 };
@@ -370,11 +397,12 @@ function looksLike(c) { return props(c).disguise ? (c.as || 'tile') : c.t; }
 const palette = document.getElementById('palette');
 const icons = [];
 let chosen = 'tile', tool = 'place';
+let chosenTurn = 0, turnTold = false;    // which way round new blocks go down (R turns it)
 
-function drawIcon(c, type, time) {
+function drawIcon(c, type, time, r) {
   c.clearRect(0, 0, 80, 80);
   if (type === 'hero') drawHero(c, 31, 12, 60, 1, Math.floor(time / .25) % 2);   // running on the spot
-  else drawBlock(c, type, 8, 8, 64, time);
+  else drawBlock(c, type, 8, 8, 64, time, r);
 }
 
 BLOCKS.forEach(b => {
@@ -385,12 +413,16 @@ BLOCKS.forEach(b => {
   cv.width = cv.height = 80;
   btn.appendChild(cv);
   btn.appendChild(document.createTextNode(b.name));
-  btn.addEventListener('click', () => { chosen = b.id; setTool('place'); });
+  btn.addEventListener('click', () => {
+    if (chosen !== b.id) chosenTurn = 0;
+    chosen = b.id; setTool('place');
+    if (TURNS.includes(b.id) && !turnTold) { say('Press R to turn it ↻'); turnTold = true; }
+  });
   palette.appendChild(btn);
   icons.push({ id:b.id, cv });
 });
 function drawIcons(time) {
-  icons.forEach(({ id, cv }) => drawIcon(cv.getContext('2d'), id, time));
+  icons.forEach(({ id, cv }) => drawIcon(cv.getContext('2d'), id, time, id === chosen ? chosenTurn : 0));
 }
 
 document.querySelectorAll('.tool[data-tool]').forEach(btn => {
@@ -454,14 +486,36 @@ function paint(a) {
     if (old) { grid[a.y][a.x] = null; forgetLinksTo(new Set([old.id])); save(); }
     return;
   }
-  if (tool !== 'place' || (old && old.t === chosen)) return;   // same block already there: leave it be
+  if (tool !== 'place') return;
+  if (old && old.t === chosen) {                 // same block already there: just turn it to match
+    const r = TURNS.includes(chosen) ? chosenTurn : 0;
+    if ((old.r || 0) !== r) { old.r = r; save(); }
+    return;
+  }
   if (ONLY_ONE.includes(chosen)) {
     const was = find(chosen);
     if (was) grid[was.y][was.x] = null;
   }
   if (old) forgetLinksTo(new Set([old.id]));
   grid[a.y][a.x] = { t:chosen, id:nextId++ };
+  if (TURNS.includes(chosen) && chosenTurn) grid[a.y][a.x].r = chosenTurn;
   save();
+}
+/* R turns whatever you're working with: the block you're about to put down,
+   the blocks you've selected, or the block whose properties are open */
+function turnKey() {
+  if (tool === 'place') {
+    if (!TURNS.includes(chosen)) { say(NAME[chosen] + " doesn't turn"); return; }
+    chosenTurn = (chosenTurn + 1) % 4;
+    return;
+  }
+  const ids = tool === 'select' ? [...sel] : tool === 'cursor' && openId ? [openId] : [];
+  let turned = 0;
+  ids.forEach(id => {
+    const f = byId(id);
+    if (f && TURNS.includes(f.c.t)) { f.c.r = ((f.c.r || 0) + 1) % 4; turned++; }
+  });
+  if (turned) { save(); if (openId) renderPanel(); }
 }
 
 cv.addEventListener('pointerdown', e => {
@@ -633,7 +687,7 @@ function renderPanel() {
   panel.classList.add('open');
 
   const icon = el('canvas', { width:80, height:80, className:'p-icon' });
-  drawIcon(icon.getContext('2d'), c.t, 0);
+  drawIcon(icon.getContext('2d'), c.t, 0, c.r);
   panel.append(el('div', { className:'p-head' }, [
     icon, el('span', { className:'p-title', textContent:NAME[c.t] }),
     el('button', { className:'p-close', textContent:'✕', title:'Close', onclick:closePanel })
@@ -641,7 +695,6 @@ function renderPanel() {
 
   panel.append(el('div', { className:'p-sub', textContent:'Block properties' }));
   const pr = props(c), sw = SWITCHES[c.t] || [];
-  if (!sw.length) panel.append(el('p', { className:'p-note', textContent:'The hero has no properties.' }));
   sw.forEach(k => {
     panel.append(toggle(LABEL[k], pr[k], v => {
       c.p = Object.assign({}, c.p, { [k]:v });
@@ -654,6 +707,19 @@ function renderPanel() {
     }
   });
 
+  if (TURNS.includes(c.t)) {
+    const go = by => { c.r = ((c.r || 0) + by + 4) % 4; save(); renderPanel(); };
+    panel.append(row('Turn', el('span', { className:'p-face', textContent:FACE_NAME[c.r || 0] }),
+      el('button', { className:'p-turn', textContent:'↺', title:'Turn left', onclick:() => go(-1) }),
+      el('button', { className:'p-turn', textContent:'↻', title:'Turn right (R)', onclick:() => go(1) })));
+  }
+  if (c.t === 'portal') {
+    // Jos: Output = which way you come out of this portal
+    panel.append(row('Output =', pick([['', '—'], ['up', 'Up'], ['down', 'Down'], ['left', 'Left'], ['right', 'Right']],
+                                      c.out || '', v => { c.out = v || undefined; save(); })));
+    if (!c.out) panel.append(el('p', { className:'p-note',
+      textContent:'— means: out of the bottom, or out of the side if there is a block under it.' }));
+  }
   if (c.t === 'controls') controlsSection(c);
   if (LINKERS.includes(c.t)) linksSection(c);
   triggersSection(c);
@@ -764,6 +830,7 @@ addEventListener('keydown', e => {
       e.preventDefault(); deleteSelected();
     }
     if (e.code === 'Escape') { if (sel.size || linkFrom) setTool(tool); else closePanel(); }
+    if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey) turnKey();
   }
   keys[e.code] = true;
 });
@@ -799,15 +866,17 @@ function makeThings() {
       if (!c || c.t === 'hero') continue;
       const pr = props(c);
       list.push({ id:c.id, t:c.t, x, y, w:1, h:1, pr, as:pr.disguise ? (c.as || 'tile') : null,
-                  links:c.links || [], controls:c.controls, pair:c.pair, dx:0, dy:0 });
+                  links:c.links || [], controls:c.controls, pair:c.pair, r:c.r || 0, out:c.out || '',
+                  dx:0, dy:0 });
     }
   return list;
 }
 function spawn() {
   // every try starts fresh: coins come back, traps reset
   const h = find('hero');
-  play = { x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
-           ground:false, state:'play', timer:0, face:1, walkT:0, coins:0,
+  const hc = grid[h.y][h.x];
+  play = { hidden:!props(hc).visible, x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
+           ground:false, state:'play', timer:0, face:1, walkT:0, coins:0, kx:0,
            things:makeThings(), on:null };
   play.byId = {};
   play.things.forEach(t => { play.byId[t.id] = t; });
@@ -1032,15 +1101,31 @@ function step(dt) {
   p.vy = Math.min(p.vy + T.gravity * dt, T.maxFall);
   p.walkT = (p.vx && p.ground) ? p.walkT + dt : 0;
 
-  p.x += p.vx * dt;
+  // a sideways spring or a portal knocks you along; it dies away
+  if (p.kx) { const k = T.knockSlow * dt; p.kx = Math.abs(p.kx) <= k ? 0 : p.kx - Math.sign(p.kx) * k; }
+  const mx = p.vx + p.kx, oldX = p.x;
+  p.x += mx * dt;
   p.x = Math.max(0, Math.min(T.cols - W, p.x));
   touching(p.x, p.y, W, H, t => {
     if (!t.pr.collision) return;
-    if (p.vx > 0) p.x = t.x - W;
-    else if (p.vx < 0) p.x = t.x + t.w;
+    if (mx > 0) p.x = t.x - W;
+    else if (mx < 0) p.x = t.x + t.w;
+    p.kx = 0;
+  });
+  // a one way turned on its side: you go through one way, and it stops you coming back
+  touching(p.x, p.y, W, H, t => {
+    if (t.t !== 'oneway') return;
+    if (t.r === 1 && mx < 0) {
+      const face = t.x + .9 * t.w;
+      if (oldX >= face - .01 && p.x <= face) { p.x = face; p.kx = 0; }
+    }
+    if (t.r === 3 && mx > 0) {
+      const face = t.x + .1 * t.w;
+      if (oldX + W <= face + .01 && p.x + W >= face) { p.x = face - W; p.kx = 0; }
+    }
   });
 
-  const oldBottom = p.y + H;
+  const oldBottom = p.y + H, oldTop = p.y;
   p.y += p.vy * dt;
   p.ground = false; p.on = null;
   if (p.y < 0) { p.y = 0; p.vy = 0; }
@@ -1052,9 +1137,17 @@ function step(dt) {
   // one way: you only land on it coming down from above
   if (p.vy >= 0) {
     touching(p.x, p.y, W, H, t => {
-      if (t.t !== 'oneway') return;
+      if (t.t !== 'oneway' || t.r) return;
       const top = t.y + .1 * t.h;
       if (oldBottom <= top + .01 && p.y + H >= top) { p.y = top - H; p.vy = 0; p.ground = true; p.on = t; }
+    });
+  }
+  // upside down: you fall through it, and bump your head on it jumping back up
+  if (p.vy < 0) {
+    touching(p.x, p.y, W, H, t => {
+      if (t.t !== 'oneway' || t.r !== 2) return;
+      const bottom = t.y + .9 * t.h;
+      if (oldTop >= bottom - .01 && p.y <= bottom) { p.y = bottom; p.vy = 0; }
     });
   }
 
@@ -1072,15 +1165,20 @@ function step(dt) {
         const nx = Math.max(p.x, Math.min(cx, p.x + W)), ny = Math.max(p.y, Math.min(cy, p.y + H));
         hit = Math.hypot(nx - cx, ny - cy) < .42 * t.w;
       } else if (HITBOX[t.t]) {                   // a spike only gets you on the pointy part
-        const [bx, by, bw, bh] = HITBOX[t.t];
+        const [bx, by, bw, bh] = turnBox(HITBOX[t.t], t.r);
         hit = boxesTouch(p.x, p.y, W, H, t.x + bx * t.w, t.y + by * t.h, bw * t.w, bh * t.h);
       } else hit = true;
       if (hit) { die(); return; }
     }
-    if (t.t === 'spring' && pr.action && p.vy >= 0 && p.y + H > t.y + .75 * t.h) {
-      // land on the slab: the bar shoots up and boots you
-      p.vy = -T.springBoot; p.ground = false; p.booted = true;
-      t.ext = 0;
+    if (t.t === 'spring' && pr.action) {
+      // hit the slab: the bar shoots out and boots you the way the spring is facing
+      const f = FACING[t.r], [zx, zy, zw, zh] = turnBox([0, .75, 1, .25], t.r);
+      const comingIn = (p.vx + p.kx) * f[0] + p.vy * f[1] <= 0;
+      if (comingIn && boxesTouch(p.x, p.y, W, H, t.x + zx * t.w, t.y + zy * t.h, zw * t.w, zh * t.h)) {
+        if (f[1]) { p.vy = f[1] * T.springBoot; p.ground = false; p.booted = true; }
+        else p.kx = f[0] * T.springSide;          // Jos: on its side, it bounces you back
+        t.ext = 0;
+      }
     }
     if (t.t === 'coin' && pr.action && !t.gone &&
         boxesTouch(p.x, p.y, W, H, t.x + .3 * t.w, t.y + .3 * t.h, .4 * t.w, .4 * t.h)) {
@@ -1093,7 +1191,8 @@ function step(dt) {
     }
     if (t.t === 'controls' && pr.action) p.controls = Object.assign({}, BLOCK_CONTROLS, t.controls || {});
     if (t.t === 'trigger' && pr.action) fire(t);
-    if (t.t === 'button' && boxesTouch(p.x, p.y, W, H, t.x + .14 * t.w, t.y + .5 * t.h, .72 * t.w, .5 * t.h)) {
+    const pb = t.t === 'button' && turnBox([.14, .5, .72, .5], t.r);
+    if (pb && boxesTouch(p.x, p.y, W, H, t.x + pb[0] * t.w, t.y + pb[1] * t.h, pb[2] * t.w, pb[3] * t.h)) {
       t.pressed = true;                           // Jos: it goes down when you stand on it
       if (pr.action) fire(t);
     }
@@ -1110,13 +1209,35 @@ function step(dt) {
   if (p.state === 'play' && inPortal) {
     if (inPortal.id !== p.portalLock) {
       const out = play.byId[inPortal.pair];
-      if (out) {
-        p.x = out.x + (out.w - W) / 2;
-        p.y = out.y + (out.h - H) / 2;
-        p.portalLock = out.id;
-      }
+      if (out) { comeOut(p, out); p.portalLock = out.id; }
     }
   } else p.portalLock = null;
+}
+
+/* Jos: you come out of the other portal on its Output side. With no Output, you drop out of the
+   bottom, or out of the side if there's a block under it (the way you were running, if it can). */
+function comeOut(p, out) {
+  const W = T.heroW, H = T.heroH;
+  const solid = (x, y) => play.things.some(t => !t.gone && t.pr.collision &&
+                                           boxesTouch(x + .1, y + .1, .8, .8, t.x, t.y, t.w, t.h));
+  let dir = out.out;
+  if (!dir) {
+    if (!solid(out.x, out.y + out.h)) dir = 'down';
+    else {
+      const ahead = p.face < 0 ? 'left' : 'right', back = p.face < 0 ? 'right' : 'left';
+      dir = solid(out.x + (ahead === 'right' ? out.w : -1), out.y) ? back : ahead;
+    }
+  }
+  p.x = out.x + (out.w - W) / 2;
+  p.vy = 0; p.kx = 0; p.ground = false;
+  if (dir === 'down') { p.y = out.y + out.h; }
+  if (dir === 'up')   { p.y = out.y - H; p.vy = -T.portalSpit; p.booted = true; }
+  if (dir === 'left' || dir === 'right') {
+    const d = dir === 'right' ? 1 : -1;
+    p.x = d > 0 ? out.x + out.w : out.x - W;
+    p.y = out.y + out.h - H;
+    p.kx = d * T.portalSpit; p.face = d;
+  }
 }
 
 function die() {
@@ -1163,12 +1284,14 @@ function renderPlay(time) {
   for (const t of play.things) {
     if (t.gone || !t.pr.visible) continue;       // triggers can't be seen when you play
     const X = t.x * cell, Y = t.y * cell, S = t.w * cell;
-    if (play.state === 'won' && play.door === t) { drawDoorClosing(ctx, X, Y, S, play.wonT, heroNow); continue; }
-    if (!t.as && t.t === 'spring') { drawSpring(ctx, X, Y, S, springExt(t.ext)); continue; }
-    if (!t.as && t.t === 'button') { drawButton(ctx, X, Y, S, t.pressed); continue; }
-    drawBlock(ctx, t.as || t.t, X, Y, S, time);
+    if (play.state === 'won' && play.door === t) {
+      drawDoorClosing(ctx, X, Y, S, play.wonT, play.hidden ? () => {} : heroNow); continue;
+    }
+    if (!t.as && t.t === 'spring') { turn(ctx, X, Y, S, t.r, () => drawSpring(ctx, X, Y, S, springExt(t.ext))); continue; }
+    if (!t.as && t.t === 'button') { turn(ctx, X, Y, S, t.r, () => drawButton(ctx, X, Y, S, t.pressed)); continue; }
+    drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r);
   }
-  if (play.state === 'play' || play.state === 'intro') heroNow();
+  if ((play.state === 'play' || play.state === 'intro') && !play.hidden) heroNow();
 }
 
 function renderEditor(time) {
@@ -1211,12 +1334,18 @@ function renderEditor(time) {
   if (hover) {                                   // what's under the mouse
     const hx = hover.x * cell, hy = hover.y * cell;
     if (tool === 'erase') outline(hover.x, hover.y, '#ff2a3d');
-    else if (tool === 'place') { ctx.globalAlpha = .45; drawBlock(ctx, chosen, hx, hy, cell, time); ctx.globalAlpha = 1; }
+    else if (tool === 'place') { ctx.globalAlpha = .45; drawBlock(ctx, chosen, hx, hy, cell, time, chosenTurn); ctx.globalAlpha = 1; }
     else if ((tool === 'cursor' || tool === 'link') && grid[hover.y][hover.x]) outline(hover.x, hover.y, '#fff');
   }
 }
 function drawCell(c, x, y, time) {
-  drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time);
+  // a block with Visible off is see-through in the creator, so you can still find it
+  // (triggers and Edit controls always look normal here: they start invisible)
+  const faded = !props(c).visible && (DEFAULTS[c.t] || {}).visible !== false;
+  if (faded) ctx.globalAlpha = .35;
+  drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time, c.r);
+  ctx.globalAlpha = 1;
+  if (c.t === 'portal' && c.out) drawOutput(c.out, x, y);
   if (props(c).disguise) {                       // a little mask, so you know it's in disguise
     ctx.font = Math.round(cell * .38) + 'px sans-serif';
     ctx.textAlign = 'right'; ctx.textBaseline = 'top';
@@ -1225,6 +1354,17 @@ function drawCell(c, x, y, time) {
   }
 }
 /* the open block's connections: to the blocks it sets off, and from the triggers that set it off */
+/* a little arrow on the portal's Output side, in the creator only */
+function drawOutput(dir, x, y) {
+  const d = { up:[0, -1], down:[0, 1], left:[-1, 0], right:[1, 0] }[dir];
+  const cx = (x + .5 + d[0] * .62) * cell, cy = (y + .5 + d[1] * .62) * cell, a = cell * .16;
+  ctx.fillStyle = '#5dc8ff';
+  ctx.beginPath();
+  ctx.moveTo(cx + d[0] * a, cy + d[1] * a);
+  ctx.lineTo(cx - d[0] * a + d[1] * a, cy - d[1] * a + d[0] * a);
+  ctx.lineTo(cx - d[0] * a - d[1] * a, cy - d[1] * a - d[0] * a);
+  ctx.fill();
+}
 function drawLinks(f, time) {
   (f.c.links || []).forEach(l => {
     const t = byId(l.id);
