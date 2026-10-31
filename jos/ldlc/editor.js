@@ -413,6 +413,8 @@ let hoverSince = 0;
 function pickAt(x, y) {
   const s = stackAt(x, y);
   if (s.length < 2) return s[0] || null;
+  // Jos's editor command: Trigger to block always picks the inside block, or always the outside one
+  if (editorOn && tool === 'link') return s[editorPick === 'in' ? 1 : 0];
   const held = hover && hover.x === x && hover.y === y ? (performance.now() - hoverSince) / 1000 : 0;
   return s[Math.floor(held / T.pickSwap) % 2];
 }
@@ -1037,6 +1039,15 @@ function secretKey(e) {             // true when this key finishes the secret wo
   say(editorOn ? '🛠 Editor commands on' : 'Editor commands off');
   return true;
 }
+let editorPick = localStorage.getItem('jos-ldlc-pick') || 'out';
+const pickBtns = document.querySelectorAll('#pickInOut button');
+function showPick() { pickBtns.forEach(b => b.classList.toggle('on', b.dataset.pick === editorPick)); }
+pickBtns.forEach(b => b.addEventListener('click', () => {
+  editorPick = b.dataset.pick;
+  localStorage.setItem('jos-ldlc-pick', editorPick);
+  showPick();
+}));
+showPick();
 document.getElementById('editorBtn').addEventListener('click', () => {
   const list = document.getElementById('editorList');
   list.hidden = !list.hidden;

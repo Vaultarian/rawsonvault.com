@@ -239,6 +239,10 @@ commands, not in the real game as the button."*
 - **⏱ Up 1 second each**: in the Connected triggers card for lots of selected blocks. It sets the
   delays to 0, 1, 2, 3… seconds, in the order you connected the blocks to the trigger.
 - Nobody sees these unless they know the word.
+- **🔗 Picks In / Out** (editor command). Jos: *"if you have editor commands on, you can put it in or
+  out, and if you click on a block in trigger to block, then it will always select the inside ones,
+  and if it's set to out, then it will always select the outside ones."* With editor commands on,
+  Trigger to block never swaps when you hold still. It always picks the one you chose.
 
 ## Adding to what's selected (31 Oct)
 
@@ -290,6 +294,9 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Picks starts on **Out**, because that is what a quick click picked before. It remembers your choice.
+- On a square with only one block, In and Out both pick that block.
 
 - A click on an empty square clears the selection, so there is still a way to start again.
 

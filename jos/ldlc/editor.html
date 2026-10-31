@@ -114,6 +114,10 @@ body.testing #banner { display:none; }
 #editorList { position:absolute; left:0; bottom:calc(100% + 8px); width:270px; background:#1c0008;
   border:2px solid #a77bff; border-radius:14px; padding:.7rem .9rem; font-size:.9rem; line-height:1.35; }
 #editorList p { margin:.5rem 0 0; }
+#pickInOut { display:flex; align-items:center; gap:.3rem; margin-bottom:.5rem; font-family:'Fredoka One', cursive; }
+#pickInOut span { margin-right:.2rem; }
+#pickInOut button { font-size:.85rem; padding:.3rem .8rem; border-radius:999px; }
+#pickInOut button.on { background:#6b2bd9; }
 .p-cmd { margin-top:.5rem; }
 body.testing #editorCmds { display:none; }
 
@@ -217,8 +221,11 @@ body.testing #panel { display:none; }
       <b>🛠 Editor commands</b>
       <p><b>⏱ Up 1 second each</b>: use Select blocks on blocks that are connected to a trigger and open their
          properties. In Connected triggers, it makes the delays 0, 1, 2, 3… seconds, in the order you connected them.</p>
+      <p><b>🔗 In / Out</b>: with Trigger to block, a click on a square with a block inside always picks
+         the inside block (In) or the outside block (Out).</p>
       <p>Type <b>editor</b> again to hide the editor commands.</p>
     </div>
+    <div id="pickInOut"><span>🔗 Picks</span><button data-pick="in">In</button><button data-pick="out">Out</button></div>
     <button id="editorBtn">🛠 Editor commands</button>
   </div>
 
