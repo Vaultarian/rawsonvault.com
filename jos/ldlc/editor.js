@@ -37,7 +37,8 @@ const BLOCKS = [
   { id:'portal',     name:'Portal',        ready:true },
   { id:'trigger',    name:'Trigger',       ready:true },
   { id:'button',     name:'Button',        ready:true },
-  { id:'controls',   name:'Edit controls', ready:true }
+  { id:'controls',   name:'Edit controls', ready:true },
+  { id:'startpos',   name:'Start pos',     ready:true }    // Jos: an editor command, hidden without the secret word
 ];
 const NAME = {};
 BLOCKS.forEach(b => { NAME[b.id] = b.name; });
@@ -205,6 +206,15 @@ function drawNeededRing(c, x, y, s, time) {
     c.fill();
   }
   c.restore();
+}
+/* Jos's Start pos: a green flag where the hero starts when you TEST */
+function drawStartPos(c, x, y, s) {
+  c.fillStyle = COL.metal;
+  c.fillRect(x + s * .22, y + s * .1, s * .08, s * .9);           // the pole
+  c.fillStyle = COL.green;
+  c.beginPath(); c.moveTo(x + s * .3, y + s * .1); c.lineTo(x + s * .86, y + s * .3); c.lineTo(x + s * .3, y + s * .5); c.fill();
+  c.fillStyle = '#12000a';                                       // a go arrow on the flag
+  c.beginPath(); c.moveTo(x + s * .4, y + s * .2); c.lineTo(x + s * .56, y + s * .3); c.lineTo(x + s * .4, y + s * .4); c.fill();
 }
 function drawOneWay(c, x, y, s) {
   /* Jos: three short dashes along the top. Jump up through it, land on top of it. */
@@ -389,6 +399,7 @@ function drawBlock(c, type, x, y, s, time, r) {
   else if (type === 'button') drawButton(c, x, y, s);
   else if (type === 'door') drawDoor(c, x, y, s);
   else if (type === 'portal') drawPortal(c, x, y, s, time);
+  else if (type === 'startpos') drawStartPos(c, x, y, s);
   else if (type === 'hero') {
     const h = s * T.heroH;
     drawHero(c, x + (s - h * 9 / 23) / 2, y + s - h, h, 1, 0);
@@ -471,6 +482,7 @@ BLOCKS.forEach(b => {
     if (chosen !== b.id) chosenTurn = 0;
     chosen = b.id; setTool('place');
     if (TURNS.includes(b.id) && !turnTold) { say('Press R to turn it ↻'); turnTold = true; }
+    if (b.id === 'startpos') say('Click where the hero starts when you TEST');
   });
   palette.appendChild(btn);
   icons.push({ id:b.id, cv });
@@ -504,6 +516,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   if (!confirm('Clear the whole level?')) return;
   grid = emptyGrid(); save(); closePanel(); sel.clear();
   edges = Object.assign({}, EDGE_START); saveEdges();
+  startPos = null; saveStart();
 });
 
 /* ---------- the level canvas ---------- */
@@ -539,14 +552,19 @@ let stroke = new Set();   // squares already done in this click-and-drag
 function paint(a, click) {
   if (!a || play || chomp) return;
   const here = stackAt(a.x, a.y);
+  const k = a.x + ',' + a.y;
+  if (stroke.has(k)) return;                     // one square once each time you click or drag
+  stroke.add(k);
+  const startHere = editorOn && startPos && startPos.x === a.x && startPos.y === a.y;
   if (tool === 'erase') {                        // the eraser clears the whole square
+    if (startHere) { startPos = null; saveStart(); return; }   // the Start pos goes first
     if (here.length) { grid[a.y][a.x] = null; forgetLinksTo(new Set(here.map(b => b.id))); save(); }
     return;
   }
   if (tool !== 'place') return;
-  const k = a.x + ',' + a.y;
-  if (stroke.has(k)) return;                     // one block per square each time you click or drag
-  stroke.add(k);
+  if (chosen === 'startpos') {                   // only one: the old one goes, the new one appears
+    startPos = { x:a.x, y:a.y }; saveStart(); return;
+  }
   const same = here.find(b => b.t === chosen);
   // Jos: a click puts a block inside the same block (a tile inside a tile).
   // Dragging over the same block leaves it be, like before.
@@ -1081,8 +1099,12 @@ addEventListener('keyup', e => { keys[e.code] = false; });
 /* ---------- Jos: a secret word. Type "editor" to show the editor commands ---------- */
 const SECRET = 'editor';
 let typed = '', editorOn = localStorage.getItem('jos-ldlc-editor') === '1';
+let startPos = JSON.parse(localStorage.getItem('jos-ldlc-start') || 'null');   // Jos's Start pos
+function saveStart() { localStorage.setItem('jos-ldlc-start', JSON.stringify(startPos)); }
 function showEditor() {
   document.getElementById('editorCmds').hidden = !editorOn;
+  document.querySelector('.block[data-id=startpos]').style.display = editorOn ? '' : 'none';
+  if (!editorOn && chosen === 'startpos') { chosen = 'tile'; refreshButtons(); }
   if (openIds) renderPanel();
 }
 function secretKey(e) {             // true when this key finishes the secret word
@@ -1152,8 +1174,8 @@ function makeThings() {
 }
 function spawn() {
   // every try starts fresh: coins come back, traps reset
-  const h = find('hero');
-  play = { hidden:!props(h.c).visible, x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
+  const h = find('hero'), at = editorOn && startPos ? startPos : h;   // Jos: the Start pos wins
+  play = { hidden:!props(h.c).visible, x:at.x + (1 - T.heroW) / 2, y:at.y + 1 - T.heroH, vx:0, vy:0,
            ground:false, state:'play', timer:0, face:1, walkT:0, coins:0, kx:0,
            things:makeThings(), on:null, later:[] };
   play.byId = {};
@@ -1685,6 +1707,7 @@ function renderEditor(time) {
     ctx.setLineDash([]);
   }
 
+  if (editorOn && startPos) drawBlock(ctx, 'startpos', startPos.x * cell, startPos.y * cell, cell, time);
   drawEdges();
   if (portalSwitch.checked) drawPortalLinks();
   if (triggerSwitch.checked) drawAllLinks();

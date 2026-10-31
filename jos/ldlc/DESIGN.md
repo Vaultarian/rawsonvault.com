@@ -251,6 +251,12 @@ commands, not in the real game as the button."*
   out, and if you click on a block in trigger to block, then it will always select the inside ones,
   and if it's set to out, then it will always select the outside ones."* With editor commands on,
   Trigger to block never swaps when you hold still. It always picks the one you chose.
+- **🚩 Start pos** (editor command). Jos: *"add a block start pos, and that start pos is where the hero
+  starts. I know there's a hero block, but I don't wanna keep on changing it each time… there can only
+  be one start pos… if you click on a different space, the first start pos will disappear… if you turn
+  off editor commands or you erase the start pos, the hero will start where it usually starts."*
+  A green flag at the bottom of BLOCKS, only with editor commands on. TEST starts the hero at the flag.
+  The eraser takes the flag first, then the block under it on the next click.
 
 ## Adding to what's selected (31 Oct)
 
@@ -326,6 +332,9 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Start pos is not part of the level: it sits on top of any square without taking it up, and Clear
+  takes it away too. It stays put after a refresh.
 
 - The devil says *A coin is hidden* when TEST starts, not every time you die.
 - *Noooooo* comes for every Needed coin you get, not just the last one.
