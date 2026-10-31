@@ -942,6 +942,12 @@ function manyTriggersSection(cells) {
     card.append(row('Delay', number(common(links.map(l => l.delay || 0)), 0, 30, .1,
                                     v => { links.forEach(l => { l.delay = v; }); save(); }),
                     el('span', { className:'p-or', textContent:'seconds' })));
+    if (editorOn) {
+      // editor command: the first one you connected waits 0 s, the next 1 s, the next 2 s…
+      card.append(el('button', { className:'p-cmd', textContent:'⏱ Up 1 second each',
+        title:'0, 1, 2, 3… seconds, in the order you connected them',
+        onclick:() => { links.forEach((l, i) => { l.delay = Math.min(30, i); }); save(); renderPanel(); } }));
+    }
     const same = common(links.map(l => JSON.stringify(l.actions || [])));
     if (same === null) {
       card.append(el('p', { className:'p-note', textContent:'These blocks do different things, so they can\'t be changed together 😈' }));
@@ -1000,11 +1006,36 @@ addEventListener('keydown', e => {
       e.preventDefault(); deleteSelected();
     }
     if (e.code === 'Escape') { if (sel.size || linkFrom) setTool(tool); else closePanel(); }
-    if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey) turnKey();
+    const secret = secretKey(e);
+    if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !secret) turnKey();
   }
   keys[e.code] = true;
 });
 addEventListener('keyup', e => { keys[e.code] = false; });
+
+/* ---------- Jos: a secret word. Type "editor" to show the editor commands ---------- */
+const SECRET = 'editor';
+let typed = '', editorOn = localStorage.getItem('jos-ldlc-editor') === '1';
+function showEditor() {
+  document.getElementById('editorCmds').hidden = !editorOn;
+  if (openIds) renderPanel();
+}
+function secretKey(e) {             // true when this key finishes the secret word
+  if (e.key.length !== 1 || e.metaKey || e.ctrlKey) return false;
+  typed = (typed + e.key.toLowerCase()).slice(-SECRET.length);
+  if (typed !== SECRET) return false;
+  typed = '';
+  editorOn = !editorOn;
+  localStorage.setItem('jos-ldlc-editor', editorOn ? '1' : '');
+  showEditor();
+  say(editorOn ? '🛠 Editor commands on' : 'Editor commands off');
+  return true;
+}
+document.getElementById('editorBtn').addEventListener('click', () => {
+  const list = document.getElementById('editorList');
+  list.hidden = !list.hidden;
+});
+showEditor();
 
 /* ---------- TEST: play your own level ---------- */
 const testBtn = document.getElementById('testBtn');

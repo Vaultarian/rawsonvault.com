@@ -227,6 +227,19 @@ and when they click that it will show the properties."*
 - Select all blocks follows the old rule: if the blocks are different (a tile and a spring),
   it says *"These blocks have different properties 😈"*.
 
+## Secret word: editor commands (31 Oct)
+
+Jos: *"Can you make a secret word editor, and it will show up with editor commands… up one second
+delay, that's an editor command… the first one I connected will start at zero, then the next one
+I connected will start at one, then the next one… at two, and so on, but make that in editor
+commands, not in the real game as the button."*
+
+- Type **editor** on the keyboard (not in a box) and a purple **🛠 Editor commands** button appears
+  bottom left. Click it to see the list. Type **editor** again to hide it all.
+- **⏱ Up 1 second each**: in the Connected triggers card for lots of selected blocks. It sets the
+  delays to 0, 1, 2, 3… seconds, in the order you connected the blocks to the trigger.
+- Nobody sees these unless they know the word.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -266,6 +279,9 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Editor commands stay on after a refresh, until **editor** is typed again.
+- Up 1 stops at 30 seconds, because that is as long as a delay goes.
 
 - **Outside blocks** means the block in the square, so a block with nothing inside it counts as
   an outside block too.
