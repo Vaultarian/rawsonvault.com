@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marble Run Builder — Jos' Projects</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Jos's Marble Run Builder =====
+   Build your own marble track on a grid, then hit Run and watch real gravity carry
+   a marble through it. Click a brick to pick it up, click it again to spin it 90°.
+   Drag bricks onto the grid. Hold the mouse down and drag across the grid to paint
+   many bricks at once. Reach the Finish to turn the marble green and unlock Save. */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { min-height:100%; }
+body { font-family:'Nunito',sans-serif; color:#223; background:#f4ead8; user-select:none; overflow:hidden; }
+.back-link { position:fixed; top:12px; left:16px; z-index:200; font-family:'Fredoka One',cursive; color:#223; text-decoration:none;
+             font-size:1rem; background:#fff; padding:.35rem .9rem; border-radius:50px; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+.back-link:hover { background:#223; color:#fff; }
+h1,h2 { font-family:'Fredoka One',cursive; font-weight:normal; }
+button { font-family:'Fredoka One',cursive; font-size:1rem; border:none; border-radius:14px; padding:.55rem 1.1rem;
+         background:#223; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+button:hover { background:#3d9595; }
+button:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+button:disabled { background:#999; color:#ddd; cursor:default; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+input[type=text] { font-family:'Nunito',sans-serif; font-size:1rem; padding:.5rem .8rem; border-radius:10px; border:2px solid #ccc; }
+
+/* ---------- screens ---------- */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; }
+
+/* ---------- size picker ---------- */
+#sizeScreen { flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; text-align:center; }
+#sizeScreen h1 { font-size:2.6rem; }
+#sizeScreen p { max-width:420px; color:#556; }
+.size-row { display:flex; align-items:center; gap:1.2rem; }
+.size-row button { font-size:1.6rem; width:52px; height:52px; padding:0; }
+#sizeLabel { font-family:'Fredoka One',cursive; font-size:2.2rem; min-width:170px; }
+
+/* ---------- builder ---------- */
+#builderScreen { flex-direction:column; }
+#topbar { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:10px 16px 10px 160px; background:#fff;
+          box-shadow:0 2px 8px rgba(0,0,0,.08); z-index:150; }
+#topbar .spacer { flex:1; }
+#topbar .tag { font-family:'Fredoka One',cursive; font-size:.85rem; background:#eee; padding:.35rem .7rem; border-radius:10px; color:#556; }
+#runBtn { background:#2e9e4f; }
+#runBtn:hover { background:#38c261; }
+#clearBtn { background:#c0392b; }
+#clearBtn:hover { background:#e74c3c; }
+#saveBtn.ready { background:#2e9e4f; }
+#saveBtn.ready:hover { background:#38c261; }
+.zoomGroup { display:flex; align-items:center; gap:.3rem; background:#eee; border-radius:12px; padding:.25rem; }
+.zoomGroup button { padding:.4rem .7rem; font-size:1rem; }
+
+#builderBody { flex:1; display:flex; overflow:hidden; }
+.toolbox { width:92px; background:#fff; box-shadow:2px 0 8px rgba(0,0,0,.06); overflow-y:auto; padding:8px 6px; z-index:100; }
+.toolbox h3 { font-family:'Fredoka One',cursive; font-size:.65rem; text-align:center; color:#889; letter-spacing:1px; margin:6px 0 4px; }
+.brick-slot { width:76px; height:68px; margin:0 auto 7px; border-radius:6px; background:#f0c419; border:3px solid #cfa312;
+              display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative;
+              box-shadow:0 3px 0 #a6860e; }
+.brick-slot:hover { background:#f5cf3a; }
+.brick-slot.selected { border-color:#2e9e4f; box-shadow:0 3px 0 #1d7038; }
+.brick-slot.used-up { opacity:.4; }
+.brick-slot canvas { pointer-events:none; }
+.eraser-slot.selected { border-color:#c0392b; box-shadow:0 3px 0 #7a2318; }
+
+#viewport { flex:1; overflow:auto; background:#f0c419; position:relative; }
+#viewportInner { transform-origin: 0 0; position:relative; }
+#gridCanvas, #marbleCanvas { position:absolute; top:0; left:0; image-rendering:pixelated; }
+#marbleCanvas { pointer-events:none; }
+#viewportInner { outline:4px solid #8a6d10; outline-offset:-1px; }
+
+#finishBanner { position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:160; font-family:'Fredoka One',cursive;
+                font-size:1.3rem; background:#2e9e4f; color:#fff; padding:.6rem 1.6rem; border-radius:16px;
+                box-shadow:0 4px 0 rgba(0,0,0,.2); display:none; }
+#dragPreview { position:fixed; top:0; left:0; width:52px; height:52px; pointer-events:none; z-index:999;
+               display:none; opacity:.85; filter:drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
+
+/* ---------- save dialog ---------- */
+#saveDialog, #galleryScreen, #viewScreen { }
+.modal-back { position:fixed; inset:0; background:rgba(20,20,30,.5); z-index:300; display:none; align-items:center; justify-content:center; }
+.modal-back.active { display:flex; }
+.modal-box { background:#fff; border-radius:18px; padding:1.6rem 2rem; max-width:360px; width:90%; text-align:center; }
+.modal-box h2 { font-size:1.6rem; margin-bottom:1rem; }
+.modal-box label { display:block; text-align:left; font-weight:700; margin:.6rem 0 .25rem; font-size:.9rem; color:#556; }
+.modal-box input { width:100%; }
+.modal-box .btnrow { display:flex; gap:.6rem; justify-content:center; margin-top:1.4rem; }
+
+/* ---------- gallery ---------- */
+#galleryScreen { flex-direction:column; padding:80px 24px 24px; }
+#galleryScreen h1 { text-align:center; margin-bottom:1rem; }
+.gallery-grid { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; overflow-y:auto; }
+.gallery-card { width:190px; background:#fff; border-radius:14px; box-shadow:0 4px 10px rgba(0,0,0,.1); overflow:hidden; cursor:pointer; }
+.gallery-card:hover { transform:translateY(-2px); }
+.gallery-card .thumb { width:100%; height:120px; background:#f0c419; display:block; }
+.gallery-card .info { padding:.5rem .7rem; }
+.gallery-card .tname { font-family:'Fredoka One',cursive; font-size:1rem; }
+.gallery-card .tuser { font-size:.8rem; color:#778; }
+.gallery-empty { color:#889; text-align:center; margin-top:2rem; }
+.card-actions { display:flex; gap:.4rem; padding:0 .7rem .7rem; }
+.card-actions button { flex:1; font-size:.8rem; padding:.4rem; }
+
+/* ---------- view mode ---------- */
+#viewScreen { flex-direction:column; background:#f0c419; }
+#viewTop { position:fixed; top:12px; right:12px; z-index:200; display:flex; gap:.5rem; }
+#viewExit { position:fixed; top:12px; left:12px; z-index:200; }
+#viewViewport { flex:1; overflow:auto; }
+#viewInner { transform-origin:0 0; position:relative; outline:4px solid #8a6d10; outline-offset:-1px; }
+#viewGridCanvas, #viewMarbleCanvas { position:absolute; top:0; left:0; image-rendering:pixelated; }
+#viewMarbleCanvas { pointer-events:none; }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../">← Home</a>
+
+<!-- SIZE PICKER -->
+<div class="screen active" id="sizeScreen">
+  <h1>🧱 Marble Run Builder</h1>
+  <p>Pick how big your board is. You can always scroll and zoom while you build — bigger boards just fit more track!</p>
+  <div class="size-row">
+    <button id="wMinus">−</button>
+    <span id="sizeLabel">10 × 10</span>
+    <button id="wPlus">+</button>
+  </div>
+  <button id="startBuildBtn" style="font-size:1.2rem;padding:.8rem 2rem;background:#2e9e4f;">Start Building!</button>
+  <button id="openGalleryBtn" style="background:#8e44ad;">📁 My Saved Tracks</button>
+</div>
+
+<!-- BUILDER -->
+<div class="screen" id="builderScreen">
+  <div id="topbar">
+    <span class="tag" id="sizeTag">10×10</span>
+    <div class="zoomGroup">
+      <button id="zoomOut">−</button>
+      <span id="zoomLabel" style="font-family:'Fredoka One',cursive;min-width:46px;text-align:center;">100%</span>
+      <button id="zoomIn">+</button>
+    </div>
+    <div class="spacer"></div>
+    <button id="runBtn">▶ Run</button>
+    <button id="clearBtn">🗑 Clear</button>
+    <button id="saveBtn" disabled>💾 Save</button>
+    <button id="galleryBtn" style="background:#8e44ad;">📁 Gallery</button>
+    <button id="helpBtn" style="background:#556;">?</button>
+  </div>
+  <div id="finishBanner">🟢 Marble made it! You can Save now.</div>
+  <div id="builderBody">
+    <div class="toolbox" id="basicBox">
+      <h3>Basic Bricks</h3>
+    </div>
+    <div id="viewport"><div id="viewportInner">
+      <canvas id="gridCanvas"></canvas>
+      <canvas id="marbleCanvas"></canvas>
+    </div></div>
+    <canvas id="dragPreview" width="64" height="64"></canvas>
+    <div class="toolbox" id="specialBox">
+      <h3>Special Bricks</h3>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="screen" id="galleryScreen">
+  <h1>📁 My Saved Tracks</h1>
+  <div class="gallery-grid" id="galleryGrid"></div>
+  <div style="text-align:center;margin-top:1.4rem;">
+    <button id="galleryBackBtn">← Back to Builder</button>
+  </div>
+</div>
+
+<!-- VIEW MODE (fullscreen) -->
+<div class="screen" id="viewScreen">
+  <button id="viewExit">✕ Exit</button>
+  <div id="viewTop">
+    <button id="viewRunBtn">▶ Run</button>
+    <div class="zoomGroup"><button id="viewZoomOut">−</button></div>
+  </div>
+  <div id="viewViewport"><div id="viewInner">
+    <canvas id="viewGridCanvas"></canvas>
+    <canvas id="viewMarbleCanvas"></canvas>
+  </div></div>
+</div>
+
+<!-- SAVE DIALOG -->
+<div class="modal-back" id="saveModal">
+  <div class="modal-box">
+    <h2>💾 Save Your Track</h2>
+    <label for="trackNameInput">Track name</label>
+    <input type="text" id="trackNameInput" maxlength="30" placeholder="My Awesome Track">
+    <label for="trackUserInput">Your name</label>
+    <input type="text" id="trackUserInput" maxlength="20" placeholder="Jos">
+    <div class="btnrow">
+      <button id="saveConfirmBtn" style="background:#2e9e4f;">Save</button>
+      <button id="saveCancelBtn" style="background:#999;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="marble-run-builder.js"></script>
+</body>
+</html>

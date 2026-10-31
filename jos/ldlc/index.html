@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDLC — Jos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; overflow:hidden; }
+  body {
+    font-family:'Nunito', sans-serif; color:#fff;
+    background:radial-gradient(ellipse at 50% 30%, #4a0010 0%, #1a0005 55%, #000 100%);
+  }
+
+  .back-link {
+    position:fixed; top:20px; left:20px; z-index:10;
+    font-family:'Fredoka One', cursive;
+    color:#ffffff44; text-decoration:none; font-size:1rem;
+    transition:color 0.2s;
+  }
+  .back-link:hover { color:#fff; }
+
+  #deaths {
+    position:fixed; top:18px; right:20px; z-index:10;
+    font-family:'Fredoka One', cursive; font-size:1.3rem; color:#ffb3ba;
+  }
+
+  /* ---- the menu ---- */
+  #menu {
+    position:absolute; top:0; left:0; right:0; bottom:270px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0 16px;
+  }
+  .devil { font-size:clamp(2.2rem, 7vw, 3.4rem); animation:bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 50% { transform:translateY(-8px) rotate(-6deg); } }
+  .logo {
+    font-family:'Fredoka One', cursive;
+    font-size:clamp(4rem, 18vw, 9rem); line-height:1;
+    color:#ff2a3d; letter-spacing:0.06em;
+    text-shadow:0 0 32px rgba(255,42,61,0.55), 0 8px 0 rgba(110,0,15,0.7);
+    animation:flicker 5s infinite;
+  }
+  @keyframes flicker {
+    0%, 90%, 100% { opacity:1; }
+    91% { opacity:0.35; } 92% { opacity:1; } 94% { opacity:0.5; } 95% { opacity:1; }
+  }
+  .full {
+    font-family:'Fredoka One', cursive;
+    font-size:clamp(1rem, 3.6vw, 1.6rem);
+    color:#ffb3ba; letter-spacing:0.12em; margin-top:0.6rem;
+  }
+  .buttons { display:flex; gap:1rem; margin-top:2.2rem; flex-wrap:wrap; justify-content:center; }
+  .btn {
+    font-family:'Fredoka One', cursive; font-size:1.5rem;
+    padding:0.8rem 2.2rem; border-radius:999px; border:none; cursor:pointer;
+    color:#fff; background:#ff2a3d; box-shadow:0 6px 0 #7a0012;
+    transition:translate 0.22s cubic-bezier(.3,1.6,.5,1), background 0.2s;
+  }
+  .btn:hover { background:#ff4d5e; }
+  .btn.alt { background:transparent; border:3px solid #ff2a3d; box-shadow:none; }
+  .btn.alt:hover { background:#ff2a3d33; }
+
+  /* ---- the little level along the bottom ---- */
+  #stage { position:absolute; left:0; right:0; bottom:0; height:270px; overflow:hidden; }
+  .tile {
+    position:absolute; left:0; top:0; width:40px; z-index:2;
+    background:#2a0008; border-top:4px solid #ff2a3d;
+    box-shadow:inset 0 0 0 1px #45000f;
+  }
+  .spikes {
+    position:absolute; width:40px; height:24px; z-index:1;
+    background:#e6e6e6;
+    clip-path:polygon(0 100%, 12.5% 0, 25% 100%, 37.5% 0, 50% 100%, 62.5% 0, 75% 100%, 87.5% 0, 100% 100%);
+    transform:translateY(24px); transition:transform 0.08s;
+  }
+  .spikes.up { transform:translateY(0); }
+  .crusher {
+    position:absolute; left:0; top:0; width:44px; height:44px; z-index:3;
+    background:#3b3b46; border:3px solid #6c6c7a; border-radius:6px;
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+  }
+  .door {
+    position:absolute; width:40px; height:60px; z-index:1;
+    background:#14000a; border:3px solid #ffd23f; border-bottom:none;
+    border-radius:20px 20px 0 0;
+    box-shadow:0 0 18px rgba(255,210,63,0.45);
+    transition:border-color 0.2s, box-shadow 0.2s;
+  }
+  .door::after {
+    content:''; position:absolute; right:6px; top:30px;
+    width:6px; height:6px; border-radius:50%; background:#ffd23f;
+  }
+  .door.open { border-color:#5dff8a; box-shadow:0 0 30px rgba(93,255,138,0.8); }
+
+  /* the hero: a little devil, and the level is out to get him */
+  .hero {
+    position:absolute; left:0; top:0; width:28px; height:28px; z-index:2;
+    background:#ff4d5e; border-radius:6px; transform-origin:50% 100%;
+  }
+  .hero::before, .hero::after {
+    content:''; position:absolute; top:-7px;
+    border-left:4px solid transparent; border-right:4px solid transparent;
+    border-bottom:8px solid #ff4d5e;
+  }
+  .hero::before { left:3px; }
+  .hero::after { right:3px; }
+  .eye { position:absolute; top:8px; width:7px; height:8px; background:#fff; border-radius:3px; }
+  .eye::after { content:''; position:absolute; right:1px; top:3px; width:3px; height:3px; background:#000; border-radius:50%; }
+  .eye.l { left:8px; }
+  .eye.r { left:17px; }
+  .bit { position:absolute; left:0; top:0; width:6px; height:6px; background:#ff4d5e; z-index:4; }
+
+  #toast {
+    position:fixed; left:50%; top:0; z-index:20;
+    transform:translate(-50%, -150%); transition:transform 0.3s cubic-bezier(.3,1.6,.5,1);
+    background:#ff2a3d; color:#fff; font-family:'Fredoka One', cursive; font-size:1.2rem;
+    padding:0.7rem 1.4rem; border-radius:999px; box-shadow:0 6px 0 #7a0012;
+    white-space:nowrap;
+  }
+  #toast.show { transform:translate(-50%, 24px); }
+
+  @media (max-width:520px) {
+    .full { letter-spacing:0.05em; }
+    .btn { font-size:1.2rem; padding:0.7rem 1.6rem; }
+  }
+</style>
+<script src="../intro/rawson-intro.js"></script>
+</head>
+<body>
+
+  <a class="back-link" href="../">← Back</a>
+  <div id="deaths">💀 0</div>
+  <div id="toast"></div>
+
+  <div id="menu">
+    <div class="devil">😈</div>
+    <div class="logo">LDLC</div>
+    <div class="full">LEVEL DEVIL LEVEL CREATOR</div>
+    <div class="buttons">
+      <button class="btn" id="play">▶ PLAY</button>
+      <button class="btn alt" id="create">🛠 CREATE A LEVEL</button>
+    </div>
+  </div>
+
+  <div id="stage"></div>
+
+<script src="levels.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- numbers to tweak ---------- */
+  var T = {
+    tile:    40,    /* ground block size, px                    */
+    hero:    28,    /* little devil size, px                    */
+    depth:   110,   /* how thick the ground is, px              */
+    speed:   130,   /* walking speed, px per second             */
+    gravity: 1600,  /* how fast things fall                     */
+    respawn: 0.7,   /* seconds before he tries again            */
+    dodges:  3      /* how many times PLAY runs away from you   */
+  };
+  /* what the level does to him each try. 'win' = he actually makes it */
+  var TRAPS = ['drop', 'spikes', 'crusher', 'drop', 'spikes', 'crusher', 'win'];
+
+  var stage = document.getElementById('stage');
+  var deathsEl = document.getElementById('deaths');
+  var W, H, groundY, doorX, tiles, door, hero, spikes, crusher;
+  var run, bits = [], deaths = 0;
+
+  function make(cls, html) {
+    var d = document.createElement('div');
+    d.className = cls;
+    if (html) d.innerHTML = html;
+    stage.appendChild(d);
+    return d;
+  }
+  function place(d, x, y, extra) {
+    d.style.transform = 'translate(' + x + 'px,' + y + 'px)' + (extra || '');
+  }
+
+  function build() {
+    stage.innerHTML = '';
+    W = stage.clientWidth; H = stage.clientHeight;
+    groundY = H - T.depth;
+    doorX = W - 90;
+    tiles = [];
+    for (var i = 0; i * T.tile < W; i++) {
+      var t = make('tile');
+      t.baseX = i * T.tile;
+      t.style.height = T.depth + 'px';
+      place(t, t.baseX, groundY);
+      tiles.push(t);
+    }
+    door = make('door');
+    door.style.left = doorX + 'px';
+    door.style.top = (groundY - 60) + 'px';
+    spikes = make('spikes');
+    spikes.style.top = (groundY - 24) + 'px';
+    crusher = make('crusher', '😈');
+    hero = make('hero', '<div class="eye l"></div><div class="eye r"></div>');
+    newRun();
+  }
+
+  function newRun() {
+    var kind = TRAPS[Math.floor(Math.random() * TRAPS.length)];
+    /* the trap waits somewhere between a third and two thirds of the way along */
+    var i = Math.floor((W * 0.3 + Math.random() * W * 0.35) / T.tile);
+    run = {
+      kind: kind, state: 'walk', time: 0,
+      x: 20, y: groundY - T.hero, vy: 0,
+      spot: i * T.tile, tile: tiles[i], tileY: 0,
+      cY: -60, cVy: 0, timer: 0
+    };
+    tiles.forEach(function (t) { place(t, t.baseX, groundY); });
+    spikes.classList.remove('up');
+    spikes.style.left = run.spot + 'px';
+    spikes.style.display = kind === 'spikes' ? '' : 'none';
+    place(crusher, run.spot - 2, run.cY);
+    door.classList.remove('open');
+    hero.style.opacity = 1;
+  }
+
+  function die(squashed) {
+    run.state = 'dead';
+    run.timer = T.respawn;
+    deaths++;
+    deathsEl.textContent = '💀 ' + deaths;
+    if (squashed) {
+      place(hero, run.x, run.y, ' scaleY(0.2)');
+      return;
+    }
+    hero.style.opacity = 0;
+    for (var k = 0; k < 10; k++) {
+      var b = make('bit');
+      bits.push({ el: b, x: run.x + 11, y: run.y + 11,
+                  vx: (Math.random() - 0.5) * 320, vy: -150 - Math.random() * 300, life: 0.9 });
+    }
+  }
+
+  function step(dt) {
+    run.time += dt;
+    var centre = run.x + T.hero / 2;
+
+    if (run.state === 'walk') {
+      run.x += T.speed * dt;
+
+      if (run.kind === 'drop' && centre > run.spot + 8) {
+        run.state = 'fall';
+      }
+      if (run.kind === 'spikes') {
+        if (run.x + T.hero > run.spot - 30) spikes.classList.add('up');
+        if (run.x + T.hero > run.spot + 6) die(false);
+      }
+      if (run.kind === 'crusher') {
+        if (centre > run.spot - 30 && run.cVy === 0) run.cVy = 1;
+      }
+      if (run.kind === 'win' && run.x >= doorX + 6) {
+        run.x = doorX + 6;
+        run.state = 'enter';
+        run.timer = 0.9;
+        door.classList.add('open');
+      }
+    }
+
+    if (run.state === 'fall') {
+      run.x += T.speed * 0.3 * dt;
+      run.vy += T.gravity * dt;
+      run.y += run.vy * dt;
+      run.tileY += run.vy * dt;
+      place(run.tile, run.tile.baseX, groundY + run.tileY);
+      if (run.y > H + 40) die(false);
+    }
+
+    /* the crusher keeps falling until it hits the ground, whatever happens */
+    if (run.cVy) {
+      run.cVy += T.gravity * 1.6 * dt;
+      run.cY = Math.min(run.cY + run.cVy * dt, groundY - 44);
+      place(crusher, run.spot - 2, run.cY);
+      if (run.state === 'walk' && run.cY + 44 >= run.y + 4) {
+        run.y = groundY - T.hero;
+        die(true);
+      }
+    }
+
+    if (run.state === 'enter') {
+      hero.style.opacity = Math.max(0, run.timer - 0.4) * 2;
+      run.timer -= dt;
+      if (run.timer <= 0) newRun();
+    }
+
+    if (run.state === 'dead') {
+      run.timer -= dt;
+      if (run.timer <= 0) newRun();
+    }
+
+    if (run.state === 'walk' || run.state === 'fall') {
+      var hop = run.state === 'walk' ? -Math.abs(Math.sin(run.time * 12)) * 3 : 0;
+      place(hero, run.x, run.y + hop);
+    }
+
+    bits = bits.filter(function (b) {
+      b.life -= dt;
+      b.vy += T.gravity * dt;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      place(b.el, b.x, b.y);
+      b.el.style.opacity = Math.max(0, b.life);
+      if (b.life <= 0) { b.el.remove(); return false; }
+      return true;
+    });
+  }
+
+  var last = performance.now();
+  function loop(now) {
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    step(dt);
+    requestAnimationFrame(loop);
+  }
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { bits = []; build(); }, 150);
+  });
+
+  build();
+  requestAnimationFrame(loop);
+
+  /* ---------- the menu ---------- */
+  var toast = document.getElementById('toast');
+  var toastTimer;
+  function say(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
+  }
+
+  /* PLAY runs away from your mouse a few times before it lets you click it */
+  var play = document.getElementById('play');
+  var off = { x: 0, y: 0 }, dodged = 0;
+
+  document.addEventListener('mousemove', function (e) {
+    if (dodged >= T.dodges) return;
+    var r = play.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (Math.hypot(e.clientX - cx, e.clientY - cy) > 80) return;
+
+    var baseL = r.left - off.x, baseT = r.top - off.y;
+    for (var tries = 0; tries < 12; tries++) {
+      var a = Math.random() * Math.PI * 2;
+      var d = 130 + Math.random() * 60;
+      var nx = off.x + Math.cos(a) * d, ny = off.y + Math.sin(a) * d;
+      var L = baseL + nx, Tp = baseT + ny;
+      var nc = { x: L + r.width / 2, y: Tp + r.height / 2 };
+      var fits = L > 10 && L + r.width < innerWidth - 10 &&
+                 Tp > 10 && Tp + r.height < innerHeight - 280;
+      if (fits && Math.hypot(e.clientX - nc.x, e.clientY - nc.y) > 110) {
+        off = { x: nx, y: ny };
+        play.style.translate = nx + 'px ' + ny + 'px';
+        dodged++;
+        return;
+      }
+    }
+  });
+
+  /* Jos: PLAY plays every level you made, in a random order */
+  play.addEventListener('click', function () {
+    if (LDLC.list().some(function (l) { return LDLC.playable(l.id); })) {
+      location.href = 'editor.html?play';
+      return;
+    }
+    say('Make a level first 😈');
+    dodged = 0;
+    off = { x: 0, y: 0 };
+    play.style.translate = '0px 0px';
+  });
+
+  document.getElementById('create').addEventListener('click', function () {
+    location.href = 'levels.html';
+  });
+})();
+</script>
+</body>
+</html>

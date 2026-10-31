@@ -10,13 +10,6 @@
     <style>
         #canvasContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.8s ease-in-out; }
         #loaderCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; }
-        /* "Website best in Safari" — at 100% it drops in from just past the top-right corner
-           and bounces on its spot above the circle like a ball (see bestInSafari) */
-        #bestSafari { position: absolute; left: 50%; top: calc(50% - 250px); transform: translateX(-50%); z-index: 2; pointer-events: none;
-                      white-space: nowrap; font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 5vw, 3.2rem);
-                      color: #fff; text-shadow: 0 0 18px rgba(0, 85, 255, 0.9), 0 4px 0 #0033aa; }
-        body.hell #bestSafari { text-shadow: 0 0 18px rgba(255, 110, 20, 0.95), 0 4px 0 #7a1d00; }
-        #bestSafari span { display: inline-block; transform-origin: 50% 100%; visibility: hidden; }
         #loadingText { position: relative; color: #ffffff; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 85, 255, 0.6); pointer-events: none; z-index: 1000000; }
         @keyframes hmGlitch {
             0%, 100% { transform: translate(0,0) skewX(0deg); text-shadow: 2px 0 #ff2d00, -2px 0 #00e5ff, 0 0 14px rgba(255,110,20,0.95); }
@@ -217,7 +210,7 @@
             <div class="nav-item">
                 <span class="nav-tab dropdown-trigger">Games ▾</span>
                 <div class="dropdown-menu">
-                    <a href="whack-a-mole/">Whack-a-Mole!</a><a href="yoga/">Yoga Simulator</a><a href="gravity/">Gravity Simulator</a><a href="brick-breaker/">Brick Breaker</a><a href="fortune-teller/">Fortune Teller</a><a href="maze-runner/">Maze Runner</a><a href="type-speed/">Type Speed</a><a href="color-mixer/">Colour Mixer</a><a href="the-red-button/">The Red Button</a><a href="reaction-time/">Reaction Time</a><a href="password-defender/">Password Defender</a><a href="snake/">Snake</a><a href="flappy-bird/">Flappy Bird</a><a href="marble_run.html">Marble Run</a><a href="simon-says-among-us/">Simon Says (Among Us)</a><a href="2048/">2048</a><a href="bouncy-spinner/">Bouncy Spinner</a><a href="space-sea-elevator/">Space &amp; Sea Elevator</a><a href="classic-games/">Classic Games</a>
+                    <a href="whack-a-mole/">Whack-a-Mole!</a><a href="yoga/">Yoga Simulator</a><a href="gravity/">Gravity Simulator</a><a href="brick-breaker/">Brick Breaker</a><a href="fortune-teller/">Fortune Teller</a><a href="maze-runner/">Maze Runner</a><a href="type-speed/">Type Speed</a><a href="color-mixer/">Colour Mixer</a><a href="the-red-button/">The Red Button</a><a href="reaction-time/">Reaction Time</a><a href="password-defender/">Password Defender</a><a href="snake/">Snake</a><a href="flappy-bird/">Flappy Bird</a><a href="marble_run.html">Marble Races</a><a href="marble-run-builder/">Marble Run Builder</a><a href="simon-says-among-us/">Simon Says (Among Us)</a><a href="2048/">2048</a><a href="bouncy-spinner/">Bouncy Spinner</a><a href="space-sea-elevator/">Space &amp; Sea Elevator</a><a href="classic-games/">Classic Games</a>
                 </div>
             </div>
             <div class="nav-item">
@@ -249,8 +242,9 @@
                         <div class="pill-row"><a class="pill" href="type-speed/">Type Speed</a><a class="pill" href="color-mixer/">Colour Mixer</a></div>
                         <div class="pill-row"><a class="pill" href="the-red-button/">The Red Button</a><a class="pill" href="reaction-time/">Reaction Time</a></div>
                         <div class="pill-row"><a class="pill" href="password-defender/">Password Defender</a><a class="pill" href="snake/">Snake</a></div>
-                        <div class="pill-row"><a class="pill" href="flappy-bird/">Flappy Bird</a><a class="pill" href="marble_run.html">Marble Run</a></div>
-                        <div class="pill-row"><a class="pill" href="simon-says-among-us/">Simon Says (Among Us)</a><a class="pill" href="2048/">2048</a></div>
+                        <div class="pill-row"><a class="pill" href="flappy-bird/">Flappy Bird</a><a class="pill" href="marble_run.html">Marble Races</a></div>
+                        <div class="pill-row"><a class="pill" href="marble-run-builder/">🧱 Marble Run Builder</a><a class="pill" href="simon-says-among-us/">Simon Says (Among Us)</a></div>
+                        <div class="pill-row"><a class="pill" href="2048/">2048</a></div>
                         <div class="pill-row"><a class="pill" href="bouncy-spinner/">Bouncy Spinner</a><a class="pill" href="quick-draw/">Quick Draw 🤖</a></div>
                         <div class="pill-row"><a class="pill" href="space-sea-elevator/">Space &amp; Sea Elevator</a><a class="pill" href="classic-games/">🎲 Classic Games</a></div>
                     </div>
@@ -331,7 +325,7 @@
                 if (currentPercent > 100) currentPercent = 100;
                 textElement.innerText = currentPercent + "%";
                 if (currentPercent === 100) {
-                    isFullyLoaded = true; bestInSafari(triggerWhiteout);   /* bounces in, stays a second, then the site opens */
+                    isFullyLoaded = true; setTimeout(triggerWhiteout, 2000);
                 } else {
                     for (let i = 0; i < percentJump; i++) { particles.push(new RacingCircle(emitterAngle + (i * 0.04), currentPercent)); }
                     setTimeout(increasePercentageRandomly, Math.random() * 400 + 100);
@@ -373,61 +367,6 @@
                 }
             }
             if (container.isConnected) requestAnimationFrame(drawLoop);   /* stop once the loading screen is gone */
-        }
-
-        /* at 100% the sentence "Website best in Safari" drops in from just past the top-right
-           corner and BOUNCES on its spot above the circle, like a ball:
-           - it falls faster and faster (gravity)
-           - each bounce goes up half as high as the last one
-           - it squashes a little each time it hits the floor
-           - it drifts left at a steady speed and stops exactly in the middle
-           When it has stopped, it waits a second, then `done` runs. */
-        function bestInSafari(done) {
-            const msg = document.createElement('div');
-            msg.id = 'bestSafari';
-            const word = document.createElement('span');
-            word.textContent = 'Website best in Safari';
-            msg.appendChild(word);
-            container.appendChild(msg);
-
-            const box = msg.getBoundingClientRect();
-            const startX = window.innerWidth - box.left;        /* just past the right edge */
-            const height = box.bottom;                          /* just above the top edge  */
-            const fallTime = 0.6;                               /* seconds for the first drop */
-            const g = 2 * height / (fallTime * fallTime);       /* gravity, in pixels per second per second */
-            const bounciness = 0.7;                             /* speed kept after a bounce (0.7 -> half the height) */
-
-            /* work out every bounce first, so we know how long the whole thing takes */
-            const hits = [fallTime];                            /* times it touches the floor */
-            let speed = g * fallTime;
-            while (speed * bounciness > 100) {                   /* stop when the bounces get tiny */
-                speed *= bounciness;
-                hits.push(hits[hits.length - 1] + 2 * speed / g);
-            }
-            const total = hits[hits.length - 1];
-
-            const t0 = performance.now();
-            word.style.visibility = 'visible';
-            (function frame(now) {
-                const t = Math.min((now - t0) / 1000, total);
-                let y, sinceHit = Infinity, bounceNo = 0;
-                if (t < fallTime) {
-                    y = -height + 0.5 * g * t * t;             /* the first drop */
-                } else {
-                    let i = 0;
-                    while (i < hits.length - 1 && t >= hits[i + 1]) i++;
-                    const up = g * fallTime * Math.pow(bounciness, i + 1);   /* speed leaving the floor */
-                    sinceHit = t - hits[i];
-                    bounceNo = i;
-                    y = i < hits.length - 1 ? -(up * sinceHit - 0.5 * g * sinceHit * sinceHit) : 0;
-                }
-                const x = startX * (1 - t / total);            /* steady drift to the middle */
-                /* a quick squash just after each hit */
-                const squash = sinceHit < 0.12 ? Math.sin(sinceHit / 0.12 * Math.PI) * 0.18 * Math.pow(bounciness, bounceNo) : 0;   /* softer each time */
-                word.style.transform = `translate(${x}px, ${Math.min(0, y)}px) scale(${1 + squash}, ${1 - squash})`;
-                if (t < total) requestAnimationFrame(frame);
-                else { word.style.transform = 'none'; setTimeout(done, 1000); }
-            })(t0);
         }
 
         function triggerWhiteout() {
@@ -491,9 +430,12 @@
             { e: "⚡", t: "Reaction Time", u: "reaction-time/",
               i: "How fast are you, really? This measures your reaction in milliseconds.",
               s: ["Start it, then wait — don't click early!", "The moment the screen changes, click.", "The lower your time, the faster you are."], k: ["🖱️ Click"] },
-            { e: "🎱", t: "Marble Run", u: "marble_run.html",
+            { e: "🎱", t: "Marble Races", u: "marble_run.html",
               i: "Drop marbles down a course and watch them race. First three to the bottom win.",
               s: ["Click anywhere to drop a marble.", "Watch them bounce their way down.", "The first 3 to finish are the winners."], k: ["🖱️ Click"] },
+            { e: "🧱", t: "Marble Run Builder", u: "marble-run-builder/",
+              i: "Build your own marble track with ramps, springs, portals and more, then watch a marble run it for real.",
+              s: ["Pick a board size, then drag bricks onto the grid to build your track.", "Click a brick to pick it up, click again to spin it.", "Put down a Start and a Finish, then hit Run and watch gravity take over."], k: ["🖱️ Click & Drag"] },
             { e: "🎲", t: "Classic Games", u: "classic-games/",
               i: "All the old favourites in one room: Snakes and Ladders, a real Deck of Cards, and more board games on the way.",
               s: ["Pick a game from the shelf.", "Choose how many players with ← → and press Enter.", "Take turns on the same computer."], k: ["🖱️ Click", "␣ Space", "← → Arrows"] },
@@ -1189,7 +1131,7 @@ html.pass-quake { animation:passQuake 0.45s linear; }
 (function () {
   const GAMES = ['whack-a-mole/','yoga/','gravity/','brick-breaker/','fortune-teller/',
                  'maze-runner/','type-speed/','color-mixer/','the-red-button/','reaction-time/',
-                 'password-defender/','snake/','flappy-bird/','marble_run.html',
+                 'password-defender/','snake/','flappy-bird/','marble_run.html','marble-run-builder/',
                  'simon-says-among-us/','2048/','bouncy-spinner/','quick-draw/','space-sea-elevator/','classic-games/'];
 
   const PLAYED_KEY = 'jos-games-played';

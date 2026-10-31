@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDLC Levels — Jos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== LDLC — your levels =====
+   Jos: CREATE A LEVEL shows every level you made. None yet? It says Create a level now, with an
+   arrow to the Create button in the corner. */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family:'Nunito', sans-serif; color:#fff; overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%, #4a0010 0%, #1a0005 55%, #000 100%);
+}
+.back-link {
+  position:fixed; top:20px; left:20px; z-index:10; font-family:'Fredoka One', cursive;
+  color:#ffffff44; text-decoration:none; font-size:1rem; transition:color .2s;
+}
+.back-link:hover { color:#fff; }
+h1 {
+  position:fixed; top:56px; left:24px; font-family:'Fredoka One', cursive; font-weight:400;
+  font-size:2.2rem; color:#ff2a3d; text-shadow:0 0 18px #ff2a3d88;
+}
+
+/* ---- the levels ---- */
+#list {
+  position:absolute; top:120px; left:0; right:0; bottom:0; overflow-y:auto;
+  padding:8px 24px 230px; display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  gap:18px; align-content:start;
+}
+.level {
+  display:flex; flex-direction:column; gap:8px; padding:10px; border-radius:14px;
+  background:#1c0008; border:2px solid #ff2a3d55; color:#fff; text-decoration:none;
+  font-family:'Fredoka One', cursive; font-size:1.15rem; transition:transform .15s, border-color .15s;
+}
+.level:hover { transform:translateY(-4px); border-color:#ff2a3d; }
+.level canvas { width:100%; aspect-ratio:16 / 9; border-radius:8px; display:block; }
+
+/* ---- Jos: right-click a level: Play, Rename, Delete ---- */
+#menu {
+  position:fixed; z-index:30; display:none; flex-direction:column; min-width:190px; padding:6px;
+  background:#1c0008; border:2px solid #ff2a3d; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+#menu.show { display:flex; }
+#menu button {
+  font-family:'Fredoka One', cursive; font-size:1.05rem; color:#fff; background:none; border:none;
+  text-align:left; padding:.5rem .8rem; border-radius:8px; cursor:pointer;
+}
+#menu button:hover:not(:disabled) { background:#ff2a3d33; }
+#menu button:disabled { color:#ffffff55; cursor:default; }
+#menu small { display:block; font-family:'Nunito', sans-serif; font-size:.75rem; }
+#menu .ask { padding:.5rem .8rem .3rem; font-family:'Fredoka One', cursive; }
+#menu .row { display:flex; gap:6px; }
+#menu .row button { flex:1; text-align:center; }
+#menu .yes { background:#ff2a3d; }
+#menu .yes:hover { background:#ff4a5a !important; }
+.level input {
+  font-family:'Fredoka One', cursive; font-size:1.15rem; color:#fff; background:#000;
+  border:2px solid #5dff8a; border-radius:6px; padding:0 .3rem; width:100%;
+}
+
+/* ---- adding a shared level, and little messages ---- */
+#modal {
+  position:fixed; inset:0; z-index:40; display:flex; align-items:center; justify-content:center;
+  background:rgba(0, 0, 0, .7);
+}
+#modal[hidden] { display:none; }
+#modal .box {
+  width:min(440px, 92vw); padding:22px 24px; border-radius:16px; background:#1c0008;
+  border:2px solid #ff2a3d; box-shadow:0 14px 40px rgba(0,0,0,.6); font-family:'Fredoka One', cursive;
+}
+#modal h2 { font-weight:400; font-size:1.5rem; margin-bottom:14px; }
+#modal p { font-family:'Nunito', sans-serif; font-weight:700; margin-bottom:14px; line-height:1.4; }
+#modal button {
+  font-family:'Fredoka One', cursive; font-size:1rem; color:#fff; cursor:pointer;
+  border:2px solid #ff2a3d77; background:#000; border-radius:8px; padding:.35rem .7rem;
+}
+#modal .go { display:flex; gap:10px; margin-top:16px; }
+#modal .go button { flex:1; padding:.55rem; }
+#modal .go .main { background:#ff2a3d; border-color:#ff2a3d; }
+.level small { font-family:'Nunito', sans-serif; font-size:.8rem; color:#ffffffaa; margin-top:-6px; }
+#note {
+  position:fixed; left:50%; top:18px; z-index:50; transform:translate(-50%, -160%); transition:transform .3s;
+  background:#2e9e4f; color:#fff; font-family:'Fredoka One', cursive; padding:.6rem 1.2rem;
+  border-radius:999px; white-space:nowrap;
+}
+#note.show { transform:translate(-50%, 0); }
+
+/* ---- no levels yet ---- */
+#empty {
+  display:none; position:absolute; top:46%; left:50%; transform:translate(-50%, -50%);
+  font-family:'Fredoka One', cursive; font-size:clamp(2rem, 5vw, 3.4rem); white-space:nowrap;
+  text-shadow:0 0 24px #ff2a3d;
+}
+#arrow { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; animation:nudge 1s ease-in-out infinite; }
+body.none #empty, body.none #arrow { display:block; }
+@keyframes nudge { 50% { transform:translate(-10px, 8px); } }
+
+/* ---- The Create button, bottom left. Dad: our own, not Wix's. The ring spins like a coin when you
+   point at it (the spinning Möbius ring goes here next) ---- */
+#createBtn {
+  position:fixed; bottom:18px; left:24px; z-index:20; width:182px; height:166px; border-radius:18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  cursor:pointer; background:#1c0008; border:3px solid #ff2a3d; color:#fff;
+  font-family:'Fredoka One', cursive; font-size:1.6rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.45), 0 0 18px rgba(255,42,61,.35); transition:transform .15s;
+}
+#createBtn:hover { transform:scale(1.04); }
+#createBtn .ring { width:66px; height:66px; border-radius:50%; border:9px solid #fff; box-sizing:border-box; }
+#createBtn:hover .ring { animation:coinSpin 1.2s linear infinite; }
+@keyframes coinSpin { to { transform:rotateY(360deg); } }
+</style>
+</head>
+<body>
+  <a class="back-link" href="index.html">← Back</a>
+  <h1>MY LEVELS</h1>
+  <div id="list"></div>
+  <div id="empty">Create a level now</div>
+  <svg id="arrow"><defs><marker id="head" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#fff"/></marker></defs>
+    <path id="arrowPath" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" marker-end="url(#head)"/></svg>
+  <div id="menu"></div>
+  <div id="modal" hidden><div class="box"></div></div>
+  <div id="note"></div>
+  <button id="createBtn" title="Create a level"><span class="ring"></span>Create</button>
+
+<script src="levels.js"></script>
+<script>
+/* ---------- your levels, each with a little picture of it ---------- */
+const LOOK = { tile:'#ff2a3d', spike:'#ececf2', smallspike:'#ececf2', sawblade:'#ececf2', spring:'#ffd23f',
+               coin:'#ffd23f', dashorb:'#3fd44a', oneway:'#9a9aa8', portal:'#fff', button:'#9a6233', door:'#ffd23f', hero:'#fff' };
+function thumb(c, grid) {
+  const s = 10;                                   // 32 × 18 squares → 320 × 180
+  c.fillStyle = '#12000a'; c.fillRect(0, 0, 320, 180);
+  (grid || []).forEach((row, y) => (row || []).forEach((cell, x) => {
+    [cell, cell && cell.inner].forEach(b => {
+      if (!b || (b.p && b.p.visible === false)) return;
+      const t = b.p && b.p.disguise ? (b.as || 'tile') : b.t;
+      c.fillStyle = LOOK[t] || LOOK.coin;
+      if (!LOOK[t]) return;                       // triggers and Edit controls can't be seen
+      if (t === 'tile') c.fillRect(x * s, y * s, s + .5, s + .5);
+      else if (t === 'coin' || t === 'dashorb') { c.beginPath(); c.arc(x * s + 5, y * s + 5, 2.5, 0, 7); c.fill(); }
+      else if (t.includes('spike')) { c.beginPath(); c.moveTo(x * s + 1, y * s + s); c.lineTo(x * s + 5, y * s + 3); c.lineTo(x * s + 9, y * s + s); c.fill(); }
+      else if (t === 'hero') c.fillRect(x * s + 3, y * s + 2, 4, 8);
+      else if (t === 'door') c.fillRect(x * s + 1, y * s, 8, s);
+      else c.fillRect(x * s + 2, y * s + 2, 6, 6);
+    });
+  }));
+}
+const listEl = document.getElementById('list');
+function showLevels() {
+  const levels = LDLC.list();
+  listEl.replaceChildren();
+  levels.forEach(l => {
+    const a = document.createElement('a');
+    a.className = 'level';
+    a.dataset.id = l.id;
+    a.href = 'editor.html?level=' + encodeURIComponent(l.id);
+    const cv = document.createElement('canvas');
+    cv.width = 320; cv.height = 180;
+    thumb(cv.getContext('2d'), LDLC.read(LDLC.key('level', l.id)));
+    a.append(cv, Object.assign(document.createElement('span'), { textContent:l.name }));
+    if (l.by) a.append(Object.assign(document.createElement('small'), { textContent:'by ' + l.by }));
+    a.addEventListener('contextmenu', e => { e.preventDefault(); openMenu(l, a, e.clientX, e.clientY); });
+    listEl.append(a);
+  });
+  document.body.classList.toggle('none', !levels.length);
+  if (!levels.length) pointArrow();
+}
+
+/* ---------- Jos: right-click one of your levels to play it, rename it or delete it ---------- */
+const menu = document.getElementById('menu');
+const item = (html, go, off) => {
+  const b = document.createElement('button');
+  b.innerHTML = html; b.disabled = !!off;
+  b.addEventListener('click', e => { e.stopPropagation(); go(); });
+  return b;
+};
+function openMenu(l, card, x, y) {
+  const canPlay = LDLC.playable(l.id);
+  menu.replaceChildren(
+    item('▶ Play' + (canPlay ? '' : '<small>Needs a Hero and a Door</small>'),
+         () => { location.href = 'editor.html?play=' + encodeURIComponent(l.id); }, !canPlay),
+    item('✏️ Rename', () => { closeMenu(); renameCard(l, card); }),
+    item('🔗 Copy level link', () => { closeMenu(); copyLink(l); }),
+    item('🗑 Delete', () => askDelete(l)));
+  menu.classList.add('show');
+  menu.style.left = Math.min(x, innerWidth - menu.offsetWidth - 8) + 'px';
+  menu.style.top = Math.min(y, innerHeight - menu.offsetHeight - 8) + 'px';
+}
+function closeMenu() { menu.classList.remove('show'); }
+function askDelete(l) {             // deleting can't be undone, so it asks first
+  const ask = Object.assign(document.createElement('div'), { className:'ask', textContent:'Delete ' + l.name + '?' });
+  const row = Object.assign(document.createElement('div'), { className:'row' });
+  const yes = item('Delete', () => { LDLC.remove(l.id); closeMenu(); showLevels(); });
+  yes.className = 'yes';
+  row.append(yes, item('Keep it', closeMenu));
+  menu.replaceChildren(ask, row);
+}
+function renameCard(l, card) {
+  const span = card.querySelector('span');
+  const box = Object.assign(document.createElement('input'), { value:l.name, maxLength:40 });
+  span.replaceWith(box);
+  box.focus(); box.select();
+  let done = false;
+  const finish = keep => {
+    if (done) return;
+    done = true;
+    const name = box.value.trim();
+    if (keep && name) { LDLC.rename(l.id, name); l.name = name; }
+    span.textContent = l.name;
+    box.replaceWith(span);
+  };
+  box.addEventListener('click', e => e.preventDefault());       // clicking the box doesn't open the level
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    if (e.key === 'Escape') finish(false);
+  });
+  box.addEventListener('blur', () => finish(true));
+}
+const modal = document.getElementById('modal'), box = modal.querySelector('.box');
+const make = (tag, props, kids) => { const e = Object.assign(document.createElement(tag), props || {}); (kids || []).forEach(k => e.append(k)); return e; };
+function openModal(...kids) { box.replaceChildren(...kids); modal.hidden = false; }
+function closeModal() { modal.hidden = true; box.replaceChildren(); }
+let noteTimer;
+function note(msg) {
+  const n = document.getElementById('note');
+  n.textContent = msg; n.classList.add('show');
+  clearTimeout(noteTimer); noteTimer = setTimeout(() => n.classList.remove('show'), 3200);
+}
+
+/* ---------- Jos's idea: a level link. Copy it, send it any way you like ---------- */
+async function copyLink(l) {
+  const link = location.href.split('#')[0] + '#get=' + await LDLC.pack(l.id, l.name, l.by || '');
+  try { await navigator.clipboard.writeText(link); }
+  catch (e) {                       // older ways of copying, for browsers that say no
+    const t = make('textarea', { value:link }); document.body.append(t); t.select();
+    document.execCommand('copy'); t.remove();
+  }
+  note('🔗 Link copied! Paste it anywhere to share your level.');
+}
+/* opening a level link: it asks first, then the level goes into My levels */
+async function getShared() {
+  const m = location.hash.match(/^#get=(.+)$/);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  const level = await LDLC.unpack(decodeURIComponent(m[1]));
+  if (!level) { note("That level link doesn't work. Ask for a new one."); return; }
+  openModal(make('h2', { textContent:'Someone shared a level! 🎮' }),
+    make('p', { textContent:'Add "' + level.name + '"' + (level.by ? ' by ' + level.by : '') + ' to My levels?' }),
+    make('div', { className:'go' }, [
+      make('button', { type:'button', className:'main', textContent:'Add it', onclick:() => {
+        LDLC.addShared(level); closeModal(); showLevels(); note('Added! It’s in My levels.'); } }),
+      make('button', { type:'button', textContent:'No thanks', onclick:closeModal })]));
+}
+addEventListener('hashchange', getShared);
+
+addEventListener('click', e => { if (!menu.contains(e.target)) closeMenu(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); if (!modal.hidden) closeModal(); } });
+addEventListener('contextmenu', e => { if (!e.target.closest('.level')) closeMenu(); });
+
+/* ---------- the Create button: a new level ---------- */
+const btn = document.getElementById('createBtn');
+btn.addEventListener('click', () => {
+  const level = LDLC.make();
+  location.href = 'editor.html?level=' + encodeURIComponent(level.id);
+});
+
+/* ---------- no levels yet: an arrow from the words to the Create button ---------- */
+function pointArrow() {
+  const m = document.getElementById('empty').getBoundingClientRect(), b = btn.getBoundingClientRect();
+  const x1 = m.left + m.width * .15, y1 = m.bottom + 14, x2 = b.right + 26, y2 = b.top + b.height * .45;
+  document.getElementById('arrowPath').setAttribute('d',
+    `M${x1},${y1} Q${x1 + (x2 - x1) * .2},${y2} ${x2},${y2}`);
+}
+addEventListener('resize', () => { if (document.body.classList.contains('none')) pointArrow(); });
+showLevels();
+getShared();
+</script>
+</body>
+</html>

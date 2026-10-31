@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDLC Creator — Jos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== LDLC — Level Devil Level Creator =====
+   Jos's level creator. Pick a block on the left, click or drag on the grid to put it
+   down, then press TEST to play your level. The design is in DESIGN.md. */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family:'Nunito', sans-serif; color:#fff; user-select:none; overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%, #3a000c 0%, #14000a 60%, #000 100%);
+  display:flex; flex-direction:column;
+}
+button {
+  font-family:'Fredoka One', cursive; font-size:1rem; color:#fff; cursor:pointer;
+  border:none; border-radius:12px; padding:.5rem 1rem;
+  background:#3a0010; box-shadow:0 3px 0 #000;
+}
+button:hover { background:#5a0018; }
+button:active { transform:translateY(2px); box-shadow:0 1px 0 #000; }
+button.on { background:#ff2a3d; }
+button.soon { opacity:.45; }
+
+/* ---------- top bar ---------- */
+#topbar {
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+  padding:10px 16px; background:#0c0006; border-bottom:2px solid #ff2a3d55;
+}
+.back-link {
+  font-family:'Fredoka One', cursive; color:#ffffff66; text-decoration:none; margin-right:.6rem;
+}
+.back-link:hover { color:#fff; }
+.title { font-family:'Fredoka One', cursive; font-size:1.4rem; color:#ff2a3d; margin-right:1rem;
+         text-shadow:0 0 14px rgba(255,42,61,.5); }
+.spacer { flex:1; }
+#deaths { font-family:'Fredoka One', cursive; color:#ffb3ba; font-size:1.1rem; margin-right:.5rem; }
+#testBtn { background:#2e9e4f; font-size:1.15rem; padding:.55rem 1.4rem; }
+#testBtn:hover { background:#38c261; }
+#testBtn.stop { background:#ff2a3d; }
+/* Send to Jos: gold like the door. Grey until you beat the level */
+#goBtns { display:flex; gap:.5rem; margin-left:auto; }   /* TEST and Send to Jos stay side by side */
+#sendWrap { position:relative; display:inline-flex; }
+#sendBtn { background:#ffd23f; color:#2a0008; font-size:1.05rem; padding:.55rem 1rem; }
+#sendBtn:hover { background:#ffe066; }
+#sendBtn.off { background:#3a0010; color:#ffffff66; }
+#sendBtn.ready { animation:sendPop .5s 2; }
+@keyframes sendPop { 50% { transform:scale(1.12); } }
+#sendWrap .tip {
+  display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:30; white-space:nowrap;
+  font-family:'Fredoka One', cursive; font-size:.95rem; color:#2a0008; background:#ffd23f;
+  padding:.45rem .8rem; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.5);
+}
+#sendWrap .tip::before {
+  content:''; position:absolute; top:-6px; right:24px; border:6px solid transparent; border-top:none;
+  border-bottom-color:#ffd23f;
+}
+#sendWrap:hover .tip.show { display:block; }
+@media (max-width:1520px) { #sendBtn .long { display:none; } }   /* smaller screens: just 📤 Send, so it fits */
+
+/* ---------- blocks down the left ---------- */
+#body { flex:1; display:flex; min-height:0; }
+#palette {
+  width:176px; background:#0c0006; border-right:2px solid #ff2a3d33;
+  overflow-y:auto; padding:8px; display:grid; grid-template-columns:1fr 1fr;
+  gap:6px; align-content:start;
+  scrollbar-width:thin; scrollbar-color:#ff2a3d55 transparent;
+}
+#palette h3 { grid-column:1 / -1; font-family:'Fredoka One', cursive; font-size:.7rem; letter-spacing:1px;
+              color:#ff8a94; text-align:center; margin:4px 0 2px; }
+.block {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:6px 2px; border-radius:10px; background:#1c0008; box-shadow:none;
+  font-family:'Nunito', sans-serif; font-weight:900; font-size:.72rem; line-height:1.1;
+}
+.block canvas { width:40px; height:40px; }
+.block .soon-tag { font-size:.6rem; color:#ff8a94; }
+.block.on { background:#3a0010; box-shadow:inset 0 0 0 3px #ff2a3d; }
+
+/* ---------- the level ---------- */
+#stageWrap { flex:1; display:flex; align-items:center; justify-content:center;
+             padding:16px 16px 70px; min-width:0; }
+#stage { position:relative; }
+/* Jos: an edit button beside each edge of the level */
+.edgeBtn { position:absolute; font-size:.85rem; padding:.2rem .45rem; border-radius:999px; }
+.edgeBtn[data-edge=top]    { left:50%; top:-34px;    transform:translateX(-50%); }
+.edgeBtn[data-edge=bottom] { left:50%; bottom:-34px; transform:translateX(-50%); }
+.edgeBtn[data-edge=left]   { top:50%;  left:-40px;   transform:translateY(-50%); }
+.edgeBtn[data-edge=right]  { top:50%;  right:-40px;  transform:translateY(-50%); }
+body.testing .edgeBtn { display:none; }
+#level { display:block; border-radius:6px; box-shadow:0 0 0 2px #ff2a3d66, 0 0 40px rgba(255,42,61,.25); }
+
+/* ---------- TEST: the level fills the screen ---------- */
+body.testing #topbar, body.testing #palette { display:none; }
+body.testing #stageWrap { padding:0; }
+/* the site's Mods and Language buttons would sit on top of the door, so they hide while you play */
+body.testing #modsBtn, body.testing #modsPanel, body.testing #langBtn,
+body.testing #langPanel, body.testing #estFps { display:none !important; }
+body.testing #level { box-shadow:none; border-radius:0; }
+#testBar { position:fixed; top:14px; left:14px; z-index:200; display:none; align-items:center; gap:8px; }
+body.testing #testBar { display:flex; }
+#testBar button { font-size:1.3rem; padding:.35rem .7rem; }
+/* ---------- Jos: PLAY (editor.html?play), every level you made, mixed up ---------- */
+body.playall #topbar, body.playall #palette, body.playall #panel, body.playall #editorCmds,
+body.playall .edgeBtn, body.playall #editBtn { display:none; }
+body.playall #modsBtn, body.playall #modsPanel, body.playall #langBtn,
+body.playall #langPanel, body.playall #estFps { display:none !important; }
+#pauseBtn { display:none; }
+body.playall #pauseBtn { display:inline-block; }
+/* paused: ▶ to carry on, and the exit door */
+#pauseMenu {
+  position:fixed; inset:0; z-index:260; display:none; align-items:center; justify-content:center;
+  gap:56px; background:rgba(10, 0, 4, .6);
+}
+body.paused #pauseMenu { display:flex; }
+#pauseMenu button {
+  width:140px; height:140px; border:none; border-radius:50%; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center; transition:transform .15s;
+}
+#pauseMenu button:hover { transform:scale(1.08); }
+#resumeBtn { background:#2e9e4f; box-shadow:0 8px 0 #145a28; }
+#exitBtn { background:#ff2a3d; box-shadow:0 8px 0 #7a0012; }
+#mouth { position:fixed; inset:0; width:100%; height:100%; z-index:250; pointer-events:none; display:none; }
+
+/* ---------- the message bar (Select blocks, Trigger to block) ---------- */
+#banner {
+  position:fixed; left:50%; top:0; z-index:280; display:flex; align-items:center; gap:.7rem;
+  transform:translate(-50%, -150%); transition:transform .3s cubic-bezier(.3,1.6,.5,1);
+  background:#1c0008; border:2px solid #5dff8a; color:#fff; border-radius:999px;
+  font-family:'Fredoka One', cursive; font-size:1.05rem; padding:.45rem .6rem .45rem 1.2rem;
+  white-space:nowrap; box-shadow:0 6px 20px rgba(0,0,0,.5);
+}
+#banner.show { transform:translate(-50%, 70px); }
+#banner button { background:#2e9e4f; padding:.35rem .9rem; border-radius:999px; }
+#banner button:hover { background:#38c261; }
+#banner.tall { flex-wrap:wrap; justify-content:center; border-radius:22px; }
+#banner .row2 { flex-basis:100%; display:flex; justify-content:center; gap:.5rem; }
+body.testing #banner { display:none; }
+
+/* ---------- Jos's secret editor commands ---------- */
+#editorCmds { position:fixed; left:12px; bottom:16px; z-index:290; }
+#editorBtn, .p-cmd { background:#6b2bd9; border-radius:999px; font-size:.9rem; padding:.4rem .9rem; }
+#editorBtn:hover, .p-cmd:hover { background:#8247ff; }
+#editorList { position:absolute; left:0; bottom:calc(100% + 8px); width:270px; background:#1c0008;
+  border:2px solid #a77bff; border-radius:14px; padding:.7rem .9rem; font-size:.9rem; line-height:1.35; }
+#editorList p { margin:.5rem 0 0; }
+#pickInOut { display:flex; align-items:center; gap:.3rem; margin-bottom:.5rem; font-family:'Fredoka One', cursive; }
+#pickInOut span { margin-right:.2rem; }
+#pickInOut button { font-size:.85rem; padding:.3rem .8rem; border-radius:999px; }
+#pickInOut button.on { background:#6b2bd9; }
+.p-cmd { margin-top:.5rem; }
+.p-cancel { background:#3a0010; }
+.p-copybar { display:flex; gap:.5rem; margin:.2rem 0 .8rem; }
+.p-card.p-copying { border-color:#a77bff; }
+.p-tick { display:flex; align-items:center; gap:.5rem; margin:.2rem 0 .4rem; font-weight:900; color:#d9c4ff; cursor:pointer; }
+.p-tick input { width:20px; height:20px; accent-color:#8247ff; cursor:pointer; }
+body.testing #editorCmds { display:none; }
+
+/* ---------- switches (Block properties and Show portal connections) ---------- */
+.knob { position:relative; width:38px; height:22px; border-radius:11px; background:#4a2a30;
+        flex:none; transition:background .2s; }
+.knob::after { content:''; position:absolute; left:3px; top:3px; width:16px; height:16px;
+               border-radius:50%; background:#fff; transition:transform .2s; }
+input:checked + .knob { background:#2e9e4f; }
+input:checked + .knob::after { transform:translateX(16px); }
+/* Jos: some blocks on, some off: the switch sits in the middle, one side green, one side black */
+input:indeterminate + .knob { background:linear-gradient(90deg, #2e9e4f 50%, #000 50%); }
+input:indeterminate + .knob::after { transform:translateX(8px); }
+.p-switch input, .topswitch input { position:absolute; opacity:0; pointer-events:none; }
+/* Jos: the two "Show connections" switches, one on top of the other */
+.topswitches { display:flex; flex-direction:column; gap:3px; margin-right:.4rem; }
+.topswitch .knob { width:30px; height:16px; border-radius:8px; }
+.topswitch .knob::after { width:12px; height:12px; left:2px; top:2px; }
+.topswitch input:checked + .knob::after { transform:translateX(14px); }
+.topswitch { display:flex; align-items:center; gap:.45rem; cursor:pointer; position:relative;
+             font-family:'Fredoka One', cursive; font-size:.85rem; color:#ffb3ba; margin-right:.4rem; }
+
+/* ---------- the Block properties panel ---------- */
+#panel { display:none; width:300px; flex:none; overflow-y:auto; background:#0c0006;
+         border-left:2px solid #ff2a3d33; padding:12px 14px 80px;
+         scrollbar-width:thin; scrollbar-color:#ff2a3d55 transparent; }
+#panel.open { display:block; }
+body.testing #panel { display:none; }
+.p-head { display:flex; align-items:center; gap:.6rem; margin-bottom:.4rem; }
+.p-icon { width:40px; height:40px; background:#1c0008; border-radius:8px; }
+.p-title { font-family:'Fredoka One', cursive; font-size:1.3rem; flex:1; }
+.p-close, .p-x { background:transparent; box-shadow:none; padding:.2rem .45rem; font-size:1rem; }
+.p-close:hover, .p-x:hover { background:#3a0010; }
+.p-sub { font-family:'Fredoka One', cursive; font-size:.8rem; letter-spacing:1px; color:#ff8a94;
+         text-transform:uppercase; margin:1rem 0 .4rem; }
+.p-mini { font-family:'Fredoka One', cursive; font-size:.85rem; color:#ffd23f; margin:.4rem 0 .1rem; }
+.p-row { display:flex; align-items:center; gap:.5rem; padding:.35rem 0; font-weight:700; font-size:.92rem; }
+.p-label { flex:1; }
+.p-switch { cursor:pointer; position:relative; }
+.p-or { color:#ff8a94; font-size:.8rem; }
+.p-note { color:#ffb3ba; font-size:.85rem; margin:.3rem 0; }
+#panel select, #panel input[type=number] {
+  font-family:'Nunito', sans-serif; font-weight:700; font-size:.9rem; color:#fff;
+  background:#1c0008; border:2px solid #ff2a3d66; border-radius:8px; padding:.25rem .4rem;
+}
+#panel input[type=number] { width:74px; }
+.p-card { background:#1c0008; border:2px solid #5dff8a55; border-radius:12px; padding:.5rem .7rem; margin:.5rem 0; }
+.p-card:hover { border-color:#5dff8a; }
+.p-go { cursor:pointer; }
+.p-face { color:#ffd23f; font-family:'Fredoka One', cursive; margin-right:.2rem; }
+.p-turn { padding:.2rem .6rem; font-size:1.05rem; }
+.p-card-top { display:flex; align-items:center; justify-content:space-between;
+              font-family:'Fredoka One', cursive; color:#5dff8a; }
+.p-action { border-top:1px dashed #ff2a3d44; margin-top:.4rem; padding-top:.3rem; }
+.p-add { margin-top:.5rem; background:#2e9e4f; font-size:.9rem; padding:.35rem .9rem; }
+.p-add:hover { background:#38c261; }
+
+#toast {
+  position:fixed; left:50%; top:0; z-index:300;
+  transform:translate(-50%, -150%); transition:transform .3s cubic-bezier(.3,1.6,.5,1);
+  background:#ff2a3d; color:#fff; font-family:'Fredoka One', cursive; font-size:1.2rem;
+  padding:.7rem 1.4rem; border-radius:999px; box-shadow:0 6px 0 #7a0012; white-space:nowrap;
+}
+#toast.show { transform:translate(-50%, 70px); }
+#toast.win { background:#2e9e4f; box-shadow:0 6px 0 #145a28; }
+</style>
+</head>
+<body>
+
+  <div id="topbar">
+    <a class="back-link" href="levels.html">← Back</a>
+    <span class="title">LDLC CREATOR</span>
+    <button class="tool" data-tool="cursor">🖱 Cursor</button>
+    <button class="tool" data-tool="select">✋ Select blocks</button>
+    <button class="tool" data-tool="link">🔗 Trigger to block</button>
+    <button class="tool" data-tool="erase">🧽 Eraser</button>
+    <span class="spacer"></span>
+    <div class="topswitches">
+      <label class="topswitch"><input type="checkbox" id="portalLinks"><span class="knob"></span>Show portal connections</label>
+      <label class="topswitch"><input type="checkbox" id="triggerLinks"><span class="knob"></span>Show trigger connections</label>
+    </div>
+    <button class="tool" id="clearBtn">🗑 Clear</button>
+    <span id="goBtns">
+      <button id="testBtn">▶ TEST</button>
+      <span id="sendWrap"><button id="sendBtn" class="off">📤 Send<span class="long"> to Jos</span></button><span class="tip">Beat the level to send it to Jos</span></span>
+    </span>
+  </div>
+
+  <div id="body">
+    <div id="palette"><h3>BLOCKS</h3></div>
+    <div id="stageWrap"><div id="stage">
+      <canvas id="level"></canvas>
+      <button class="edgeBtn" data-edge="top" title="Roof or edge of screen">✏️</button>
+      <button class="edgeBtn" data-edge="bottom" title="Floor or edge of screen">✏️</button>
+      <button class="edgeBtn" data-edge="left" title="Wall or edge of screen">✏️</button>
+      <button class="edgeBtn" data-edge="right" title="Wall or edge of screen">✏️</button>
+    </div></div>
+    <aside id="panel"></aside>
+  </div>
+  <div id="banner"></div>
+  <!-- Jos: type the secret word "editor" to show these -->
+  <div id="editorCmds" hidden>
+    <div id="editorList" hidden>
+      <b>🛠 Editor commands</b>
+      <p><b>⏱ Up 1 second each</b>: use Select blocks on blocks that are connected to a trigger and open their
+         properties. In Connected triggers, it makes the delays 0, 1, 2, 3… seconds, in the order you connected them.</p>
+      <p><b>🔗 In / Out</b>: with Trigger to block, a click on a square with a block inside always picks
+         the inside block (In) or the outside block (Out).</p>
+      <p><b>🚩 Start pos</b>: a block at the bottom of BLOCKS. Put it down and TEST starts the hero there.
+         Only one: put down another and the first one goes. Erase it, or hide the editor commands, and
+         the hero starts at the Hero block again.</p>
+      <p>Type <b>editor</b> again to hide the editor commands.</p>
+    </div>
+    <div id="pickInOut"><span>🔗 Picks</span><button data-pick="in">In</button><button data-pick="out">Out</button></div>
+    <button id="editorBtn">🛠 Editor commands</button>
+  </div>
+
+  <div id="testBar">
+    <button id="pauseBtn" title="Pause">⏸</button>
+    <button id="editBtn" title="Back to the creator">✏️</button>
+    <button id="restartBtn" title="Start again">🔄</button>
+    <span id="deaths"></span>
+  </div>
+  <div id="pauseMenu">
+    <button id="resumeBtn" title="Carry on"><svg width="64" height="64" viewBox="0 0 64 64">
+      <path d="M20 10 L54 32 L20 54 Z" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></svg></button>
+    <!-- Jos's exit: a door with an arrow going into it -->
+    <button id="exitBtn" title="Exit"><svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#fff"
+      stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M30 20 V8 H55 V56 H30 V44"/><path d="M6 32 H40"/><path d="M29 21 L40 32 L29 43"/></svg></button>
+  </div>
+  <canvas id="mouth"></canvas>
+  <div id="toast"></div>
+
+<script src="levels.js"></script>
+<script src="send.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>
