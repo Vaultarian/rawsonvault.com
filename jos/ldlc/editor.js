@@ -893,6 +893,8 @@ function triggersSection(c) {
       el('button', { className:'p-x', textContent:'✕', title:'Disconnect',
                      onclick:() => { f.c.links = f.c.links.filter(k => k !== l); save(); renderPanel(); } })
     ]));
+    card.append(row('Delay', number(l.delay || 0, 0, 30, .1, v => { l.delay = v; save(); }),
+                    el('span', { className:'p-or', textContent:'seconds' })));
     l.actions = l.actions || [];
     l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c)));
     card.append(el('button', { className:'p-add', textContent:'+ Add',
@@ -989,7 +991,7 @@ function spawn() {
   const h = find('hero');
   play = { hidden:!props(h.c).visible, x:h.x + (1 - T.heroW) / 2, y:h.y + 1 - T.heroH, vx:0, vy:0,
            ground:false, state:'play', timer:0, face:1, walkT:0, coins:0, kx:0,
-           things:makeThings(), on:null };
+           things:makeThings(), on:null, later:[] };
   play.byId = {};
   play.things.forEach(t => { play.byId[t.id] = t; });
 }
@@ -1124,6 +1126,12 @@ function fixPortals() {
     else waiting = c;
   });
 }
+/* Jos: Show trigger connections, right under Show portal connections */
+const triggerSwitch = document.getElementById('triggerLinks');
+try { triggerSwitch.checked = localStorage.getItem('jos-ldlc-trigger-links') === '1'; } catch (e) {}
+triggerSwitch.addEventListener('change', () => {
+  try { localStorage.setItem('jos-ldlc-trigger-links', triggerSwitch.checked ? '1' : '0'); } catch (e) {}
+});
 const portalSwitch = document.getElementById('portalLinks');
 try { portalSwitch.checked = localStorage.getItem('jos-ldlc-portal-links') === '1'; } catch (e) {}
 portalSwitch.addEventListener('change', () => {
@@ -1141,17 +1149,22 @@ function fire(t) {
   if (t.fired) return;            // a trigger goes off once per try
   t.fired = true;
   t.links.forEach(l => {
-    const g = play.byId[l.id];
-    if (!g) return;
-    (l.actions || []).forEach(a => {
-      if (a.do === 'size') g.grow = { from:g.w, to:a.size || 1, t:0 };
-      if (a.do === 'move') {
-        // a distance to travel, not a spot to reach, so it still works if it grows too
-        const d = DIRS[a.dir || 'up'];
-        g.move = { dx:d[0], dy:d[1], left:a.n || 1, v:(a.speed || 1) * T.moveSpeed };
-      }
-      if (a.do === 'props') g.pr = Object.assign({}, g.pr, a.props || {});
-    });
+    // Jos: a delay, so a trap can go off a bit after you cross the trigger
+    if (l.delay > 0) play.later.push({ left:l.delay, l });
+    else doLink(l);
+  });
+}
+function doLink(l) {
+  const g = play.byId[l.id];
+  if (!g) return;
+  (l.actions || []).forEach(a => {
+    if (a.do === 'size') g.grow = { from:g.w, to:a.size || 1, t:0 };
+    if (a.do === 'move') {
+      // a distance to travel, not a spot to reach, so it still works if it grows too
+      const d = DIRS[a.dir || 'up'];
+      g.move = { dx:d[0], dy:d[1], left:a.n || 1, v:(a.speed || 1) * T.moveSpeed };
+    }
+    if (a.do === 'props') g.pr = Object.assign({}, g.pr, a.props || {});
   });
 }
 function moveThings(dt) {
@@ -1189,6 +1202,9 @@ function step(dt) {
     if (p.wonT > DOOR.shut + DOOR.sink + 0.3) stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
+
+  // delayed connections go off when their time is up
+  p.later = p.later.filter(d => { d.left -= dt; if (d.left > 0) return true; doLink(d.l); return false; });
 
   // ride along on whatever you're standing on
   if (p.on && p.ground) { p.x += p.on.dx; p.y += p.on.dy; }
@@ -1449,6 +1465,7 @@ function renderEditor(time) {
 
   drawEdges();
   if (portalSwitch.checked) drawPortalLinks();
+  if (triggerSwitch.checked) drawAllLinks();
 
   const open = openId && byId(openId);
   if (open) {
@@ -1524,6 +1541,24 @@ function drawOutput(dir, x, y) {
   ctx.lineTo(cx - d[0] * a - d[1] * a, cy - d[1] * a - d[0] * a);
   ctx.fill();
 }
+/* every trigger (and button) and the blocks it's connected to */
+function drawAllLinks() {
+  allBlocks().forEach(f => (f.c.links || []).forEach(l => {
+    const t = byId(l.id);
+    if (!t) return;
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(93,255,138,.7)'; ctx.lineWidth = 2;
+    line((f.x + .5) * cell, (f.y + .5) * cell, (t.x + .5) * cell, (t.y + .5) * cell);
+    ctx.setLineDash([]);
+    ctx.fillStyle = COL.green;
+    ctx.beginPath(); ctx.arc((t.x + .5) * cell, (t.y + .5) * cell, cell * .12, 0, Math.PI * 2); ctx.fill();
+    delayTag(f, t, l);
+  }));
+}
+/* a connection with a delay says how long, halfway along its line */
+function delayTag(f, t, l) {
+  if (!(l.delay > 0)) return;
+  namePill('⏱ ' + (+l.delay.toFixed(1)) + 's', (f.x + t.x + 1) / 2 * cell, ((f.y + t.y + 1) / 2 + .27) * cell);
+}
 /* the open block's connections: to the blocks it sets off, and from the triggers that set it off */
 function drawLinks(f, time) {
   (f.c.links || []).forEach(l => {
@@ -1537,6 +1572,7 @@ function drawLink(f, t, l, lit, mark, time) {
   ctx.strokeStyle = lit ? '#fff' : 'rgba(93,255,138,.85)'; ctx.lineWidth = 2;
   line((f.x + .5) * cell, (f.y + .5) * cell, (t.x + .5) * cell, (t.y + .5) * cell);
   ctx.setLineDash([]);
+  delayTag(f, t, l);
   if (lit) {
     // Jos: hover over a connected block in the properties and it flashes red and green on the level
     const col = Math.floor(time / .15) % 2 ? COL.tile : COL.green;

@@ -187,6 +187,27 @@ Carl's choices: a click opens it, a drag still moves them. Different properties 
 "These blocks have different properties 😈". Turn and Output work on all of them too, and say
 **Mixed** if they're different. Connections and Edit controls settings stay one block at a time.
 
+## Delay on a trigger connection (31 Oct)
+
+Jos: *"add delay when a trigger is connected to it… let's say they wanted a spike to appear
+when they go across the trigger, but they want it to appear one second later… make a delay
+going up to 30 seconds."*
+
+- Every **← Trigger** card in a block's panel has **Delay … seconds**, from 0 to 30.
+- 0 means straight away, the same as before. You cross the trigger, the clock starts, and
+  when it runs out the actions happen (Change size, Movement, properties).
+- Die and try again, and the clock starts fresh.
+- The connection line shows a little **⏱ 1s** tag when it has a delay.
+
+## Show trigger connections (31 Oct)
+
+Jos: *"make a show trigger connections switch right below show portal connections… put it in
+the top bar, just make show portal connections go up a bit."*
+
+- Top bar, right under **Show portal connections**. Turned on, every trigger shows a dotted
+  green line to each block it is connected to, with its ⏱ delay tag.
+- Remembers whether it was on.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:

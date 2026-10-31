@@ -116,6 +116,11 @@ input:checked + .knob::after { transform:translateX(16px); }
 input:indeterminate + .knob { background:linear-gradient(90deg, #2e9e4f 50%, #000 50%); }
 input:indeterminate + .knob::after { transform:translateX(8px); }
 .p-switch input, .topswitch input { position:absolute; opacity:0; pointer-events:none; }
+/* Jos: the two "Show connections" switches, one on top of the other */
+.topswitches { display:flex; flex-direction:column; gap:3px; margin-right:.4rem; }
+.topswitch .knob { width:30px; height:16px; border-radius:8px; }
+.topswitch .knob::after { width:12px; height:12px; left:2px; top:2px; }
+.topswitch input:checked + .knob::after { transform:translateX(14px); }
 .topswitch { display:flex; align-items:center; gap:.45rem; cursor:pointer; position:relative;
              font-family:'Fredoka One', cursive; font-size:.85rem; color:#ffb3ba; margin-right:.4rem; }
 
@@ -174,7 +179,10 @@ body.testing #panel { display:none; }
     <button class="tool" data-tool="link">🔗 Trigger to block</button>
     <button class="tool" data-tool="erase">🧽 Eraser</button>
     <span class="spacer"></span>
-    <label class="topswitch"><input type="checkbox" id="portalLinks"><span class="knob"></span>Show portal connections</label>
+    <div class="topswitches">
+      <label class="topswitch"><input type="checkbox" id="portalLinks"><span class="knob"></span>Show portal connections</label>
+      <label class="topswitch"><input type="checkbox" id="triggerLinks"><span class="knob"></span>Show trigger connections</label>
+    </div>
     <button class="tool" id="clearBtn">🗑 Clear</button>
     <button id="testBtn">▶ TEST</button>
   </div>
