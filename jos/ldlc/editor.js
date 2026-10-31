@@ -523,10 +523,17 @@ cv.addEventListener('pointerdown', e => {
   const a = cellAt(e), c = a && grid[a.y][a.x];
   cv.setPointerCapture(e.pointerId);
   if (tool === 'place' || tool === 'erase') { painting = true; paint(a); return; }
-  if (tool === 'cursor') { c ? openPanel(c.id) : closePanel(); return; }
+  if (tool === 'cursor') {
+    // Jos: the cursor shows a block's properties, and can drag that one block somewhere else.
+    // The properties open when you let go: opening them makes the level smaller, which would
+    // move the blocks out from under the mouse in the middle of a drag.
+    if (c) moveDrag = { from:a, off:{ x:0, y:0 }, ids:new Set([c.id]), open:c.id };
+    else closePanel();
+    return;
+  }
   if (tool === 'link') { linkClick(c); return; }
   if (tool === 'select') {
-    if (c && sel.has(c.id)) moveDrag = { from:a, off:{ x:0, y:0 } };
+    if (c && sel.has(c.id)) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel };
     else { const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y }; sel.clear(); }
   }
 });
@@ -539,7 +546,11 @@ cv.addEventListener('pointermove', e => {
 cv.addEventListener('pointerup', () => {
   painting = false;
   if (boxDrag) { finishBox(); boxDrag = null; }
-  if (moveDrag) { moveSelected(moveDrag.off); moveDrag = null; }
+  if (moveDrag) {
+    moveBlocks(moveDrag.ids, moveDrag.off);
+    if (moveDrag.open) openPanel(moveDrag.open);
+    moveDrag = null;
+  }
 });
 cv.addEventListener('pointerleave', () => { hover = null; });
 
@@ -560,12 +571,12 @@ function selectionBanner() {
   banner(sel.size + (sel.size === 1 ? ' block' : ' blocks') + ' selected · drag them to move',
          [['🗑 Delete', deleteSelected]]);
 }
-function moveSelected(off) {
+function moveBlocks(ids, off) {
   if (!off.x && !off.y) return;
   const moving = [];
   for (let y = 0; y < T.rows; y++)
     for (let x = 0; x < T.cols; x++)
-      if (grid[y][x] && sel.has(grid[y][x].id)) moving.push({ x, y, c:grid[y][x] });
+      if (grid[y][x] && ids.has(grid[y][x].id)) moving.push({ x, y, c:grid[y][x] });
   if (moving.some(m => m.x + off.x < 0 || m.y + off.y < 0 ||
                        m.x + off.x >= T.cols || m.y + off.y >= T.rows)) {
     say('That would go off the edge 😈'); return;
@@ -1302,19 +1313,23 @@ function renderEditor(time) {
   for (let y = 1; y < T.rows; y++) { ctx.moveTo(0, y * cell + .5); ctx.lineTo(W, y * cell + .5); }
   ctx.stroke();
 
-  const off = moveDrag ? moveDrag.off : { x:0, y:0 };
+  // blocks being dragged (or selected) are drawn on top, where the mouse has taken them
+  const off = moveDrag ? moveDrag.off : { x:0, y:0 }, dragging = moveDrag ? moveDrag.ids : new Set();
   const drawn = [];
   for (let y = 0; y < T.rows; y++)
     for (let x = 0; x < T.cols; x++) {
       const c = grid[y][x];
       if (!c) continue;
-      if (sel.has(c.id)) { drawn.push({ x:x + off.x, y:y + off.y, c }); continue; }   // selected ones go on top
+      if (dragging.has(c.id)) { drawn.push({ x:x + off.x, y:y + off.y, c }); continue; }
+      if (sel.has(c.id)) { drawn.push({ x, y, c }); continue; }
       drawCell(c, x, y, time);
     }
   drawn.forEach(d => {
     drawCell(d.c, d.x, d.y, time);
-    ctx.fillStyle = 'rgba(93,200,255,.22)'; ctx.fillRect(d.x * cell, d.y * cell, cell, cell);
-    outline(d.x, d.y, '#5dc8ff');
+    if (sel.has(d.c.id)) {
+      ctx.fillStyle = 'rgba(93,200,255,.22)'; ctx.fillRect(d.x * cell, d.y * cell, cell, cell);
+      outline(d.x, d.y, '#5dc8ff');
+    }
   });
 
   if (boxDrag) {                                 // Jos: a dotted box
@@ -1327,7 +1342,11 @@ function renderEditor(time) {
   if (portalSwitch.checked) drawPortalLinks();
 
   const open = openId && byId(openId);
-  if (open) { drawLinks(open, time); outline(open.x, open.y, COL.gold, 3); }
+  if (open) {
+    drawLinks(open, time);
+    const o = dragging.has(openId) ? off : { x:0, y:0 };
+    outline(open.x + o.x, open.y + o.y, COL.gold, 3);
+  }
   const from = linkFrom && byId(linkFrom);
   if (from) { drawLinks(from, time); outline(from.x, from.y, COL.green, 3); }
 
@@ -1377,7 +1396,12 @@ function drawLink(f, t, l, lit, mark, time) {
   ctx.strokeStyle = lit ? '#fff' : 'rgba(93,255,138,.85)'; ctx.lineWidth = 2;
   line((f.x + .5) * cell, (f.y + .5) * cell, (t.x + .5) * cell, (t.y + .5) * cell);
   ctx.setLineDash([]);
-  outline(mark.x, mark.y, lit ? '#fff' : COL.green);
+  if (lit) {
+    // Jos: hover over a connected block in the properties and it flashes red and green on the level
+    const col = Math.floor(time / .15) % 2 ? COL.tile : COL.green;
+    ctx.globalAlpha = .45; ctx.fillStyle = col; ctx.fillRect(mark.x * cell, mark.y * cell, cell, cell);
+    ctx.globalAlpha = 1; outline(mark.x, mark.y, col, 3);
+  } else outline(mark.x, mark.y, COL.green);
   (l.actions || []).forEach(a => {
     if (a.do === 'move') {
       // Jos: a little green dot where it will go, yellow lines going to it at its speed

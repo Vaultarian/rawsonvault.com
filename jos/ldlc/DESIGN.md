@@ -110,7 +110,8 @@ red edge only on the outside.
 
 ## The three tools, as Jos explained them (30 Oct)
 
-**Cursor**: "just click on a block and it shows its properties."
+**Cursor**: "just click on a block and it shows its properties." Jos (31 Oct): **the cursor can move
+one block** (drag it), and **Select blocks can move lots of blocks**.
 
 **Select blocks**: "a box where you can just click and drag with your cursor and it shows a
 dotted box and it selects objects in it." Then you can move them and delete them.
@@ -188,6 +189,10 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 - In Trigger to block, **click a connected block again to disconnect it.**
 - Pressing **Done** opens the **last block you connected**, ready for + Add.
 - The trigger's own properties list the blocks it's connected to. Click one to go to it.
+- Jos (31 Oct): hover over a connected block in the properties and **it flashes red and green**
+  on the level, so you know which one it is. (Carl made it work both ways: trigger → block too.)
+- With the Cursor, the properties open **when you let go of the mouse**, so a drag doesn't jump.
+- Dragging a block onto another block replaces it, the same as Select blocks.
 - **Speed 1 = about 0.22 blocks a second.** Jos sent a recording of how fast speed 1 is; Carl
   measured the yellow lines in it (6.5 pixels a second, with 30 pixels between grid lines).
   Speed goes up to **50** (about 11 blocks a second), so traps can still be fast.
@@ -222,3 +227,5 @@ Jos: **every single block has Visible** in its properties, the portal and the he
   counter is gone** (coins already had Do action). Not published.
 - **31 Oct**: **turning blocks** (spike, small spike, spring, one way, button; R key or ↺ ↻ in
   Block properties), **portal Output**, and **Visible on every block**. Not published.
+- **31 Oct**: hover a connected block or trigger in the properties and it **flashes red and green**;
+  the **Cursor drags one block**. Not published.
