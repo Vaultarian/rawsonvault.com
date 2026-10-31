@@ -101,7 +101,7 @@ body.none #empty, body.none #arrow { display:block; }
 <script>
 /* ---------- your levels, each with a little picture of it ---------- */
 const LOOK = { tile:'#ff2a3d', spike:'#ececf2', smallspike:'#ececf2', sawblade:'#ececf2', spring:'#ffd23f',
-               coin:'#ffd23f', oneway:'#9a9aa8', portal:'#fff', button:'#9a6233', door:'#ffd23f', hero:'#fff' };
+               coin:'#ffd23f', dashorb:'#3fd44a', oneway:'#9a9aa8', portal:'#fff', button:'#9a6233', door:'#ffd23f', hero:'#fff' };
 function thumb(c, grid) {
   const s = 10;                                   // 32 × 18 squares → 320 × 180
   c.fillStyle = '#12000a'; c.fillRect(0, 0, 320, 180);
@@ -112,7 +112,7 @@ function thumb(c, grid) {
       c.fillStyle = LOOK[t] || LOOK.coin;
       if (!LOOK[t]) return;                       // triggers and Edit controls can't be seen
       if (t === 'tile') c.fillRect(x * s, y * s, s + .5, s + .5);
-      else if (t === 'coin') { c.beginPath(); c.arc(x * s + 5, y * s + 5, 2.5, 0, 7); c.fill(); }
+      else if (t === 'coin' || t === 'dashorb') { c.beginPath(); c.arc(x * s + 5, y * s + 5, 2.5, 0, 7); c.fill(); }
       else if (t.includes('spike')) { c.beginPath(); c.moveTo(x * s + 1, y * s + s); c.lineTo(x * s + 5, y * s + 3); c.lineTo(x * s + 9, y * s + s); c.fill(); }
       else if (t === 'hero') c.fillRect(x * s + 3, y * s + 2, 4, 8);
       else if (t === 'door') c.fillRect(x * s + 1, y * s, 8, s);

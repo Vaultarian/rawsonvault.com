@@ -20,7 +20,8 @@ const T = {
   sawSpin:    8,     // how fast a sawblade spins
   moveSpeed:  .22,   // Movement speed 1 = 0.22 blocks a second, measured from Jos's recording
   portalFlip: 0.30,  // Jos: the portal switches colours every 0.30 seconds
-  pickSwap:   0.9    // two blocks in one square: keep the mouse still this long and it picks the other
+  pickSwap:   0.9,   // two blocks in one square: keep the mouse still this long and it picks the other
+  dash:       14     // Jos's dash orb: how fast it shoots you, blocks per second
 };
 
 /* Jos's list of blocks, in his order */
@@ -38,6 +39,7 @@ const BLOCKS = [
   { id:'trigger',    name:'Trigger',       ready:true },
   { id:'button',     name:'Button',        ready:true },
   { id:'controls',   name:'Edit controls', ready:true },
+  { id:'dashorb',    name:'Dash orb',      ready:true },   // Jos: the green dash orb from Geometry Dash
   { id:'startpos',   name:'Start pos',     ready:true }    // Jos: an editor command, hidden without the secret word
 ];
 const NAME = {};
@@ -55,7 +57,8 @@ const DEFAULTS = {
   trigger:    { visible:false, action:true },   // Jos: invisible when you play, like G-dash
   controls:   { visible:false, action:true },   // Jos: like the trigger, but it changes the controls
   button:     { collision:false, deadly:false, action:true },
-  portal:     { collision:false, deadly:false, action:true }
+  portal:     { collision:false, deadly:false, action:true },
+  dashorb:    { collision:false, deadly:false, action:true }
 };
 /* the part of a deadly block that actually gets you, inside its square: x, y, width, height */
 const HITBOX = {
@@ -385,12 +388,30 @@ function roundRect(c, x, y, w, h, r) {
   c.arcTo(x, y, x + w, y, r);
   c.closePath();
 }
+/* Jos: the dash orb, from Geometry Dash. A green orb with a white arrow. Touch it and press jump:
+   you shoot the way the arrow points, in a straight line, for as long as you hold jump. */
+function drawDashOrb(c, x, y, s, time) {
+  const m = x + s / 2, n = y + s / 2, R = s * .38;
+  c.strokeStyle = 'rgba(125, 255, 106, .5)'; c.lineWidth = s * .05;      // the ring round it, breathing
+  c.beginPath(); c.arc(m, n, R * (1.2 + .06 * Math.sin(time * 6)), 0, Math.PI * 2); c.stroke();
+  const g = c.createRadialGradient(m - R * .3, n - R * .3, R * .1, m, n, R);
+  g.addColorStop(0, '#a6ff80'); g.addColorStop(1, '#22b02e');
+  c.fillStyle = g; c.beginPath(); c.arc(m, n, R, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = '#0d5a16'; c.lineWidth = s * .05; c.stroke();
+  c.lineJoin = 'round'; c.lineCap = 'round';                             // the arrow, pointing right
+  c.beginPath(); c.moveTo(m - R * .28, n - R * .48); c.lineTo(m + R * .36, n); c.lineTo(m - R * .28, n + R * .48);
+  c.strokeStyle = '#0d5a16'; c.lineWidth = s * .2; c.stroke();
+  c.strokeStyle = '#fff'; c.lineWidth = s * .11; c.stroke();
+}
+
 /* ---------- turning blocks ----------
    Jos: blocks that look the same whichever way round they are (tile, sawblade, coin, portal)
    don't turn. r = how many quarter turns clockwise: 0 up, 1 right, 2 down, 3 left. */
-const TURNS = ['spike', 'smallspike', 'spring', 'oneway', 'button'];
+const TURNS = ['spike', 'smallspike', 'spring', 'oneway', 'button', 'dashorb'];
 const FACING = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 const FACE_NAME = ['Up', 'Right', 'Down', 'Left'];
+// the dash orb's arrow starts pointing right (Jos's picture), so it is one turn ahead
+const facing = c => ((c.r || 0) + (c.t === 'dashorb' ? 1 : 0)) % 4;
 function turn(c, x, y, s, r, draw) {
   if (!r) { draw(); return; }
   c.save();
@@ -423,6 +444,7 @@ function drawBlock(c, type, x, y, s, time, r) {
   else if (type === 'door') drawDoor(c, x, y, s);
   else if (type === 'portal') drawPortal(c, x, y, s, time);
   else if (type === 'startpos') drawStartPos(c, x, y, s);
+  else if (type === 'dashorb') drawDashOrb(c, x, y, s, time || 0);
   else if (type === 'hero') {
     const h = s * T.heroH;
     drawHero(c, x + (s - h * 9 / 23) / 2, y + s - h, h, 1, 0);
@@ -440,6 +462,7 @@ const SWITCHES = {
   oneway:     ['deadly', 'visible', 'disguise'],
   spring:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
   coin:       ['deadly', 'collision', 'visible', 'disguise', 'action', 'needed'],   // Jos: Needed for finish
+  dashorb:    ['deadly', 'collision', 'visible', 'disguise', 'action'],
   button:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
   portal:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
   door:       ['visible', 'disguise'],
@@ -924,7 +947,7 @@ function renderPanel() {
 
   if (cells.every(x => TURNS.includes(x.t))) {
     const go = by => { cells.forEach(x => { x.r = ((x.r || 0) + by + 4) % 4; }); save(); renderPanel(); };
-    const r = common(cells.map(x => x.r || 0));
+    const r = common(cells.map(facing));
     panel.append(row('Turn', el('span', { className:'p-face', textContent:r === null ? 'Mixed' : FACE_NAME[r] }),
       el('button', { className:'p-turn', textContent:'↺', title:'Turn left', onclick:() => go(-1) }),
       el('button', { className:'p-turn', textContent:'↻', title:'Turn right (R)', onclick:() => go(1) })));
@@ -1568,12 +1591,24 @@ function step(dt) {
   const right = held(ctl.right);
   const up    = held(ctl.up);
 
-  p.vx = (ctl.auto || ((right ? 1 : 0) - (left ? 1 : 0))) * T.speed;
-  if (p.vx) p.face = Math.sign(p.vx);
-  if (up && p.ground) { p.vy = -T.jump; p.ground = false; p.booted = false; }
-  if (!up && !p.booted && p.vy < -T.jump * .4) p.vy = -T.jump * .4;   // let go early = smaller jump
-  p.vy = Math.min(p.vy + T.gravity * dt, T.maxFall);
-  p.walkT = (p.vx && p.ground) ? p.walkT + dt : 0;
+  const upNew = up && !p.upWas;      // jump pressed just now (a dash orb needs a new press)
+  p.upWas = up;
+  if (p.dash && !up) {               // Jos's dash orb: let go and you fall again, still flying a bit
+    p.vy = p.dash[1] * T.dash * .5; p.kx = p.dash[0] * T.dash * .4; p.booted = true;
+    p.dash = null;
+  }
+  if (p.dash) {                      // dashing: a straight line the way the arrow points, no falling
+    p.vx = p.dash[0] * T.dash; p.vy = p.dash[1] * T.dash; p.kx = 0;
+    if (p.vx) p.face = Math.sign(p.vx);
+    bits.push({ x:p.x + W / 2, y:p.y + H / 2, vx:-p.vx * .1, vy:-p.vy * .1, life:.25, col:'#7dff6a' });
+  } else {
+    p.vx = (ctl.auto || ((right ? 1 : 0) - (left ? 1 : 0))) * T.speed;
+    if (p.vx) p.face = Math.sign(p.vx);
+    if (up && p.ground) { p.vy = -T.jump; p.ground = false; p.booted = false; }
+    if (!up && !p.booted && p.vy < -T.jump * .4) p.vy = -T.jump * .4;   // let go early = smaller jump
+    p.vy = Math.min(p.vy + T.gravity * dt, T.maxFall);
+  }
+  p.walkT = (p.vx && p.ground && !p.dash) ? p.walkT + dt : 0;
 
   // a sideways spring or a portal knocks you along; it dies away
   if (p.kx) { const k = T.knockSlow * dt; p.kx = Math.abs(p.kx) <= k ? 0 : p.kx - Math.sign(p.kx) * k; }
@@ -1629,6 +1664,8 @@ function step(dt) {
 
   if (p.y + H > T.rows && edges.bottom === 'solid') { p.y = T.rows - H; p.vy = 0; p.ground = true; p.on = null; }
   if (p.y > T.rows) { die(); return; }
+  // a dash that runs into something stops there
+  if (p.dash && (p.x - oldX) * p.dash[0] + (p.y - oldTop) * p.dash[1] < T.dash * dt * .5) p.dash = null;
 
   let inPortal = null;
   touching(p.x, p.y, W, H, t => {
@@ -1671,6 +1708,11 @@ function step(dt) {
       }
     }
     if (t.t === 'controls' && pr.action) p.controls = Object.assign({}, BLOCK_CONTROLS, t.controls || {});
+    // Jos's dash orb: touch it and press jump
+    if (t.t === 'dashorb' && pr.action && upNew && !p.dash &&
+        boxesTouch(p.x, p.y, W, H, t.x + .1 * t.w, t.y + .1 * t.h, .8 * t.w, .8 * t.h)) {
+      p.dash = FACING[facing(t)]; p.ground = false;
+    }
     if (t.t === 'trigger' && pr.action) fire(t);
     const pb = t.t === 'button' && turnBox([.14, .5, .72, .5], t.r);
     if (pb && boxesTouch(p.x, p.y, W, H, t.x + pb[0] * t.w, t.y + pb[1] * t.h, pb[2] * t.w, pb[3] * t.h)) {
@@ -1690,6 +1732,7 @@ function step(dt) {
   if (p.state === 'play' && inPortal) {
     if (inPortal.id !== p.portalLock) {
       const out = play.byId[inPortal.pair];
+      if (out) p.dash = null;
       if (out) { comeOut(p, out); p.portalLock = out.id; }
     }
   } else p.portalLock = null;

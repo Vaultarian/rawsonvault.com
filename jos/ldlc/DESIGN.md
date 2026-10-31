@@ -365,6 +365,20 @@ feels right."*
 - In the middle: a green **▶** to carry on, and the red **exit door** to go back to the front page.
 - PLAY never changes your levels.
 
+## The Dash orb (31 Oct)
+
+Jos sent a picture (a green circle with a white arrow): *"please can you make a block like this? If
+you look into that block on the Internet, you can see what it does. Now please can you add that into
+level devil."* It is the **green dash orb** from Geometry Dash.
+
+- Touch it and **press jump**: you shoot the way the **arrow** points, in a straight line, with no
+  falling, for as long as you **hold jump**. A green trail follows you.
+- Let go and you fall again, still flying a little.
+- Run into something and the dash stops there. Spikes and saws still get you.
+- **Turn it** (R, or Turn in its properties) to point the arrow right, down, left or up. It starts
+  pointing right, like Jos's picture.
+- It has Deadly, Collision, Visible, Disguise and Do action. Do action off: it does nothing.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -404,6 +418,10 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Dash orb: it needs a **new** press of jump while you touch it (holding jump as you arrive
+  doesn't count, like Geometry Dash). Dash speed is 14 blocks a second (twice running). Letting go
+  keeps half the speed going up or down, and a little sideways. It only turns in quarter turns.
 
 - PLAY only uses levels with a **Hero and a Door** (you can't finish a level without a door).
 - A new shuffle never starts with the level you just finished, so you never get the same one twice
