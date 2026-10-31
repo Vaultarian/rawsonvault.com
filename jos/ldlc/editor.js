@@ -50,7 +50,7 @@ const DEFAULTS = {
   smallspike: { collision:false, deadly:true  },
   sawblade:   { collision:false, deadly:true  },
   spring:     { collision:false, deadly:false, action:true, strength:5 },   // Jos: strength 5 = boots you 5 blocks
-  coin:       { collision:false, deadly:false, action:true },
+  coin:       { collision:false, deadly:false, action:true, needed:false },
   trigger:    { visible:false, action:true },   // Jos: invisible when you play, like G-dash
   controls:   { visible:false, action:true },   // Jos: like the trigger, but it changes the controls
   button:     { collision:false, deadly:false, action:true },
@@ -187,6 +187,25 @@ function drawCoin(c, x, y, s, time) {
   c.beginPath(); c.arc(-r * .3, -r * .3, r * .3, 0, Math.PI * 2); c.fill();
   c.restore();
 }
+/* Jos: a coin that is Needed for finish has a green circle with spikes going round it */
+function drawNeededRing(c, x, y, s, time) {
+  const r = s * .4, n = 10;
+  c.save();
+  c.translate(x + s / 2, y + s / 2);
+  c.rotate(time * 1.5);
+  c.strokeStyle = c.fillStyle = COL.green;
+  c.lineWidth = Math.max(1.5, s * .05);
+  c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.stroke();
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2, w = Math.PI / n * .55;
+    c.beginPath();
+    c.moveTo(Math.cos(a - w) * r, Math.sin(a - w) * r);
+    c.lineTo(Math.cos(a) * r * 1.22, Math.sin(a) * r * 1.22);
+    c.lineTo(Math.cos(a + w) * r, Math.sin(a + w) * r);
+    c.fill();
+  }
+  c.restore();
+}
 function drawOneWay(c, x, y, s) {
   /* Jos: three short dashes along the top. Jump up through it, land on top of it. */
   c.fillStyle = COL.metal;
@@ -276,6 +295,14 @@ function drawDoorClosing(c, x, y, s, t, heroDraw) {
   c.restore();
   c.strokeStyle = COL.gold; c.lineWidth = Math.max(2, s * .12);
   doorPath(c, x, y, s); c.stroke();
+  c.restore();
+}
+/* Jos: while a Needed coin is left, the door waits under the ground. k = 0 up, 1 all the way down */
+function drawSunk(c, x, y, s, k, draw) {
+  c.save();
+  c.beginPath(); c.rect(x - s, y - s, s * 3, s * 2); c.clip();   // nothing shows below the ground
+  c.translate(0, k * s * 1.1);                                    // a bit extra, so the gold edge goes too
+  draw();
   c.restore();
 }
 function drawHero(c, x, y, h, face, frame) {
@@ -378,7 +405,7 @@ const SWITCHES = {
   sawblade:   ['deadly', 'collision', 'visible', 'disguise'],
   oneway:     ['deadly', 'visible', 'disguise'],
   spring:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
-  coin:       ['deadly', 'collision', 'visible', 'disguise', 'action'],
+  coin:       ['deadly', 'collision', 'visible', 'disguise', 'action', 'needed'],   // Jos: Needed for finish
   button:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
   portal:     ['deadly', 'collision', 'visible', 'disguise', 'action'],
   door:       ['visible', 'disguise'],
@@ -387,7 +414,7 @@ const SWITCHES = {
   controls:   ['visible', 'action']
 };
 const LABEL = { deadly:'Deadly', collision:'Collision', disguise:'Disguise as block',
-                action:'Do action', visible:'Visible' };
+                action:'Do action', visible:'Visible', needed:'Needed for finish' };
 const LINKERS = ['trigger', 'button'];    // the blocks you can connect to other blocks
 const KEYS = [['ArrowLeft', '← arrow'], ['ArrowRight', '→ arrow'], ['ArrowUp', '↑ arrow'],
               ['ArrowDown', '↓ arrow'], ['Space', 'Space'], ['KeyA', 'A'], ['KeyD', 'D'],
@@ -1338,6 +1365,11 @@ function step(dt) {
 
   // delayed connections go off when their time is up
   p.later = p.later.filter(d => { d.left -= dt; if (d.left > 0) return true; doLink(d.l); return false; });
+  // Jos: the door goes down at the start, and comes up again when the Needed coins are collected
+  const locked = p.things.some(t => t.t === 'coin' && t.pr.needed && !t.gone);
+  p.things.forEach(t => {
+    if (t.t === 'door') t.sink = Math.max(0, Math.min(1, (t.sink || 0) + (locked ? dt : -dt) / DOOR.sink));
+  });
 
   // ride along on whatever you're standing on
   if (p.on && p.ground) { p.x += p.on.dx; p.y += p.on.dy; }
@@ -1465,7 +1497,7 @@ function step(dt) {
     }
     if (t.t === 'portal' && pr.action &&
         boxesTouch(p.x, p.y, W, H, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .6 * t.h)) inPortal = t;
-    if (t.t === 'door' && boxesTouch(p.x, p.y, W, H, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .8 * t.h)) {
+    if (t.t === 'door' && !t.sink && boxesTouch(p.x, p.y, W, H, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .8 * t.h)) {
       // pulled into the middle of the door
       p.state = 'won'; p.wonT = 0; p.door = t;
       p.x = t.x + (t.w - W) / 2; p.y = t.y + t.h - H; p.vx = p.vy = 0;
@@ -1556,7 +1588,9 @@ function renderPlay(time) {
     }
     if (!t.as && t.t === 'spring') { turn(ctx, X, Y, S, t.r, () => drawSpring(ctx, X, Y, S, springExt(t.ext))); continue; }
     if (!t.as && t.t === 'button') { turn(ctx, X, Y, S, t.r, () => drawButton(ctx, X, Y, S, t.pressed)); continue; }
+    if (t.t === 'door' && t.sink) { drawSunk(ctx, X, Y, S, t.sink, () => drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r)); continue; }
     drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r);
+    if (t.t === 'coin' && t.pr.needed && !t.as) drawNeededRing(ctx, X, Y, S, time);
   }
   if ((play.state === 'play' || play.state === 'intro') && !play.hidden) heroNow();
 }
@@ -1654,6 +1688,7 @@ function drawCell(c, x, y, time) {
   const faded = !props(c).visible && (DEFAULTS[c.t] || {}).visible !== false;
   if (faded) ctx.globalAlpha = .35;
   drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time, c.r);
+  if (c.t === 'coin' && props(c).needed && !props(c).disguise) drawNeededRing(ctx, x * cell, y * cell, cell, time);
   ctx.globalAlpha = 1;
   if (c.t === 'portal' && c.out) drawOutput(c.out, x, y);
   if (props(c).disguise) {                       // a little mask, so you know it's in disguise

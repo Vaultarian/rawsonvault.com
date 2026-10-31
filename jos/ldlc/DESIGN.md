@@ -263,6 +263,18 @@ selected area too, but only that block, so you can drag twice and not having to 
 - A click on a selected block still opens the properties, and dragging still moves them all.
 - To start again: click on an empty square, or press Esc.
 
+## Coin: Needed for finish (31 Oct)
+
+Jos: *"make a property inside of coin that says needed for finish with a switch. If it's off, then
+they can just go into the door. If it's on, then at the start the door will go down automatically
+and a green circle with spikes will circle around the coin, and when you collect the coin, the door
+will come up again."*
+
+- Coins have a **Needed for finish** switch, off to start.
+- On: when you play, the door sinks into the ground at the start, and a green circle with spikes
+  spins round the coin. Collect it and the door comes back up, so you can finish.
+- The green circle shows in the creator too, so you can see which coins are needed.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -302,6 +314,10 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- With more than one Needed coin, the door comes up when **all** of them are collected.
+- A Needed coin that is disguised as a block has no green circle (it is in disguise).
+- If you die, the coins come back and the door goes down again.
 
 - Changing **Up by** while Up is on starts it again from 0 seconds with the new number.
 - The editor remembers the last Up by number you typed.
