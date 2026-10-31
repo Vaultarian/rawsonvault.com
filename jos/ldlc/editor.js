@@ -505,7 +505,8 @@ function cellAt(e) {
   const p = pointAt(e), x = Math.floor(p.x), y = Math.floor(p.y);
   return (x >= 0 && y >= 0 && x < T.cols && y < T.rows) ? { x, y } : null;
 }
-function paint(a) {
+let stroke = new Set();   // squares already done in this click-and-drag
+function paint(a, click) {
   if (!a || play || chomp) return;
   const here = stackAt(a.x, a.y);
   if (tool === 'erase') {                        // the eraser clears the whole square
@@ -513,8 +514,13 @@ function paint(a) {
     return;
   }
   if (tool !== 'place') return;
+  const k = a.x + ',' + a.y;
+  if (stroke.has(k)) return;                     // one block per square each time you click or drag
+  stroke.add(k);
   const same = here.find(b => b.t === chosen);
-  if (same) {                                    // same block already there: just turn it to match
+  // Jos: a click puts a block inside the same block (a tile inside a tile).
+  // Dragging over the same block leaves it be, like before.
+  if (same && (!click || ONLY_ONE.includes(chosen))) {   // just turn it to match
     const r = TURNS.includes(chosen) ? chosenTurn : 0;
     if ((same.r || 0) !== r) { same.r = r; save(); }
     return;
@@ -550,7 +556,7 @@ cv.addEventListener('pointerdown', e => {
   if (play || chomp) return;
   const a = cellAt(e), c = a && pickAt(a.x, a.y);
   cv.setPointerCapture(e.pointerId);
-  if (tool === 'place' || tool === 'erase') { painting = true; paint(a); return; }
+  if (tool === 'place' || tool === 'erase') { painting = true; stroke = new Set(); paint(a, true); return; }
   if (tool === 'cursor') {
     // Jos: the cursor shows a block's properties, and can drag that one block somewhere else.
     // The properties open when you let go: opening them makes the level smaller, which would
@@ -1466,7 +1472,8 @@ function renderEditor(time) {
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
         if (inner) ctx.strokeRect((hover.x + .48) * cell, (hover.y + .48) * cell, cell * .5, cell * .5);
         else outline(hover.x, hover.y, '#fff');
-        namePill(NAME[b.t], (hover.x + .5) * cell, hover.y * cell - 4);
+        const name = NAME[b.t] + (inner && s[0].t === s[1].t ? ' (inside)' : '');
+        namePill(name, (hover.x + .5) * cell, hover.y * cell - 4);
       }
     }
   }

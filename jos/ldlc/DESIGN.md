@@ -161,6 +161,8 @@ the floor**: put the spring in the floor block, connect a trigger to it, and mak
 hero and a trigger can go in the same square too.
 
 - Pick a block and click on a block that's already there: **it goes inside it**. A square holds 2.
+- Jos: **a block can go inside the same block**, like a tile inside a tile. (Clicking does that;
+  dragging over the same block leaves it alone, like before.) The pill says **Tile (inside)**.
 - In the creator, the block inside shows as **a small picture in the corner**.
 - Jos: when you point at a square with two blocks, **it says which block** (like **Tile**), and **if
   you keep your cursor on it, it changes to the other one** (like **Spring**), and you can click on
