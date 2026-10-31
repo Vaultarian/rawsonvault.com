@@ -497,11 +497,11 @@ document.querySelectorAll('.tool[data-tool]').forEach(btn => {
 function setTool(t) {
   tool = t;
   sel.clear(); boxDrag = moveDrag = null;
-  linkFrom = null;
+  linkFrom = []; linking = false;
   hideBanner();
   if (t !== 'cursor' || openIds) closePanel();
   if (t === 'select') banner('Click and drag to make a box round the blocks you want');
-  if (t === 'link') banner('Choose a trigger');
+  if (t === 'link') linkBanner();
   cv.style.cursor = t === 'select' ? 'crosshair' : t === 'cursor' || t === 'link' ? 'pointer' : 'default';
   refreshButtons();
 }
@@ -730,28 +730,47 @@ function drawEdges() {
 }
 
 /* ---------- Trigger to block ---------- */
-let linkFrom = null;   // the trigger (or button) being connected
-let linkedLast = null; // the last block it was connected to
+let linkFrom = [];     // the triggers (or buttons) being connected. Jos: you can choose lots
+let linking = false;   // false while you're choosing them, true once you're clicking blocks
+let linkedLast = null; // the last block they were connected to
 function linkClick(c, stack) {
-  if (!linkFrom) {
+  if (!linking) {
     // a trigger with something else in its square (like the hero) still counts
-    if (c && !LINKERS.includes(c.t)) c = (stack || []).find(b => LINKERS.includes(b.t)) || c;
-    if (c && LINKERS.includes(c.t)) { linkFrom = c.id; linkedLast = null; banner('Click on a block/blocks'); }
-    else say('Click on one of your triggers (or a button) 😈');
+    const tr = c && LINKERS.includes(c.t) ? c : (stack || []).find(b => LINKERS.includes(b.t));
+    if (tr) {
+      // Jos: click more triggers or buttons to connect them all at once (click one again to drop it)
+      linkFrom = linkFrom.includes(tr.id) ? linkFrom.filter(id => id !== tr.id) : linkFrom.concat(tr.id);
+      linkBanner();
+      return;
+    }
+    if (!linkFrom.length) { say('Click on one of your triggers (or a button) 😈'); return; }
+    linking = true;                                // the first other block: from now on every click connects
+  }
+  if (!c || linkFrom.includes(c.id) || c.t === 'hero') return;
+  const trs = linkFrom.map(byId).filter(Boolean).map(f => f.c);
+  const had = trs.every(tr => (tr.links || []).some(l => l.id === c.id));
+  trs.forEach(tr => {
+    tr.links = tr.links || [];
+    if (had) tr.links = tr.links.filter(l => l.id !== c.id);   // click a connected block again to undo it
+    else if (!tr.links.some(l => l.id === c.id)) tr.links.push({ id:c.id, actions:[] });
+  });
+  if (!had) linkedLast = c.id;
+  save();
+  linkBanner();
+}
+function linkBanner() {
+  const n = linkFrom.length;
+  if (!linking) {
+    banner(!n ? 'Choose a trigger or button' : n === 1 ? 'Click on a block/blocks, or choose more triggers or buttons'
+                                                   : n + ' chosen · click on a block/blocks');
     return;
   }
-  if (!c || c.id === linkFrom || c.t === 'hero') return;
-  const tr = byId(linkFrom).c;
-  tr.links = tr.links || [];
-  const i = tr.links.findIndex(l => l.id === c.id);
-  if (i >= 0) tr.links.splice(i, 1);               // click a connected block again to undo it
-  else { tr.links.push({ id:c.id, actions:[] }); linkedLast = c.id; }
-  save();
-  banner('Click on a block/blocks', tr.links.length ? [['Done', finishLinking]] : []);
+  const any = linkFrom.some(id => (byId(id)?.c.links || []).length);
+  banner('Click on a block/blocks', any ? [['Done', finishLinking]] : []);
 }
 function finishLinking() {
   // Jos: the Add is in the connected block, so Done opens the block you just connected
-  const id = linkedLast && byId(linkedLast) ? linkedLast : linkFrom;
+  const id = linkedLast && byId(linkedLast) ? linkedLast : linkFrom[0];
   setTool('cursor');
   openPanel(id);
 }
@@ -1088,7 +1107,7 @@ addEventListener('keydown', e => {
     if (tool === 'select' && sel.size && (e.code === 'Delete' || e.code === 'Backspace')) {
       e.preventDefault(); deleteSelected();
     }
-    if (e.code === 'Escape') { if (sel.size || linkFrom) setTool(tool); else closePanel(); }
+    if (e.code === 'Escape') { if (sel.size || linkFrom.length) setTool(tool); else closePanel(); }
     const secret = secretKey(e);
     if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !secret) turnKey();
   }
@@ -1718,8 +1737,7 @@ function renderEditor(time) {
     const o = dragging.has(openId) ? off : { x:0, y:0 };
     outline(open.x + o.x, open.y + o.y, COL.gold, 3);
   }
-  const from = linkFrom && byId(linkFrom);
-  if (from) { drawLinks(from, time); outline(from.x, from.y, COL.green, 3); }
+  linkFrom.map(byId).filter(Boolean).forEach(from => { drawLinks(from, time); outline(from.x, from.y, COL.green, 3); });
 
   if (hover) {                                   // what's under the mouse
     const hx = hover.x * cell, hy = hover.y * cell;

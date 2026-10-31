@@ -293,6 +293,15 @@ will come up again."*
   Not fair!, How did you find it?!, That was MY coin!, Grrrrr!, Impossible!, Next time…
   Never the same one twice in a row. *A coin is hidden* stays the same.
 
+## Trigger to block: lots of triggers and buttons at once (31 Oct)
+
+Jos: *"make it so Trigger to block also works with buttons, and you can select multiple
+triggers/buttons."*
+
+- Buttons always worked in Trigger to block; the message now says **Choose a trigger or button**.
+- Click as many triggers and buttons as you like (each one goes green). Click one again to drop it.
+- Then click blocks: every chosen trigger/button connects to each block. Click a block again to undo it.
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -332,6 +341,9 @@ Jos: each portal has **Output = [blank]**.
 Jos: **every single block has Visible** in its properties, the portal and the hero too.
 
 ## Choices Carl made that Jos can change
+
+- Once you have clicked a block, a click on another trigger connects it as a block (so a trigger can
+  still turn another trigger on or off). Before that, a click on a trigger chooses it.
 
 - Start pos is not part of the level: it sits on top of any square without taking it up, and Clear
   takes it away too. It stays put after a refresh.
