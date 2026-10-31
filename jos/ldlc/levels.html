@@ -104,13 +104,19 @@ h1 {
 body.none #empty, body.none #arrow { display:block; }
 @keyframes nudge { 50% { transform:translate(-10px, 8px); } }
 
-/* ---- Jos's Create button: his video, with Create where WIX STUDIO was. Bottom left ---- */
+/* ---- The Create button, bottom left. Dad: our own, not Wix's. The ring spins like a coin when you
+   point at it (the spinning Möbius ring goes here next) ---- */
 #createBtn {
-  position:fixed; bottom:18px; left:24px; z-index:20; padding:6px; border:none; border-radius:18px;
-  cursor:pointer; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.45); transition:transform .15s;
+  position:fixed; bottom:18px; left:24px; z-index:20; width:182px; height:166px; border-radius:18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  cursor:pointer; background:#1c0008; border:3px solid #ff2a3d; color:#fff;
+  font-family:'Fredoka One', cursive; font-size:1.6rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.45), 0 0 18px rgba(255,42,61,.35); transition:transform .15s;
 }
 #createBtn:hover { transform:scale(1.04); }
-#createBtn video { width:170px; display:block; border-radius:12px; pointer-events:none; }
+#createBtn .ring { width:66px; height:66px; border-radius:50%; border:9px solid #fff; box-sizing:border-box; }
+#createBtn:hover .ring { animation:coinSpin 1.2s linear infinite; }
+@keyframes coinSpin { to { transform:rotateY(360deg); } }
 </style>
 </head>
 <body>
@@ -124,7 +130,7 @@ body.none #empty, body.none #arrow { display:block; }
   <div id="menu"></div>
   <div id="modal" hidden><div class="box"></div></div>
   <div id="note"></div>
-  <button id="createBtn" title="Create a level"><video src="create.mp4" muted playsinline loop preload="auto"></video></button>
+  <button id="createBtn" title="Create a level"><span class="ring"></span>Create</button>
 
 <script src="levels.js"></script>
 <script>
@@ -261,13 +267,8 @@ addEventListener('click', e => { if (!menu.contains(e.target)) closeMenu(); });
 addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); if (!modal.hidden) closeModal(); } });
 addEventListener('contextmenu', e => { if (!e.target.closest('.level')) closeMenu(); });
 
-/* ---------- Jos's Create button: his video ----------
-   It waits on its first picture: the black square with the white circle. Point at it and the video
-   plays from the start. When it gets back to the black square it plays again. */
+/* ---------- the Create button: a new level ---------- */
 const btn = document.getElementById('createBtn');
-const vid = btn.querySelector('video');
-btn.addEventListener('mouseenter', () => { vid.currentTime = 0; vid.play().catch(() => {}); });
-btn.addEventListener('mouseleave', () => { vid.pause(); vid.currentTime = 0; });
 btn.addEventListener('click', () => {
   const level = LDLC.make();
   location.href = 'editor.html?level=' + encodeURIComponent(level.id);
