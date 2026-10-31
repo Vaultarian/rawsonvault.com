@@ -105,6 +105,7 @@ function save() {
   fixPortals();
   if (playAll) return;              // PLAY never changes your levels
   try { localStorage.setItem(LDLC.key('level', levelId), JSON.stringify(grid)); } catch (e) {}
+  refreshSend();
 }
 function load() {
   try {
@@ -758,7 +759,7 @@ const EDGE_NAME = { top:'roof', bottom:'floor', left:'wall', right:'wall' };
 const EDGE_START = { top:'solid', bottom:'edge', left:'solid', right:'solid' };   // what LDLC did before
 let edges = Object.assign({}, EDGE_START);
 function loadEdges() { edges = Object.assign({}, EDGE_START, LDLC.read(LDLC.key('edges', levelId)) || {}); }
-function saveEdges() { if (playAll) return; try { localStorage.setItem(LDLC.key('edges', levelId), JSON.stringify(edges)); } catch (e) {} }
+function saveEdges() { if (playAll) return; try { localStorage.setItem(LDLC.key('edges', levelId), JSON.stringify(edges)); } catch (e) {} refreshSend(); }
 loadEdges();
 document.querySelectorAll('.edgeBtn').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.edge;
@@ -1304,7 +1305,7 @@ function makeThings() {
 function spawn() {
   // every try starts fresh: coins come back, traps reset
   const h = find('hero'), at = !playAll && editorOn && startPos ? startPos : h;   // Jos: the Start pos wins (not in PLAY)
-  play = { hidden:!props(h.c).visible, x:at.x + (1 - T.heroW) / 2, y:at.y + 1 - T.heroH, vx:0, vy:0,
+  play = { hidden:!props(h.c).visible, x:at.x + (1 - T.heroW) / 2, y:at.y + 1 - T.heroH, vx:0, vy:0, fromHero:at === h,
            ground:false, state:'play', timer:0, face:1, walkT:0, coins:0, kx:0,
            things:makeThings(), on:null, later:[] };
   play.byId = {};
@@ -1325,7 +1326,42 @@ function stopTest() {
     fit();
     if (tool === 'select') selectionBanner();
     if (tool === 'link') setTool('link');
+  }, () => {                         // back in the creator, the devil's mouth open: anything waiting?
+    if (afterTest) { const f = afterTest; afterTest = null; f(); }
   });
+}
+
+/* ---------- Send to Jos (Dad's idea). Only a level you have beaten can go ----------
+   Grey until you get to the door in TEST, starting from the Hero. Change anything and it is grey
+   again. Beat it and, back in the creator, it asks "Would you like to send it to Jos?". */
+// var, not let: save() can run before this part of the file has
+var afterTest = null;                // something to do once you are back in the creator
+var wasReady = null;
+function refreshSend() {
+  const b = document.getElementById('sendBtn');
+  if (!b || playAll) return;
+  const ready = LDLC.beaten(levelId);
+  b.classList.toggle('off', !ready);
+  b.parentNode.querySelector('.tip').classList.toggle('show', !ready);   // grey: a bubble on hover
+  if (ready && wasReady === false) {                 // it just lit up: a little bounce so you notice
+    b.classList.remove('ready'); void b.offsetWidth; b.classList.add('ready');
+  }
+  wasReady = ready;
+}
+const levelName = () => (LDLC.list().find(x => x.id === levelId) || { name:'' }).name;
+document.getElementById('sendBtn').addEventListener('click', e => {
+  e.currentTarget.blur();
+  if (play || chomp) return;
+  if (!LDLC.beaten(levelId)) { say('You have to beat it in order to send it 😈'); return; }
+  LDLCSend.open(levelId, levelName(), refreshSend);
+});
+function beatLevel() {
+  save(); saveEdges();               // what gets sent is exactly what you just beat
+  const fresh = !LDLC.beaten(levelId);
+  LDLC.markBeaten(levelId);
+  refreshSend();
+  // the first time since a change: ask (Jos: no LEVEL COMPLETE while you play, so it waits till you're back)
+  if (fresh) afterTest = () => LDLCSend.wellDone(levelId, levelName(), refreshSend);
 }
 document.getElementById('editBtn').addEventListener('click', e => { stopTest(); e.target.blur(); });
 document.getElementById('restartBtn').addEventListener('click', e => {
@@ -1724,6 +1760,7 @@ function step(dt) {
     if (t.t === 'door' && !t.sink && boxesTouch(p.x, p.y, W, H, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .8 * t.h)) {
       // pulled into the middle of the door
       p.state = 'won'; p.wonT = 0; p.door = t;
+      if (!playAll && p.fromHero) beatLevel();   // Jos: now it can be sent (not from a Start pos)
       p.x = t.x + (t.w - W) / 2; p.y = t.y + t.h - H; p.vx = p.vy = 0;
     }
   });
@@ -2073,6 +2110,7 @@ if (!playAll && !grid.some(r => r.some(Boolean))) {
   save();                       // so a brand-new level is in the list straight away
 }
 fixPortals();
+refreshSend();
 refreshButtons();
 if (playAll) {                  // PLAY: straight into the first level, the devil's mouth already shut
   document.body.classList.add('playall');

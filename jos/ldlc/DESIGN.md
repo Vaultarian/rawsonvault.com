@@ -60,9 +60,8 @@ won't collect.
 
 **The trigger's properties** are only **Visibility** (off) and **Do action** (on).
 
-⚠️ **For Dad, before publishing:** the coin sound is `sounds/coin.wav`, from Freesound
-(*8bit Coin Collection 2* by Duskbreaker, sound 649726). Check its licence and add a credit
-before LDLC goes on the website.
+The coin sound is `sounds/coin.wav`, from Freesound: *8Bit Coin Collection #2* by Duskbreaker,
+sound 649726. **Licence checked 31 Oct: Creative Commons 0**, free to use with no credit needed.
 
 ## The edit controls block
 
@@ -387,12 +386,11 @@ problem, Dad told me."* So there is no password and no key in the page, and nobo
 the website. Jos's fail-safe: *"copy this LDLC link, put it in a slide or document, send it to your
 teacher."*
 
-- **Right-click a level → 📤 Send to Jos.** A box asks for your **nickname**, the **level name**,
-  and Easy / Medium / Hard for **Difficulty**, **Length** and **Tricks**. Press Send: it goes into
-  Dad's Google Form, and it says **Sent! 🎉**. No new tab, no Google sign-in.
+- **📤 Send to Jos** (in the creator, next to TEST: see below). A box asks for your **nickname**, the
+  **level name**, and Easy / Medium / Hard for **Difficulty**, **Length** and **Tricks**. Press Send:
+  it goes into Dad's Google Form, and it says **Sent! 🎉**. No new tab, no Google sign-in.
 - The level travels as a **level code** (`LDLC1.…`). The friend never sees it. Jos and Dad see it
   in the form's answers.
-- Send only works when the level has a **hero and a door**.
 - **The banner**: Dad asked for the Google Form to look like LDLC, with the Möbius logo, *"bit more
   josish"*. Carl drew it with the game's own blocks: the hero shoots out of a **dash orb**
   straight through the **Möbius ring**, **LDLC** in the middle, spikes, coins, a saw, a spring and
@@ -403,6 +401,32 @@ teacher."*
   else says **by** their nickname on its card.
 - A level code is **checked** before it goes in: unknown blocks are dropped, numbers are kept in
   range, and anything strange is thrown away. So a made-up code can't break the game.
+
+## Send to Jos next to TEST, and Well done (31 Oct)
+
+Jos: *"Can we put the "Send to Jos" on the original set of the level? I don't want to have the user go
+back out to My Levels, right-click a level, and then click "Send to Jos." … make it next to "Test."
+If they haven't tested it and they haven't gotten to the door themselves, then it will be grayed
+out."*
+
+Dad asked if that is easy to check. It is, with one catch: "has it ever been beaten?" has a
+loophole (beat it, then add a wall of spikes, then send). So it checks **"beaten since the last
+change"**.
+
+Jos's first idea was a **⏳ Pending** request that sent itself when you beat the level. Carl built it,
+then Dad suggested something simpler, and Dad and Jos picked his: *"if they haven't beaten it yet,
+they click "Send to Jos." It says, "You have to beat it in order to send it." Once they do actually
+reach the door and they beat the level, a pop-up says, "Well done, you've completed your level.
+Would you like to send it to Jos?" Then you just click "Yes.""*
+
+- **📤 Send to Jos** is a gold button **next to TEST**. It is not in My levels any more.
+- **Grey** until you beat the level: press TEST and get to the door. Hover over it and it says
+  **Beat the level to send it to Jos**. Click it and it says **You have to beat it in order to send it**.
+- Beating it saves a **fingerprint** of the level. Change anything and it goes grey again. Change it
+  back and it lights up again.
+- It only counts if you start at the **Hero**. Getting to the door from a **Start pos** doesn't count.
+- **Beat it** and, back in the creator, it asks **"Well done, you've completed your level! Would you
+  like to send it to Jos?"** **Yes** opens the Send to Jos box. **Not now** closes it.
 
 ## Block properties
 
@@ -536,6 +560,14 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 - A level code is squashed small (compressed) so a big level still fits in one form answer. Codes
   longer than 100,000 letters are refused.
 - Opening a level link **asks first** before adding the level. It never replaces one of your levels.
+- Send to Jos is **gold, like the door**, and gives a little bounce when it lights up.
+- **Well done** only pops up the **first** time you beat it since a change, so testing it again
+  doesn't keep asking. It waits until the devil's mouth has opened onto the creator, so there is
+  still no LEVEL COMPLETE message while you play (Jos, 30 Oct).
+- The box **remembers your nickname** from the last time you sent a level, so you only type it once.
+- TEST and Send to Jos always **stay together**. On a narrow screen they move down a line, side by side.
+  On screens under 1520 pixels wide the button just says **📤 Send**.
+- What gets sent is **exactly the level you beat**.
 
 ## Build log
 

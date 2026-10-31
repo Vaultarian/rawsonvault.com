@@ -3,7 +3,7 @@
    and PLAY can use them all. Each level has its own blocks, edges and Start pos. */
 const LDLC = (() => {
   const LIST = 'jos-ldlc-levels';
-  const key = (what, id) => 'jos-ldlc-' + what + '-' + id;     // what = level, edges or start
+  const key = (what, id) => 'jos-ldlc-' + what + '-' + id;     // what = level, edges, start or beaten
 
   function read(k) {
     try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; }
@@ -54,8 +54,19 @@ const LDLC = (() => {
   }
   function remove(id) {
     keep(list().filter(l => l.id !== id));
-    ['level', 'edges', 'start'].forEach(w => localStorage.removeItem(key(w, id)));
+    ['level', 'edges', 'start', 'beaten'].forEach(w => localStorage.removeItem(key(w, id)));
   }
+
+  /* Jos: you can only send a level you have beaten. Beating it saves a fingerprint of the level;
+     change anything and the fingerprint doesn't match any more, so you have to beat it again. */
+  function fingerprint(id) {
+    const s = (localStorage.getItem(key('level', id)) || '') + '|' + (localStorage.getItem(key('edges', id)) || '');
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(16) + '-' + s.length;
+  }
+  const beaten = id => localStorage.getItem(key('beaten', id)) === fingerprint(id);
+  function markBeaten(id) { try { localStorage.setItem(key('beaten', id), fingerprint(id)); } catch (e) {} }
 
   /* ---------- sharing a level ----------
      A level becomes a code: LDLC1. + the level, squashed small. It travels as plain text, so it can go in
@@ -149,5 +160,5 @@ const LDLC = (() => {
   }
 
   moveOldLevel();
-  return { list, make, ensure, key, read, playable, rename, remove, pack, unpack, addShared };
+  return { list, make, ensure, key, read, playable, rename, remove, beaten, markBeaten, pack, unpack, addShared };
 })();

@@ -47,6 +47,25 @@ button.soon { opacity:.45; }
 #testBtn { background:#2e9e4f; font-size:1.15rem; padding:.55rem 1.4rem; }
 #testBtn:hover { background:#38c261; }
 #testBtn.stop { background:#ff2a3d; }
+/* Send to Jos: gold like the door. Grey until you beat the level */
+#goBtns { display:flex; gap:.5rem; margin-left:auto; }   /* TEST and Send to Jos stay side by side */
+#sendWrap { position:relative; display:inline-flex; }
+#sendBtn { background:#ffd23f; color:#2a0008; font-size:1.05rem; padding:.55rem 1rem; }
+#sendBtn:hover { background:#ffe066; }
+#sendBtn.off { background:#3a0010; color:#ffffff66; }
+#sendBtn.ready { animation:sendPop .5s 2; }
+@keyframes sendPop { 50% { transform:scale(1.12); } }
+#sendWrap .tip {
+  display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:30; white-space:nowrap;
+  font-family:'Fredoka One', cursive; font-size:.95rem; color:#2a0008; background:#ffd23f;
+  padding:.45rem .8rem; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.5);
+}
+#sendWrap .tip::before {
+  content:''; position:absolute; top:-6px; right:24px; border:6px solid transparent; border-top:none;
+  border-bottom-color:#ffd23f;
+}
+#sendWrap:hover .tip.show { display:block; }
+@media (max-width:1520px) { #sendBtn .long { display:none; } }   /* smaller screens: just 📤 Send, so it fits */
 
 /* ---------- blocks down the left ---------- */
 #body { flex:1; display:flex; min-height:0; }
@@ -225,7 +244,10 @@ body.testing #panel { display:none; }
       <label class="topswitch"><input type="checkbox" id="triggerLinks"><span class="knob"></span>Show trigger connections</label>
     </div>
     <button class="tool" id="clearBtn">🗑 Clear</button>
-    <button id="testBtn">▶ TEST</button>
+    <span id="goBtns">
+      <button id="testBtn">▶ TEST</button>
+      <span id="sendWrap"><button id="sendBtn" class="off">📤 Send<span class="long"> to Jos</span></button><span class="tip">Beat the level to send it to Jos</span></span>
+    </span>
   </div>
 
   <div id="body">
@@ -275,6 +297,7 @@ body.testing #panel { display:none; }
   <div id="toast"></div>
 
 <script src="levels.js"></script>
+<script src="send.js"></script>
 <script src="editor.js"></script>
 </body>
 </html>
