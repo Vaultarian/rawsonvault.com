@@ -927,6 +927,24 @@ function triggersSection(c) {
     panel.append(card);
   });
 }
+/* Jos's editor command: the first one you connected waits 0 s, the next 1 s, the next 2 s…
+   Click again: start from 1 s, then 2 s. Two clicks inside one second turn it off. */
+let upLast = { id:null, at:0 };
+function upOneButton(card, links, tr) {
+  const start = links[0].delay || 0;
+  const on = links.length > 1 && links.every((l, i) => (l.delay || 0) === Math.min(30, start + i));
+  card.append(el('button', { className:'p-cmd',
+    textContent:on ? '⏱ Up 1 · starting from ' + start + (start === 1 ? ' second' : ' seconds') : '⏱ Up 1 second each',
+    onclick:() => {
+      const now = performance.now(), twice = upLast.id === tr.id && now - upLast.at < 1000;
+      upLast = { id:tr.id, at:twice ? 0 : now };
+      const from = twice ? null : on ? Math.min(30, start + 1) : 0;
+      links.forEach((l, i) => { l.delay = from === null ? 0 : Math.min(30, from + i); });
+      save(); renderPanel();
+    } }));
+  if (on) card.append(el('p', { className:'p-note',
+    textContent:'Click again to start 1 second later. Double-click to turn it off.' }));
+}
 /* Jos: lots of blocks connected to the same trigger: one card changes all of them */
 function manyTriggersSection(cells) {
   const ids = new Set(cells.map(x => x.id)), groups = new Map();
@@ -950,12 +968,7 @@ function manyTriggersSection(cells) {
     card.append(row('Delay', number(common(links.map(l => l.delay || 0)), 0, 30, .1,
                                     v => { links.forEach(l => { l.delay = v; }); save(); }),
                     el('span', { className:'p-or', textContent:'seconds' })));
-    if (editorOn) {
-      // editor command: the first one you connected waits 0 s, the next 1 s, the next 2 s…
-      card.append(el('button', { className:'p-cmd', textContent:'⏱ Up 1 second each',
-        title:'0, 1, 2, 3… seconds, in the order you connected them',
-        onclick:() => { links.forEach((l, i) => { l.delay = Math.min(30, i); }); save(); renderPanel(); } }));
-    }
+    if (editorOn) upOneButton(card, links, tr);
     const same = common(links.map(l => JSON.stringify(l.actions || [])));
     if (same === null) {
       card.append(el('p', { className:'p-note', textContent:'These blocks do different things, so they can\'t be changed together 😈' }));
