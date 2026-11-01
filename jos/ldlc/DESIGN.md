@@ -441,18 +441,27 @@ in it shows you everything you can do, how to do cursor, how to do select box, h
 to block, how to do eraser, how to do all the blocks, how to connect triggers, how to get into
 the properties, how to do everything."*
 
-- Type **beginner** on the keyboard (not in a box) and the **📖 Beginner guide** opens over the
-  creator. Type it again, press Esc, click ✕, or click outside the box to close it.
-- Topics down the left: Start here, The blocks, Cursor, Select blocks, Trigger to block, Make it do
-  something (+ Add, Delay), Eraser, Block properties, Turning blocks, Block inside a block, Portals,
-  Edges, TEST, Send to Jos, Keys. Each page has a green **Next →** button.
-- **The blocks** page shows every block drawn by the creator itself, moving (the hero runs, the saw
-  spins), with one line on what it does.
+Carl first made it a guide box with topics. Jos changed it: *"Can you not make it a separate tab?
+How about just make it so it has arrows and little message blocks showing you how to do stuff, so
+you can look at the guide while building."*
+
+- Type **beginner** on the keyboard (not in a box): **gold message bubbles with arrows** point at
+  the real things. Type it again to hide them. It remembers, like the editor commands.
+- Clicks go **straight through** the bubbles, so you keep building with them on.
+- They change with what you're doing:
+  - Nothing picked: a short tip under each tool (Cursor, Select blocks, Trigger to block, Eraser).
+  - A block picked: a bubble by it says how to put it down (and **R** to turn it, if it turns).
+  - A tool picked: just that tool's bubble, with the steps. **Trigger to block** shows steps 1, 2, 3
+    and the step you're on goes dark. **Select blocks** says how many are selected.
+  - Properties open: a bubble says green = on, and how to get **+ Add**.
+  - Always: **▶ TEST**, the **✏️ edge** button, **You start here** over the Hero, **Get here to win!**
+    over the Door.
+- They hide when you TEST, and never cover the creator's own messages at the top.
 - Code: `beginner.js`, loaded after `editor.js`.
 
-Carl's choices Jos can change: it's a box in the middle with topics down the side; it remembers the
-last topic you looked at; it never mentions the **editor** secret word, so the editor commands stay
-secret; while it's open, keys don't reach the creator (so the last **r** of beginner doesn't turn a block).
+Carl's choices Jos can change: gold, like the door; bubbles move down out of each other's way; on a
+small screen only the bubble for what you're doing shows; it never mentions the **editor** secret
+word, so the editor commands stay secret.
 
 ## Block properties
 
@@ -618,4 +627,4 @@ Jos: **every single block has Visible** in its properties, the portal and the he
   the half-green half-black switch for mixed. Not published.
 - **31 Oct**: spring **Strength**, the **✏️ edge buttons** (floor/wall/roof or edge of screen), and
   **a block inside another block**. Not published.
-- **1 Nov**: secret word **beginner** opens the Beginner guide (`beginner.js`). Not published.
+- **1 Nov**: secret word **beginner**: message bubbles with arrows show how to use everything (`beginner.js`). Not published.
