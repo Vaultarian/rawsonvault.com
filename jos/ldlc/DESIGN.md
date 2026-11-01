@@ -434,6 +434,26 @@ Would you like to send it to Jos?" Then you just click "Yes.""*
 - **Beat it** and, back in the creator, it asks **"Well done, you've completed your level! Would you
   like to send it to Jos?"** **Yes** opens the Send to Jos box. **Not now** closes it.
 
+## Secret word: beginner (1 Nov)
+
+Jos, with a friend: *"make a little word command that is beginner, and if you type it
+in it shows you everything you can do, how to do cursor, how to do select box, how to do trigger
+to block, how to do eraser, how to do all the blocks, how to connect triggers, how to get into
+the properties, how to do everything."*
+
+- Type **beginner** on the keyboard (not in a box) and the **📖 Beginner guide** opens over the
+  creator. Type it again, press Esc, click ✕, or click outside the box to close it.
+- Topics down the left: Start here, The blocks, Cursor, Select blocks, Trigger to block, Make it do
+  something (+ Add, Delay), Eraser, Block properties, Turning blocks, Block inside a block, Portals,
+  Edges, TEST, Send to Jos, Keys. Each page has a green **Next →** button.
+- **The blocks** page shows every block drawn by the creator itself, moving (the hero runs, the saw
+  spins), with one line on what it does.
+- Code: `beginner.js`, loaded after `editor.js`.
+
+Carl's choices Jos can change: it's a box in the middle with topics down the side; it remembers the
+last topic you looked at; it never mentions the **editor** secret word, so the editor commands stay
+secret; while it's open, keys don't reach the creator (so the last **r** of beginner doesn't turn a block).
+
 ## Block properties
 
 Click a block with the cursor and you see its properties, each with a little switch:
@@ -598,3 +618,4 @@ Jos: **every single block has Visible** in its properties, the portal and the he
   the half-green half-black switch for mixed. Not published.
 - **31 Oct**: spring **Strength**, the **✏️ edge buttons** (floor/wall/roof or edge of screen), and
   **a block inside another block**. Not published.
+- **1 Nov**: secret word **beginner** opens the Beginner guide (`beginner.js`). Not published.
