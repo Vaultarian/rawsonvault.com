@@ -9,10 +9,14 @@
    with news on the front page and news on the back and a little speech bubble is coming out of
    him and it tells you the news."
 
+   Then: "the newsman is saying the whole thing… he should be saying this, not his own little
+   detail. Make that small bubble fill all of those" — and "I can't see my cursor".
+
    Bottom left of the home page: NEWS, with the family's Möbius strip turning round behind it, like
-   the globe behind the news on TV. Click it and the news covers the whole screen, newest first.
-   In the bottom right corner the newsman holds his newspaper (NEWS on the front, NEWS on the back)
-   and tells you the news in a speech bubble. Point at a story and he tells you that one.
+   the globe behind the news on TV. Click it and the home page goes grey, and ALL the news comes
+   out of the newsman's mouth in one big speech bubble, newest first. He stands in the bottom right
+   corner holding his newspaper (NEWS on the front, NEWS on the back). Point at a story and he
+   flips his paper and talks. Click the grey edges, the ✕, or press Esc to go back.
 
    ⭐ CARL: when Jos finishes something (or moves on to something else), write it in
      ~/jos/news-notes.md. At gameover, move everything from there to the TOP of the list below.
@@ -20,7 +24,7 @@
      look:    'folder/'        → a 👀 Look at it button (a tool, or something to look at)
      picture: 'folder/pic.png' → a 👀 Look at it button that shows the picture right here
      show:    'clock'          → a 👀 Look at it button that shows something already on this page
-     what = one line (the newsman says it), more = the detail underneath */
+     what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
     { emoji:'📖', when:'1 Nov', title:'LDLC beginner bubbles',
@@ -95,15 +99,23 @@
     '  border:3px solid #f2ede3;display:none}',
     '#newsBtn.unseen .dot{display:block}',
 
-    /* the news, covering the whole screen */
-    '#newsPage{position:fixed;inset:0;z-index:1000500;overflow-y:auto;background:#f2ede3;font-family:Nunito,sans-serif;',
-    '  background-image:radial-gradient(rgba(61,149,149,.12) 1.5px,transparent 1.5px);background-size:22px 22px}',
+    /* the news: the home page goes grey, and the news is one big speech bubble from the newsman */
+    '#newsPage{position:fixed;inset:0;z-index:1000500;font-family:Nunito,sans-serif;background:rgba(35,50,50,.45);',
+    '  -webkit-backdrop-filter:grayscale(1) brightness(.85);backdrop-filter:grayscale(1) brightness(.85)}',
     '#newsPage[hidden]{display:none}',
+    /* the home page draws its own black cursor at layer 1000000 - lift it above the news */
+    'html.newsOpen #cursorFire{z-index:2147483100!important}',
     '#newsPage .x{position:fixed;top:16px;right:18px;z-index:3;border:none;background:#3d9595;color:#fff;font-size:1.4rem;',
-    '  width:48px;height:48px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
+    '  width:48px;height:48px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25)}',
     '#newsPage .x:hover{background:#2a7070}',
-    '#newsPage .wrap{max-width:1100px;margin:0 auto;padding:18px 24px 300px}',
-    '@media (min-width:1100px){#newsPage .wrap{padding-right:300px;max-width:1400px}}',
+    '#newsPage .bubble{position:absolute;left:28px;top:28px;right:270px;bottom:28px;background:#f8f4ec;',
+    '  border:4px solid #2a7070;border-radius:34px;box-shadow:0 14px 40px rgba(0,0,0,.35)}',
+    '#newsPage .scroll{position:absolute;inset:0;overflow-y:auto;border-radius:30px;',
+    '  background-image:radial-gradient(rgba(61,149,149,.12) 1.5px,transparent 1.5px);background-size:22px 22px}',
+    '#newsPage .tail{position:absolute;overflow:visible}',
+    '#newsPage .tail.side{right:-96px;bottom:170px;width:100px;height:70px}',
+    '#newsPage .tail.down{display:none}',
+    '#newsPage .wrap{max-width:1300px;margin:0 auto;padding:6px 26px 30px}',
     '#newsPage .head{position:relative;height:210px;display:flex;align-items:center;justify-content:center}',
     '#newsPage .head .ring{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;',
     '  background:url(ldlc/ring-spin.webp) 0 0/9600px 200px no-repeat;animation:newsSpinBig 4.32s steps(48) infinite}',
@@ -135,7 +147,7 @@
     '@keyframes newsSpinHuge{to{background-position:-13440px 0}}',
     '#newsPage .back{margin-top:6px}',
 
-    /* the newsman, bottom right, with his newspaper and his speech bubble */
+    /* the newsman, bottom right, with his newspaper. The big bubble is what he is saying. */
     '#newsman{position:fixed;right:18px;bottom:0;z-index:2;width:230px;cursor:pointer}',
     '#newsman svg{display:block;width:100%;height:auto;filter:drop-shadow(0 8px 14px rgba(0,0,0,.2))}',
     '#newsman .paper{transform-box:fill-box;transform-origin:50% 50%}',
@@ -143,15 +155,6 @@
     '@keyframes newsFlip{50%{transform:scaleX(0)}}',
     '#newsman .mouthOpen{display:none}',
     '#newsman.talking .mouthOpen{display:block}#newsman.talking .mouthShut{display:none}',
-    '#newsSays{position:fixed;right:24px;bottom:306px;z-index:2;width:250px;min-height:64px;background:#fff;',
-    '  border:3px solid #2a7070;border-radius:20px;padding:12px 15px;font-weight:700;font-size:.95rem;color:#2a4545;',
-    '  line-height:1.4;box-shadow:0 8px 20px rgba(0,0,0,.18)}',
-    '#newsSays::after{content:"";position:absolute;right:98px;bottom:-22px;border:12px solid transparent;',
-    '  border-top:14px solid #2a7070;border-bottom:0}',
-    '#newsSays::before{content:"";position:absolute;right:101px;bottom:-15px;z-index:1;border:9px solid transparent;',
-    '  border-top:11px solid #fff;border-bottom:0}',
-    '#newsSays b{font-family:"Fredoka One",cursive;font-weight:400;color:#d9643a}',
-    '#newsSays .tag{display:block;font-family:"Fredoka One",cursive;font-size:.8rem;color:#3d9595;letter-spacing:.05em}',
 
     /* "Look at it" on the clock: it glows so you can find it */
     '@keyframes newsGlow{0%,100%{box-shadow:0 0 0 0 rgba(217,100,58,0)}50%{box-shadow:0 0 0 10px rgba(217,100,58,.55)}}',
@@ -160,8 +163,12 @@
     '@media (max-width:700px){#newsBtn{width:100px;height:100px}',
     '  #newsBtn .ring{background-size:4800px 100px;animation-name:newsSpinSmall}',
     '  #newsBtn .newsWord{font-size:1.8rem}#newsBtn .dot{right:8px;top:8px;width:16px;height:16px}',
-    '  #newsman{width:130px;right:6px}#newsSays{right:10px;bottom:186px;width:min(230px,calc(100vw - 30px));font-size:.85rem}',
-    '  #newsPage .wrap{padding:12px 14px 260px}#newsPage .head{height:150px}',
+    '  #newsman{width:130px;right:6px}',
+    /* on a phone the bubble sits above him and its tail points down to his mouth */
+    '  #newsPage .bubble{left:10px;top:10px;right:10px;bottom:200px;border-radius:26px}#newsPage .scroll{border-radius:22px}',
+    '  #newsPage .tail.side{display:none}#newsPage .tail.down{display:block;right:70px;bottom:-76px;width:70px;height:80px}',
+    '  #newsPage .x{top:18px;right:18px;width:42px;height:42px;font-size:1.2rem}',
+    '  #newsPage .wrap{padding:6px 14px 24px}#newsPage .head{height:150px}',
     '  #newsPage .head .ring{width:140px;height:140px;margin:-70px 0 0 -70px;background-size:6720px 140px;',
     '    animation-name:newsSpinMid}}',
     '@keyframes newsSpinSmall{to{background-position:-4800px 0}}',
@@ -227,12 +234,20 @@
   var page = document.createElement('div');
   page.id = 'newsPage';
   page.hidden = true;
-  page.innerHTML = '<button class="x" title="Close">✕</button><div class="wrap"></div>' +
-                   '<div id="newsSays"></div><div id="newsman" title="Click me for the next story">' + MAN + '</div>';
+  // the speech bubble's tail: one pointing sideways to his mouth, one pointing down (on a phone).
+  // The little rectangle hides the bubble's edge where the tail joins on.
+  var TAILS =
+    '<svg class="tail side" viewBox="0 0 100 70"><rect x="-2" y="7" width="11" height="34" fill="#f8f4ec"/>' +
+    '<path d="M6 4 L96 56 L6 44" fill="#f8f4ec" stroke="#2a7070" stroke-width="4" stroke-linejoin="round"/></svg>' +
+    '<svg class="tail down" viewBox="0 0 70 80"><rect x="7" y="-2" width="34" height="11" fill="#f8f4ec"/>' +
+    '<path d="M4 6 L56 76 L44 6" fill="#f8f4ec" stroke="#2a7070" stroke-width="4" stroke-linejoin="round"/></svg>';
+  page.innerHTML = '<button class="x" title="Close">✕</button>' +
+                   '<div class="bubble"><div class="scroll"><div class="wrap"></div></div>' + TAILS + '</div>' +
+                   '<div id="newsman" title="Click me!">' + MAN + '</div>';
   document.body.appendChild(btn);
   document.body.appendChild(page);
   var wrap = page.querySelector('.wrap');
-  var says = page.querySelector('#newsSays');
+  var scroll = page.querySelector('.scroll');
   var man = page.querySelector('#newsman');
   var paper = man.querySelector('.paper');
 
@@ -273,9 +288,8 @@
         go.onclick = function () { lookAt(n); };
       }
       card.appendChild(go);
-      // point at a story and the newsman tells you that one
-      card.addEventListener('mouseenter', function () { hovering = true; tell(i); });
-      card.addEventListener('mouseleave', function () { hovering = false; });
+      // point at a story and the newsman flips his paper and talks
+      card.addEventListener('mouseenter', function () { if (i !== story) { story = i; talk(1400); } });
       grid.appendChild(card);
     });
     wrap.appendChild(grid);
@@ -309,17 +323,14 @@
     back.onclick = showList;
     box.appendChild(back);
     wrap.appendChild(box);
-    page.scrollTop = 0;
+    scroll.scrollTop = 0;
   }
 
-  /* ---------- the newsman tells you the news ---------- */
-  var story = -1, typing = 0, nextTimer = 0, hovering = false;
+  /* ---------- the newsman: everything in the big bubble is him talking ---------- */
+  var story = -1, mouth = 0, quiet = 0, chatter = 0;
   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function tell(i) {
-    if (i === story) return;
-    story = i;
-    var n = NEWS[i];
-    // flip the newspaper over: NEWS on the front, NEWS on the back
+  // flip the newspaper over (NEWS on the front, NEWS on the back) and move his mouth for a bit
+  function talk(ms) {
     paper.classList.remove('flip'); void paper.getBoundingClientRect(); paper.classList.add('flip');
     setTimeout(function () {
       var f = paper.querySelector('.front'), b = paper.querySelector('.backside');
@@ -327,30 +338,12 @@
       f.style.display = frontShowing ? 'none' : '';
       b.style.display = frontShowing ? '' : 'none';
     }, 300);
-    // type the story into the speech bubble, his mouth moving while he talks
-    var tag = i === 0 ? '📰 BREAKING NEWS!' : '📰 ' + n.when.toUpperCase();
-    says.innerHTML = '';
-    var t = el('span', 'tag', tag), head = el('b', '', n.title + ': '), body = el('span');
-    says.appendChild(t); says.appendChild(head); says.appendChild(body);
-    clearInterval(typing);
-    if (calm) { body.textContent = n.what; return; }
-    var k = 0;
-    man.classList.add('talking');
-    typing = setInterval(function () {
-      k += 2;
-      body.textContent = n.what.slice(0, k);
-      man.classList.toggle('talking', k < n.what.length && (k / 2) % 3 !== 0);
-      if (k >= n.what.length) { clearInterval(typing); man.classList.remove('talking'); }
-    }, 35);
+    if (calm) return;
+    clearInterval(mouth); clearTimeout(quiet);
+    mouth = setInterval(function () { man.classList.toggle('talking'); }, 140);
+    quiet = setTimeout(function () { clearInterval(mouth); man.classList.remove('talking'); }, ms);
   }
-  function nextStory() { tell((story + 1) % NEWS.length); }
-  function startTelling() {
-    story = -1;
-    tell(0);
-    clearInterval(nextTimer);
-    nextTimer = setInterval(function () { if (!hovering) nextStory(); }, 7000);
-  }
-  man.addEventListener('click', nextStory);
+  man.addEventListener('click', function () { talk(1400); });
 
   // a red dot until you've looked at the newest news
   var SEEN = 'jos-news-seen';
@@ -361,19 +354,28 @@
   function open() {
     showList();
     page.hidden = false;
-    page.scrollTop = 0;
+    scroll.scrollTop = 0;
     document.documentElement.style.overflow = 'hidden';
+    document.documentElement.classList.add('newsOpen');
     btn.classList.remove('unseen');
     try { localStorage.setItem(SEEN, newest()); } catch (e) {}
-    startTelling();
+    story = -1;
+    talk(2200);
+    // now and then he turns the page and keeps talking
+    clearInterval(chatter);
+    chatter = setInterval(function () { talk(1400); }, 8000);
   }
   function close() {
     page.hidden = true;
     document.documentElement.style.overflow = '';
-    clearInterval(nextTimer); clearInterval(typing);
+    document.documentElement.classList.remove('newsOpen');
+    clearInterval(chatter); clearInterval(mouth); clearTimeout(quiet);
+    man.classList.remove('talking');
   }
 
   btn.addEventListener('click', open);
   page.querySelector('.x').addEventListener('click', close);
+  // click the grey edges to go back to the home page
+  page.addEventListener('click', function (e) { if (e.target === page) close(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !page.hidden) close(); });
 })();
