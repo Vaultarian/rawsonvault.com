@@ -153,8 +153,7 @@
     '#newsman .paper{transform-box:fill-box;transform-origin:50% 50%}',
     '#newsman .paper.flip{animation:newsFlip .6s ease-in-out}',
     '@keyframes newsFlip{50%{transform:scaleX(0)}}',
-    '#newsman .mouthOpen{display:none}',
-    '#newsman.talking .mouthOpen{display:block}#newsman.talking .mouthShut{display:none}',
+    '#newsman .m{display:none}#newsman .m.on{display:inline}',
 
     /* "Look at it" on the clock: it glows so you can find it */
     '@keyframes newsGlow{0%,100%{box-shadow:0 0 0 0 rgba(217,100,58,0)}50%{box-shadow:0 0 0 10px rgba(217,100,58,.55)}}',
@@ -200,8 +199,35 @@
     '<circle cx="96" cy="78" r="5" fill="#2a4545"/><circle cx="124" cy="78" r="5" fill="#2a4545"/>' +
     '<circle cx="97.5" cy="76.5" r="1.6" fill="#fff"/><circle cx="125.5" cy="76.5" r="1.6" fill="#fff"/>' +
     '<circle cx="88" cy="92" r="6" fill="#f2a07b" opacity=".6"/><circle cx="132" cy="92" r="6" fill="#f2a07b" opacity=".6"/>' +
-    '<path class="mouthShut" d="M98 94 Q110 104 122 94" fill="none" stroke="#2a4545" stroke-width="4" stroke-linecap="round"/>' +
-    '<ellipse class="mouthOpen" cx="110" cy="97" rx="10" ry="8" fill="#7a2a1a"/>' +
+    // his mouth: a resting smile (0) and 10 talking shapes, mixed up like real words
+    '<g class="m on"><path d="M98 94 Q110 104 122 94" fill="none" stroke="#2a4545" stroke-width="4" stroke-linecap="round"/></g>' +
+    // 1  m / b / p: lips pressed together
+    '<g class="m"><path d="M100 97 Q110 99.5 120 97" fill="none" stroke="#2a4545" stroke-width="4.5" stroke-linecap="round"/></g>' +
+    // 2  uh: a little bit open
+    '<g class="m"><ellipse cx="110" cy="97" rx="7" ry="3.8" fill="#7a2a1a"/></g>' +
+    // 3  AH: wide open, tongue showing
+    '<g class="m"><path d="M99 93 Q110 91 121 93 Q121 108 110 108 Q99 108 99 93 Z" fill="#7a2a1a"/>' +
+      '<ellipse cx="110" cy="104.5" rx="6" ry="3" fill="#e0675a"/></g>' +
+    // 4  ee: wide and flat, top teeth
+    '<g class="m"><path d="M97 94 Q110 92 123 94 Q122 101 110 102 Q98 101 97 94 Z" fill="#7a2a1a"/>' +
+      '<path d="M99 94.3 Q110 92.6 121 94.3 L120.5 96.6 Q110 95.1 99.5 96.6 Z" fill="#fff"/></g>' +
+    // 5  oo: small and round, lips pushed out
+    '<g class="m"><circle cx="110" cy="98" r="4.5" fill="#7a2a1a" stroke="#c9735a" stroke-width="2.2"/></g>' +
+    // 6  oh: tall and round
+    '<g class="m"><ellipse cx="110" cy="98.5" rx="6.5" ry="7.5" fill="#7a2a1a"/>' +
+      '<ellipse cx="110" cy="103.5" rx="4" ry="2" fill="#e0675a"/></g>' +
+    // 7  f / v: top teeth on the bottom lip
+    '<g class="m"><path d="M100 95 Q110 94 120 95 Q119 101 110 101 Q101 101 100 95 Z" fill="#7a2a1a"/>' +
+      '<rect x="103" y="94.4" width="14" height="4" rx="1.2" fill="#fff"/></g>' +
+    // 8  l / th: open, tongue up
+    '<g class="m"><ellipse cx="110" cy="98" rx="9" ry="6.5" fill="#7a2a1a"/>' +
+      '<path d="M104 103.5 Q110 93.5 116 103.5 Z" fill="#e0675a"/></g>' +
+    // 9  eh: medium open, top teeth
+    '<g class="m"><path d="M98 94 Q110 92 122 94 Q120 105 110 105 Q100 105 98 94 Z" fill="#7a2a1a"/>' +
+      '<path d="M100 94.4 Q110 92.8 120 94.4 L119.4 97 Q110 95.6 100.6 97 Z" fill="#fff"/></g>' +
+    // 10 ha: a big happy open smile
+    '<g class="m"><path d="M97 93.5 Q110 96 123 93.5 Q120 107 110 107 Q100 107 97 93.5 Z" fill="#7a2a1a"/>' +
+      '<ellipse cx="110" cy="103.5" rx="5.5" ry="2.6" fill="#e0675a"/></g>' +
     // arms up to the paper
     '<path d="M60 160 Q36 190 52 214" fill="none" stroke="#3d9595" stroke-width="20" stroke-linecap="round"/>' +
     '<path d="M160 160 Q184 190 168 214" fill="none" stroke="#3d9595" stroke-width="20" stroke-linecap="round"/>' +
@@ -327,9 +353,35 @@
   }
 
   /* ---------- the newsman: everything in the big bubble is him talking ---------- */
-  var story = -1, mouth = 0, quiet = 0, chatter = 0;
+  var story = -1, mouth = 0, chatter = 0;
   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // flip the newspaper over (NEWS on the front, NEWS on the back) and move his mouth for a bit
+  var mouths = [].slice.call(man.querySelectorAll('.m')), now = 0;
+  function setMouth(k) {
+    mouths[now].classList.remove('on');
+    mouths[k].classList.add('on');
+    now = k;
+  }
+  // talking: words of 1 to 4 sounds, each sound a different mouth shape, a tiny pause between
+  // words (lips shut or a little smile), then the resting smile when he's finished
+  function speak(ms) {
+    clearTimeout(mouth);
+    var end = Date.now() + ms, left = 0;
+    (function step() {
+      if (Date.now() >= end) { setMouth(0); return; }
+      if (left <= 0) {
+        left = 1 + Math.floor(Math.random() * 4);
+        setMouth(Math.random() < 0.5 ? 1 : 0);
+        mouth = setTimeout(step, 90 + Math.random() * 110);
+        return;
+      }
+      left--;
+      var k;
+      do { k = 2 + Math.floor(Math.random() * 9); } while (k === now);
+      setMouth(k);
+      mouth = setTimeout(step, 70 + Math.random() * 90);
+    })();
+  }
+  // flip the newspaper over (NEWS on the front, NEWS on the back) and talk for a bit
   function talk(ms) {
     paper.classList.remove('flip'); void paper.getBoundingClientRect(); paper.classList.add('flip');
     setTimeout(function () {
@@ -338,12 +390,9 @@
       f.style.display = frontShowing ? 'none' : '';
       b.style.display = frontShowing ? '' : 'none';
     }, 300);
-    if (calm) return;
-    clearInterval(mouth); clearTimeout(quiet);
-    mouth = setInterval(function () { man.classList.toggle('talking'); }, 140);
-    quiet = setTimeout(function () { clearInterval(mouth); man.classList.remove('talking'); }, ms);
+    if (!calm) speak(ms);
   }
-  man.addEventListener('click', function () { talk(1400); });
+  man.addEventListener('click', function () { talk(1800); });
 
   // a red dot until you've looked at the newest news
   var SEEN = 'jos-news-seen';
@@ -360,17 +409,17 @@
     btn.classList.remove('unseen');
     try { localStorage.setItem(SEEN, newest()); } catch (e) {}
     story = -1;
-    talk(2200);
+    talk(3000);
     // now and then he turns the page and keeps talking
     clearInterval(chatter);
-    chatter = setInterval(function () { talk(1400); }, 8000);
+    chatter = setInterval(function () { talk(1800); }, 8000);
   }
   function close() {
     page.hidden = true;
     document.documentElement.style.overflow = '';
     document.documentElement.classList.remove('newsOpen');
-    clearInterval(chatter); clearInterval(mouth); clearTimeout(quiet);
-    man.classList.remove('talking');
+    clearInterval(chatter); clearTimeout(mouth);
+    setMouth(0);
   }
 
   btn.addEventListener('click', open);
