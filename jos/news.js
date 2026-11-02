@@ -27,6 +27,13 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'📰', when:'2 Nov', title:'NEWS!',
+      what:'This! Click NEWS and the newsman tells you every new thing, in one big speech bubble.',
+      more:'The home page goes grey and all the news comes out of the newsman’s mouth in a giant speech ' +
+           'bubble. The Möbius strip turns behind the big orange letters, like a TV news globe. He stands in ' +
+           'the corner holding his newspaper (NEWS on the front and NEWS on the back). Point at a story and ' +
+           'he flips it over and talks, with 10 different mouth shapes. Click the grey edges to go back.',
+      picture:'ldlc/ring-spin.webp', strip:48 },
     { emoji:'📖', when:'1 Nov', title:'LDLC beginner bubbles',
       what:'Open a level in LDLC and type beginner. Gold bubbles with arrows show you how everything works.',
       more:'Made with a friend. The bubbles change with what you are doing: pick Trigger to block and they ' +
