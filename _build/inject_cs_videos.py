@@ -60,5 +60,6 @@ for slug in sorted(slugs):
         content = content.replace('        <footer class="site-footer">',
                                   blk + '\n        <footer class="site-footer">', 1)
     open(path, 'w').write(content)
+    print(f'PUBLISH: cs/gcse/{slug}/index.html')
     changed += 1
 print(f'updated {changed} CS topic pages')
