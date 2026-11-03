@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Human CPU · Envelope mode print kit</title>
+<style>
+  /* ---------- Page and base ---------- */
+  @page { size: A4; margin: 12mm; }
+
+  :root {
+    --ink: #111;
+    --line: #444;
+    --blue: #1d4ed8;
+    --amber: #b45309;
+    --grey: #555;
+    --paper: #fff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.3;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body { padding: 10mm; }
+
+  h1 { font-size: 18pt; margin: 0 0 2mm; }
+  h2 { font-size: 13pt; margin: 0 0 2mm; }
+  h3 { font-size: 11pt; margin: 0 0 2mm; }
+  p { margin: 0 0 2mm; }
+
+  /* ---------- Screen-only controls ---------- */
+  .controls {
+    border: 1px solid var(--line);
+    padding: 4mm;
+    margin-bottom: 6mm;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3mm 8mm;
+    align-items: center;
+  }
+  .controls button {
+    font: inherit;
+    font-weight: 700;
+    padding: 2mm 5mm;
+    background: var(--blue);
+    color: #fff;
+    border: 0;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .controls label { cursor: pointer; }
+  .controls a { color: var(--blue); }
+
+  /* ---------- Summary tables ---------- */
+  table {
+    border-collapse: collapse;
+    margin: 0 0 4mm;
+    font-size: 10.5pt;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 1mm 2.5mm;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #e8e8e8; }
+  td.num, th.num { text-align: right; }
+  tr.total td { font-weight: 700; }
+  .summary-run { margin-bottom: 7mm; break-inside: avoid; }
+  .summary-run ul { margin: 0 0 2mm; padding-left: 5mm; }
+
+  /* ---------- Sections and pieces ---------- */
+  .sheet { break-before: page; page-break-before: always; }
+  .sheet h2 { font-size: 11pt; margin: 0 0 2mm; }
+  .sheet-note { font-size: 9pt; margin: 0 0 2mm; }
+
+  .grid {
+    display: grid;
+    gap: 3mm;
+    align-content: start;
+  }
+  .grid-request  { grid-template-columns: repeat(2, 88mm); }
+  .grid-envelope { grid-template-columns: repeat(2, 88mm); }
+  .grid-contents { grid-template-columns: repeat(3, 58mm); }
+
+  .piece {
+    border: 0.5mm dashed var(--line);
+    background: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .tag {
+    font-size: 8pt;
+    color: var(--line);
+    letter-spacing: 0.02em;
+  }
+
+  /* Request slip: 88 x 40 mm */
+  .request { height: 40mm; padding: 3mm 4mm; }
+  .request .title { font-weight: 700; font-size: 10pt; }
+  .request .box {
+    flex: 1;
+    margin-top: 2mm;
+    border: 0.6mm solid var(--ink);
+    display: flex;
+    align-items: center;
+    padding: 0 4mm;
+    font-size: 15pt;
+    font-weight: 700;
+  }
+  .request .box .blank {
+    display: inline-block;
+    width: 32mm;
+    border-bottom: 0.6mm solid var(--ink);
+    height: 8mm;
+    margin-left: 3mm;
+  }
+
+  /* Envelope front: 88 x 47 mm */
+  .envelope { height: 47mm; }
+  .envelope .band {
+    color: #fff;
+    font-weight: 700;
+    font-size: 11pt;
+    letter-spacing: 0.08em;
+    padding: 1.6mm 4mm;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .envelope .band .sub {
+    font-size: 8.5pt;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    font-weight: 700;
+  }
+  .band-instruction { background: var(--blue); }
+  .band-data        { background: var(--amber); }
+  .band-empty       { background: var(--grey); }
+  .envelope .body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 4mm;
+    gap: 4mm;
+  }
+  .envelope .addr-label {
+    font-size: 10pt;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .envelope .addr {
+    font-size: 40pt;
+    font-weight: 800;
+    line-height: 1;
+    min-width: 18mm;
+  }
+  .envelope .foot {
+    padding: 0 4mm 2mm;
+    font-size: 8.5pt;
+    color: var(--line);
+  }
+
+  /* Contents slip: 58 x 30 mm */
+  .contents { height: 30mm; padding: 2mm 3mm; }
+  .contents .value {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20pt;
+    font-weight: 800;
+    font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+  }
+  .contents .value .writeline {
+    display: inline-block;
+    width: 36mm;
+    height: 9mm;
+    border-bottom: 0.6mm solid var(--ink);
+  }
+  .contents .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2mm;
+  }
+  .contents .kind {
+    flex: none;
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #fff;
+    padding: 0.4mm 1.5mm;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .kind-instruction { background: var(--blue); }
+  .kind-data        { background: var(--amber); }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body { padding: 0; }
+    .screen-only { display: none !important; }
+    .controls { display: none !important; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @media screen {
+    body { max-width: 200mm; margin: 0 auto; }
+    .sheet { border-top: 1px solid var(--line); padding-top: 6mm; margin-top: 8mm; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Human CPU · Envelope mode print kit</h1>
+  <p>Print, cut along the dashed lines, put each contents slip inside an envelope with the matching front.</p>
+  <p class="screen-only" style="font-size:9.5pt;">Blue envelopes carry an instruction. Amber envelopes carry data. White slips carry an address. Every piece prints with its word on the band, so a black-and-white copy still works.</p>
+</header>
+
+<div class="controls screen-only">
+  <button type="button" onclick="window.print()">Print</button>
+  <label><input type="checkbox" id="fullQty"> Print full quantities (repeat envelope fronts and contents slips to the copy count)</label>
+  <a href="index.html">Back to the Human CPU page</a>
+</div>
+
+<section id="summary"></section>
+<div id="sheets"></div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Helpers ---------- */
+  function isInstruction(cell) { return cell !== null && typeof cell === "object"; }
+  function isData(cell) { return typeof cell === "number"; }
+
+  function cellText(cell) {
+    if (cell === null || cell === undefined) return "empty";
+    if (isInstruction(cell)) return cell.op + (cell.n !== undefined ? " " + cell.n : "");
+    return String(cell);
+  }
+
+  function cellKind(cell) {
+    if (isInstruction(cell)) return "instruction";
+    if (isData(cell)) return "data";
+    return "empty";
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ---------- Walk the program and count memory trips ----------
+     Every fetch reads the address in the PC.
+     LOAD n and ADD n also read address n during execute.
+     STORE n writes to n: one delivery trip, no read.
+     STOP ends the run. */
+  function analyse(program) {
+    var mem = program.memory;
+    var reads = mem.map(function () { return 0; });
+    var stores = [];
+    var trips = 0;
+    var pc = 0;
+    var guard = 0;
+
+    while (guard++ < 200) {
+      var cell = mem[pc];
+      if (!isInstruction(cell)) break;      /* ran off the program: stop walking */
+      reads[pc]++; trips++;                 /* fetch */
+      pc++;
+      if (cell.op === "LOAD" || cell.op === "ADD") {
+        reads[cell.n]++; trips++;           /* execute: read the operand */
+      } else if (cell.op === "STORE") {
+        stores.push(cell.n); trips++;       /* execute: deliver to memory */
+      } else if (cell.op === "STOP") {
+        break;
+      }
+    }
+
+    var rows = mem.map(function (cell, addr) {
+      var copies = reads[addr] > 0 ? reads[addr] + 1 : 0;
+      return { addr: addr, cell: cell, text: cellText(cell), kind: cellKind(cell),
+               reads: reads[addr], copies: copies, isStoreTarget: stores.indexOf(addr) !== -1 };
+    });
+    var totalCopies = rows.reduce(function (s, r) { return s + r.copies; }, 0);
+
+    return { rows: rows, stores: stores, trips: trips, totalCopies: totalCopies,
+             requestSlips: trips, requestSlipsToPrint: trips + 2 };
+  }
+
+  /* ---------- Pieces ---------- */
+  function requestSlip(runName) {
+    return '<div class="piece request">' +
+      '<div class="title">REQUEST SLIP · carries an ADDRESS <span class="tag">· ' + esc(runName) + '</span></div>' +
+      '<div class="box">Address: <span class="blank"></span></div>' +
+      '<div class="tag" style="margin-top:1.5mm">MAR: write the address, then hand this slip to a runner.</div>' +
+      '</div>';
+  }
+
+  function envelopeFront(runName, row, delivery) {
+    var kind = delivery ? "data" : row.kind;
+    var word = { instruction: "Instruction", data: "Data", empty: "Empty" }[kind];
+    var sub = delivery ? "STORE delivery" : "";
+    var foot;
+    if (delivery) {
+      foot = "MDR: put the written slip inside, then a runner carries it to address " + row.addr + ".";
+    } else if (row.kind === "empty") {
+      foot = row.isStoreTarget
+        ? "This address starts empty. The STORE delivery arrives here."
+        : "This address starts empty. Nothing is read from it.";
+    } else {
+      foot = "Copy envelope. Memory keeps its original and hands this to the runner.";
+    }
+    return '<div class="piece envelope">' +
+      '<div class="band band-' + kind + '"><span>' + word + '</span>' +
+      (sub ? '<span class="sub">' + sub + '</span>' : '<span class="sub">' + esc(runName) + '</span>') +
+      '</div>' +
+      '<div class="body"><div class="addr-label">Memory<br>address</div><div class="addr">' + row.addr + '</div>' +
+      (delivery ? '<div class="addr-label" style="font-weight:400">' + esc(runName) + '<br>to memory</div>' : '') +
+      '</div>' +
+      '<div class="foot">' + foot + '</div>' +
+      '</div>';
+  }
+
+  function contentsSlip(runName, row, label) {
+    return '<div class="piece contents">' +
+      '<div class="head"><span class="tag">' + esc(label) + ' · address ' + row.addr + ' · ' + esc(runName) + '</span>' +
+      '<span class="kind kind-' + row.kind + '">' + row.kind + '</span></div>' +
+      '<div class="value">' + esc(row.text) + '</div>' +
+      '</div>';
+  }
+
+  function blankSlip(runName, addr) {
+    return '<div class="piece contents">' +
+      '<div class="head"><span class="tag">STORE delivery · address ' + addr + ' · ' + esc(runName) + '</span>' +
+      '<span class="kind kind-data">data</span></div>' +
+      '<div class="value"><span class="writeline"></span></div>' +
+      '<div class="tag">MDR: write the number from the ACC on this line.</div>' +
+      '</div>';
+  }
+
+  /* ---------- Summary ---------- */
+  function summaryHTML(program, a) {
+    var h = '<div class="summary-run"><h2>' + esc(program.name) + ' · what to prepare</h2>';
+    h += '<table><thead><tr><th class="num">Address</th><th>Contents</th><th>Kind</th>' +
+         '<th class="num">Times read</th><th class="num">Copy envelopes (reads + 1 spare)</th></tr></thead><tbody>';
+    a.rows.forEach(function (r) {
+      h += '<tr><td class="num">' + r.addr + '</td><td>' + esc(r.text) + '</td><td>' + r.kind +
+           (r.isStoreTarget ? ' · STORE target' : '') + '</td>' +
+           '<td class="num">' + r.reads + '</td><td class="num">' + r.copies + '</td></tr>';
+    });
+    h += '<tr class="total"><td colspan="3">Total</td><td class="num">' +
+         a.rows.reduce(function (s, r) { return s + r.reads; }, 0) + '</td><td class="num">' + a.totalCopies + '</td></tr>';
+    h += '</tbody></table>';
+    h += '<ul>';
+    h += '<li><strong>' + a.totalCopies + ' copy envelopes</strong> (blue for an instruction, amber for data), each with a contents slip inside.</li>';
+    a.stores.forEach(function (addr) {
+      h += '<li><strong>1 STORE delivery envelope</strong> for address ' + addr + ' (amber, data) with <strong>1 blank contents slip</strong> for the MDR to fill in.</li>';
+    });
+    h += '<li><strong>' + a.requestSlips + ' request slips</strong>, one per memory trip (fetches, operand reads and the STORE delivery). The sheet prints ' + a.requestSlipsToPrint + ', with 2 spare.</li>';
+    h += '</ul></div>';
+    return h;
+  }
+
+  /* ---------- Sheets for one run ---------- */
+  function sheetsHTML(program, a, full) {
+    var name = program.name;
+    var h = "";
+    var i, r, n;
+
+    /* Request slips */
+    h += '<section class="sheet"><h2>' + esc(name) + ' · request slips (' + a.requestSlipsToPrint + ')</h2>' +
+         '<p class="sheet-note">White slips. The MAR writes one address on each and hands it to a runner.</p>' +
+         '<div class="grid grid-request">';
+    for (i = 0; i < a.requestSlipsToPrint; i++) h += requestSlip(name);
+    h += '</div></section>';
+
+    /* Envelope fronts */
+    var fronts = [];
+    a.rows.forEach(function (row) {
+      n = full ? Math.max(row.copies, 1) : 1;
+      for (i = 0; i < n; i++) fronts.push(envelopeFront(name, row, false));
+    });
+    a.stores.forEach(function (addr) { fronts.push(envelopeFront(name, a.rows[addr], true)); });
+    h += '<section class="sheet"><h2>' + esc(name) + ' · envelope fronts (' + fronts.length + ')</h2>' +
+         '<p class="sheet-note">Cut out and stick one on the front of each C6 envelope. The band says what the envelope carries.</p>' +
+         '<div class="grid grid-envelope">' + fronts.join("") + '</div></section>';
+
+    /* Contents slips */
+    var slips = [];
+    a.rows.forEach(function (row) {
+      if (row.kind === "empty") return;
+      if (full) {
+        slips.push(contentsSlip(name, row, "original · stays in memory"));
+        for (i = 0; i < row.copies; i++) slips.push(contentsSlip(name, row, "copy"));
+      } else {
+        slips.push(contentsSlip(name, row, "copy"));
+      }
+    });
+    a.stores.forEach(function (addr) { slips.push(blankSlip(name, addr)); });
+    h += '<section class="sheet"><h2>' + esc(name) + ' · contents slips (' + slips.length + ')</h2>' +
+         '<p class="sheet-note">Put each slip inside the envelope whose front shows the same address.' +
+         (full ? ' The slip marked "original" stays at its memory address.' : '') + '</p>' +
+         '<div class="grid grid-contents">' + slips.join("") + '</div></section>';
+
+    return h;
+  }
+
+  /* ---------- Render ---------- */
+  function render() {
+    var full = document.getElementById("fullQty").checked;
+    var summary = "";
+    var sheets = "";
+    Object.keys(HCPU_DATA.programs).forEach(function (key) {
+      var program = HCPU_DATA.programs[key];
+      var a = analyse(program);
+      summary += summaryHTML(program, a);
+      sheets += sheetsHTML(program, a, full);
+    });
+    document.getElementById("summary").innerHTML =
+      '<h2>Counts, worked out from the programs</h2>' +
+      '<p class="sheet-note">Every fetch reads the address in the PC. LOAD and ADD also read their operand address. STORE makes one delivery and reads nothing. Each read gets its own copy envelope, plus one spare per address.</p>' +
+      summary;
+    document.getElementById("sheets").innerHTML = sheets;
+  }
+
+  document.getElementById("fullQty").addEventListener("change", render);
+  render();
+})();
+</script>
+</body>
+</html>

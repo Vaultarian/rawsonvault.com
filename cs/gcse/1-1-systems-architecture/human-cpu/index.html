@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Human CPU</title>
+<meta name="description" content="Fetch, decode, execute: the whiteboard companion to the Human CPU activity.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark" data-stage="none">
+<div id="app">
+
+  <!-- Stage strip -->
+  <header class="strip panelbox">
+    <div class="strip-left">
+      <div id="run-name" class="run-name">Run 1</div>
+      <div class="run-buttons">
+        <button type="button" data-run="1" aria-pressed="true" title="Run 1 (key 1)">Run 1</button>
+        <button type="button" data-run="2" aria-pressed="false" title="Run 2 (key 2)">Run 2</button>
+      </div>
+    </div>
+
+    <div class="chips" aria-label="The three stages">
+      <div class="chip chip-fetch" id="chip-fetch">
+        <svg class="chip-ico" viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="21" y="5" width="19" height="25" rx="2" fill="currentColor"/>
+          <rect x="24" y="9" width="3" height="17" fill="var(--chip-ink)"/>
+          <path d="M5 42 C6 33 11 29 17 29 L31 29 C35 29 35 35 31 35 L22 35" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17 29 L27 22 C30 20 33 23 31 26 L26 30" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div><div class="chip-name">FETCH</div><div class="chip-mantra">Get it</div></div>
+      </div>
+      <div class="chip-arrow" aria-hidden="true">&#9654;</div>
+      <div class="chip chip-decode" id="chip-decode">
+        <svg class="chip-ico" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="5"/>
+          <path d="M29 29 L42 42" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+        </svg>
+        <div><div class="chip-name">DECODE</div><div class="chip-mantra">Understand it</div></div>
+      </div>
+      <div class="chip-arrow" aria-hidden="true">&#9654;</div>
+      <div class="chip chip-execute" id="chip-execute">
+        <svg class="chip-ico" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="4"/>
+          <path d="M19 14 L35 24 L19 34 Z" fill="currentColor"/>
+        </svg>
+        <div><div class="chip-name">EXECUTE</div><div class="chip-mantra">Do it</div></div>
+      </div>
+      <div class="loop" aria-hidden="true"><span>back to Fetch</span></div>
+    </div>
+
+    <div class="strip-right">
+      <div id="step-count" class="step-count">Step 0 of 52</div>
+      <div id="cycle-count" class="cycle-count">Cycle 1 of 4: LOAD 5</div>
+    </div>
+  </header>
+
+  <!-- Map + instruction panel -->
+  <main class="middle">
+    <section class="map-wrap" aria-label="Classroom map">
+      <svg id="map" role="img" aria-label="Top-down plan of the classroom"></svg>
+      <div id="callout" class="callout" hidden></div>
+      <div id="end" class="end panelbox" hidden>
+        <div class="end-label">The program has ended. Address 7 holds</div>
+        <div id="end-val" class="end-val">42</div>
+        <div id="end-sub" class="end-sub"></div>
+      </div>
+    </section>
+
+    <section id="panel" class="panel panelbox" aria-label="Who acts now">
+      <div class="panel-main">
+        <div id="who" class="who"></div>
+        <div id="say" class="say"></div>
+        <div id="does" class="does"></div>
+        <div id="lib" class="lib"></div>
+      </div>
+      <div id="trace" class="trace" hidden>
+        <table>
+          <caption>Trace table <span class="trace-key">MAR, MDR during fetch · PC after fetch · ACC after execute</span></caption>
+          <thead><tr><th>Cycle</th><th>MAR</th><th>MDR</th><th>PC</th><th>ACC</th></tr></thead>
+          <tbody id="trace-body"></tbody>
+        </table>
+      </div>
+      <div id="envtools" class="envtools" hidden>
+        <span id="trips" class="trips">Trips: 0 of 7</span>
+        <span id="timer" class="timer">0:00</span>
+        <button type="button" id="timer-go">Start</button>
+        <button type="button" id="timer-reset">Reset</button>
+        <button type="button" id="skipwalk">Skip the walk</button>
+      </div>
+      <div class="nav">
+        <button type="button" id="btn-back" class="btn-back" title="Back (Left arrow)">&#9664; Back</button>
+        <button type="button" id="btn-next" class="btn-next" title="Next (Space)">Next &#9654;</button>
+      </div>
+      <div class="jumps">
+        <button type="button" id="btn-replay">Replay this cycle</button>
+        <button type="button" id="btn-nextcycle">Next cycle</button>
+        <button type="button" id="btn-nextstage">Next stage</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Register board -->
+  <section class="board panelbox" aria-label="Registers and main memory">
+    <div class="regs">
+      <div class="reg reg-addr" id="reg-PC" data-key="PC" tabindex="0" role="button">
+        <div class="reg-head"><span class="reg-name">PC</span><span class="tag tag-addr">ADDRESS</span><span class="ico ico-slip" aria-hidden="true"></span></div>
+        <div class="reg-val">0</div>
+      </div>
+      <div class="reg reg-addr" id="reg-MAR" data-key="MAR" tabindex="0" role="button">
+        <div class="reg-head"><span class="reg-name">MAR</span><span class="tag tag-addr">ADDRESS</span><span class="ico ico-slip" aria-hidden="true"></span></div>
+        <div class="reg-val">empty</div>
+      </div>
+      <div class="reg reg-data" id="reg-MDR" data-key="MDR" tabindex="0" role="button">
+        <div class="reg-head"><span class="reg-name">MDR</span><span class="tag tag-data">DATA</span><span class="ico ico-env" aria-hidden="true"></span></div>
+        <div class="reg-val">empty</div>
+      </div>
+      <div class="reg reg-data" id="reg-ACC" data-key="ACC" tabindex="0" role="button">
+        <div class="reg-head"><span class="reg-name">ACC</span><span class="tag tag-data">DATA</span><span class="ico ico-env" aria-hidden="true"></span></div>
+        <div class="reg-val">empty</div>
+      </div>
+    </div>
+    <div class="mems" aria-label="Main memory">
+      <div class="mem" id="mem-0" data-key="mem0" role="button" tabindex="0"><span class="mem-addr">0</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-1" data-key="mem1" role="button" tabindex="0"><span class="mem-addr">1</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-2" data-key="mem2" role="button" tabindex="0"><span class="mem-addr">2</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-3" data-key="mem3" role="button" tabindex="0"><span class="mem-addr">3</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-4" data-key="mem4" role="button" tabindex="0"><span class="mem-addr">4</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-5" data-key="mem5" role="button" tabindex="0"><span class="mem-addr">5</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-6" data-key="mem6" role="button" tabindex="0"><span class="mem-addr">6</span><span class="mem-val"></span></div>
+      <div class="mem" id="mem-7" data-key="mem7" role="button" tabindex="0"><span class="mem-addr">7</span><span class="mem-val"></span></div>
+    </div>
+  </section>
+
+  <!-- Teacher notes (N) -->
+  <div id="notes" class="notes panelbox" hidden><strong>Teacher note</strong> <span id="notes-text"></span></div>
+
+  <!-- Controls -->
+  <nav class="controls panelbox" aria-label="Controls">
+    <button type="button" id="btn-restart" title="Restart (R)"><kbd>R</kbd> Restart</button>
+    <button type="button" data-toggle="predict" title="Predict mode (P)"><kbd>P</kbd> Predict</button>
+    <button type="button" data-toggle="checks" title="Check-it pauses (Q)"><kbd>Q</kbd> Check it</button>
+    <button type="button" data-toggle="library" title="Explain each step (L)"><kbd>L</kbd> Explain</button>
+    <button type="button" data-toggle="callouts" title="Notice this callouts (C)"><kbd>C</kbd> Notice this</button>
+    <button type="button" data-toggle="trace" title="Trace table (T)"><kbd>T</kbd> Trace</button>
+    <button type="button" data-toggle="envelope" title="Envelope mode (V)"><kbd>V</kbd> Envelopes</button>
+    <button type="button" data-toggle="notes" title="Teacher notes (N)"><kbd>N</kbd> Notes</button>
+    <button type="button" data-toggle="sound" title="Sound (M)"><kbd>M</kbd> Sound</button>
+    <button type="button" id="btn-seats" title="Seat editor (E)"><kbd>E</kbd> Seats</button>
+    <button type="button" id="btn-theme" title="Light or dark (D)"><kbd>D</kbd> Theme</button>
+    <button type="button" id="btn-full" title="Fullscreen (F)"><kbd>F</kbd> Full screen</button>
+    <button type="button" id="btn-hide" data-toggle="controlsHidden" title="Hide controls (H)"><kbd>H</kbd> Hide</button>
+    <a href="print-kit.html" class="ctl-link">Print kit</a>
+  </nav>
+  <button type="button" class="show-controls" data-toggle="controlsHidden" title="Show controls (H)">H</button>
+
+  <!-- Info card (register or seat click) -->
+  <div id="card" class="card" hidden role="dialog" aria-live="polite">
+    <div class="card-title"></div>
+    <div class="card-tag"></div>
+    <div class="card-holds"></div>
+    <div class="card-job"></div>
+  </div>
+
+  <!-- Seat editor (E) -->
+  <div id="editor" class="editor" hidden role="dialog" aria-label="Seat editor">
+    <div class="ed-head">
+      <h2>Seats · <span id="ed-run">Run 1</span></h2>
+      <button type="button" id="ed-close">Close</button>
+    </div>
+    <p class="ed-help">Names stay in this browser only. They are never sent anywhere.</p>
+    <div id="seat-list" class="seat-list"></div>
+    <div class="ed-tools">
+      <span>Swap</span>
+      <select id="swap-a" aria-label="First role to swap"></select>
+      <span>with</span>
+      <select id="swap-b" aria-label="Second role to swap"></select>
+      <button type="button" id="ed-swap">Swap</button>
+    </div>
+    <div class="ed-tools">
+      <label>Teacher desk
+        <select id="desk-pos"><option value="left">Left</option><option value="centre">Centre</option><option value="right">Right</option></select>
+      </label>
+      <button type="button" id="ed-reset">Reset seats to default</button>
+      <button type="button" id="ed-clear">Clear names</button>
+    </div>
+  </div>
+
+  <div id="live" class="sr-only" aria-live="polite"></div>
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
