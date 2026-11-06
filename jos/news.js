@@ -27,6 +27,15 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🔢', when:'6 Nov', title:'Sudoku',
+      what:'A sudoku game with 100 levels, made with Dominic. Every level is made brand new while the loading dots go round.',
+      more:'A little program puts random numbers in the grid and checks it can be solved. If it cannot, it tries ' +
+           'again, all in about 1.5 seconds. Higher levels start with fewer numbers. Pencil notes, an eraser, and a ' +
+           'red message that tells you the rule when you put a number in the wrong place. A good number glows green, ' +
+           'and finishing a row, column or box sends green spreading along it. Finish all nine of a number and its ' +
+           'button whirls away. Lightning mode lights up a number so you can click lots of squares. Click a ' +
+           'locked level and it shows which level to beat next. Pull the level screen down and a lock whirls in.',
+      play:'sudoku/' },
     { emoji:'📰', when:'2 Nov', title:'NEWS!',
       what:'This! Click NEWS and the newsman tells you every new thing, in one big speech bubble.',
       more:'The home page goes grey and all the news comes out of the newsman’s mouth in a giant speech ' +
