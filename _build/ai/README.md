@@ -29,4 +29,4 @@ Two things the scripts will not do for you:
   around them. Supply an `article=` key in the manifest only when you mean to
   replace the writing.
 
-Conventions: `ai/AI-PAGES.md`. Course spec: `~/vault/01-Teaching/AI Club/INTENT.md`.
+Conventions: `ai/AI-PAGES.md`. Course spec: `~/vault/01-Teaching/AI/INTENT.md`.

@@ -22,7 +22,7 @@ it. Paywalled, login-only or unclear-provenance material is LINKED to its public
 original, never hosted. Check a hosted PDF's last page before adding it.
 
 Source of every entry: the lesson's "Readings" list in
-~/vault/01-Teaching/AI Club/Curriculum/Season N - */ (the .docx carries the
+~/vault/01-Teaching/AI/Curriculum/Season N - */ (the .docx carries the
 hyperlinks the .md conversions lost). Built 2026-10-06.
 """
 

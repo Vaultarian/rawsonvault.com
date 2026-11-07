@@ -3,7 +3,7 @@
 > Conventions for every page under `rawsonvault.com/ai/`. The publishing
 > contract above this file is `AGENTS.md` at the repo root; where the two
 > disagree, `AGENTS.md` wins. The course spec is
-> `~/vault/01-Teaching/AI Club/INTENT.md`.
+> `~/vault/01-Teaching/AI/INTENT.md`.
 >
 > Start a new page by copying `_build/ai-episode-template.html`.
 
