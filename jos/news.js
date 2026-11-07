@@ -27,6 +27,14 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'💡', when:'7 Nov', title:'Sudoku: hints, coins and tutorials',
+      what:'Sudoku has a lightbulb hint button, coins you win by finishing levels, and a rewind button on levels you already did.',
+      more:'Click the lightbulb for a hint. Click the little + for more help: reveal a square, reveal a random ' +
+           'square, or type a number to reveal that many. Squares are named like chess, so the bottom left is A1. ' +
+           'A right number glows green and a wrong one goes red. Finish a level and confetti falls, a fanfare ' +
+           'plays and ten coins fly into your coin counter. Squares 1 to 3 are tutorials, and Level 1 is open ' +
+           'from the start. Open a level you already finished and a spinning rewind button lets you play it again.',
+      play:'sudoku/' },
     { emoji:'🔢', when:'6 Nov', title:'Sudoku',
       what:'A sudoku game with 100 levels. Every level is made brand new while the loading dots go round.',
       more:'A little program puts random numbers in the grid and checks it can be solved. If it cannot, it tries ' +
