@@ -27,6 +27,63 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🚪', when:'8 Nov', title:'LDLC: Needed heroes and a smarter camera',
+      what:'With lots of Heroes, the camera follows all of them and zooms out so they stay on the screen.',
+      more:'Mark Heroes as Needed for finish, and then every Needed Hero has to go into a Door ' +
+           'before the level is won. The first one in makes the door close and open again, but it is ' +
+           'RED inside. A second later it shakes and turns black again, while the Hero waits inside ' +
+           'for the others. A Hero you did not mark ignores the doors.',
+      play:'ldlc/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: difficulties',
+      what:'When you create a level it asks: Beginner, Regular or Advanced.',
+      more:'Beginner keeps the guide on and hides Edit controls and the Dash orb. Regular has all ' +
+           'the usual blocks. Advanced gives you the advanced commands (the editor commands have a ' +
+           'new name), the Camera position, Hill and Ball blocks, and lets you put down lots of ' +
+           'Heroes and Doors that all do the same thing. Press left and every Hero goes left.',
+      play:'ldlc/' },
+    { emoji:'📷', when:'8 Nov', title:'LDLC: choose your grid size, and a camera',
+      what:'Choose how big your level is, from one screen up to 160 by 90, and zoom out to see it all.',
+      more:'A new level asks what grid size you want. Rechoose size changes it later, and Zoom has a ' +
+           'slider and Zoom to fit. Hold Space and drag to move around a big level without putting ' +
+           'blocks down. When you play, the camera follows your hero. The new Camera position block ' +
+           'can send the camera to a spot you choose, or slide it up, down, left or right, and it ' +
+           'can make the hero die if he goes off the screen.',
+      play:'ldlc/' },
+    { emoji:'⚪', when:'8 Nov', title:'LDLC: the Ball and the Hill',
+      what:'A blue Ball that is not deadly unless you say so, and a Hill for it to roll down.',
+      more:'Turn Gravity on and the ball falls, bounces and rolls down the hill. Turn Crush deadly ' +
+           'on and it kills you if it lands on your head, but you are safe if you touch its side or ' +
+           'top. A trigger can turn its Gravity on and off. Your hero can walk up and down the hill ' +
+           'too.',
+      play:'ldlc/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: gravity can go any way',
+      what:'Set gravity to Up, Down, Left or Right, and your hero turns so his feet stand on the new floor.',
+      more:'The Edit controls block now has a Do list, like a trigger: add Set gravity, or Change ' +
+           'controls. The Hero can start with any gravity too. He jumps straight away from the ' +
+           'floor, still exactly as high as his Jump power.',
+      play:'ldlc/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: speed and scary music',
+      what:'The Hero and Edit controls both have a Speed box, and the LDLC menus have scary music.',
+      more:'The music plays on the LDLC home screen and the My Levels page only, not when you build ' +
+           'or play. A little speaker button in the top right turns it off.',
+      play:'ldlc/' },
+    { emoji:'🧩', when:'8 Nov', title:'Sudoku is in the Games menu',
+      what:'You can find Sudoku in the Games list on the main page now.',
+      more:'It has its own how-to-play card too, and a Back button on its start screen.',
+      play:'sudoku/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: jump power',
+      what:'Jump power is how many blocks high you jump, and every jump goes exactly that high.',
+      more:'A normal jump is 2 blocks. You can set it on the Hero from the very start, and an Edit ' +
+           'controls block can change it later in the level. Letting go early no longer makes a ' +
+           'smaller jump.',
+      play:'ldlc/' },
+    { emoji:'🔢', when:'8 Nov', title:'Sudoku: tutorials you can play, and an eraser that stays on',
+      what:'Three tutorials teach you Sudoku, and the eraser can stay on in lightning mode.',
+      more:'Tutorial 1 teaches the buttons one at a time, then a little clip shows someone finishing ' +
+           'a level. Tutorial 2 is a small 4 by 4 board and Tutorial 3 is 6 by 6, each with a guide ' +
+           'that asks which number is missing from a row, a column and a box. In lightning mode the ' +
+           'eraser stays glowing red so you can keep rubbing squares out.',
+      play:'sudoku/' },
     { emoji:'💡', when:'7 Nov', title:'Sudoku: hints, coins and tutorials',
       what:'Sudoku has a lightbulb hint button, coins you win by finishing levels, and a rewind button on levels you already did.',
       more:'Click the lightbulb for a hint. Click the little + for more help: reveal a square, reveal a random ' +

@@ -211,7 +211,7 @@
             <div class="nav-item">
                 <span class="nav-tab dropdown-trigger">Games ▾</span>
                 <div class="dropdown-menu">
-                    <a href="whack-a-mole/">Whack-a-Mole!</a><a href="yoga/">Yoga Simulator</a><a href="gravity/">Gravity Simulator</a><a href="brick-breaker/">Brick Breaker</a><a href="fortune-teller/">Fortune Teller</a><a href="maze-runner/">Maze Runner</a><a href="type-speed/">Type Speed</a><a href="color-mixer/">Colour Mixer</a><a href="the-red-button/">The Red Button</a><a href="reaction-time/">Reaction Time</a><a href="password-defender/">Password Defender</a><a href="snake/">Snake</a><a href="flappy-bird/">Flappy Bird</a><a href="marble_run.html">Marble Races</a><a href="marble-run-builder/">Marble Run Builder</a><a href="simon-says-among-us/">Simon Says (Among Us)</a><a href="2048/">2048</a><a href="bouncy-spinner/">Bouncy Spinner</a><a href="space-sea-elevator/">Space &amp; Sea Elevator</a><a href="ldlc/">LDLC Level Creator</a><a href="classic-games/">Classic Games</a>
+                    <a href="whack-a-mole/">Whack-a-Mole!</a><a href="yoga/">Yoga Simulator</a><a href="gravity/">Gravity Simulator</a><a href="brick-breaker/">Brick Breaker</a><a href="fortune-teller/">Fortune Teller</a><a href="maze-runner/">Maze Runner</a><a href="type-speed/">Type Speed</a><a href="color-mixer/">Colour Mixer</a><a href="the-red-button/">The Red Button</a><a href="reaction-time/">Reaction Time</a><a href="password-defender/">Password Defender</a><a href="snake/">Snake</a><a href="flappy-bird/">Flappy Bird</a><a href="marble_run.html">Marble Races</a><a href="marble-run-builder/">Marble Run Builder</a><a href="simon-says-among-us/">Simon Says (Among Us)</a><a href="2048/">2048</a><a href="sudoku/">Sudoku</a><a href="bouncy-spinner/">Bouncy Spinner</a><a href="space-sea-elevator/">Space &amp; Sea Elevator</a><a href="ldlc/">LDLC Level Creator</a><a href="classic-games/">Classic Games</a>
                 </div>
             </div>
             <div class="nav-item">
@@ -248,6 +248,7 @@
                         <div class="pill-row"><a class="pill" href="2048/">2048</a><a class="pill" href="ldlc/">😈 LDLC Level Creator</a></div>
                         <div class="pill-row"><a class="pill" href="bouncy-spinner/">Bouncy Spinner</a><a class="pill" href="quick-draw/">Quick Draw 🤖</a></div>
                         <div class="pill-row"><a class="pill" href="space-sea-elevator/">Space &amp; Sea Elevator</a><a class="pill" href="classic-games/">🎲 Classic Games</a></div>
+                        <div class="pill-row"><a class="pill" href="sudoku/">🧩 Sudoku</a></div>
                     </div>
                     <div class="snowman-grid">
                         <div class="snowman-col">
@@ -422,6 +423,9 @@
             { e: "🔢", t: "2048", u: "2048/",
               i: "A sliding number puzzle. Two matching tiles crash together and double up. Can you reach 2048?",
               s: ["Press an arrow key to slide ALL the tiles that way.", "Two tiles with the same number join into one bigger one.", "Keep going until you make 2048 — or run out of space."], k: ["⬆️⬇️⬅️➡️ Arrow keys"] },
+            { e: "🧩", t: "Sudoku", u: "sudoku/",
+              i: "Fill the grid so every row, column and box has each number once. Start with the three tutorials, then try the levels.",
+              s: ["Press a number, then press a square to put it in.", "Use the pencil for small notes and the lightbulb when you need a hint.", "Finish levels to win coins for more hints."], k: ["🖱️ Click", "1–9 Number keys"] },
             { e: "🌀", t: "Maze Runner", u: "maze-runner/",
               i: "You're lost in a maze. Find the way out — then do it again, only harder.",
               s: ["Walk with the arrow keys.", "Find the exit to finish the level.", "Each new level is a bigger maze."], k: ["⬆️⬇️⬅️➡️ Arrow keys"] },
@@ -1136,7 +1140,7 @@ html.pass-quake { animation:passQuake 0.45s linear; }
   const GAMES = ['whack-a-mole/','yoga/','gravity/','brick-breaker/','fortune-teller/',
                  'maze-runner/','type-speed/','color-mixer/','the-red-button/','reaction-time/',
                  'password-defender/','snake/','flappy-bird/','marble_run.html','marble-run-builder/',
-                 'simon-says-among-us/','2048/','bouncy-spinner/','quick-draw/','space-sea-elevator/','classic-games/','ldlc/'];
+                 'simon-says-among-us/','2048/','sudoku/','bouncy-spinner/','quick-draw/','space-sea-elevator/','classic-games/','ldlc/'];
 
   const PLAYED_KEY = 'jos-games-played';
   const SET_KEY    = 'jos-settings';
