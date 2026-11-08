@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Pendulum Investigation</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:wght@600;700&display=swap">
+<style>
+/* SHELL v1: left sidebar (built from <section class="sec" data-title data-group>), each section = header + .two (figure left, .why right). Shared by the Refraction and Reflection packets. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --ink:#16202e; --ink2:#44536a; --muted:#6a798d;
+  --line:#cbd5e2; --grid:#e3e8ef; --air:#f8fafc; --block:#d9e6f4;
+  --ray:#c62828; --theory:#0f766e; --data:#2455a4; --dots:#a8431f; --fit:#b45f06;
+  --accent:#c97b3a; --accent-bg:#fbf0e4; --good:#1e7a46; --warn:#8f5b00; --bad:#b3261e;
+  --f-display:'Source Serif 4',Georgia,serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --surface:#17212e; --ink:#e6edf5; --ink2:#aab8c9; --muted:#8798ac;
+  --line:#2c3a4c; --grid:#243242; --air:#121b27; --block:#1b334f;
+  --ray:#ff6b6b; --theory:#35c2ae; --data:#86adff; --dots:#ff9a73; --fit:#f0b04a;
+  --accent:#e29a5a; --accent-bg:#2b2119; --good:#5cd08a; --warn:#e8b04a; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --surface:#17212e; --ink:#e6edf5; --ink2:#aab8c9; --muted:#8798ac;
+  --line:#2c3a4c; --grid:#243242; --air:#121b27; --block:#1b334f;
+  --ray:#ff6b6b; --theory:#35c2ae; --data:#86adff; --dots:#ff9a73; --fit:#f0b04a;
+  --accent:#e29a5a; --accent-bg:#2b2119; --good:#5cd08a; --warn:#e8b04a; --bad:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+h1{font:700 26px/1.15 var(--f-display);margin:0 0 4px;text-wrap:balance}
+h2{font:600 22px/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:600 16px/1.3 var(--f-body);margin:14px 0 4px}
+p{margin:0 0 10px;max-width:66ch}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:22px 14px 22px max(16px,env(safe-area-inset-left,0px));border-right:1px solid var(--line);background:var(--surface)}
+.side .brand{font:700 17px/1.2 var(--f-display);margin:0 0 4px}
+.side .meta{font-size:12px;color:var(--muted);margin:0 0 16px}
+.side .grp{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+.side a{display:flex;gap:8px;align-items:baseline;padding:6px 8px;border-radius:6px;color:var(--ink2);text-decoration:none;font-size:14px;border-left:3px solid transparent}
+.side a b{font:500 12px var(--f-mono);color:var(--muted);min-width:22px}
+.side a:hover{background:var(--bg)}
+.side a[aria-current="true"]{background:var(--accent-bg);color:var(--ink);border-left-color:var(--accent)}
+.side a[aria-current="true"] b{color:var(--accent)}
+main{padding:28px max(20px,env(safe-area-inset-right,0px)) 80px 28px;min-width:0;max-width:1060px}
+.sec{padding:8px 0 44px;scroll-margin-top:16px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.sec:last-child{border-bottom:0}
+.sh{display:flex;gap:12px;align-items:baseline;margin-bottom:14px}
+.tag{font:500 13px var(--f-mono);background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:5px}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.vis{margin:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+.why{min-width:0}
+.why .lead{font-size:16px;color:var(--ink);margin-bottom:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.panel svg{display:block;width:100%;height:auto}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--f-body);padding:7px 13px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font:500 13px var(--f-mono);padding:5px 10px;border-radius:999px;cursor:pointer}
+.chip.seen{color:var(--ink);border-color:var(--theory)}
+.chip[aria-pressed="true"]{background:var(--theory);border-color:var(--theory);color:var(--surface)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{appearance:none;border:0;border-right:1px solid var(--line);background:none;color:var(--ink2);font:500 13px var(--f-body);padding:7px 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.readout{display:flex;flex-wrap:wrap;gap:4px 22px;align-items:baseline;font:500 22px var(--f-mono)}
+.readout small{font:400 13px var(--f-body);color:var(--muted);margin-right:6px}
+.readout .t2{color:var(--theory)}
+.note{background:var(--accent-bg);border-left:4px solid var(--accent);padding:10px 12px;border-radius:0 8px 8px 0;max-width:66ch;margin:0 0 10px}
+.note b{font-weight:600}
+.why-box{border:1px solid var(--line);border-left:4px solid var(--theory);background:var(--surface);padding:10px 12px;border-radius:0 8px 8px 0;max-width:66ch;margin:0 0 10px}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+ul.tight{margin:0 0 10px;padding-left:18px} ul.tight li{margin:3px 0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label.f{display:block;font:500 13px var(--f-body);color:var(--ink2);margin-bottom:4px}
+select,input[type=number]{font:500 14px var(--f-mono);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+input[type=number]{width:74px}
+table{border-collapse:collapse;font:500 13px var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl td,.tbl th{padding:4px 8px;border-bottom:1px solid var(--grid);text-align:left}
+.tbl th{color:var(--muted);font-weight:500}
+.strip{overflow-x:auto}
+.strip td,.strip th{border:1px solid var(--line);padding:5px 9px;text-align:center;min-width:50px}
+.strip th{font-weight:500;color:var(--muted);background:var(--bg);text-align:left}
+.strip td.cur{background:var(--accent-bg);outline:2px solid var(--accent);outline-offset:-2px}
+.strip td.off{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.card{appearance:none;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer;font:400 14px/1.35 var(--f-body)}
+.card strong{display:block;font:600 15px var(--f-body)}
+.card span{color:var(--muted);font-size:13px}
+.card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+.yes,.no{border-radius:10px;padding:10px 12px;border:1px solid var(--line);background:var(--surface)}
+.yes{border-left:4px solid var(--good)} .no{border-left:4px solid var(--bad)}
+.hint{font-size:13px;color:var(--muted)}
+.check{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 8px;margin:0;padding:0;list-style:none}
+.check li{display:contents}
+.check .box{font:600 15px/1.3 var(--f-mono)}
+.verdict{font:600 17px var(--f-display);padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--data);outline-offset:2px}
+/* svg classes */
+.grid{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--ink2);stroke-width:1.2}
+.tick{fill:var(--ink2);font:11px var(--f-mono)}
+.atitle{fill:var(--ink2);font:500 12px var(--f-body)}
+.lbl{font:500 12px var(--f-body)}
+.ln{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.s-theory{stroke:var(--theory);stroke-width:2.5}
+.s-dots{stroke:var(--dots);stroke-width:2;stroke-dasharray:5 4}
+.s-fit{stroke:var(--fit);stroke-width:3}
+.s-ref{stroke:var(--muted);stroke-width:2;stroke-dasharray:2 5}
+.s-guide{stroke:var(--accent);stroke-width:1.2;stroke-dasharray:3 3}
+.s-cap{stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.band{fill:var(--theory);opacity:.13}
+.simt{font:500 12px var(--f-body);fill:var(--ink2)}
+.simn{font:500 11px var(--f-mono);fill:var(--muted)}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:0;z-index:20;height:auto;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:8px max(12px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line);align-items:center}
+  .side .brand,.side .meta,.side .grp{display:none}
+  .side a{flex:0 0 auto;white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:6px 6px 0 0}
+  .side a[aria-current="true"]{border-bottom-color:var(--accent)}
+  main{padding:18px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
+  .sec{scroll-margin-top:56px}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+.pgx{display:none!important}
+.pg{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+.pg .dots{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.pg .dot{appearance:none;border:0;padding:0;width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer}
+.pg .dot[aria-current="true"]{background:var(--accent);transform:scale(1.25)}
+.pg .cnt{font:500 12px var(--f-mono);color:var(--muted)}
+.why.paged>*:not(.pg){font-size:18px;line-height:1.5}
+.why.paged>*:not(.pg) li{margin-bottom:6px}
+.why.paged>.hint{font-size:15px;line-height:1.5}
+</style>
+<script>
+/* SHELL v1 init: builds the sidebar from the sections and highlights the one being read. Call initShell(title, subtitle) once at the end of the page script. */
+
+/* Slide mode: each .why shows one paragraph (or a heading with what follows it) at a time. Dynamic panels (with an id) stay on the slide they answer; when one updates, the view jumps to it. */
+function paginate(why){
+  var cur=0,slides=[],busy=false,bar=document.createElement('div');bar.className='pg';
+  function top(n){while(n&&n.parentNode!==why)n=n.parentNode;return n}
+  function build(){
+    var kids=[].slice.call(why.children).filter(function(c){return c!==bar});slides=[];
+    kids.forEach(function(c){
+      var last=slides[slides.length-1];
+      if(last&&last.onlyH){last.els.push(c);last.onlyH=false}
+      else if(last&&(c.id||c.classList.contains('hint')))last.els.push(c);
+      else slides.push({els:[c],onlyH:/^H[34]$/.test(c.tagName)});
+    });
+    if(cur>=slides.length)cur=Math.max(0,slides.length-1);
+    show();
+  }
+  function show(){
+    busy=true;
+    [].slice.call(why.children).forEach(function(c){if(c!==bar)c.classList.add('pgx')});
+    slides.forEach(function(sl,i){if(i===cur)sl.els.forEach(function(e){e.classList.remove('pgx')})});
+    if(slides.length<2){if(bar.parentNode)why.removeChild(bar);why.classList.remove('paged')}
+    else{why.classList.add('paged');
+      var d='';slides.forEach(function(_,i){d+='<button class="dot" data-i="'+i+'" aria-label="Part '+(i+1)+'"'+(i===cur?' aria-current="true"':'')+'></button>'});
+      bar.innerHTML='<button class="btn pb"'+(cur?'':' disabled')+'>\u2190 Back</button><div class="dots">'+d+'</div><span class="cnt">'+(cur+1)+' / '+slides.length+'</span><button class="btn primary pn"'+(cur<slides.length-1?'':' disabled')+'>Next \u2192</button>';
+      if(why.firstChild!==bar)why.insertBefore(bar,why.firstChild)}
+    setTimeout(function(){busy=false},0);
+  }
+  bar.addEventListener('click',function(e){var t=e.target;
+    if(t.classList.contains('pn')&&cur<slides.length-1)cur++;else if(t.classList.contains('pb')&&cur>0)cur--;else if(t.classList.contains('dot'))cur=+t.getAttribute('data-i');else return;show()});
+  var mo=new MutationObserver(function(ms){
+    if(busy)return;
+    if(ms.some(function(m){return m.target===why})){cur=0;build();return}
+    var jump=-1;ms.forEach(function(m){var t=top(m.target);if(!t||t===bar||!t.id)return;
+      slides.forEach(function(sl,i){if(sl.els.indexOf(t)>-1)jump=i})});
+    if(jump>-1&&jump!==cur){cur=jump;show()}
+  });
+  build();mo.observe(why,{childList:true,subtree:true,characterData:true});
+}
+function initPaging(){[].slice.call(document.querySelectorAll('.why:not([data-nopage])')).forEach(paginate)}
+function initShell(title,meta){initPaging();
+  var secs=[].slice.call(document.querySelectorAll('.sec')),nav=document.getElementById('toc'),h='<p class="brand">'+title+'</p><p class="meta">'+meta+'</p>',g=null;
+  secs.forEach(function(s){var gr=s.getAttribute('data-group');if(gr&&gr!==g){g=gr;h+='<div class="grp">'+gr+'</div>'}
+    h+='<a href="#'+s.id+'" data-id="'+s.id+'"><b>'+(s.getAttribute('data-tag')||'')+'</b><span>'+s.getAttribute('data-title')+'</span></a>'});
+  nav.innerHTML=h;
+  var links=[].slice.call(nav.querySelectorAll('a'));
+  function mark(id){links.forEach(function(a){var on=a.getAttribute('data-id')===id;if(on)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');if(on&&nav.scrollWidth>nav.clientWidth&&window.innerWidth<=900){try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}})}
+  if('IntersectionObserver' in window){var vis={};var io=new IntersectionObserver(function(es){es.forEach(function(e){vis[e.target.id]=e.isIntersecting?e.intersectionRatio:0});
+    var best=null,bv=0;secs.forEach(function(s){if((vis[s.id]||0)>bv){bv=vis[s.id];best=s.id}});if(best)mark(best)},{rootMargin:'-10% 0px -55% 0px',threshold:[0,.1,.3,.6,1]});
+    secs.forEach(function(s){io.observe(s)})}
+  mark(secs[0].id);
+  nav.addEventListener('click',function(e){var a=e.target.closest('a');if(a)mark(a.getAttribute('data-id'))});
+}
+</script>
+
+
+</head>
+<body>
+
+<div class="app">
+<nav class="side" id="toc" aria-label="Sections of the pendulum packet"></nav>
+<main>
+<h1>Pendulum Investigation</h1>
+<p class="hint" style="margin-bottom:26px">Year 9 Physics · Unit 1: Oscillations &amp; Waves · Criterion B (Inquiring and designing) and Criterion C (Processing and evaluating). Use the list on the left to jump to any part of the packet.</p>
+
+<!-- APPARATUS -->
+<section class="sec" id="apparatus" data-tag="A" data-title="The apparatus" data-group="The investigation">
+<div class="sh"><span class="tag">A</span><h2>The pendulum</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fP" viewBox="0 0 440 400" role="img" aria-label="A pendulum on a clamp stand with the release angle, the length and the release height marked"></svg></div>
+  <div class="chips" id="partsP"></div>
+  <div class="row"><button class="btn primary" id="swingP">Swing it</button><span class="readout" style="font-size:16px"><span><small>period T</small><b id="perP"></b></span></span></div>
+  <div><label class="f" for="lenP">Length of the string <b>L</b>: <b id="lenPv"></b></label><input type="range" id="lenP" min="10" max="100" step="5" value="60"></div>
+  <div><label class="f" for="angP">Release angle <b>θ</b>: <b id="angPv"></b></label><input type="range" id="angP" min="5" max="40" step="5" value="15"></div></figure>
+ <div class="why">
+  <p class="lead">A pendulum is a mass on a string that swings back and forth. One <b>complete oscillation</b> is out and back to where you started.</p>
+  <p>The <b>period T</b> is the time for one complete oscillation, in seconds. The <b>frequency f</b> is the number of oscillations per second, in hertz, and <b>f = 1/T</b>.</p>
+  <div class="why-box" id="partInfo"></div>
+  <h3>How to read the set-up</h3>
+  <ul class="tight"><li>Measure the <b>length L</b> from the pivot to the <b>centre</b> of the bob.</li><li>The <b>release angle θ</b> is the angle between the string and the resting position when you let go.</li><li>The <b>release height h</b> is how far above its resting point you lift the bob.</li><li>Time how long the bob takes to swing out and back, and call that the <b>period T</b>.</li></ul>
+  <p class="hint">Tap a part under the picture to see what it does. Press Swing it to watch the real period.</p>
+ </div>
+</div></section>
+
+<!-- SIX VARIABLES -->
+<section class="sec" id="six" data-tag="A" data-title="Six variables" data-group="The investigation">
+<div class="sh"><span class="tag">A</span><h2>Six groups, six variables, one pendulum</h2></div>
+<div class="row" style="margin-bottom:12px"><div class="seg" id="segG6"></div></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fG6" viewBox="0 0 440 400" role="img" aria-label="The pendulum with the chosen variable changed"></svg></div>
+  <div class="panel" id="panG6" hidden><svg id="gG6" viewBox="0 0 520 380" role="img" aria-label="Period against the chosen variable"></svg></div></figure>
+ <div class="why">
+  <p class="lead" id="leadG6"></p>
+  <p>Everyone uses the same pendulum and the same timing method. Each group changes <b>one</b> thing, the <b>independent variable</b>, and measures the <b>period T</b>, the <b>dependent variable</b>.</p>
+  <div class="panel" id="predG6"></div>
+  <div class="why-box" id="outG6"></div>
+  <p class="hint">Make your prediction first, then reveal the graph. &ldquo;It made no difference&rdquo; is a real result and it earns full marks.</p>
+ </div>
+</div></section>
+
+<!-- B.i -->
+<section class="sec" id="bi" data-tag="B.i" data-title="Research question" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B.i</span><h2>What are we trying to find out?</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fBi" viewBox="0 0 440 400" role="img" aria-label="The pendulum with the variable to change and the quantity to measure labelled"></svg></div></figure>
+ <div class="why">
+  <p class="lead">Write the problem as a <b>question</b> with your own variable in it, then say why anyone would want to know the answer.</p>
+  <div class="panel"><p style="margin:0 0 6px">How does the <select id="rqA"></select> affect the <select id="rqB"><option>period T of a pendulum</option><option>brightness of the room</option><option>colour of the bob</option></select>?</p><p id="rqOut" style="margin:0"></p></div>
+  <h3>Add a reason</h3>
+  <div class="why-box">Clocks keep time with a pendulum. Knowing what does and does not change the period is what makes one reliable. A reason like that shows why the answer is worth knowing.</div>
+  <p class="hint">The first blank is the <b>independent variable</b>, the thing you change. The second is the <b>dependent variable</b>, the thing you measure.</p>
+ </div>
+</div></section>
+
+<!-- B.ii -->
+<section class="sec" id="bii" data-tag="B.ii" data-title="Hypothesis" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B.ii</span><h2>What do you think will happen?</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fBii" viewBox="0 0 440 400" role="img" aria-label="Two pendulums for comparison"></svg></div>
+  <div><label class="f">My variable</label><select id="hvar"></select></div>
+  <div><label class="f">As it increases, the period T will…</label><div class="seg" id="predBii"></div></div></figure>
+ <div class="why">
+  <p class="lead">A hypothesis is your <b>answer</b> to the research question, written before you do the experiment. The word <b>because</b> is where the marks are.</p>
+  <div class="panel" id="hypOut"></div>
+  <p>Tap each reason to see how it reads in a hypothesis.</p>
+  <div class="cards" id="reasons"></div>
+  <div class="note" id="reasonOut" style="margin-top:10px"></div>
+  <p class="hint">&ldquo;No change&rdquo; is a good hypothesis when you can argue for it. A prediction that turns out wrong, with a clear reason, still scores well.</p>
+ </div>
+</div></section>
+
+<!-- B.iii -->
+<section class="sec" id="biii" data-tag="B.iii" data-title="Variables and data" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B.iii</span><h2>Variables, and the data you will collect</h2></div>
+<div class="row" style="margin-bottom:12px"><div class="seg" id="tabB3"></div></div>
+<div class="two">
+ <figure class="vis" id="visB3"></figure>
+ <div class="why" id="whyB3"></div>
+</div></section>
+
+<!-- 20 swings -->
+<section class="sec" id="s20" data-tag="B.iii" data-title="Why time 20 swings" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B.iii</span><h2>How you will measure the period: time 20 swings</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="gS20" viewBox="0 0 520 300" role="img" aria-label="Class timings of one swing and of twenty swings divided by twenty"></svg></div>
+  <div class="row"><button class="btn primary" id="s20a">1 · Everyone times one swing</button><button class="btn primary" id="s20b">2 · Everyone times 20 swings</button><button class="btn" id="s20n">New class</button></div></figure>
+ <div class="why">
+  <p class="lead">Thirteen students time the <b>same pendulum</b>. Its true period T is <b>1.00 s</b>.</p>
+  <div class="why-box" id="s20out">Press button 1 to collect the one-swing times.</div>
+  <p>Starting and stopping a stopwatch by hand adds a <b>reaction time</b> of about <b>0.2 s</b> at each end. On a swing of one second, that is a big share of the answer.</p>
+  <p>Time <b>20 swings</b> and divide by 20. The same reaction error is spread across twenty swings, so it moves the period by a twentieth as much.</p>
+  <div class="why-box">Method sentence to copy: <i>I will time 20 swings on a stopwatch with a resolution of 0.01 s, divide by 20 to find the period T, and repeat three times at each length.</i></div>
+  <p class="hint">Count &ldquo;zero&rdquo; as you start the watch, and count one each time the bob returns to where it started.</p>
+ </div>
+</div></section>
+
+<!-- B.iv -->
+<section class="sec" id="biv" data-tag="B.iv" data-title="Method" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B.iv</span><h2>Your method</h2></div>
+<div class="row" style="margin-bottom:12px"><div class="seg" id="tabB4"></div></div>
+<div class="two">
+ <figure class="vis" id="visB4"></figure>
+ <div class="why" id="whyB4"></div>
+</div></section>
+
+<!-- C.i table -->
+<section class="sec" id="c1" data-tag="C.i" data-title="Results table" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C.i</span><h2>Your results: the expected data, one length at a time</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fC1" viewBox="0 0 440 400" role="img" aria-label="The pendulum at the chosen length"></svg></div>
+  <div class="row"><button class="btn" id="c1prev">← Back</button><button class="btn primary" id="c1next">Next length →</button><button class="btn" id="c1swing">Swing it</button><button class="btn" id="c1reset">Start again</button></div>
+  <div class="chips" id="c1chips"></div></figure>
+ <div class="why" data-nopage>
+  <div class="panel"><div class="readout" id="c1read"></div><p id="c1cap" style="margin:8px 0 0"></p></div>
+  <div class="panel" style="margin-top:10px"><svg id="gC1" viewBox="0 0 520 380" role="img" aria-label="Expected period against length"></svg></div>
+  <div class="row" style="margin-top:8px"><button class="btn" id="c1curve" aria-pressed="false">Draw the expected curve</button><button class="btn" id="c1cls" aria-pressed="false">Add the example class</button><label class="hint"><input type="checkbox" id="c1maths"> Show the maths (for after your data is in)</label></div>
+ </div>
+</div>
+<div class="panel strip" style="margin-top:14px"><table id="c1table"></table></div>
+<div class="two" style="margin-top:14px"><div class="why">
+  <h3>Five elements of a data table</h3>
+  <ul class="tight"><li><b>Headings</b> with the unit written once, in the heading.</li><li><b>Three trials</b>, then a mean.</li><li><b>Same decimal places</b> all the way down a column.</li><li><b>Independent variable</b> on the left, dependent variable on the right.</li><li><b>Ruled lines</b> round every cell.</li></ul></div>
+ <div class="why"><h3>The first check to make</h3><p>Your 25 cm pendulum should land near <b>T = 1.0 s</b>. A table that gives about 0.5 s counted half swings as whole ones, and one near 1.05 s counted from one instead of zero.</p></div></div>
+</section>
+
+<!-- C.i graph -->
+<section class="sec" id="c1g" data-tag="C.i" data-title="Graph: line of best fit" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C.i</span><h2>Your graph: a line of best fit, not join the dots</h2></div>
+<div class="row" style="margin-bottom:12px"><span class="hint">Variable:</span><div class="seg" id="dsG"></div></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="gG" viewBox="0 0 520 380" role="img" aria-label="Data with joined dots and a line of best fit"></svg></div>
+  <div class="row" id="layersG"><button class="btn" data-l="dots" aria-pressed="true">Join the dots</button><button class="btn" data-l="fit" aria-pressed="false">Line of best fit</button><button class="btn" data-l="gaps" aria-pressed="false">Show the gaps</button><button class="btn" data-l="theory" aria-pressed="false">Expected values</button></div>
+  <div><label class="f" for="sdG">Timing error in the example class: <b id="sdGv"></b></label><input type="range" id="sdG" min="0" max="6" step="1" value="2"><button class="btn" id="seedG" style="margin-top:8px">New set of readings</button></div></figure>
+ <div class="why">
+  <p class="lead">Every timing carries a small error, so real points sit a little above and below the true pattern. A graph should show the <b>pattern</b>.</p>
+  <div class="note" id="noteG"></div>
+  <div class="panel"><label class="f" for="probeG">Predict a reading nobody took: <span id="probeL"></span> = <b id="probeGv"></b></label><input type="range" id="probeG" min="0" max="10" step="1" value="5"><table class="tbl" id="probeGt" style="margin-top:8px"></table></div>
+  <h3>Six things the marker looks for</h3>
+  <ul class="tight"><li>A <b>title</b>: the period against the variable you changed.</li><li><b>Both axes</b> labelled, with units.</li><li>The <b>independent variable</b> along the bottom, the <b>period T</b> up the side.</li><li>A <b>scale</b> that fills the paper, in even steps.</li><li><b>Small crosses</b>, one per reading.</li><li><b>One line of best fit</b>, drawn through the middle of the trend.</li></ul>
+  <p class="hint">Both variables are numbers, so this is a scatter graph. A flat line of best fit is a finding.</p>
+ </div>
+</div></section>
+
+<!-- C.ii -->
+<section class="sec" id="c2" data-tag="C.ii" data-title="What the data shows" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C.ii</span><h2>What does your data show?</h2></div>
+<div class="row" style="margin-bottom:12px"><span class="hint">Variable:</span><div class="seg" id="dsC2"></div></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="gC2" viewBox="0 0 520 380" role="img" aria-label="Data with its line of best fit"></svg></div><div class="cards" id="shapes"></div></figure>
+ <div class="why">
+  <p class="lead">Look at the shape of your graph and choose the sentence that matches it.</p>
+  <div class="why-box" id="shapeOut">Choose a shape.</div>
+  <h3>Then say why you can say that</h3>
+  <div class="panel"><p style="margin:0 0 8px">Use numbers off your own graph. When <span class="xs"></span> was <select id="n1"></select> the period was about <b id="v1"></b>, and when it was <select id="n2"></select> the period was about <b id="v2"></b>.</p><p class="hint" style="margin:0">Values read off the line of best fit through the example class.</p></div>
+  <h3>Close to the line, or scattered?</h3>
+  <p id="scatC2"></p>
+ </div>
+</div></section>
+
+<!-- C.iii -->
+<section class="sec" id="c3" data-tag="C.iii" data-title="Was your hypothesis right?" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C.iii</span><h2>Was your hypothesis right?</h2></div>
+<div class="row" style="margin-bottom:12px"><span class="hint">Variable:</span><div class="seg" id="dsC3"></div></div>
+<div class="two">
+ <figure class="vis"><div><label class="f">My hypothesis said the period T would…</label><div class="seg" id="hypC3"></div></div>
+  <div class="panel"><svg id="gC3" viewBox="0 0 520 380" role="img" aria-label="Prediction arrow compared with the data"></svg></div></figure>
+ <div class="why">
+  <p class="lead">This asks whether the prediction you made in B.ii turned out to be correct.</p>
+  <div class="verdict" id="verdC3"></div>
+  <p style="margin-top:10px">Point back at your prediction and quote two numbers from your table. A hypothesis that turned out wrong is not a problem. Saying so clearly, and showing the data, is what earns the marks.</p>
+  <p class="hint">&ldquo;Based on the outcome of the investigation&rdquo; is the phrase that lifts a discussion out of a bare yes or no.</p>
+ </div>
+</div></section>
+
+<!-- C.iv -->
+<section class="sec" id="c4" data-tag="C.iv" data-title="Was your method valid?" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C.iv</span><h2>Was your method valid?</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="gD" viewBox="0 0 520 380" role="img" aria-label="Simulated student results with line of best fit and the expected curve"></svg></div><p class="hint" id="stat4"></p>
+  <div><label class="f">How is the period timed?</label><div class="seg" id="tim4"></div></div>
+  <div><label class="f">How many repeats at each length?</label><div class="seg" id="rep4"></div></div>
+  <div><label class="f">The string</label><div class="seg" id="ctl4"></div></div>
+  <div class="row"><button class="btn" id="seed4">Run it again</button></div></figure>
+ <div class="why" data-nopage>
+  <p class="lead">A method is <b>valid</b> if it gave you results you can trust. Change how the experiment is run and watch the checklist respond.</p>
+  <div class="panel"><ul class="check" id="check4"></ul></div>
+  <div class="verdict" id="verdict4" style="margin-top:10px"></div>
+  <p style="margin-top:10px">Write about the <b>design and the data</b>: the spread of the points, the repeats, the instruments, the controls.</p>
+ </div>
+</div>
+
+<h3 style="font:600 20px var(--f-display);margin:34px 0 6px">What this question is really asking</h3>
+<p class="lead" style="max-width:72ch">Validity is a question about your <b>method</b>, and your data is the evidence. Ask yourself: <b>is there a fundamental problem with the way I designed and ran this experiment?</b> A clear pattern says the method is working. Random or messy results say something in the method is wrong. Getting the answer you expected is a separate matter.</p>
+<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:6px">
+ <div class="panel"><b>1 · Look at your data</b><br><span class="hint">The three trials, the graph, the points, the line of best fit.</span></div>
+ <div class="panel"><b>2 · Ask what its pattern says</b><br><span class="hint">Tidy and repeatable points to a sound method. Scattered or random points to a problem with the design.</span></div>
+ <div class="panel"><b>3 · Decide, and say because</b><br><span class="hint">Valid, partly valid or not valid, with the evidence from steps 1 and 2.</span></div>
+</div>
+<p class="hint" style="margin-top:8px">The rule on this page: trials are <b>close together</b> when the range (biggest minus smallest) is <b>2% of the mean or less</b>. For a period near 1 s that is 0.02 s, and the stopwatch reads to 0.01 s.</p>
+
+<h3 style="font:600 20px var(--f-display);margin:30px 0 6px">A correct-looking answer is not the same as a valid method</h3>
+<div class="two">
+ <figure class="vis"><div class="seg" id="cvSeg"></div><div class="panel"><svg id="gCV" viewBox="0 0 520 380" role="img" aria-label="Three trials at each length with their average and the expected curve"></svg></div><div class="panel strip"><table id="cvTab"></table></div></figure>
+ <div class="why"><p class="lead">Two students tested the same pendulum. Click between them and compare the three trials at each length.</p><div class="why-box" id="cvWhy"></div></div>
+</div>
+
+<h3 style="font:600 20px var(--f-display);margin:30px 0 8px">Click through the five checks</h3>
+<div class="seg" id="vtab"></div>
+<div class="two" style="margin-top:12px">
+ <figure class="vis"><div class="seg" id="vsc"></div><div class="panel" id="vvis"></div></figure>
+ <div class="why" id="vwhy"></div>
+</div>
+
+<h3 style="font:600 20px var(--f-display);margin:30px 0 8px">Now try it on your own results</h3>
+<div class="two">
+ <figure class="vis"><div class="panel" id="own"></div></figure>
+ <div class="why"><div class="verdict" id="ownv"></div><p class="hint" style="margin-top:10px">Answer from your own table and graph. Write the sentence it builds, then add one number from your data as evidence.</p></div>
+</div>
+</section>
+
+<!-- C.v -->
+<section class="sec" id="c5" data-tag="C.v" data-title="Improvements and extension" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C.v</span><h2>What would you change?</h2></div>
+<div class="row" style="margin-bottom:12px"><div class="seg" id="tabC5"></div></div>
+<div class="two">
+ <figure class="vis" id="visC5"></figure>
+ <div class="why" id="whyC5"></div>
+</div></section>
+
+<!-- END -->
+<section class="sec" id="handin" data-tag="✓" data-title="Before you hand it in" data-group="Finish">
+<div class="sh"><span class="tag">✓</span><h2>Before you hand it in</h2></div>
+<div class="two"><figure class="vis"><div class="panel"><ul class="check" id="hand"></ul></div><div class="verdict" id="handv"></div></figure>
+<div class="why"><p class="lead">Read back through Part 2 with the criteria sheet open. For each of C.i to C.v, find the band you think you reached.</p><p>Then say what would have moved you up one band. That question is the whole reason we started with the criteria.</p><p>Tick each item as you check it in your own report.</p></div></div>
+</section>
+<p class="hint" style="margin-top:20px">Year 9 Physics · Unit 1: Oscillations &amp; Waves · St Leonards</p>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var RAD=Math.PI/180,G0=9.81;
+function $(id){return document.getElementById(id)}
+function f1(v){return (Math.round(v*10)/10).toFixed(1)}
+function f2(v){return (Math.round(v*100)/100).toFixed(2)}
+function f0(v){return String(Math.round(v))}
+function per(L,g){g=g||G0;return 2*Math.PI*Math.sqrt(L/100/g)}
+function agm(a,b){for(var i=0;i<20;i++){var c=(a+b)/2;b=Math.sqrt(a*b);a=c}return a}
+function ampF(t){return t<=0?1:1/agm(1,Math.cos(t*RAD/2))}
+function rng(seed){var a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){var u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function segHTML(items,cur){return items.map(function(it){return '<button data-v="'+it[0]+'" aria-pressed="'+(String(it[0])===String(cur))+'">'+it[1]+'</button>'}).join('')}
+function segOn(id,fn){$(id).addEventListener('click',function(e){var b=e.target.closest('button');if(b)fn(b.dataset.v)})}
+function mean(a){return a.reduce(function(x,y){return x+y},0)/a.length}
+function lc(s){return s.charAt(0).toLowerCase()+s.slice(1)}
+
+/* ---- the six variables ---- */
+var DS={
+ length:{nm:'length of the string',sym:'length L',unit:'cm',xl:'Length of string L / cm',xs:[10,20,30,40,50,60,70,80,90,100],xm:100,xst:10,ym:2.5,yst:0.5,fn:function(x){return per(x)},fit:'pow',truth:'inc'},
+ mass:{nm:'mass of the bob',sym:'mass m',unit:'g',xl:'Mass of bob m / g',xs:[50,100,150,200,250,300,350,400,450,500],xm:500,xst:100,ym:2,yst:0.5,fn:function(){return per(25)},fit:'flat',truth:'same'},
+ area:{nm:'surface area of the bob',sym:'surface area A',unit:'cm²',xl:'Surface area of bob A / cm²',xs:[10,20,30,40,50,60],xm:60,xst:10,ym:2,yst:0.5,fn:function(){return per(25)},fit:'flat',truth:'same'},
+ angle:{nm:'release angle',sym:'release angle θ',unit:'°',xl:'Release angle θ / degrees',xs:[5,10,15,20,25,30,35,40],xm:45,xst:5,ym:2,yst:0.5,fn:function(x){return per(25)*ampF(x)},fit:'flat',truth:'same'},
+ gravity:{nm:'gravitational field strength',sym:'gravitational field strength g',unit:'N/kg',xl:'Gravitational field strength g / N per kg',xs:[1.6,3.7,6,9.8,15,24.8],xm:25,xst:5,ym:3,yst:0.5,fn:function(x){return per(25,x)},fit:'pow',truth:'dec'},
+ height:{nm:'release height',sym:'release height h',unit:'cm',xl:'Release height h / cm',xs:[1,2,3,4,5,6,7,8],xm:9,xst:1,ym:2.5,yst:0.5,fn:function(h){return per(50)*ampF(Math.acos(1-h/50)/RAD)},fit:'flat',truth:'same'}};
+var DKEYS=['length','mass','area','angle','gravity','height'];
+var DSEG=[['length','Length'],['mass','Mass'],['area','Surface area'],['angle','Release angle'],['gravity','Gravity'],['height','Release height']];
+var GROUPS=[['length','Group 1','Length of the string','Shortest to longest. Measure from the pivot to the centre of the bob, every time.'],
+ ['mass','Group 2','Mass of the bob','Same string length and same size of bob if you can. Swap the mass only.'],
+ ['area','Group 3','Surface area of the bob','Paper cylinders, all the same diameter, made to different heights. A taller cylinder has more surface area.'],
+ ['angle','Group 4','Release angle','Same length and bob. Release from a small angle, then wider, using a protractor.'],
+ ['gravity','Group 5','Gravity','You cannot change gravity in this room, so use the PhET Pendulum Lab simulation: Earth, the Moon, Jupiter and a slider in between.'],
+ ['height','Group 6','Release height','Same length and bob. Measure how far above its resting point you lift the bob before you let go.']];
+function mkG(ds,o){o=o||{};var W=520,H=380,m={l:58,r:22,t:16,b:50},xm=ds.xm,ym=ds.ym;
+  var g={X:function(v){return m.l+(W-m.l-m.r)*v/xm},Y:function(v){return H-m.b-(H-m.t-m.b)*v/ym},o:'',ds:ds};
+  for(var v=0;v<=xm+1e-9;v+=ds.xst)g.o+='<line x1="'+g.X(v)+'" y1="'+g.Y(0)+'" x2="'+g.X(v)+'" y2="'+g.Y(ym)+'" class="grid"/><text x="'+g.X(v)+'" y="'+(g.Y(0)+16)+'" text-anchor="middle" class="tick">'+(v%1?f1(v):v)+'</text>';
+  for(v=0;v<=ym+1e-9;v+=ds.yst)g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(v)+'" x2="'+g.X(xm)+'" y2="'+g.Y(v)+'" class="grid"/><text x="'+(g.X(0)-8)+'" y="'+(g.Y(v)+4)+'" text-anchor="end" class="tick">'+f1(v)+'</text>';
+  g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(0)+'" x2="'+g.X(xm)+'" y2="'+g.Y(0)+'" class="axis"/><line x1="'+g.X(0)+'" y1="'+g.Y(0)+'" x2="'+g.X(0)+'" y2="'+g.Y(ym)+'" class="axis"/>';
+  g.o+='<text x="'+((g.X(0)+g.X(xm))/2)+'" y="'+(H-10)+'" text-anchor="middle" class="atitle">'+ds.xl+'</text><text transform="translate(14 '+((g.Y(0)+g.Y(ym))/2)+') rotate(-90)" text-anchor="middle" class="atitle">Period T / s</text>';
+  g.curve=function(fn,x0,x1,cls){var d='',st=xm/120;for(var x=x0;x<=x1+1e-9;x+=st)d+=(d?'L':'M')+g.X(x).toFixed(1)+' '+g.Y(Math.min(ym,fn(x))).toFixed(1);g.o+='<path d="'+d+'" class="ln '+cls+'"/>'};
+  g.poly=function(pts,cls){g.o+='<path d="'+pts.map(function(p,i){return (i?'L':'M')+g.X(p[0]).toFixed(1)+' '+g.Y(p[1]).toFixed(1)}).join('')+'" class="ln '+cls+'"/>'};
+  g.dot=function(x,y,r,fill,tip,sq,ring){var X=g.X(x),Y=g.Y(Math.min(ym,y));g.o+=(sq?'<rect x="'+(X-r)+'" y="'+(Y-r)+'" width="'+2*r+'" height="'+2*r+'" transform="rotate(45 '+X+' '+Y+')"':'<circle cx="'+X+'" cy="'+Y+'" r="'+r+'"')+' fill="'+(ring?'var(--surface)':fill)+'" stroke="'+(ring?fill:'var(--surface)')+'" stroke-width="'+(ring?2.5:1.5)+'"><title>'+tip+'</title>'+(sq?'</rect>':'</circle>')};
+  g.text=function(x,y,t,fill,anchor){g.o+='<text x="'+g.X(x)+'" y="'+g.Y(y)+'" class="lbl" fill="'+fill+'" text-anchor="'+(anchor||'start')+'">'+t+'</text>'};
+  g.end=function(id){$(id).innerHTML=g.o};
+  return g}
+function tipD(ds,x,y){return ds.sym+' '+x+' '+ds.unit+', T '+f2(y)+' s'}
+function fitFor(ds,pts){
+  if(ds.fit==='flat'){var m=mean(pts.map(function(p){return p[1]}));return function(){return m}}
+  var n=0,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(function(p){if(p[0]>0&&p[1]>0){var X=Math.log(p[0]),Y=Math.log(p[1]);n++;sx+=X;sy+=Y;sxx+=X*X;sxy+=X*Y}});
+  var p=(n*sxy-sx*sy)/(n*sxx-sx*sx),a=Math.exp((sy-p*sx)/n);return function(x){return a*Math.pow(x,p)}}
+function noisy(ds,seed,sd){var r=rng(seed);return ds.xs.map(function(x){return [x,Math.max(0.05,Math.round((ds.fn(x)+gauss(r)*sd)*100)/100)]})}
+function relRms(ds,pts){var f=fitFor(ds,pts),s=0;pts.forEach(function(p){var d=(p[1]-f(p[0]))/f(p[0]);s+=d*d});return Math.sqrt(s/pts.length)}
+function interp(pts,x){if(x<=pts[0][0])return pts[0][1];for(var i=1;i<pts.length;i++){if(x<=pts[i][0]){var p=pts[i-1],q=pts[i];return p[1]+(q[1]-p[1])*(x-p[0])/(q[0]-p[0])}}return pts[pts.length-1][1]}
+
+/* ======== base visual: the pendulum ======== */
+var K=2.8,PX=220,PY=52;
+function bobShape(x,y,r,col,cyl,ang,o){
+  if(cyl)return '<g transform="translate('+x+' '+y+') rotate('+(-ang)+')"><rect x="-9" y="'+(-cyl/2)+'" width="18" height="'+cyl+'" rx="3" fill="'+col+'"'+(o||'')+'/></g>';
+  return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+col+'"'+(o||'')+'/>'}
+function pendSVG(L,ang,o){
+  o=o||{};var hl=o.hl,out='',len=K*L,a=ang*RAD,bx=PX+len*Math.sin(a),by=PY+len*Math.cos(a),r=o.r||13,rest=PY+len;
+  out+='<rect x="40" y="368" width="170" height="12" rx="3" fill="var(--ink2)"/><rect x="52" y="36" width="10" height="334" fill="var(--ink2)"/><rect x="52" y="36" width="'+(PX-52+16)+'" height="10" fill="var(--ink2)"/><rect x="'+(PX-9)+'" y="36" width="18" height="22" rx="3" fill="var(--ink)"/>';
+  if(hl==='stand')out+='<rect x="34" y="30" width="'+(PX-34+30)+'" height="356" rx="8" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="8 6"/>';
+  if(hl==='pivot')out+='<circle cx="'+PX+'" cy="'+PY+'" r="22" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>';
+  out+='<line x1="'+PX+'" y1="'+PY+'" x2="'+PX+'" y2="'+(rest+30)+'" stroke="var(--ink2)" stroke-width="1.2" stroke-dasharray="6 5"/>';
+  out+='<text x="'+(PX+10)+'" y="'+(rest+28)+'" class="simn">resting position</text>';
+  if(hl==='rest')out+='<line x1="'+PX+'" y1="'+PY+'" x2="'+PX+'" y2="'+(rest+30)+'" stroke="var(--accent)" stroke-width="10" opacity=".35"/>';
+  if(o.ghost){var G=o.ghost,gl=K*(G.L||L),ga=(G.ang==null?ang:G.ang)*RAD,gx=PX+gl*Math.sin(ga),gy=PY+gl*Math.cos(ga);
+    out+='<line x1="'+PX+'" y1="'+PY+'" x2="'+gx+'" y2="'+gy+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>'+bobShape(gx,gy,G.r||13,'none',G.cyl,(G.ang==null?ang:G.ang),' stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"');
+    if(G.label)out+='<text x="'+(gx+(gx>PX?18:-18))+'" y="'+(gy+4)+'" text-anchor="'+(gx>PX?'start':'end')+'" class="lbl" fill="var(--muted)">'+G.label+'</text>'}
+  if(o.rel!=null&&Math.abs(o.rel-ang)>1){var ra=o.rel*RAD;out+='<line x1="'+PX+'" y1="'+PY+'" x2="'+(PX+len*Math.sin(ra))+'" y2="'+(PY+len*Math.cos(ra))+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>'+bobShape(PX+len*Math.sin(ra),PY+len*Math.cos(ra),r,'none',o.cyl,o.rel,' stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"')}
+  out+='<line x1="'+PX+'" y1="'+PY+'" x2="'+bx+'" y2="'+by+'" stroke="var(--ink)" stroke-width="2"'+(hl==='string'?' opacity=".9"':'')+'/>';
+  if(hl==='string')out+='<line x1="'+PX+'" y1="'+PY+'" x2="'+bx+'" y2="'+by+'" stroke="var(--accent)" stroke-width="12" opacity=".35" stroke-linecap="round"/>';
+  out+=bobShape(bx,by,r,o.col||'var(--data)',o.cyl,ang);
+  if(hl==='bob')out+='<circle cx="'+bx+'" cy="'+by+'" r="'+(r+11)+'" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>';
+  if(o.mlabel)out+='<text x="'+bx+'" y="'+(by+4)+'" text-anchor="middle" class="lbl" fill="var(--bg)" font-size="10">'+o.mlabel+'</text>';
+  if(Math.abs(ang)>1&&!o.noarc){var s=ang>0?1:-1,R2=Math.min(70,len*0.45);out+='<path d="M '+PX+' '+(PY+R2)+' A '+R2+' '+R2+' 0 0 '+(ang>0?0:1)+' '+(PX+R2*Math.sin(a))+' '+(PY+R2*Math.cos(a))+'" fill="none" stroke="'+(hl==='angle'?'var(--accent)':'var(--theory)')+'" stroke-width="'+(hl==='angle'?5:2)+'"/><text x="'+(PX+R2*Math.sin(a)+s*10)+'" y="'+(PY+R2*Math.cos(a)+4)+'" text-anchor="'+(s>0?'start':'end')+'" class="lbl" fill="var(--theory)">θ = '+f0(Math.abs(ang))+'°</text>'}
+  if(!o.nolen){var ox=-34*Math.cos(a),oy=34*Math.sin(a),sx=PX+ox*(ang>=0?1:-1)*0,tx=PX+len*0;
+    var nx=Math.cos(a),ny=-Math.sin(a),off=(ang>=0?-1:1)*0;
+    var lx1=PX-nx*34*(1),ly1=PY-ny*34*(1),lx2=bx-nx*34,ly2=by-ny*34;
+    out+='<g stroke="var(--ink2)" stroke-width="1.2"><line x1="'+lx1+'" y1="'+ly1+'" x2="'+lx2+'" y2="'+ly2+'"/><line x1="'+(lx1-nx*5)+'" y1="'+(ly1-ny*5)+'" x2="'+(lx1+nx*5)+'" y2="'+(ly1+ny*5)+'"/><line x1="'+(lx2-nx*5)+'" y1="'+(ly2-ny*5)+'" x2="'+(lx2+nx*5)+'" y2="'+(ly2+ny*5)+'"/></g>';
+    if(hl==='length')out+='<line x1="'+lx1+'" y1="'+ly1+'" x2="'+lx2+'" y2="'+ly2+'" stroke="var(--accent)" stroke-width="7" opacity=".5"/>';
+    out+='<text x="'+((lx1+lx2)/2-nx*10-6)+'" y="'+((ly1+ly2)/2-ny*10+4)+'" text-anchor="end" class="lbl" fill="var(--ink)">L = '+f0(L)+' cm</text>'}
+  if(o.showh&&Math.abs(ang)>1){var h=L*(1-Math.cos(a)),sg=ang>0?1:-1,hx=PX+sg*(Math.abs(len*Math.sin(a))+r+46);
+    out+='<line x1="'+bx+'" y1="'+by+'" x2="'+(hx+sg*8)+'" y2="'+by+'" stroke="var(--ink2)" stroke-width="1" stroke-dasharray="3 3"/><line x1="'+PX+'" y1="'+rest+'" x2="'+(hx+sg*8)+'" y2="'+rest+'" stroke="var(--ink2)" stroke-width="1" stroke-dasharray="3 3"/><line x1="'+hx+'" y1="'+by+'" x2="'+hx+'" y2="'+rest+'" stroke="'+(hl==='height'?'var(--accent)':'var(--theory)')+'" stroke-width="'+(hl==='height'?6:2)+'"/><text x="'+(hx+sg*8)+'" y="'+((by+rest)/2+4)+'" text-anchor="'+(sg>0?'start':'end')+'" class="lbl" fill="var(--theory)" dx="'+(sg*8)+'">h = '+f1(h)+' cm</text>'}
+  return out}
+function mkSwing(svgId,st,draw){var raf=0,last=0,ph=0,on=false;
+  function frame(ts){if(!last)last=ts;var dt=Math.min(0.05,(ts-last)/1000);last=ts;ph+=dt*2*Math.PI/(per(st.L)*ampF(st.th));st.cur=st.th*Math.cos(ph);draw();raf=requestAnimationFrame(frame)}
+  return {on:function(){return on},start:function(){if(on)return;on=true;last=0;ph=0;raf=requestAnimationFrame(frame)},stop:function(){on=false;cancelAnimationFrame(raf);st.cur=null;draw()}}}
+var SW=[];function stopAll(except){SW.forEach(function(s){if(s!==except&&s.on())s.stop()})}
+
+/* ======== A: apparatus ======== */
+var PARTS=[['stand','Clamp stand','The clamp stand holds the pendulum still while the bob moves. A weighted base and a firm clamp keep the pivot from shifting, so every swing starts from the same point.'],
+ ['pivot','Pivot','The pivot is the fixed point the string hangs from. Measure the length L from here.'],
+ ['string','String','The string carries the bob. Keep it light and unstretched, so its length stays the same from swing to swing.'],
+ ['bob','Bob','The bob is the mass on the end of the string. Its centre is the point you measure to.'],
+ ['rest','Resting position','The resting position is where the bob hangs when it is still. One complete oscillation starts and ends here.'],
+ ['angle','Release angle θ','The release angle θ is the angle between the string and the resting position when you let go. Use a protractor, because &ldquo;about the same&rdquo; is not a measurement.'],
+ ['length','Length L','The length L runs from the pivot to the centre of the bob. Measure it the same way every time.'],
+ ['height','Release height h','The release height h is how far above its resting point you lift the bob. It tells you the same thing as the release angle, in centimetres.']];
+var SA={L:60,th:15,part:'length',cur:null};
+function drawA(){var ang=SA.cur!=null?SA.cur:SA.th;$('fP').innerHTML=pendSVG(SA.L,ang,{hl:SA.part,rel:SA.th,showh:true})}
+function renderA(){drawA();$('lenPv').textContent=SA.L+' cm';$('angPv').textContent=SA.th+'°';$('perP').textContent=' '+f2(per(SA.L)*ampF(SA.th))+' s';
+  $('partsP').innerHTML=PARTS.map(function(p){return '<button class="chip" data-v="'+p[0]+'" aria-pressed="'+(p[0]===SA.part)+'" style="font-family:var(--f-body)">'+p[1]+'</button>'}).join('');
+  var p=PARTS.filter(function(x){return x[0]===SA.part})[0];$('partInfo').innerHTML='<b>'+p[1]+'.</b> '+p[2]}
+var swA=mkSwing('fP',SA,drawA);SW.push(swA);
+$('partsP').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b){SA.part=b.dataset.v;renderA()}});
+$('lenP').oninput=function(){SA.L=+this.value;renderA()};$('angP').oninput=function(){SA.th=+this.value;renderA()};
+$('swingP').onclick=function(){if(swA.on()){swA.stop();this.textContent='Swing it'}else{stopAll(swA);swA.start();this.textContent='Stop'}};
+
+/* ======== six variables ======== */
+var S6={v:'length',pred:null,shown:false};
+function drawG6(){var v=S6.v,o={rel:null,nolen:false,showh:false},L=25,ang=15;
+  if(v==='length'){L=25;o.ghost={L:60,ang:15,label:'L = 60 cm'}}
+  if(v==='mass'){o.r=11;o.mlabel='50 g';o.ghost={r:20,ang:15,label:'500 g'}}
+  if(v==='area'){o.cyl=22;o.ghost={cyl:60,ang:15,label:'taller cylinder'}}
+  if(v==='angle'){ang=10;o.ghost={ang:35,label:'θ = 35°'}}
+  if(v==='gravity'){o.ghost=null}
+  if(v==='height'){L=50;ang=12;o.showh=true;o.ghost={ang:30,label:'higher'}}
+  o.hl=v==='angle'?'angle':v==='height'?'height':null;
+  var s=pendSVG(L,ang,o);if(v==='gravity')s+='<g class="lbl" fill="var(--ink)" font-size="13"><text x="230" y="250">Moon: g = 1.6 N/kg</text><text x="230" y="272">Earth: g = 9.8 N/kg</text><text x="230" y="294">Jupiter: g = 24.8 N/kg</text><text x="230" y="320" class="simn">same string and bob</text></g>';
+  $('fG6').innerHTML=s}
+function renderG6(){
+  var v=S6.v,d=DS[v],gr=GROUPS.filter(function(x){return x[0]===v})[0];
+  $('segG6').innerHTML=segHTML(GROUPS.map(function(x){return [x[0],x[2]]}),v);
+  drawG6();
+  $('leadG6').innerHTML='<b>'+gr[1]+': '+gr[2]+'.</b> '+gr[3];
+  $('predG6').innerHTML='<label class="f">My prediction: as the '+d.nm+' increases, the period T will…</label><div class="seg" id="predG6s">'+segHTML([['inc','increase'],['dec','decrease'],['same','stay the same']],S6.pred)+'</div><button class="btn primary" id="revG6" style="margin-left:8px">Reveal the graph</button>';
+  $('panG6').hidden=!S6.shown;
+  var t=d.truth,out='';
+  if(!S6.shown)out='Pick a prediction and press Reveal. Nobody in the room knows the answer until the data is in, and that is the point of testing.';
+  else{
+    var tx={length:'T rises from <b>'+f2(per(10))+' s</b> at 10 cm to <b>'+f2(per(100))+' s</b> at 100 cm. The graph curves: ten times the length gives about three times the period.',
+     mass:'T stays near <b>'+f2(per(25))+' s</b> from 50 g to 500 g. A heavier bob is pulled harder by gravity and is also harder to speed up, and the two effects cancel.',
+     area:'T stays near <b>'+f2(per(25))+' s</b> whatever the surface area. The air resistance on a paper cylinder is far too small to move the period at this scale.',
+     angle:'T stays near <b>'+f2(per(25))+' s</b> for small release angles. It creeps up about 3% by 40°, which is close to the timing error, so a flat line is the honest finding.',
+     gravity:'A stronger pull shortens the period. At 25 cm, T is <b>'+f2(per(25,1.6))+' s</b> on the Moon, <b>'+f2(per(25,9.8))+' s</b> on Earth and <b>'+f2(per(25,24.8))+' s</b> on Jupiter.',
+     height:'Release height is the release angle measured in centimetres, so it gives the same result: T stays near <b>'+f2(per(50))+' s</b> for small heights.'}[v];
+    var ok=S6.pred===t;
+    out=(S6.pred==null?'':'<span class="'+(ok?'good':'bad')+'">'+(ok?'Matches the data.':'Does not match the data.')+'</span> ')+tx+'<br><span class="hint">'+(t==='same'?'A flat graph is a finding. It is not a failed experiment.':'A prediction that turns out wrong, with a reason behind it, is a good hypothesis.')+'</span>'}
+  $('outG6').innerHTML=out;
+  if(S6.shown){var pts=noisy(d,41,0.012),fit=fitFor(d,pts),g=mkG(d);g.curve(fit,d.xs[0]*(d.fit==='pow'?0.5:1),d.xm,'s-fit');pts.forEach(function(p){g.dot(p[0],p[1],5,'var(--data)',tipD(d,p[0],p[1]))});g.text(d.xm*0.04,d.ym*0.94,d.fit==='flat'?'flat line of best fit':'curve of best fit','var(--fit)');g.end('gG6')}}
+segOn('segG6',function(v){S6.v=v;S6.pred=null;S6.shown=false;renderG6()});
+$('predG6').addEventListener('click',function(e){var b=e.target.closest('#predG6s button');if(b){S6.pred=b.dataset.v;renderG6();return}if(e.target.id==='revG6'){S6.shown=true;renderG6()}});
+
+/* ======== B.i ======== */
+var SBi={v:'length'};
+$('rqA').innerHTML=DKEYS.map(function(k){return '<option value="'+k+'">'+DS[k].nm+'</option>'}).join('');
+function renderBi(){
+  var d=DS[$('rqA').value||'length'],k=$('rqA').value;
+  $('fBi').innerHTML=pendSVG(30,20,{hl:null,showh:true})+'<g class="lbl" fill="var(--accent)" font-size="13"><text x="280" y="118">you change: <tspan font-weight="700">'+d.nm+'</tspan></text><text x="280" y="140" fill="var(--theory)">you measure: <tspan font-weight="700">period T</tspan></text></g>';
+  rq()}
+function rq(){var a=$('rqA').value,b=$('rqB').value,ok=b==='period T of a pendulum';
+  $('rqOut').innerHTML=ok?'<span class="good">✓ Names your '+DS[a].nm+' and the period T. You can change the first one and measure the second with a stopwatch.</span>':'<span class="warn">The thing you measure in this investigation is the period T. Check that the second blank names it.</span>'}
+$('rqA').onchange=renderBi;$('rqB').onchange=rq;
+
+/* ======== B.ii ======== */
+var SBii={pred:'inc',reason:null};
+$('hvar').innerHTML=DKEYS.map(function(k){return '<option value="'+k+'">'+DS[k].nm+'</option>'}).join('');
+var REASONS=[['phys','…because a longer string gives the bob a bigger arc to travel, so each swing takes longer.','A physics reason. It says what the pendulum is doing that makes the period change, so it lifts the hypothesis into the top bands.'],
+ ['cancel','…because a heavier bob is pulled harder by gravity but is also harder to speed up, so the two effects cancel.','A strong reason for &ldquo;no change&rdquo;. A prediction of no change with an argument like this is a good hypothesis.'],
+ ['guess','…because I think it will.','This is an opinion. A prediction with no reason behind it stays in the bottom bands, even when it turns out to be right.'],
+ ['same','…because the period gets bigger.','This repeats the prediction in other words. Say what the pendulum is doing that makes the period change.']];
+function renderBii(){var k=$('hvar').value||'length',d=DS[k];
+  $('fBii').innerHTML=pendSVG(25,15,{ghost:{L:60,ang:15,label:'longer'},nolen:true,noarc:false});
+  $('predBii').innerHTML=segHTML([['inc','increase'],['dec','decrease'],['same','stay the same']],SBii.pred);
+  var w={inc:'increase',dec:'decrease',same:'stay the same'}[SBii.pred];
+  $('hypOut').innerHTML='<b>Sentence starter.</b> As the <b>'+d.nm+'</b> increases, the period T will <b>'+w+'</b>, because <span style="border-bottom:2px solid var(--accent);padding:0 40px"></span>.<br><span class="hint">The first blank is your variable. The second is one of increase, decrease or stay the same. All three are real answers.</span>'}
+segOn('predBii',function(v){SBii.pred=v;renderBii()});$('hvar').onchange=renderBii;
+$('reasons').innerHTML=REASONS.map(function(r){return '<button class="card" data-v="'+r[0]+'" aria-pressed="false"><strong>'+r[1]+'</strong></button>'}).join('');
+$('reasons').addEventListener('click',function(e){var b=e.target.closest('.card');if(!b)return;var r=REASONS.filter(function(x){return x[0]===b.dataset.v})[0];[].forEach.call($('reasons').children,function(c){c.setAttribute('aria-pressed',c===b)});$('reasonOut').innerHTML=r[2]});
+$('reasonOut').innerHTML='Choose a reason above.';
+
+/* ======== B.iii ======== */
+var SB3={tab:'iv',n:5,span:100,res:'mm',ctl:'len',L1:25,var2:'length'};
+var B3TABS=[['iv','Your variables'],['range','Range of values'],['res','Resolution'],['ctl','Control variables']];
+function rangeVals(n,span){var lo=10,r=[];for(var i=0;i<n;i++)r.push(Math.round(lo+(span-lo)*(n===1?0:i/(n-1))));return r}
+function renderB3(){
+  $('tabB3').innerHTML=segHTML(B3TABS,SB3.tab);var v='',w='',t=SB3.tab;
+  if(t==='iv'){v='<div class="panel"><svg id="fB3a" viewBox="0 0 440 400"></svg></div>';
+    w='<p class="lead">The <b>independent variable</b> is the one thing you change. The <b>dependent variable</b> is the one you measure.</p><div class="why-box"><b>Independent:</b> your variable, for example the length L of the string, in centimetres.<br><b>Dependent:</b> the period T, in seconds, found from the time for 20 swings.</div><p>Every other variable becomes a control variable, so only one thing changes at a time.</p><p class="hint">Check: your sentence names both variables, each with its unit.</p>'}
+  if(t==='range'){var vals=rangeVals(SB3.n,SB3.span),ok=SB3.n>=5&&SB3.span-10>=50;
+    v='<div class="panel"><svg id="gB3r" viewBox="0 0 520 380" role="img" aria-label="Chosen lengths on the period against length graph"></svg></div><div><label class="f" for="nS">How many different lengths: <b>'+SB3.n+'</b></label><input type="range" id="nS" min="2" max="10" step="1" value="'+SB3.n+'"></div><div><label class="f" for="spS">Longest length: <b>'+SB3.span+' cm</b></label><input type="range" id="spS" min="30" max="100" step="10" value="'+SB3.span+'"></div>';
+    w='<div><p class="lead">Describe how you will change the variable: <b>how many values</b>, and <b>how far apart</b>.</p><div class="why-box">Your values: <b>'+vals.join(', ')+' cm</b><br><span class="'+(ok?'good':'warn')+'">'+(ok?'✓ Enough values across a decent range. The shape of the graph will show.':'Add values or widen the range until you have at least five values spread across a decent range.')+'</span></div></div><p>&ldquo;Sufficient, relevant data&rdquo; means at least five values with repeats. Three values close together do not show a shape.</p><p class="hint">Move the sliders to see what each choice does to the graph.</p>'}
+  if(t==='res'){var mm=SB3.res==='mm',val=25.34,rd=mm?25.3:25;
+    var sv='<rect width="520" height="170" fill="var(--air)"/>',x0=30,x1=490,lo=24,hi=27;
+    for(var c=lo;c<=hi+1e-9;c+=mm?0.1:1){c=Math.round(c*10)/10;var x=x0+(c-lo)/(hi-lo)*(x1-x0),big=Math.abs(c-Math.round(c))<1e-9;sv+='<line x1="'+x+'" y1="90" x2="'+x+'" y2="'+(big?58:72)+'" stroke="var(--ink2)" stroke-width="1.3"/>';if(big)sv+='<text x="'+x+'" y="112" text-anchor="middle" class="tick">'+c+'</text>'}
+    sv+='<line x1="'+x0+'" y1="90" x2="'+x1+'" y2="90" stroke="var(--ink2)" stroke-width="1.5"/><text x="'+x0+'" y="132" class="lbl" fill="var(--ink2)">cm</text>';
+    var bxm=x0+(val-lo)/(hi-lo)*(x1-x0);sv+='<line x1="'+bxm+'" y1="30" x2="'+bxm+'" y2="90" stroke="var(--accent)" stroke-width="3"/><text x="'+bxm+'" y="24" text-anchor="middle" class="lbl" fill="var(--accent)">centre of the bob</text><text x="'+(x0)+'" y="158" class="lbl" fill="var(--ink)">this ruler reads '+rd+' cm</text>';
+    v='<div class="panel"><svg viewBox="0 0 520 170" role="img" aria-label="A metre ruler scale with the centre of the bob on it">'+sv+'</svg></div><div><label class="f">Ruler divisions</label><div class="seg" id="resSeg">'+segHTML([['mm','1 mm'],['cm','1 cm']],SB3.res)+'</div></div>';
+    w='<div><p class="lead"><b>Resolution</b> is the smallest change an instrument can show. Name it whenever you name a measuring tool.</p><div class="why-box">Finer divisions pin the reading down more tightly: this length reads <b>'+rd+' cm</b> on the '+(mm?'1 mm':'1 cm')+' ruler.</div></div><div class="why-box">A metre ruler with a resolution of <b>1 mm</b>.<br>A stopwatch with a resolution of <b>0.01 s</b>.</div><p class="hint">Check: every instrument you name comes with its resolution.</p>'}
+  if(t==='ctl'){var ci=[['len','String length'],['bob','Same bob'],['ang','Release angle'],['timer','Same timing method']],L1=SB3.L1;
+    v='<div class="panel"><svg id="fB3c" viewBox="0 0 440 400"></svg></div><div class="cards" id="ctlCards">'+ci.map(function(c){return '<button class="card" data-v="'+c[0]+'" aria-pressed="'+(c[0]===SB3.ctl)+'"><strong>'+c[1]+'</strong></button>'}).join('')+'</div>';
+    var inf={len:['I will keep the string length the same.','I will measure from the pivot to the centre of the bob, and clamp the string at the same point each time.','A longer string has a longer period, so a changing length means I am testing two things at once.',function(){return 'From 25 cm to 36 cm, T goes from '+f2(per(25))+' s to '+f2(per(36))+' s.'}],
+     bob:['I will keep the bob the same.','I will use the same bob for every measurement, unless the bob is my variable.','A different bob has a different mass and size, and I would not know which one changed the period.',function(){return 'Swapping the bob moves T by less than the timing error, but only when everything else is held steady.'}],
+     ang:['I will keep the release angle the same, and small.','I will release from a clamped protractor mark, at about 15°, every time.','A very wide release angle lengthens the period slightly. A small, steady angle takes that out.',function(){return 'At 15° T is '+f2(per(25)*ampF(15))+' s. At 40° it is '+f2(per(25)*ampF(40))+' s.'}],
+     timer:['I will keep the counting method and the person timing the same.','I will count zero as I start the watch, and time 20 swings each time.','Different timers react at different speeds, and a different count changes the answer.',function(){return 'Counting half swings as whole ones gives T = '+f2(per(25)/2)+' s instead of '+f2(per(25))+' s.'}]}[SB3.ctl];
+    w='<div><p class="lead">A <b>control variable</b> is something you keep the same so the test is fair. Write three things about each one: <b>what it is</b>, <b>how you hold it</b>, <b>why it matters</b>.</p><div class="why-box" id="ctlInfo"><b>1 · What:</b> '+inf[0]+'<br><b>2 · How:</b> '+inf[1]+'<br><b>3 · Why:</b> '+inf[2]+'<br><span class="hint">'+inf[3]()+'</span></div></div><p class="hint">Check: every control variable on your list has all three parts. Two or three real controls beat a long list.</p>'}
+  $('visB3').innerHTML=v;$('whyB3').innerHTML=w;
+  if(t==='iv')$('fB3a').innerHTML=pendSVG(35,20,{showh:true})+'<g class="lbl" font-size="13"><text x="270" y="130" fill="var(--accent)">independent: length L</text><text x="270" y="152" fill="var(--theory)">dependent: period T</text></g>';
+  if(t==='range'){var d=DS.length,g=mkG(d),vs=rangeVals(SB3.n,SB3.span),pts=vs.map(function(x){return [x,d.fn(x)]});g.curve(fitFor(d,pts),5,d.xm,'s-fit');pts.forEach(function(p){g.dot(p[0],p[1],6,'var(--data)',tipD(d,p[0],p[1]))});g.text(2,2.35,SB3.n+' values: '+(SB3.n>=5?'the curve shows':'too few to see the shape'),'var(--ink2)');g.end('gB3r')}
+  if(t==='ctl'){var kk=SB3.ctl;$('fB3c').innerHTML=kk==='len'?pendSVG(25,15,{ghost:{L:36,ang:15,label:'L changed'}}):kk==='bob'?pendSVG(25,15,{r:13,ghost:{r:20,ang:15,label:'different bob'}}):kk==='ang'?pendSVG(25,15,{ghost:{ang:40,label:'θ = 40°'}}):pendSVG(25,15,{})+'<g class="lbl" fill="var(--ink)" font-size="13"><text x="270" y="130">count: 0 as you start,</text><text x="270" y="150">1 each time the bob returns</text></g>'}}
+$('visB3').addEventListener('click',function(e){var c=e.target.closest('#ctlCards .card');if(c){SB3.ctl=c.dataset.v;renderB3();return}var r=e.target.closest('#resSeg button');if(r){SB3.res=r.dataset.v;renderB3()}});
+$('visB3').addEventListener('input',function(e){if(e.target.id==='nS'){SB3.n=+e.target.value;renderB3()}if(e.target.id==='spS'){SB3.span=+e.target.value;renderB3()}});
+segOn('tabB3',function(v){SB3.tab=v;renderB3()});
+
+/* ======== 20 swings ======== */
+var S20={seed:1,step:0};
+function renderS20(){
+  var T=1.0,r=rng(S20.seed*911),one=[],tw=[];
+  for(var i=0;i<13;i++){var e1=0.2+gauss(r)*0.08,e2=0.2+gauss(r)*0.08;var err=e2-e1;one.push(T+err);var e3=0.2+gauss(r)*0.08,e4=0.2+gauss(r)*0.08;tw.push((20*T+(e4-e3))/20)}
+  var W=520,H=300,x0=40,x1=490,lo=0.6,hi=1.4,X=function(v){return x0+(v-lo)/(hi-lo)*(x1-x0)},o='';
+  for(var v=0.6;v<=1.401;v+=0.1){o+='<line x1="'+X(v)+'" y1="40" x2="'+X(v)+'" y2="250" class="grid"/><text x="'+X(v)+'" y="272" text-anchor="middle" class="tick">'+f1(v)+'</text>'}
+  o+='<line x1="'+x0+'" y1="250" x2="'+x1+'" y2="250" class="axis"/><text x="'+((x0+x1)/2)+'" y="294" text-anchor="middle" class="atitle">Period T found by each student / s</text>';
+  o+='<line x1="'+X(1)+'" y1="30" x2="'+X(1)+'" y2="250" stroke="var(--theory)" stroke-width="2" stroke-dasharray="6 4"/><text x="'+X(1)+'" y="24" text-anchor="middle" class="lbl" fill="var(--theory)">true T = 1.00 s</text>';
+  o+='<text x="'+x0+'" y="66" class="lbl" fill="var(--ink2)">one swing, one stopwatch</text><text x="'+x0+'" y="156" class="lbl" fill="var(--ink2)">20 swings ÷ 20</text>';
+  var rg1=Math.max.apply(null,one)-Math.min.apply(null,one),rg2=Math.max.apply(null,tw)-Math.min.apply(null,tw);
+  if(S20.step>=1)one.forEach(function(p,i){o+='<circle cx="'+X(p)+'" cy="'+(96+(i%3)*14)+'" r="6" fill="var(--bad)" stroke="var(--surface)" stroke-width="1.5"><title>'+f2(p)+' s</title></circle>'});
+  if(S20.step>=2)tw.forEach(function(p,i){o+='<circle cx="'+X(p)+'" cy="'+(186+(i%3)*14)+'" r="6" fill="var(--good)" stroke="var(--surface)" stroke-width="1.5"><title>'+f2(p)+' s</title></circle>'});
+  $('gS20').innerHTML=o;
+  $('s20out').innerHTML=S20.step===0?'Press button 1 to collect the one-swing times.':S20.step===1?'<b>One swing:</b> the class readings run from <b>'+f2(Math.min.apply(null,one))+' s</b> to <b>'+f2(Math.max.apply(null,one))+' s</b>, a spread of <b>'+f2(rg1)+' s</b>. Same pendulum, different answers. Whose is right? The reaction time at the start and the stop is a large share of a one-second swing.':'<b>20 swings ÷ 20:</b> the readings now run from <b>'+f2(Math.min.apply(null,tw))+' s</b> to <b>'+f2(Math.max.apply(null,tw))+' s</b>, a spread of only <b>'+f2(rg2)+' s</b>, about '+f0(rg1/rg2)+' times tighter. The class agrees.'}
+$('s20a').onclick=function(){S20.step=Math.max(S20.step,1);renderS20()};$('s20b').onclick=function(){S20.step=2;renderS20()};$('s20n').onclick=function(){S20.seed++;renderS20()};
+
+/* ======== B.iv ======== */
+var SB4={tab:'kit',m:'B'};
+var B4TABS=[['kit','Equipment'],['steps','Numbered steps'],['safe','Safety'],['check','Is it complete?']];
+var KIT=['Clamp stand, boss and clamp','String and bob (or paper cylinder)','Metre ruler, resolution 1 mm','Protractor, resolution 1°','Stopwatch, resolution 0.01 s'];
+var STEPS=['Clamp the string so the length from the pivot to the centre of the bob is <b>L</b>.','Pull the bob out to the <b>release angle</b> with the protractor, keeping the string tight.','Let go without pushing, and count <b>zero</b> as you start the stopwatch.','Count one each time the bob returns to the release point. Stop the watch at <b>20</b>.','Divide the time by 20 to find the <b>period T</b>, and write it in the table.','Repeat <b>three times</b> at this length, then change L and repeat. Use <b>at least five</b> lengths.'];
+var MCHK=['Equipment listed','Numbered, ordered steps','The 20-swing rule stated','Repeats stated','At least five values of the variable','Controls actually held','One safety point'];
+var METH={A:{t:'<b>Student A.</b> I got a pendulum and some string. I timed how long it took to swing, and changed the length a few times. I wrote down my results.',ok:[0,0,0,0,0,0,0]},
+ B:{t:'<b>Student B.</b> Equipment: clamp stand, string, bob, metre ruler (1 mm), stopwatch (0.01 s). 1. Set L = 10 cm, measured to the centre of the bob. 2. Release at 15° each time. 3. Time 20 swings, divide by 20. 4. Repeat three times. 5. Repeat for L = 10 to 100 cm in steps of 10 cm. Safety: keep the base weighted and the swing path clear of feet.',ok:[1,1,1,1,1,1,1]},
+ C:{t:'<b>Student C.</b> Equipment: stand, string, bob, ruler. 1. Hang the bob. 2. Time 20 swings and divide by 20. 3. Do it for 3 lengths.',ok:[1,1,1,0,0,0,0]}};
+function renderB4(){
+  $('tabB4').innerHTML=segHTML(B4TABS,SB4.tab);var v='',w='',t=SB4.tab;
+  if(t==='kit'){v='<div class="panel"><svg id="fB4" viewBox="0 0 440 400"></svg></div>';
+    w='<p class="lead">List every piece of equipment, with the <b>resolution</b> of each measuring tool.</p><ul class="tight">'+KIT.map(function(k){return '<li>'+k+'</li>'}).join('')+'</ul><p class="hint">Check: someone else could gather everything you need from your list alone.</p>'}
+  if(t==='steps'){v='<div class="panel"><svg id="fB4" viewBox="0 0 440 400"></svg></div><div class="row"><button class="btn" id="stPrev">← Back</button><button class="btn primary" id="stNext">Next step →</button></div>';
+    var cur=SB4.step||0;w='<p class="lead">Number every step, in the order you do them.</p><div class="why-box" id="stepBox"><b>Step '+(cur+1)+' of '+STEPS.length+'.</b> '+STEPS[cur]+'</div><p>Test your method: give it to another group. If they can run it without asking you a single question, it is <b>logical and complete</b>.</p>'}
+  if(t==='safe'){v='<div class="panel"><svg viewBox="0 0 440 200"><rect width="440" height="200" fill="var(--air)"/><rect x="40" y="170" width="200" height="12" fill="var(--ink2)"/><rect x="52" y="30" width="10" height="142" fill="var(--ink2)"/><rect x="52" y="30" width="150" height="10" fill="var(--ink2)"/><line x1="190" y1="40" x2="190" y2="120" stroke="var(--ink)" stroke-width="2"/><circle cx="190" cy="124" r="13" fill="var(--data)"/><text x="260" y="70" class="lbl" fill="var(--ink)">weighted base,</text><text x="260" y="88" class="lbl" fill="var(--ink)">back from the bench edge</text><text x="260" y="136" class="lbl" fill="var(--accent)">swing path clear of feet</text></svg></div>';
+    w='<p class="lead">Name something that could genuinely cause an injury, and say what you will do about it.</p><div class="why-box"><b>The shape of a safety point.</b> <i>A clamp stand could tip over if the bob swings hard and fall on my feet. To stay safe I will weigh the base down, keep the stand back from the bench edge, release the bob gently and keep feet clear of the swing path.</i></div><p>Check yourself: you named a real hazard, and you wrote a specific action that matches it.</p>'}
+  if(t==='check'){v='<div class="seg" id="mSeg">'+segHTML([['A','Student A'],['B','Student B'],['C','Student C']],SB4.m)+'</div><div class="panel" style="margin-top:10px"><ul class="check">'+MCHK.map(function(c,i){var ok=METH[SB4.m].ok[i];return '<li><span class="box '+(ok?'good':'bad')+'">'+(ok?'✓':'✗')+'</span><span>'+c+'</span></li>'}).join('')+'</ul></div>';
+    var n=METH[SB4.m].ok.reduce(function(a,b){return a+b},0);
+    w='<div><p class="lead">Tick the elements a method needs. Completeness is what most students lose at the top bands.</p><div class="why-box">'+METH[SB4.m].t+'</div><div class="verdict" style="margin-top:10px">'+n+' of '+MCHK.length+' elements present</div></div>'}
+  $('visB4').innerHTML=v;$('whyB4').innerHTML=w;
+  if(t==='kit')$('fB4').innerHTML=pendSVG(30,15,{});
+  if(t==='steps'){var s=SB4.step||0;$('fB4').innerHTML=s<=1?pendSVG(30,s===1?25:0,{rel:null,showh:false,hl:s===0?'length':'angle'}):pendSVG(30,15,{hl:s===3?'rest':null,rel:null})}}
+$('visB4').addEventListener('click',function(e){var m=e.target.closest('#mSeg button');if(m){SB4.m=m.dataset.v;renderB4();return}
+  if(e.target.id==='stNext'){SB4.step=Math.min(STEPS.length-1,(SB4.step||0)+1);renderB4()}if(e.target.id==='stPrev'){SB4.step=Math.max(0,(SB4.step||0)-1);renderB4()}});
+segOn('tabB4',function(v){SB4.tab=v;renderB4()});
+
+/* ======== C.i table ======== */
+var LS=[10,20,30,40,50,60,70,80,90,100];
+var CLS=(function(){var r=rng(2026),o={};LS.forEach(function(L){o[L]=[0,1,2].map(function(){return Math.round((per(L)+gauss(r)*0.011)*100)/100})});return o})();
+var CLSPTS=LS.map(function(L){return [L,mean(CLS[L])]});
+var SC={idx:0,reveal:0,curve:false,cls:false,maths:false,L:10,th:15,cur:null};
+function drawC1(){$('fC1').innerHTML=pendSVG(SC.L,SC.cur!=null?SC.cur:SC.th,{rel:SC.th,noarc:false})}
+var swC=mkSwing('fC1',SC,drawC1);SW.push(swC);
+function renderC1(){
+  var L=LS[SC.idx],T=per(L);SC.L=L;drawC1();
+  var h='<span><small>length L</small>'+L+' cm</span><span class="t2"><small>period T</small>'+f2(T)+' s</span><span style="font-size:15px"><small>frequency f = 1/T</small>'+f2(1/T)+' Hz</span>';
+  if(SC.maths)h+='<span style="font-size:15px"><small>T² ÷ L</small>'+f2(T*T/(L/100))+' s²/m</span>';
+  $('c1read').innerHTML=h;
+  $('c1cap').innerHTML='<b>L = '+L+' cm</b> gives about <b>T = '+f2(T)+' s</b>. '+(SC.idx===0?'This is the shortest string, and the quickest swing.':SC.idx===LS.length-1?'A metre of string: the period is about '+f1(per(100)/per(10))+' times the period at 10 cm, for ten times the length.':'Each extra 10 cm adds less time than the one before.')+(SC.maths?'<br><span class="hint">Maths, for after your data is in: T = 2π√(L ÷ g), with g = 9.81 N/kg. T² ÷ L stays near 4.0 s²/m for every row.</span>':'');
+  var d=DS.length,g=mkG(d);
+  if(SC.curve){g.curve(function(x){return per(x)},0.5,100,'s-theory');g.text(52,0.45,'expected curve','var(--theory)')}
+  g.o+='<line x1="'+g.X(L)+'" y1="'+g.Y(0)+'" x2="'+g.X(L)+'" y2="'+g.Y(T)+'" class="s-guide"/><line x1="'+g.X(0)+'" y1="'+g.Y(T)+'" x2="'+g.X(L)+'" y2="'+g.Y(T)+'" class="s-guide"/>';
+  for(var i=0;i<=SC.reveal;i++){var y=per(LS[i]);g.dot(LS[i],y,i===SC.idx?7:5,'var(--theory)',tipD(d,LS[i],y))}
+  if(SC.cls){CLSPTS.forEach(function(p){if(p[0]<=LS[SC.reveal])g.dot(p[0],p[1],5,'var(--data)','example class: '+tipD(d,p[0],p[1]),true)});g.text(2,2.35,'◆ example class means','var(--data)')}
+  g.end('gC1');
+  $('c1chips').innerHTML=LS.map(function(v,i){return '<button class="chip'+(i<=SC.reveal?' seen':'')+'" data-i="'+i+'" aria-pressed="'+(i===SC.idx)+'">'+v+' cm</button>'}).join('');
+  var tb='<tr><th rowspan="2">Length of string L / cm</th><th colspan="4">Period T / s</th><th rowspan="2">Expected T / s</th></tr><tr><th>trial 1</th><th>trial 2</th><th>trial 3</th><th>mean</th></tr>';
+  LS.forEach(function(v,i){if(i>SC.reveal)return;var c=CLS[v],cur=i===SC.idx?' class="cur"':'';tb+='<tr><td'+cur+'>'+v+'</td><td>'+f2(c[0])+'</td><td>'+f2(c[1])+'</td><td>'+f2(c[2])+'</td><td><b>'+f2(mean(c))+'</b></td><td>'+f2(per(v))+'</td></tr>'});
+  $('c1table').innerHTML=tb+'<caption style="caption-side:bottom;text-align:left;padding-top:6px;color:var(--muted);font-weight:400">An example class set made from the physics with a realistic timing error (20 swings ÷ 20), so you can see what good data looks like. Expected values are for a pendulum on Earth.</caption>';
+  $('c1prev').disabled=SC.idx===0;$('c1next').disabled=SC.idx===LS.length-1;
+  $('c1curve').setAttribute('aria-pressed',SC.curve);$('c1curve').textContent=SC.curve?'Hide the expected curve':'Draw the expected curve';
+  $('c1cls').setAttribute('aria-pressed',SC.cls);$('c1cls').textContent=SC.cls?'Hide the example class':'Add the example class';
+  $('c1swing').textContent=swC.on()?'Stop':'Swing it'}
+function setC1(i){SC.idx=Math.max(0,Math.min(LS.length-1,i));SC.reveal=Math.max(SC.reveal,SC.idx);renderC1()}
+$('c1next').onclick=function(){setC1(SC.idx+1)};$('c1prev').onclick=function(){setC1(SC.idx-1)};
+$('c1reset').onclick=function(){swC.stop();SC.idx=0;SC.reveal=0;SC.curve=false;SC.cls=false;renderC1()};
+$('c1swing').onclick=function(){if(swC.on())swC.stop();else{stopAll(swC);swC.start()}renderC1()};
+$('c1chips').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b)setC1(+b.dataset.i)});
+$('c1curve').onclick=function(){SC.curve=!SC.curve;renderC1()};$('c1cls').onclick=function(){SC.cls=!SC.cls;renderC1()};$('c1maths').onchange=function(){SC.maths=this.checked;renderC1()};
+
+/* ======== C.i graph ======== */
+var SG={layers:{dots:true,fit:false,gaps:false,theory:false},v:'length',sd:2,seed:1,probe:5};
+function dataG(){var d=DS[SG.v];return noisy(d,SG.seed*7919+DKEYS.indexOf(SG.v),SG.sd*0.01)}
+function renderG(){
+  var d=DS[SG.v],pts=dataG(),fit=fitFor(d,pts),L=SG.layers,g=mkG(d);
+  $('dsG').innerHTML=segHTML(DSEG,SG.v);$('sdGv').textContent='±'+f2(SG.sd*0.01)+' s';
+  [].forEach.call(document.querySelectorAll('#layersG .btn'),function(b){b.setAttribute('aria-pressed',!!L[b.dataset.l])});
+  var x0=d.fit==='pow'?d.xs[0]*0.5:d.xs[0],x1=d.xs[d.xs.length-1];
+  if(L.theory){g.curve(d.fn,x0,x1,'s-theory');g.text(d.xm*0.04,d.ym*0.9,'expected values','var(--theory)')}
+  if(L.gaps)pts.forEach(function(p){g.o+='<line x1="'+g.X(p[0])+'" y1="'+g.Y(p[1])+'" x2="'+g.X(p[0])+'" y2="'+g.Y(fit(p[0]))+'" stroke="var(--fit)" stroke-width="2.5" opacity=".6"/>'});
+  if(L.dots){g.poly(pts,'s-dots');g.text(d.xm*0.04,d.ym*0.84,'joined dots','var(--dots)')}
+  if(L.fit){g.curve(fit,x0,x1,'s-fit');g.text(d.xm*0.04,d.ym*0.78,d.fit==='flat'?'line of best fit (flat)':'curve of best fit','var(--fit)')}
+  pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tipD(d,p[0],p[1]))});
+  var pr=d.xs[0]+(d.xs[d.xs.length-1]-d.xs[0])*SG.probe/10;g.o+='<line x1="'+g.X(pr)+'" y1="'+g.Y(0)+'" x2="'+g.X(pr)+'" y2="'+g.Y(d.ym)+'" class="s-guide"/>';
+  if(L.dots)g.dot(pr,interp(pts,pr),5,'var(--dots)','joined dots');if(L.fit)g.dot(pr,fit(pr),5,'var(--fit)','best fit');if(L.theory)g.dot(pr,d.fn(pr),5,'var(--theory)','expected');
+  g.end('gG');$('probeGv').textContent=(Math.round(pr*10)/10)+' '+d.unit;$('probeL').textContent=d.sym;
+  var rows='<tr><th></th><th>period T read off</th></tr>';
+  if(L.dots)rows+='<tr><td style="color:var(--dots)">Joined dots</td><td>'+f2(interp(pts,pr))+' s</td></tr>';
+  if(L.fit)rows+='<tr><td style="color:var(--fit)">Line of best fit</td><td>'+f2(fit(pr))+' s</td></tr>';
+  rows+='<tr><td style="color:var(--theory)">Expected (physics)</td><td>'+f2(d.fn(pr))+' s</td></tr>';$('probeGt').innerHTML=rows;
+  var up=0,dn=0;pts.forEach(function(p){(p[1]>fit(p[0]))?up++:dn++});
+  var nt='<b>What to notice.</b> ';
+  if(L.dots&&!L.fit)nt+='Joining the dots sends the line through <b>every</b> reading, including the ones a little too high or too low, so it wobbles. Each reading carries a small timing error, and the joined line copies the errors.';
+  else if(L.fit)nt+='The line of best fit passes <b>between</b> the points: '+up+' above it and '+dn+' below it. It ignores the small errors and shows the pattern, so it can predict a reading you did not take. '+(d.fit==='flat'?'<b>The line is flat, and a flat line is a finding:</b> changing the '+d.nm+' did not change the period.':'Raise the timing error, then join the dots again.');
+  else nt+='Turn on <b>Join the dots</b> or <b>Line of best fit</b>.';
+  $('noteG').innerHTML=nt}
+$('layersG').addEventListener('click',function(e){var b=e.target.closest('.btn');if(b){SG.layers[b.dataset.l]=!SG.layers[b.dataset.l];renderG()}});
+segOn('dsG',function(v){SG.v=v;renderG()});
+$('sdG').oninput=function(){SG.sd=+this.value;renderG()};$('seedG').onclick=function(){SG.seed++;renderG()};$('probeG').oninput=function(){SG.probe=+this.value;renderG()};
+
+/* ======== C.ii ======== */
+var SHAPES=[['rise','Rising','As x increases, y increases.'],['prop','Straight line through the origin','x is directly proportional to y, because the graph is a straight line through the origin.'],['lin','Straight line that misses the origin','There is a linear relationship between x and y, because the graph is a straight line that misses the origin.'],['up','Curving upwards','As x increases, y increases at an increasing rate.'],['down','Rising, less and less steeply','As x increases, y increases at a decreasing rate.'],['fall','Falling','As x increases, y decreases.'],['flat','Flat','There is no relationship between x and y: changing x does not change y.']];
+var THUMB={rise:'M4 38 L56 8',prop:'M4 40 L56 8',lin:'M4 30 L56 6',up:'M4 40 Q40 36 56 6',down:'M4 40 Q10 10 56 8',fall:'M4 8 L56 38',flat:'M4 24 L56 24'};
+var S2={v:'length',shape:null,n1:0,n2:null};
+var SHT={length:['down','rise'],mass:['flat'],area:['flat'],angle:['flat'],gravity:['fall'],height:['flat']};
+function renderC2(){
+  var d=DS[S2.v],pts=noisy(d,5+DKEYS.indexOf(S2.v),0.012),fit=fitFor(d,pts),g=mkG(d);
+  $('dsC2').innerHTML=segHTML(DSEG,S2.v);
+  g.curve(fit,d.fit==='pow'?d.xs[0]*0.5:d.xs[0],d.xs[d.xs.length-1],'s-fit');pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tipD(d,p[0],p[1]))});g.end('gC2');
+  $('shapes').innerHTML=SHAPES.map(function(s){return '<button class="card" data-v="'+s[0]+'" aria-pressed="'+(S2.shape===s[0])+'"><svg viewBox="0 0 60 44" width="60" height="44" aria-hidden="true"><path d="'+THUMB[s[0]]+'" fill="none" stroke="var(--fit)" stroke-width="3"/></svg><strong style="font-size:13px">'+s[1]+'</strong></button>'}).join('');
+  var sh=SHAPES.filter(function(x){return x[0]===S2.shape})[0],xn=d.sym,ok=SHT[S2.v];
+  if(!sh)$('shapeOut').innerHTML='Choose a shape.';
+  else{var sent=sh[2].replace(/x/g,lc(d.nm)).replace(/y/g,'the period T'),hit=ok.indexOf(sh[0])===0,part=ok.indexOf(sh[0])>0;
+    $('shapeOut').innerHTML='<span class="'+(hit?'good':part?'warn':'bad')+'">'+(hit?'✓ This matches the graph.':part?'True, but not the whole shape. Name the curve as well.':'This does not match the graph.')+'</span><br><i>'+sent+'</i>'}
+  document.querySelectorAll('#c2 .xs').forEach(function(e){e.textContent=lc(d.sym)});
+  var opts=d.xs.map(function(x,i){return '<option value="'+i+'">'+x+' '+d.unit+'</option>'}).join('');
+  $('n1').innerHTML=opts;$('n2').innerHTML=opts;if(S2.n2==null||S2.n2>=d.xs.length)S2.n2=d.xs.length-1;if(S2.n1>=d.xs.length)S2.n1=0;$('n1').value=S2.n1;$('n2').value=S2.n2;
+  $('v1').textContent=f2(fit(d.xs[S2.n1]))+' s';$('v2').textContent=f2(fit(d.xs[S2.n2]))+' s';
+  var rr=relRms(d,pts),sc2='The points sit within about <b>'+f1(rr*100)+'%</b> of the line, so they are <b>close to the line</b>. Close points say the timing was consistent and repeatable. Wide scatter says timing error, usually from reaction time or counting swings wrongly.';if($('scatC2').innerHTML!==sc2)$('scatC2').innerHTML=sc2}
+segOn('dsC2',function(v){S2.v=v;S2.shape=null;S2.n1=0;S2.n2=null;renderC2()});
+$('shapes').addEventListener('click',function(e){var b=e.target.closest('.card');if(b){S2.shape=b.dataset.v;renderC2()}});
+$('n1').onchange=function(){S2.n1=+this.value;renderC2()};$('n2').onchange=function(){S2.n2=+this.value;renderC2()};
+
+/* ======== C.iii ======== */
+var S3={v:'length',h:'inc'};
+function renderC3(){
+  var d=DS[S3.v],pts=noisy(d,9+DKEYS.indexOf(S3.v),0.012),fit=fitFor(d,pts),g=mkG(d),xa=d.xs[0],xb=d.xs[d.xs.length-1],ya=fit(xa),yb=fit(xb);
+  $('dsC3').innerHTML=segHTML(DSEG,S3.v);$('hypC3').innerHTML=segHTML([['inc','increase'],['dec','decrease'],['same','stay the same']],S3.h);
+  g.curve(fit,d.fit==='pow'?xa*0.5:xa,xb,'s-fit');pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tipD(d,p[0],p[1]))});
+  var col=S3.h===d.truth?'var(--good)':'var(--bad)',ay=d.ym*0.12,ax=d.xm*0.78;
+  g.o+='<g stroke="'+col+'" stroke-width="3" fill="none"><path d="M'+g.X(ax)+' '+g.Y(ay+(S3.h==='inc'?-0.25:S3.h==='dec'?0.25:0)*d.ym/2.5)+' L'+g.X(ax+d.xm*0.12)+' '+g.Y(ay+(S3.h==='inc'?0.25:S3.h==='dec'?-0.25:0)*d.ym/2.5)+'"/></g><text x="'+g.X(ax)+'" y="'+(g.Y(ay)+34)+'" class="lbl" fill="'+col+'">my prediction</text>';
+  g.end('gC3');
+  var ok=S3.h===d.truth,w={inc:'increase',dec:'decrease',same:'stay the same'},ntx=d.truth==='same'?'At '+xa+' '+d.unit+' T is about '+f2(ya)+' s and at '+xb+' '+d.unit+' it is about '+f2(yb)+' s: no real change.':'At '+xa+' '+d.unit+' T is about '+f2(ya)+' s and at '+xb+' '+d.unit+' it is about '+f2(yb)+' s.';
+  $('verdC3').innerHTML=ok?'<span class="good">The data supports the hypothesis.</span> The period T did '+w[d.truth]+'. '+ntx:'<span class="bad">The data does not support the hypothesis.</span> The period T actually did '+w[d.truth]+', not '+w[S3.h]+'. '+ntx+'<br><span class="hint">A wrong prediction loses no marks. Saying so clearly, with these numbers, earns them.</span>'}
+segOn('dsC3',function(v){S3.v=v;renderC3()});segOn('hypC3',function(v){S3.h=v;renderC3()});
+
+/* ======== C.iv ======== */
+var S4={tim:'twenty',rep:3,ctl:1,seed:1};
+var TSD={one:0.113,twenty:0.0057};
+function data4(){var r=rng(S4.seed*104729),d=DS.length,rows=[];
+  d.xs.forEach(function(L){var tr=[];for(var k=0;k<S4.rep;k++){var Lk=S4.ctl?L:L*(1+(r()-0.5)*0.4),T=per(Lk)+gauss(r)*TSD[S4.tim];tr.push(Math.max(0.1,Math.round(T*100)/100))}rows.push({a:L,t:tr,avg:mean(tr),rg:Math.max.apply(null,tr)-Math.min.apply(null,tr)})});return rows}
+function relRg(rows){return mean(rows.map(function(r){return r.t.length>1?r.rg/r.avg:1}))}
+function render4(){
+  $('tim4').innerHTML=segHTML([['one','Time one swing'],['twenty','Time 20 swings, ÷ 20']],S4.tim);$('rep4').innerHTML=segHTML([[1,'One reading'],[3,'Three, averaged']],S4.rep);$('ctl4').innerHTML=segHTML([[1,'Same length all the way'],[0,'String slips between readings']],S4.ctl);
+  var rows=data4(),pts=rows.map(function(r){return [r.a,r.avg]}),d=DS.length,fit=fitFor(d,pts),g=mkG(d),rms=relRms(d,pts),rg=relRg(rows);
+  g.curve(function(x){return per(x)},0.5,100,'s-ref');g.curve(fit,5,100,'s-fit');
+  rows.forEach(function(r){r.t.forEach(function(v,k){g.dot(r.a+(k-1)*1.3,v,3.5,'var(--data)',tipD(d,r.a,v))})});pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--fit)','mean '+f2(p[1]),true)});g.text(2,2.35,'● trials  ◆ mean  dotted: expected','var(--muted)');g.end('gD');
+  var c=[[rms<=0.03,'The points are close to the line of best fit','The points are a long way from the line of best fit'],[rms<=0.12,'A clear relationship can be seen','No clear relationship can be seen'],[S4.rep>=3&&rg<=0.02,'Repeats were done and the trials agree (range 2% of the mean or less)',S4.rep<3?'No repeats were done':'The repeats disagree with each other'],[S4.tim==='twenty','The instruments worked well: 20 swings timed and divided by 20','The timing was a single swing, so reaction time swamped the reading'],[!!S4.ctl,'Every control variable stayed the same','Some controls were hard to hold steady (the string length changed)']];
+  $('check4').innerHTML=c.map(function(r){return '<li><span class="box '+(r[0]?'good':'bad')+'">'+(r[0]?'✓':'✗')+'</span><span>'+(r[0]?r[1]:r[2])+'</span></li>'}).join('');
+  var t=c.filter(function(r){return r[0]}).length,v=t===5?'valid':t>=3?'partly valid':'not valid',why=c.filter(function(r){return !r[0]}).map(function(r){return lc(r[2])});
+  $('verdict4').innerHTML='My method was <span class="'+(t===5?'good':t>=3?'warn':'bad')+'">'+v+'</span>, because '+(why.length?why.join('; ')+'.':'the points sit close to the curve, the three trials agree, and the string length never changed.');
+  $('stat4').textContent='Spread of the means about the line: '+f1(rms*100)+'%. Typical range of the three trials: '+f1(rg*100)+'% of the mean.'}
+segOn('tim4',function(v){S4.tim=v;render4()});segOn('rep4',function(v){S4.rep=+v;render4()});segOn('ctl4',function(v){S4.ctl=+v;render4()});$('seed4').onclick=function(){S4.seed++;render4()};
+
+/* ---- C.iv extras ---- */
+var SV={cv:'A',tab:'fit',sc:{fit:'tight',pat:'clear',rep:'close',ins:'good',ctl:'same'},own:[1,1,1,1,1]};
+function rowsFrom(fn){return DS.length.xs.map(function(L){var t=fn(L),s=mean(t);return {a:L,t:t,avg:s,rg:Math.max.apply(null,t)-Math.min.apply(null,t)}})}
+function rowsClass(){return rowsFrom(function(L){return CLS[L]})}
+function rowsNoisy(seed,sd,Lf){var r=rng(seed);return rowsFrom(function(L){return [0,1,2].map(function(k){return Math.max(0.1,Math.round((per(Lf?Lf(L,k):L)+gauss(r)*sd)*100)/100)})})}
+function trialG(rows,o){o=o||{};var d=DS.length,g=mkG(d);g.curve(function(x){return per(x)},0.5,100,'s-ref');
+  rows.forEach(function(r){if(o.bars)g.o+='<line x1="'+g.X(r.a)+'" y1="'+g.Y(Math.min.apply(null,r.t))+'" x2="'+g.X(r.a)+'" y2="'+g.Y(Math.max.apply(null,r.t))+'" stroke="var(--accent)" stroke-width="5" opacity=".45" stroke-linecap="round"/>';
+    r.t.forEach(function(v,k){g.dot(r.a+(k-1)*1.3,v,4,o.col?o.col(r,k):'var(--data)',tipD(d,r.a,v))});if(o.avg)g.dot(r.a,r.avg,6.5,'var(--fit)','mean '+f2(r.avg),true)});return g}
+var CVD={A:[[20,[0.72,1.08,0.90]],[40,[1.05,1.50,1.26]],[60,[1.30,1.82,1.53]]],B:[[20,[1.00,1.01,1.00]],[40,[1.37,1.38,1.37]],[60,[1.65,1.66,1.65]]]};
+function renderCV(){
+  $('cvSeg').innerHTML=segHTML([['A','Student A: means look right'],['B','Student B: means look wrong']],SV.cv);
+  var rows=CVD[SV.cv].map(function(p){var t=p[1],s=mean(t);return {a:p[0],t:t,avg:s,rg:Math.max.apply(null,t)-Math.min.apply(null,t)}});
+  var g=trialG(rows,{bars:true,avg:true});g.text(2,2.35,'● trials  ◆ mean  dotted line: expected','var(--muted)');g.end('gCV');
+  $('cvTab').innerHTML='<tr><th>L / cm</th><th>Trials T / s</th><th>Range / s</th><th>Range ÷ mean</th><th>Mean T / s</th><th>Expected T / s</th></tr>'+rows.map(function(r){var p=r.rg/r.avg;return '<tr><td>'+r.a+'</td><td>'+r.t.map(f2).join(', ')+'</td><td>'+f2(r.rg)+'</td><td class="'+(p<=0.02?'good':'bad')+'">'+f1(p*100)+'%</td><td>'+f2(r.avg)+'</td><td>'+f2(per(r.a))+'</td></tr>'}).join('');
+  var lo=Math.min.apply(null,rows.map(function(r){return r.rg/r.avg})),hi=Math.max.apply(null,rows.map(function(r){return r.rg/r.avg}));
+  var md=mean(rows.map(function(r){return r.avg-per(r.a)}));
+  $('cvWhy').innerHTML=SV.cv==='A'
+   ?'<b class="bad">Not valid.</b> Every mean sits close to the expected value, but the three trials at each length differ by <b>'+f0(lo*100)+'% to '+f0(hi*100)+'%</b> of the mean. Run it a fourth time and you would get different numbers. The match with the expected value is luck, so the method cannot be trusted.<br><span class="hint">Ask whether the method gives the same answer when you repeat it. Whether the answer is right comes second.</span>'
+   :'<b class="good">The method is sound.</b> The three trials agree to within <b>'+f1(hi*100)+'%</b> and the points follow a clear curve. Every mean sits about <b>'+f2(md)+' s</b> above the expected value. That is a separate job: one consistent thing, such as measuring the length to the top of the bob instead of its centre, pushes every reading the same way. Finding it is a good improvement for C.v.<br><span class="hint">Steady, repeatable data says the design works, even when the numbers need adjusting.</span>'}
+segOn('cvSeg',function(v){SV.cv=v;renderCV()});
+var VTABS=[['fit','Close to the line of best fit?'],['pat','A clear relationship?'],['rep','Repeats close together?'],['ins','Instruments worked well?'],['ctl','Variables controlled?']];
+function whyV(look,ok,tells,sentence){return '<p class="lead">'+look+'</p><div class="verdict">'+(ok===true?'<span class="good">✓ This check passes</span>':ok===false?'<span class="bad">✗ This check fails</span>':'<span class="warn">Partly</span>')+'</div><div class="why-box" style="margin-top:10px"><b>What it tells you about the method.</b> '+tells+'</div><p class="hint">Write it like this: <i>'+sentence+'</i></p>'}
+function renderV(){
+  $('vtab').innerHTML=segHTML(VTABS,SV.tab);var t=SV.tab,sc=SV.sc[t],vis='',why='',scs,gv=null,d=DS.length;
+  if(t==='fit'){scs=[['tight','Points close to the line'],['loose','Points scattered']];
+    var rows=sc==='tight'?rowsClass():rowsNoisy(5,0.14),pts=rows.map(function(r){return [r.a,r.avg]}),fit=fitFor(d,pts),g=mkG(d);
+    pts.forEach(function(p){g.o+='<line x1="'+g.X(p[0])+'" y1="'+g.Y(p[1])+'" x2="'+g.X(p[0])+'" y2="'+g.Y(fit(p[0]))+'" stroke="var(--fit)" stroke-width="2.5" opacity=".6"/>'});
+    g.curve(fit,5,100,'s-fit');pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tipD(d,p[0],p[1]))});g.text(2,2.35,'typical gap between a point and the line: '+f1(relRms(d,pts)*100)+'%','var(--ink2)');gv=g;
+    vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Means and line of best fit with the gaps drawn"></svg>';
+    why=sc==='tight'?whyV('Look at how far each point sits from your line of best fit. The orange-brown bars are the gaps.',true,'The gaps are small, so each reading follows the same pattern as its neighbours. The way you timed it gives steady results.','My points are close to the line of best fit, so my method gives steady, trustworthy results.')
+      :whyV('Look at how far each point sits from your line of best fit. The bars are the gaps.',false,'The gaps are large and go both ways. Something in the method is making the readings unreliable, such as timing one swing, miscounting swings or a string that moves. The design needs fixing before these results can be trusted.','My points are a long way from the line of best fit, so something in my method is making the readings unreliable.')}
+  if(t==='pat'){scs=[['clear','A clear pattern'],['none','No pattern']];var pts2,g2=mkG(d);
+    if(sc==='clear')pts2=CLSPTS;else{var r=rng(11);pts2=d.xs.map(function(x){return [x,Math.round((0.5+r()*1.6)*100)/100]})}
+    g2.curve(fitFor(d,pts2),5,100,sc==='clear'?'s-fit':'s-dots');pts2.forEach(function(p){g2.dot(p[0],p[1],5.5,'var(--data)',tipD(d,p[0],p[1]))});g2.text(2,2.35,sc==='clear'?'the line follows the points':'no line follows these points','var(--ink2)');gv=g2;
+    vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Points with and without a pattern"></svg>';
+    why=sc==='clear'?whyV('Look at the shape of the whole graph. Does it go somewhere?',true,'A pendulum behaves in a regular way, so a good experiment shows a regular graph. A clear rising curve says the experiment is measuring what we think it is measuring.','A clear relationship can be seen: as the length of the string increases, the period increases.')
+      :whyV('Look at the shape of the whole graph. Does it go somewhere?',false,'A pendulum does not behave randomly. If the graph shows no pattern, the experiment is not measuring what we think it is measuring. That is a fundamental problem with the method, and the most important thing to say in C.iv.','No clear relationship can be seen, so something is fundamentally wrong with how the experiment was designed or run.')}
+  if(t==='rep'){scs=[['close','Trials close together'],['far','Trials far apart']];var rr=sc==='close'?rowsClass():rowsNoisy(5,0.14),g3=trialG(rr,{bars:true,avg:true}),rel=rr.map(function(r){return r.rg/r.avg}),mx=Math.max.apply(null,rel),mn=Math.min.apply(null,rel);
+    g3.text(2,2.35,'● trials  ◆ mean  bar: range of the three trials','var(--ink2)');gv=g3;
+    vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Three trials at every length with their range"></svg><div class="strip" style="margin-top:8px"><table><tr><th>L / cm</th>'+rr.map(function(r){return '<td>'+r.a+'</td>'}).join('')+'</tr><tr><th>range ÷ mean</th>'+rr.map(function(r){var p=r.rg/r.avg;return '<td class="'+(p<=0.02?'good':'bad')+'">'+f1(p*100)+'%</td>'}).join('')+'</tr></table></div>';
+    why=sc==='close'?whyV('Take the biggest of your three trials and subtract the smallest. That is the <b>range</b>. Divide it by the mean. Close means <b>2% or less</b>.',true,'The ranges run from '+f1(mn*100)+'% to '+f1(mx*100)+'% of the mean. The same set-up gives the same answer each time, so the method is repeatable.','My three trials at each length agree to within '+f1(mx*100)+'% of the mean, so my method is repeatable.')
+      :whyV('Take the biggest of your three trials and subtract the smallest. That is the <b>range</b>. Divide it by the mean. Close means <b>2% or less</b>.',false,'The ranges run from '+f1(mn*100)+'% to '+f1(mx*100)+'% of the mean. Same length, same equipment, different answers. If repeating the measurement does not repeat the result, the method is not under control.','My three trials at each length differ by up to '+f1(mx*100)+'% of the mean, so my method does not give repeatable results.')}
+  if(t==='ins'){scs=[['good','20 swings ÷ 20'],['one','One swing'],['half','Half swings counted'],['off','Count started at one']];
+    if(sc==='good'||sc==='one'){var tt=sc==='good'?0.0057:0.113,rr2=rowsNoisy(21,tt),g5=trialG(rr2,{bars:true,avg:true}),rm=Math.max.apply(null,rr2.map(function(r){return r.rg/r.avg}));g5.text(2,2.35,sc==='good'?'timing 20 swings: narrow bars':'timing one swing: wide bars','var(--ink2)');gv=g5;
+      vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Trials with the chosen timing method"></svg>';
+      why=sc==='good'?whyV('Look at how precisely each period can be found.',true,'Timing 20 swings spreads the reaction time over twenty swings. The stopwatch resolution of 0.01 s becomes 0.0005 s on one period. The instruments are doing their job.','I timed 20 swings with a stopwatch of resolution 0.01 s and divided by 20, so my periods are as precise as the kit allows.')
+        :whyV('Look at how precisely each period can be found.',false,'A reaction time of about 0.2 s at each end is a big share of a one-second swing. The trials spread by up to '+f0(rm*100)+'% of the mean. The method still works, but a longer count is a good improvement.','I timed one swing, so reaction time was a large share of each reading. Timing 20 swings would make it more precise.')}
+    else{var fk=sc==='half'?function(T){return T/2}:function(T){return T*20/19},h='<div class="strip"><table><tr><th>L / cm</th><th>T found / s</th><th>expected / s</th></tr>';[10,25,50,100].forEach(function(L){h+='<tr><td>'+L+'</td><td class="bad">'+f2(fk(per(L)))+'</td><td>'+f2(per(L))+'</td></tr>'});vis=h+'</table></div>';
+      why=whyV('Check the 25 cm row first. A 25 cm pendulum should land near 1.0 s.',false,'The 25 cm row reads '+f2(fk(per(25)))+' s. Every number is tidy, but none describes the pendulum, because '+(sc==='half'?'half swings (out only) were counted as whole swings, so every period came out half size':'the count started at one, so nineteen swings were timed and called twenty, and every period came out about 5% too long')+'. That is a fundamental problem with how the timing was done, whatever the graph looks like.','Something went wrong with my timing: my 25 cm pendulum gave '+f2(fk(per(25)))+' s instead of about 1.0 s, so I miscounted the swings.')}}
+  if(t==='ctl'){scs=[['same','String length held'],['slip','String slips between readings']];var Lf=sc==='same'?null:function(L,k){return L*[0.8,1,1.2][(L/10+k)%3]},rc=rowsNoisy(9,0.006,Lf),cols=['var(--data)','var(--theory)','var(--fit)'],g4=trialG(rc,{avg:false,col:function(r,k){return sc==='same'?'var(--theory)':cols[(r.a/10+k)%3]}});
+    if(sc==='slip')[0.8,1,1.2].forEach(function(f){g4.curve(function(x){return per(x*f)},0.5,100,'s-ref')});
+    var pc=rc.map(function(r){return [r.a,r.avg]});g4.curve(fitFor(DS.length,pc),5,100,'s-fit');g4.text(2,2.35,sc==='same'?'one length each: points follow one curve':'colours = string 20% short, true, 20% long','var(--ink2)');gv=g4;
+    vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Trials coloured by the true string length"></svg>';
+    why=sc==='same'?whyV('Look at whether anything changed between readings. Then look at whether the points follow one curve.',true,'One length, one curve. When every control stays the same, a change in the period can only come from the change you made on purpose.','I held the string length, bob and release angle the same, so the only thing that changed was the one variable I was testing.')
+      :whyV('Look at whether anything changed between readings. Then look at whether the points follow one curve.',false,'Each true length gives a clean period, but a slipping string mixes three lengths into one set of trials, so the points scatter. When a control changes, you cannot tell whether the variable or the control caused the difference.','Some controls were hard to hold steady: the string slipped between readings, so the points do not follow one curve.')}
+  $('vsc').innerHTML=segHTML(scs,sc);$('vvis').innerHTML=vis;$('vwhy').innerHTML=why;if(gv)gv.end('gV');
+  var q=['Do my points sit close to my line of best fit?','Can I see a clear pattern in my graph?','Do my three trials agree with each other (a range of 2% of the mean or less)?','Did I time 20 swings and count them correctly?','Did I keep every control the same?'],
+      yes=['my points sit close to the line of best fit','a clear relationship can be seen','my three trials agree closely, so repeats were done and averaged','the instruments were used correctly and as precisely as the kit allows','every control stayed the same'],
+      no=['my points are a long way from the line of best fit','no clear relationship can be seen','my trials disagree with each other','something went wrong with my timing or counting','some variables were hard to control'];
+  $('own').innerHTML=q.map(function(s,i){return '<div style="margin-bottom:10px"><div style="font-size:14px;margin-bottom:4px">'+s+'</div><div class="seg" data-q="'+i+'"><button data-v="1" aria-pressed="'+(SV.own[i]===1)+'">Yes</button><button data-v="0" aria-pressed="'+(SV.own[i]===0)+'">No</button></div></div>'}).join('');
+  var n=SV.own.reduce(function(a,b){return a+b},0),vd=n===5?'valid':n>=3?'partly valid':'not valid',cls=n===5?'good':n>=3?'warn':'bad',rs2=[];SV.own.forEach(function(v,i){rs2.push(v?yes[i]:no[i])});
+  $('ownv').innerHTML='My method was <span class="'+cls+'">'+vd+'</span>, because '+rs2.join(', ')+'.'}
+$('own').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var s=b.closest('[data-q]');if(s){SV.own[+s.dataset.q]=+b.dataset.v;renderV()}});
+segOn('vtab',function(v){SV.tab=v;renderV()});segOn('vsc',function(v){SV.sc[SV.tab]=v;renderV()});
+
+/* ======== C.v ======== */
+var S5c={tab:'range',steps:10,cand:null,tm:'hand'};
+var C5TABS=[['range','Widen the range?'],['steps','Smaller steps?'],['read','Hard to measure?'],['not','What counts'],['ext','Extension']];
+var CANDS=[['slow','Work more slowly','no','This is about the person, not the experiment. An improvement changes the <b>design</b> so the data gets better: the instrument, the range or the steps.'],
+ ['focus','Concentrate harder','no','This is about the person, not the experiment. Name something in the method or the equipment that you would change.'],
+ ['fine','&ldquo;Our data came out correct, so no improvements&rdquo;','no','Every experiment has limits, even when the data looks right: the 0.01 s resolution, the range of lengths, the 10 cm steps. Naming the limits is the skill.'],
+ ['photo','Use a light gate instead of a hand-held stopwatch','yes','A light gate starts and stops the clock as the bob passes, so there is no reaction time at all, and it reads to a much smaller resolution.'],
+ ['more','Time 30 swings instead of 20','part','A longer count shrinks reaction time further, but the swings die away and the count gets harder to keep. The gain gets smaller each time.'],
+ ['prot','Clamp a protractor in place for the release angle','yes','A fixed protractor gives the same release angle every time, which holds a control steadier.'],
+ ['steps5','Take lengths every 5 cm','yes','Nineteen points between 10 cm and 100 cm instead of ten, so the shape of the curve is clearer and the line of best fit is better placed.'],
+ ['rep5','Repeat five times instead of three','yes','More repeats make the mean less sensitive to one bad reading. A reasonable improvement to the method.']];
+function renderC5(){
+  $('tabC5').innerHTML=segHTML(C5TABS,S5c.tab);var v='',w='',t=S5c.tab;
+  if(t==='range'){v='<div class="panel"><svg id="gR" viewBox="0 0 520 380" role="img" aria-label="Graph showing the lengths measured and the longer lengths that could be added"></svg></div>';
+    w='<p class="lead">Could you widen the range? <b class="good">Yes, where the equipment allows.</b></p><ul class="tight"><li>We measured <b>10 cm to 100 cm</b>. A longer string, say <b>200 cm</b>, would show whether the curve keeps flattening.</li><li>It needs a taller stand or a ceiling hook, so say what you would use.</li><li>Below 10 cm the bob starts to hit the stand, so the short end is already near its limit.</li></ul><div class="why-box">A good answer names the new values and says what they would show: here, whether the curve continues.</div>'}
+  if(t==='steps'){v='<div class="panel"><svg id="gS" viewBox="0 0 520 380" role="img" aria-label="Ten points at 10 cm steps compared with nineteen points at 5 cm steps"></svg></div><div class="seg" id="stepSeg"></div>';
+    w='<p class="lead">Could you take lengths in smaller steps? <b class="good">Yes.</b></p><ul class="tight"><li>Steps of <b>5 cm</b> instead of 10 cm give <b>nineteen</b> points between 10 cm and 100 cm, instead of ten.</li><li>More points show the shape of the curve more clearly, especially at the short end where it bends most.</li><li>A line of best fit through more points is placed with more confidence.</li></ul><div class="why-box">Say what the extra data would have done for the graph. That is the reasoning that earns the mark.</div>'}
+  if(t==='read'){v='<div class="panel"><svg id="gT" viewBox="0 0 520 200" role="img" aria-label="Reaction time compared with a light gate"></svg></div><div><label class="f">Timing</label><div class="seg" id="tmSeg">'+segHTML([['hand','Hand-held stopwatch'],['gate','Light gate']],S5c.tm)+'</div></div>';
+    w='<p class="lead">Was anything hard to measure? <b class="good">Yes: judging when the bob passes the centre, and releasing at the same angle.</b></p><ul class="tight"><li><b>Improvement:</b> a <b>light gate</b> at the resting position, so the clock starts and stops on its own.</li><li><b>Improvement:</b> a <b>marker</b> at the centre, so you start counting at the same place each time.</li><li><b>Improvement:</b> a <b>protractor clamped in place</b> for a repeatable release angle.</li></ul><div class="why-box" id="readInfo"></div>'}
+  if(t==='not'){v='<div class="cards" id="cands"></div>';
+    w='<p class="lead">Tap each idea to see whether it works as an improvement.</p><div class="why-box" id="candInfo">Choose an idea.</div><p class="hint">An improvement is about the experiment: the range, the steps, the instrument, the method. Aim for two or more, and explain what each one would do for the data with the word <b>because</b> or <b>so</b>.</p>'}
+  if(t==='ext'){v='<div class="panel"><svg id="gX" viewBox="0 0 520 380" role="img" aria-label="Period against release angle up to 80 degrees"></svg></div>';
+    w='<p class="lead">An extension asks a <b>new research question</b> with a <b>different independent variable</b>, then says briefly how you would test it.</p><ul class="tight"><li><b>Large release angles.</b> <i>How does the release angle affect the period when it goes up to 80°?</i> Beyond about 30° the period climbs, and by 80° it is about <b>'+f0((ampF(80)-1)*100)+'% longer</b>, easily larger than the timing error.</li><li><b>Gravity.</b> <i>How does g affect the period?</i> Test it with the PhET Pendulum Lab, and keep L and the bob the same.</li></ul><div class="why-box">A strong extension changes something whose effect is bigger than your resolution, and says how you would keep everything else the same.</div>'}
+  $('visC5').innerHTML=v;$('whyC5').innerHTML=w;
+  if(t==='range'){var d=DS.length,g=mkG({xs:d.xs,xm:200,xst:20,ym:3.5,yst:0.5,xl:d.xl,fit:'pow',nm:d.nm,sym:d.sym,unit:d.unit});
+    g.o+='<rect x="'+g.X(100)+'" y="'+g.Y(3.5)+'" width="'+(g.X(200)-g.X(100))+'" height="'+(g.Y(0)-g.Y(3.5))+'" fill="var(--accent)" opacity=".1"/>';
+    g.curve(function(x){return per(x)},1,200,'s-ref');d.xs.forEach(function(L){g.dot(L,per(L),5,'var(--theory)',tipD(d,L,per(L)))});[120,140,160,180,200].forEach(function(L){g.dot(L,per(L),6,'var(--accent)',tipD(d,L,per(L)),false,true)});
+    g.text(2,3.3,'measured: 10 cm to 100 cm','var(--theory)');g.text(104,3.3,'could add','var(--accent)');g.end('gR')}
+  if(t==='steps'){$('stepSeg').innerHTML=segHTML([[10,'10 cm steps'],[5,'5 cm steps']],S5c.steps);var d2=DS.length,g2=mkG(d2),r=rng(77),pts=[];for(var b=10;b<=100;b+=S5c.steps)pts.push([b,Math.round((per(b)+gauss(r)*0.02)*100)/100]);
+    g2.curve(fitFor(d2,pts),5,100,'s-fit');pts.forEach(function(p){g2.dot(p[0],p[1],5,'var(--data)',tipD(d2,p[0],p[1]))});g2.text(2,2.35,pts.length+' points, '+S5c.steps+' cm steps (illustration)','var(--data)');g2.end('gS')}
+  if(t==='read'){var hand=S5c.tm==='hand',W=520,X=function(s){return 40+(s)*(440/1.2)},o='<rect width="520" height="200" fill="var(--air)"/>';
+    for(var s=0;s<=1.2001;s+=0.2)o+='<line x1="'+X(s)+'" y1="90" x2="'+X(s)+'" y2="104" stroke="var(--ink2)"/><text x="'+X(s)+'" y="120" text-anchor="middle" class="tick">'+f1(s)+'</text>';
+    o+='<line x1="40" y1="90" x2="480" y2="90" stroke="var(--ink2)" stroke-width="1.5"/><text x="260" y="146" text-anchor="middle" class="atitle">time since the bob passed the centre / s</text>';
+    var er=hand?0.2:0.001;o+='<rect x="'+X(0)+'" y="50" width="'+Math.max(2,X(er)-X(0))+'" height="30" fill="var(--bad)" opacity=".6"/><text x="'+(X(0))+'" y="42" class="lbl" fill="var(--bad)">'+(hand?'reaction time at the start: about 0.2 s':'light gate delay: about 0.001 s')+'</text>';
+    $('gT').innerHTML=o;$('readInfo').innerHTML=hand?'On a one-second swing a reaction error of 0.2 s at each end could move one reading by <b>20%</b>. Timing 20 swings cuts that to about <b>1%</b>.':'A light gate has no reaction delay, so one period can be found to a few thousandths of a second. The timing error nearly vanishes.'}
+  if(t==='not'){$('cands').innerHTML=CANDS.map(function(c){var st=S5c.cand===c[0]?c[2]:null;return '<button class="card" data-v="'+c[0]+'" aria-pressed="'+(S5c.cand===c[0])+'" style="'+(st==='yes'?'border-left:4px solid var(--good)':st==='no'?'border-left:4px solid var(--bad)':st==='part'?'border-left:4px solid var(--warn)':'')+'"><strong>'+c[1]+'</strong>'+(st?'<span class="'+(st==='yes'?'good':st==='no'?'bad':'warn')+'">'+(st==='yes'?'Works as an improvement':st==='no'?'Not an improvement':'Only partly')+'</span>':'')+'</button>'}).join('');
+    var sel=CANDS.filter(function(c){return c[0]===S5c.cand})[0];if(sel)$('candInfo').innerHTML=sel[3]}
+  if(t==='ext'){var gx=mkG({xs:[],xm:80,xst:10,ym:1.5,yst:0.25,xl:'Release angle θ / degrees',fit:'pow',nm:'release angle',sym:'θ',unit:'°'});gx.o=gx.o.replace(/Period T \/ s/,'Period T / s');
+    gx.o+='<line x1="'+gx.X(0)+'" y1="'+gx.Y(per(25))+'" x2="'+gx.X(80)+'" y2="'+gx.Y(per(25))+'" class="s-ref"/>';gx.curve(function(x){return per(25)*ampF(x)},0,80,'s-theory');[10,20,30,40,50,60,70,80].forEach(function(a){gx.dot(a,per(25)*ampF(a),5,'var(--data)','θ '+a+'°, T '+f2(per(25)*ampF(a))+' s')});gx.text(2,1.4,'25 cm pendulum: dotted line shows T at a tiny angle','var(--muted)');gx.end('gX')}}
+segOn('tabC5',function(v){S5c.tab=v;renderC5()});
+$('visC5').addEventListener('click',function(e){var b=e.target.closest('#cands .card');if(b){S5c.cand=b.dataset.v;renderC5();return}var c=e.target.closest('#stepSeg button');if(c){S5c.steps=+c.dataset.v;renderC5();return}var d=e.target.closest('#tmSeg button');if(d){S5c.tm=d.dataset.v;renderC5()}});
+
+/* ======== hand in ======== */
+var HAND=['B.i research question names your variable and the period T, with a reason it matters','B.ii hypothesis has a because','B.iii names independent, dependent and control variables (what, how, why), with resolutions','B.iv method has equipment, numbered steps, 20 swings, repeats, five values and a safety point','C.i table has units in the headings, three trials and a mean','C.i graph has a title, labelled axes with units, a scale that fills the page, crosses and one line of best fit','C.ii describes the shape and quotes numbers from your graph','C.iii and C.iv both say because','C.v has two improvements and one extension, each with a reason'],SH={};
+function renderH(){var n=0;$('hand').innerHTML=HAND.map(function(t,i){if(SH[i])n++;return '<li><button class="chip" data-i="'+i+'" aria-pressed="'+(!!SH[i])+'" style="border-radius:6px;min-width:34px">'+(SH[i]?'✓':'')+'</button><span style="padding-top:4px">'+t+'</span></li>'}).join('');$('handv').textContent=n===HAND.length?'Everything is checked. Ready to hand in.':n+' of '+HAND.length+' checked'}
+$('hand').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b){SH[b.dataset.i]=!SH[b.dataset.i];renderH()}});
+
+/* ======== boot ======== */
+renderA();renderG6();renderBi();renderBii();renderB3();renderS20();renderB4();renderC1();renderG();renderC2();renderC3();render4();renderCV();renderV();renderC5();renderH();
+initShell('Pendulum Investigation','Year 9 Physics · Mr. Rawson');
+})();
+</script>
+
+</body>
+</html>
