@@ -27,6 +27,12 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🔁', when:'8 Nov', title:'LDLC: the Repeating trigger',
+      what:'A new block in Advanced levels: the steps go round and round, over and over.',
+      more:'It is a trigger with arrows curling round its exclamation mark. Touch it and the blocks it is ' +
+           'connected to do their steps one after another, then start again, like a block that goes up three ' +
+           'and then down three for ever. Drag the steps into the order you want.',
+      play:'ldlc/' },
     { emoji:'🚪', when:'8 Nov', title:'LDLC: Needed heroes and a smarter camera',
       what:'With lots of Heroes, the camera follows all of them and zooms out so they stay on the screen.',
       more:'Mark Heroes as Needed for finish, and then every Needed Hero has to go into a Door ' +
