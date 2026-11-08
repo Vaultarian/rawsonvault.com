@@ -178,7 +178,7 @@ function paginate(why){
   });
   build();mo.observe(why,{childList:true,subtree:true,characterData:true});
 }
-function initPaging(){[].slice.call(document.querySelectorAll('.why')).forEach(paginate)}
+function initPaging(){[].slice.call(document.querySelectorAll('.why:not([data-nopage])')).forEach(paginate)}
 function initShell(title,meta){initPaging();
   var secs=[].slice.call(document.querySelectorAll('.sec')),nav=document.getElementById('toc'),h='<p class="brand">'+title+'</p><p class="meta">'+meta+'</p>',g=null;
   secs.forEach(function(s){var gr=s.getAttribute('data-group');if(gr&&gr!==g){g=gr;h+='<div class="grp">'+gr+'</div>'}
