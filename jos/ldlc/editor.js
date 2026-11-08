@@ -45,6 +45,7 @@ const BLOCKS = [
   { id:'ball',       name:'Ball',          ready:true },   // Jos (8 Nov): like a sawblade that doesn't spin
   { id:'hill',       name:'Hill',          ready:true },   // Jos (8 Nov): a slope the ball rolls down
   { id:'camera',     name:'Camera position', ready:true }, // Jos (8 Nov): moves the camera when the hero touches it
+  { id:'repeater',   name:'Repeating trigger', ready:true }, // Jos (8 Nov): a trigger whose steps repeat over and over
   { id:'startpos',   name:'Start pos',     ready:true }    // Jos: an editor command, hidden without the secret word
 ];
 const NAME = {};
@@ -66,7 +67,8 @@ const DEFAULTS = {
   dashorb:    { collision:false, deadly:false, action:true },
   ball:       { collision:false, deadly:false, gravity:false, crush:false },   // Jos: only deadly if you turn it on
   hill:       { collision:true,  deadly:false },
-  camera:     { visible:false, action:true }    // Jos: invisible when you play, like the trigger
+  camera:     { visible:false, action:true },   // Jos: invisible when you play, like the trigger
+  repeater:   { visible:false, action:true }    // Jos: invisible when you play, like the trigger
 };
 /* the part of a deadly block that actually gets you, inside its square: x, y, width, height */
 const HITBOX = {
@@ -124,7 +126,7 @@ needSize = !applySize(levelId) && !playAll;
    Advanced: the advanced commands are on, you also get Camera position, Hill and Ball, and you can put down
    more than one Hero and more than one Door (they all do the same). */
 let difficulty = 'regular';
-const BLOCK_NEEDS = { dashorb:'regular', controls:'regular', ball:'advanced', hill:'advanced', camera:'advanced' };
+const BLOCK_NEEDS = { dashorb:'regular', controls:'regular', ball:'advanced', hill:'advanced', camera:'advanced', repeater:'advanced' };
 function blockAllowed(id) {
   const need = BLOCK_NEEDS[id];
   return !need || (need === 'regular' ? difficulty !== 'beginner' : difficulty === 'advanced');
@@ -132,7 +134,7 @@ function blockAllowed(id) {
 const onlyOne = type => ONLY_ONE.includes(type) && difficulty !== 'advanced';   // placing another Hero or Door moves it
 function inferDifficulty() {                  // an older level has no difficulty: it is Regular, unless it already has advanced things
   const all = allBlocks().map(f => f.c.t);
-  const adv = all.some(t => ['ball', 'hill', 'camera'].includes(t)) || all.filter(t => t === 'hero').length > 1 || all.filter(t => t === 'door').length > 1;
+  const adv = all.some(t => ['ball', 'hill', 'camera', 'repeater'].includes(t)) || all.filter(t => t === 'hero').length > 1 || all.filter(t => t === 'door').length > 1;
   return adv ? 'advanced' : 'regular';
 }
 let grid = emptyGrid();
@@ -312,6 +314,27 @@ function drawTrigger(c, x, y, s) {
   c.lineTo(x + s * .54, y + s * .6); c.lineTo(x + s * .46, y + s * .6);
   c.fill();
   c.fillRect(x + s * .44, y + s * .67, s * .12, s * .12);
+}
+function drawRepeater(c, x, y, s) {
+  /* Jos (8 Nov): the repeating trigger: the trigger's "!" with arrows curling round it. Drawn, not an emoji. Only in the creator. */
+  c.fillStyle = COL.green;
+  roundRect(c, x + s * .08, y + s * .08, s * .84, s * .84, s * .12); c.fill();
+  c.fillStyle = '#000'; c.strokeStyle = '#000'; c.lineWidth = s * .075; c.lineCap = 'round';
+  const cx = x + s / 2, cy = y + s / 2, r = s * .33;
+  const head = a => {                              // an arrowhead at angle a, pointing round clockwise
+    const px = cx + Math.cos(a) * r, py = cy + Math.sin(a) * r, tx = -Math.sin(a), ty = Math.cos(a), nx = Math.cos(a), ny = Math.sin(a), k = s * .1;
+    c.beginPath();
+    c.moveTo(px + tx * k, py + ty * k);
+    c.lineTo(px - tx * k * .3 + nx * k, py - ty * k * .3 + ny * k);
+    c.lineTo(px - tx * k * .3 - nx * k, py - ty * k * .3 - ny * k);
+    c.closePath(); c.fill();
+  };
+  [[-Math.PI * .88, -Math.PI * .12], [Math.PI * .12, Math.PI * .88]].forEach(([a0, a1]) => {   // one over the top, one under the bottom
+    c.beginPath(); c.arc(cx, cy, r, a0, a1 - .12); c.stroke(); head(a1 - .08);
+  });
+  c.beginPath();                                   // the small "!" in the middle
+  c.moveTo(cx - s * .045, cy - s * .2); c.lineTo(cx + s * .045, cy - s * .2); c.lineTo(cx + s * .03, cy + s * .06); c.lineTo(cx - s * .03, cy + s * .06); c.fill();
+  c.fillRect(cx - s * .04, cy + s * .13, s * .08, s * .08);
 }
 function drawCameraBlock(c, x, y, s) {
   /* Jos (8 Nov): the camera position block: like the trigger, with a little camera on it. Only in the creator. */
@@ -532,6 +555,7 @@ function drawBlock(c, type, x, y, s, time, r) {
   else if (type === 'trigger') drawTrigger(c, x, y, s);
   else if (type === 'controls') drawControls(c, x, y, s);
   else if (type === 'camera') drawCameraBlock(c, x, y, s);
+  else if (type === 'repeater') drawRepeater(c, x, y, s);
   else if (type === 'button') drawButton(c, x, y, s);
   else if (type === 'door') drawDoor(c, x, y, s);
   else if (type === 'portal') drawPortal(c, x, y, s, time);
@@ -565,7 +589,8 @@ const SWITCHES = {
   controls:   ['visible', 'action'],
   ball:       ['deadly', 'gravity', 'crush', 'visible', 'disguise'],      // Jos (8 Nov)
   hill:       ['collision', 'visible', 'disguise'],
-  camera:     ['visible', 'action']             // Jos: the regular Visible and Do action, then its own camera settings
+  camera:     ['visible', 'action'],            // Jos: the regular Visible and Do action, then its own camera settings
+  repeater:   ['visible', 'action']             // Jos: like the trigger
 };
 const LABEL = { deadly:'Deadly', collision:'Collision', disguise:'Disguise as block',
                 action:'Do action', visible:'Visible', needed:'Needed for finish',
@@ -579,7 +604,7 @@ function tieBall(p, k, v) {
 const DISGUISES_ALL = BLOCKS.filter(b => b.id !== 'startpos').map(b => [b.id, b.name])
                         .concat([['neededcoin', 'Coin for finish']]);
 const disguises = () => DISGUISES_ALL.filter(d => d[0] === 'neededcoin' || blockAllowed(d[0]));
-const LINKERS = ['trigger', 'button'];    // the blocks you can connect to other blocks
+const LINKERS = ['trigger', 'button', 'repeater'];    // the blocks you can connect to other blocks
 const KEYS = [['ArrowLeft', '← arrow'], ['ArrowRight', '→ arrow'], ['ArrowUp', '↑ arrow'],
               ['ArrowDown', '↓ arrow'], ['Space', 'Space'], ['KeyA', 'A'], ['KeyD', 'D'],
               ['KeyW', 'W'], ['KeyS', 'S']];
@@ -1306,7 +1331,9 @@ function triggersSection(c) {
     card.append(row('Delay', number(l.delay || 0, 0, 30, .1, v => { l.delay = v; save(); }),
                     el('span', { className:'p-or', textContent:'seconds' })));
     l.actions = l.actions || [];
-    l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c)));
+    const steps = f.c.t === 'repeater';          // a repeating trigger's actions are steps: numbered, and you drag them into order
+    if (steps) card.append(el('p', { className:'p-note', textContent:'Steps: they go one after another, then start again, over and over. Drag ⠿ to change the order.' }));
+    l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c, save, steps)));
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
     // Jos's editor command: choose which other triggers connected to this block do what this one does
@@ -1425,9 +1452,21 @@ function manyTriggersSection(cells) {
     copyFrom.to.forEach(tr => groups.get(tr).forEach(l => { l.actions = JSON.parse(JSON.stringify(src)); }));
   });
 }
-function actionBox(link, a, j, target, saved = save) {
+let dragStep = null;
+function actionBox(link, a, j, target, saved = save, steps = false) {
   const box = el('div', { className:'p-action' });
-  box.append(row('Do', pick([['', '—'], ['size', 'Change size'], ['move', 'Movement'], ['props', 'Change properties']],
+  if (steps) {                                   // Jos: drag the steps to choose what goes first, second, and so on
+    box.addEventListener('dragover', e => { if (dragStep && dragStep.link === link) { e.preventDefault(); box.classList.add('drop'); } });
+    box.addEventListener('dragleave', () => box.classList.remove('drop'));
+    box.addEventListener('drop', e => {
+      e.preventDefault(); box.classList.remove('drop');
+      if (!dragStep || dragStep.link !== link || dragStep.j === j) return;
+      const [moved] = link.actions.splice(dragStep.j, 1);
+      link.actions.splice(j, 0, moved);
+      dragStep = null; saved(); renderPanel();
+    });
+  }
+  box.append(row(steps ? 'Step ' + (j + 1) : 'Do', pick([['', '—'], ['size', 'Change size'], ['move', 'Movement'], ['props', 'Change properties']],
     a.do, v => {
       a.do = v;
       if (v === 'size' && a.size === undefined) a.size = 2;
@@ -1441,6 +1480,12 @@ function actionBox(link, a, j, target, saved = save) {
     }),
     el('button', { className:'p-x', textContent:'🗑', title:'Remove',
                    onclick:() => { link.actions.splice(j, 1); saved(); renderPanel(); } })));
+  if (steps) {
+    const grip = el('span', { className:'p-grip', textContent:'⠿', title:'Drag to change the order', draggable:true });
+    grip.addEventListener('dragstart', e => { dragStep = { link, j }; e.dataTransfer.setData('text/plain', 'step'); e.dataTransfer.effectAllowed = 'move'; });
+    grip.addEventListener('dragend', () => { dragStep = null; document.querySelectorAll('.p-action.drop').forEach(b => b.classList.remove('drop')); });
+    box.firstChild.prepend(grip);
+  }
   if (a.do === 'size') box.append(row('New size', number(a.size, .5, 6, .5, v => { a.size = v; saved(); })));
   if (a.do === 'move') {
     box.append(row('Go', pick([['left', 'Left'], ['right', 'Right'], ['up', 'Up'], ['down', 'Down']], a.dir,
@@ -1841,18 +1886,42 @@ function fire(t) {
     else doLink(l);
   });
 }
+function applyAction(g, a) {
+  if (a.do === 'size') g.grow = { from:g.w, to:a.size || 1, t:0 };
+  if (a.do === 'move') {
+    // a distance to travel, not a spot to reach, so it still works if it grows too
+    const d = DIRS[a.dir || 'up'];
+    g.move = { dx:d[0], dy:d[1], left:a.n || 1, v:(a.speed || 1) * T.moveSpeed };
+  }
+  if (a.do === 'props') g.pr = Object.assign({}, g.pr, a.props || {});
+}
 function doLink(l) {
   const g = play.byId[l.id];
   if (!g) return;
-  (l.actions || []).forEach(a => {
-    if (a.do === 'size') g.grow = { from:g.w, to:a.size || 1, t:0 };
-    if (a.do === 'move') {
-      // a distance to travel, not a spot to reach, so it still works if it grows too
-      const d = DIRS[a.dir || 'up'];
-      g.move = { dx:d[0], dy:d[1], left:a.n || 1, v:(a.speed || 1) * T.moveSpeed };
-    }
-    if (a.do === 'props') g.pr = Object.assign({}, g.pr, a.props || {});
+  (l.actions || []).forEach(a => applyAction(g, a));
+}
+/* Jos (8 Nov): the repeating trigger. Its steps are done one after another, in the order you put them, and then it starts
+   again from the first, over and over. A step is done when its block has finished moving or growing. Each connected block
+   goes round on its own. A Change properties step takes half a second, so a loop of only those doesn't flicker. */
+function fireRepeat(t) {
+  if (t.fired) return;
+  t.fired = true;
+  t.links.forEach(l => {
+    if (l.delay > 0) play.later.push({ left:l.delay, l, loop:true });
+    else startLoop(l);
   });
+}
+function startLoop(l) {
+  const g = play.byId[l.id], steps = (l.actions || []).filter(a => a.do);
+  if (!g || !steps.length) return;
+  g.loop = { steps, i:0, wait:0 };
+  nextStep(g);
+}
+function nextStep(g) {
+  const L = g.loop, a = L.steps[L.i];
+  L.i = (L.i + 1) % L.steps.length;
+  applyAction(g, a);
+  L.wait = a.do === 'props' ? .5 : 0;
 }
 function moveThings(dt) {
   play.things.forEach(t => {
@@ -1870,6 +1939,7 @@ function moveThings(dt) {
       t.move.left -= go;
       if (t.move.left <= 0) t.move = null;
     }
+    if (t.loop) { if (t.loop.wait > 0) t.loop.wait -= dt; else if (!t.move && !t.grow) nextStep(t); }   // the next step of a repeating trigger
     t.dx = t.x - ox; t.dy = t.y - oy;
     if (t.ext !== undefined) { t.ext += dt; if (t.ext > .5) t.ext = undefined; }
     if (t.wait) { t.wait.t += dt; if (t.wait.t > DOOR_WAIT_END) t.wait = null; }
@@ -2059,7 +2129,7 @@ function step(dt) {
   }
 
   // delayed connections go off when their time is up
-  p.later = p.later.filter(d => { d.left -= dt; if (d.left > 0) return true; doLink(d.l); return false; });
+  p.later = p.later.filter(d => { d.left -= dt; if (d.left > 0) return true; if (d.loop) startLoop(d.l); else doLink(d.l); return false; });
   // Jos: the door goes down at the start, and comes up again when the Needed coins are collected
   const locked = p.things.some(t => t.t === 'coin' && t.pr.needed && !t.gone);
   p.things.forEach(t => {
@@ -2273,6 +2343,7 @@ function heroStep(p, dt) {
       p.dash = FACING[facing(t)]; p.ground = false;
     }
     if (t.t === 'trigger' && pr.action) fire(t);
+    if (t.t === 'repeater' && pr.action) fireRepeat(t);
     const pb = t.t === 'button' && turnBox([.14, .5, .72, .5], t.r);
     if (pb && boxesTouch(p.x, p.y, W, H, t.x + pb[0] * t.w, t.y + pb[1] * t.h, pb[2] * t.w, pb[3] * t.h)) {
       t.pressed = true;                           // Jos: it goes down when you stand on it

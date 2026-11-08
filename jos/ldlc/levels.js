@@ -79,7 +79,7 @@ const LDLC = (() => {
      a link or in Dad's Google Form. Coming back in, a code is only ever read as blocks: anything that
      isn't a known block, switch or number is thrown away, and nothing in it is ever run. */
   const KINDS = ['tile', 'hero', 'door', 'spike', 'smallspike', 'sawblade', 'spring', 'coin', 'oneway',
-                 'portal', 'trigger', 'button', 'controls', 'dashorb', 'ball', 'hill', 'camera'];
+                 'portal', 'trigger', 'button', 'controls', 'dashorb', 'ball', 'hill', 'camera', 'repeater'];
   const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed', 'gravity', 'crush'];
   const WAYS = ['up', 'down', 'left', 'right'];
   const num = (v, lo, hi, d) => typeof v === 'number' && isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d;

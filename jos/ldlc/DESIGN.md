@@ -90,6 +90,23 @@ Collision, Visible, Disguise.
   ceiling, the hill is a plain solid block for the hero (the ball still rolls on its slope).
 - Not built: balls pushing each other, balls pushing the hero, a hill that kills.
 
+## The repeating trigger (Jos, 8 Nov)
+
+A block called **Repeating trigger**, in **Advanced** levels only (after Camera position in BLOCKS). Its picture is the
+trigger's **!** with **two arrows curling round it** (drawn, not an emoji). Properties: Visible (off) and Do action,
+like a trigger. You connect it with **Trigger to block** like a trigger.
+
+- **Touch it and its steps go round and round.** The actions you give a connected block are **steps**: they are done
+  **one after another**, in the order you put them, and then it **starts again from the first**, over and over. A step is
+  finished when its block has stopped moving or growing, so *up 3, then down 3* is a block that bobs for ever.
+- A **Change properties** step takes half a second, so a loop made only of those (a block that blinks away and back) goes
+  at a steady pace instead of flickering.
+- **Drag ⠿ to change the order.** In the connected block's *Connected triggers* card, a repeating trigger's actions are
+  numbered Step 1, Step 2... and each has a **⠿ handle**. Drag one onto another to move it there.
+- **Delay** still works: a connection with a delay starts its loop that long after he touches the trigger.
+- It starts once per try (like a trigger); each connected block goes round on its own, and a block can only be in one loop.
+- A plain trigger does not change: its actions all go off together, once.
+
 ## Difficulties (Jos, 8 Nov)
 
 When you press **Create** on My levels, it asks **What difficulty?** *before* it sends you into the creator
