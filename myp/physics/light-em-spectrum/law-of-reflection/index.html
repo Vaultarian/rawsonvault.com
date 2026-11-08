@@ -129,10 +129,57 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .sec{scroll-margin-top:56px}
   .two{grid-template-columns:minmax(0,1fr)}
 }
+.pgx{display:none!important}
+.pg{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+.pg .dots{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.pg .dot{appearance:none;border:0;padding:0;width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer}
+.pg .dot[aria-current="true"]{background:var(--accent);transform:scale(1.25)}
+.pg .cnt{font:500 12px var(--f-mono);color:var(--muted)}
+.why.paged>*:not(.pg){font-size:18px;line-height:1.5}
+.why.paged>*:not(.pg) li{margin-bottom:6px}
 </style>
 <script>
 /* SHELL v1 init: builds the sidebar from the sections and highlights the one being read. Call initShell(title, subtitle) once at the end of the page script. */
-function initShell(title,meta){
+
+/* Slide mode: each .why shows one paragraph (or a heading with what follows it) at a time. Dynamic panels (with an id) stay on the slide they answer; when one updates, the view jumps to it. */
+function paginate(why){
+  var cur=0,slides=[],busy=false,bar=document.createElement('div');bar.className='pg';
+  function top(n){while(n&&n.parentNode!==why)n=n.parentNode;return n}
+  function build(){
+    var kids=[].slice.call(why.children).filter(function(c){return c!==bar});slides=[];
+    kids.forEach(function(c){
+      var last=slides[slides.length-1];
+      if(last&&last.onlyH){last.els.push(c);last.onlyH=false}
+      else if(last&&(c.id||c.classList.contains('hint')))last.els.push(c);
+      else slides.push({els:[c],onlyH:/^H[34]$/.test(c.tagName)});
+    });
+    if(cur>=slides.length)cur=Math.max(0,slides.length-1);
+    show();
+  }
+  function show(){
+    busy=true;
+    [].slice.call(why.children).forEach(function(c){if(c!==bar)c.classList.add('pgx')});
+    slides.forEach(function(sl,i){if(i===cur)sl.els.forEach(function(e){e.classList.remove('pgx')})});
+    if(slides.length<2){if(bar.parentNode)why.removeChild(bar);why.classList.remove('paged')}
+    else{why.classList.add('paged');
+      var d='';slides.forEach(function(_,i){d+='<button class="dot" data-i="'+i+'" aria-label="Part '+(i+1)+'"'+(i===cur?' aria-current="true"':'')+'></button>'});
+      bar.innerHTML='<button class="btn pb"'+(cur?'':' disabled')+'>\u2190 Back</button><div class="dots">'+d+'</div><span class="cnt">'+(cur+1)+' / '+slides.length+'</span><button class="btn primary pn"'+(cur<slides.length-1?'':' disabled')+'>Next \u2192</button>';
+      if(why.firstChild!==bar)why.insertBefore(bar,why.firstChild)}
+    setTimeout(function(){busy=false},0);
+  }
+  bar.addEventListener('click',function(e){var t=e.target;
+    if(t.classList.contains('pn')&&cur<slides.length-1)cur++;else if(t.classList.contains('pb')&&cur>0)cur--;else if(t.classList.contains('dot'))cur=+t.getAttribute('data-i');else return;show()});
+  var mo=new MutationObserver(function(ms){
+    if(busy)return;
+    if(ms.some(function(m){return m.target===why})){cur=0;build();return}
+    var jump=-1;ms.forEach(function(m){var t=top(m.target);if(!t||t===bar||!t.id)return;
+      slides.forEach(function(sl,i){if(sl.els.indexOf(t)>-1)jump=i})});
+    if(jump>-1&&jump!==cur){cur=jump;show()}
+  });
+  build();mo.observe(why,{childList:true,subtree:true,characterData:true});
+}
+function initPaging(){[].slice.call(document.querySelectorAll('.why')).forEach(paginate)}
+function initShell(title,meta){initPaging();
   var secs=[].slice.call(document.querySelectorAll('.sec')),nav=document.getElementById('toc'),h='<p class="brand">'+title+'</p><p class="meta">'+meta+'</p>',g=null;
   secs.forEach(function(s){var gr=s.getAttribute('data-group');if(gr&&gr!==g){g=gr;h+='<div class="grp">'+gr+'</div>'}
     h+='<a href="#'+s.id+'" data-id="'+s.id+'"><b>'+(s.getAttribute('data-tag')||'')+'</b><span>'+s.getAttribute('data-title')+'</span></a>'});
