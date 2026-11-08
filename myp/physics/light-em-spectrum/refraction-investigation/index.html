@@ -216,7 +216,7 @@ function initShell(title,meta){initPaging();
   <p>That light changes direction is easy to see. The investigation asks <b>how much</b> it bends, and what decides that.</p>
   <div class="why-box" id="partInfo"></div>
   <h3>How to read the card</h3>
-  <ul class="tight"><li>Aim the ray at the <b>centre</b> of the card.</li><li>Read the <b>top</b> scale for the angle going in, <b>θ₁</b>.</li><li>Read the <b>bottom</b> scale for the angle coming out, <b>θ₂</b>.</li><li>The normal is <b>0°</b>. Both scales count away from it.</li></ul>
+  <ul class="tight"><li>Aim the ray at the <b>centre</b> of the card.</li><li>Read the <b>top</b> scale for the <b>angle of incidence</b>, <b>θᵢ</b>, the angle going in.</li><li>Read the <b>bottom</b> scale for the <b>angle of refraction</b>, <b>θᵣ</b>, the angle coming out.</li><li>The normal is <b>0°</b>. Both scales count away from it.</li></ul>
   <p class="hint">Tap a part of the apparatus under the picture to see what it does and why it is there.</p>
  </div>
 </div></section>
@@ -228,7 +228,7 @@ function initShell(title,meta){initPaging();
  <figure class="vis"><div class="panel"><svg id="fB1" viewBox="0 0 440 440" role="img" aria-label="The card with the chosen idea tested"></svg></div>
   <div class="cards" id="ideas"></div></figure>
  <div class="why">
-  <p class="lead">List every idea that might change <b>how much</b> the light bends. Tap an idea to test it on the card at θ₁ = 50°.</p>
+  <p class="lead">List every idea that might change <b>how much</b> the light bends. Tap an idea to test it on the card at θᵢ = 50°.</p>
   <div class="why-box" id="ideaInfo"></div>
   <h3>Turn the best idea into a question</h3>
   <div class="panel"><p style="margin:0 0 6px">How does changing <select id="rqA"><option>the angle of incidence</option><option>the colour of the light</option><option>the material of the block</option><option>how bright the light is</option></select> affect <select id="rqB"><option>the angle of refraction</option><option>how bright the light is</option><option>the size of the block</option></select>?</p>
@@ -242,7 +242,7 @@ function initShell(title,meta){initPaging();
 <div class="sh"><span class="tag">B2</span><h2>Your hypothesis</h2></div>
 <div class="two">
  <figure class="vis"><div class="panel"><svg id="fB2" viewBox="0 0 440 440" role="img" aria-label="Three incident rays and their refracted rays on the card"></svg></div>
-  <div><label class="f">My prediction: as θ₁ increases, θ₂ will…</label><div class="seg" id="predB2"></div></div>
+  <div><label class="f">My prediction: as θᵢ increases, θᵣ will…</label><div class="seg" id="predB2"></div></div>
   <div class="why-box" id="predOut"></div></figure>
  <div class="why">
   <p class="lead">A hypothesis is your <b>answer</b> to the research question, written before you do the experiment. The word <b>because</b> is where the marks are.</p>
@@ -293,7 +293,7 @@ function initShell(title,meta){initPaging();
  <div class="why">
   <p class="lead">Every measurement carries a small error, so real points sit a little above and below the true pattern. A graph should show the <b>pattern</b>.</p>
   <div class="note" id="noteG"></div>
-  <div class="panel"><label class="f" for="probeG">Predict a reading nobody took: θ₁ = <b id="probeGv"></b></label><input type="range" id="probeG" min="5" max="75" step="1" value="55"><table class="tbl" id="probeGt" style="margin-top:8px"></table></div>
+  <div class="panel"><label class="f" for="probeG">Predict a reading nobody took: θᵢ = <b id="probeGv"></b></label><input type="range" id="probeG" min="5" max="75" step="1" value="55"><table class="tbl" id="probeGt" style="margin-top:8px"></table></div>
   <h3>Four things the marker looks for</h3>
   <ul class="tight"><li>Axis numbers evenly spaced.</li><li>Both axes labelled, with units.</li><li>Points plotted accurately.</li><li>A ruler used for the axes, and one smooth curve through the middle of the points.</li></ul>
   <p class="hint">Both variables are numbers, so this is a scatter graph with a line of best fit. A bar chart is for when the thing you changed is words.</p>
@@ -321,7 +321,7 @@ function initShell(title,meta){initPaging();
   <p class="lead">Your conclusion answers your research question. Look at the shape of your graph and choose the sentence that matches it.</p>
   <div class="why-box" id="shapeOut"></div>
   <h3>Then say why you can say that</h3>
-  <div class="panel"><p style="margin:0 0 8px">Use numbers off your own graph. When θ₁ was <select id="n1"></select> θ₂ was about <b id="v1"></b>, and when θ₁ was <select id="n2"></select> θ₂ was about <b id="v2"></b>.</p><p class="hint" style="margin:0">Values read off the curve of best fit through last year's class.</p></div>
+  <div class="panel"><p style="margin:0 0 8px">Use numbers off your own graph. When θᵢ was <select id="n1"></select> θᵣ was about <b id="v1"></b>, and when θᵢ was <select id="n2"></select> θᵣ was about <b id="v2"></b>.</p><p class="hint" style="margin:0">Values read off the curve of best fit through last year's class.</p></div>
  </div>
 </div>
 <div class="two" style="margin-top:22px">
@@ -338,13 +338,13 @@ function initShell(title,meta){initPaging();
 <section class="sec" id="c3" data-tag="C3" data-title="Was your hypothesis right?" data-group="C · Processing and evaluating">
 <div class="sh"><span class="tag">C3</span><h2>Was your hypothesis right?</h2></div>
 <div class="two">
- <figure class="vis"><div><label class="f">My hypothesis said θ₂ would…</label><div class="seg" id="hypC3"></div></div>
+ <figure class="vis"><div><label class="f">My hypothesis said θᵣ would…</label><div class="seg" id="hypC3"></div></div>
   <div class="panel"><svg id="gC3" viewBox="0 0 520 380" role="img" aria-label="Prediction arrow compared with the data"></svg></div></figure>
  <div class="why">
   <p class="lead">This asks whether the prediction you made in B2 turned out to be correct.</p>
   <div class="verdict" id="verdC3"></div>
   <p style="margin-top:10px">Point back at your conclusion and your data. A hypothesis that turned out wrong is not a problem. Saying so clearly, and showing which data proves it, is what earns the marks.</p>
-  <p class="hint">Last year's class predicted θ₂ would decrease. Their data showed otherwise, and they wrote exactly that.</p>
+  <p class="hint">Last year's class predicted θᵣ would decrease. Their data showed otherwise, and they wrote exactly that.</p>
  </div>
 </div></section>
 
@@ -421,7 +421,7 @@ function snell(t,n){n=n||N;return Math.asin(Math.min(1,Math.sin(t*RAD)/n))/RAD}
 function f1(v){return (Math.round(v*10)/10).toFixed(1)}
 function f0(v){return String(Math.round(v))}
 var MAXT=snell(90);
-var T1='θ<tspan dy="3" font-size="9">1</tspan>',T2='θ<tspan dy="3" font-size="9">2</tspan>';
+var T1='θ<tspan dy="3" font-size="9">i</tspan>',T2='θ<tspan dy="3" font-size="9">r</tspan>';
 var CLASS={10:[7,8,8],20:[12,13,12],30:[17,17,17],40:[25,26,24],50:[32,31,32],60:[33,34,32],70:[38,39,38],80:[46,45,47]};
 var CLASSPTS=[[0,0]].concat(Object.keys(CLASS).map(function(k){var a=CLASS[k];return [+k,(a[0]+a[1]+a[2])/3]}));
 var MATS=[['Water',1.33],['Perspex',1.49],['Glass',1.52],['Diamond',2.42]];
@@ -487,16 +487,16 @@ function G(){
   g.cap=function(){g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(MAXT)+'" x2="'+g.X(90)+'" y2="'+g.Y(MAXT)+'" class="s-cap"/>';g.text(2,MAXT+1.8,'limit as the ray skims the boundary: '+f1(MAXT)+'°','var(--muted)')};
   g.end=function(id){$(id).innerHTML=g.o};
   return g}
-function tip(x,y){return 'θ₁ '+f0(x)+'°, θ₂ '+f1(y)+'°'}
+function tip(x,y){return 'θᵢ '+f0(x)+'°, θᵣ '+f1(y)+'°'}
 
 /* ======== A: apparatus ======== */
 var PARTS=[['box','Ray box','The ray box has a single slit. The bulb sends light in every direction and the slit blocks nearly all of it, leaving one narrow strip. That gives you one clean line to trace.'],
- ['inc','Incident ray','The incident ray is the light arriving at the boundary. Aim it at the centre of the card so that both scales are read from the right point.'],
+ ['inc','Incident ray','The incident ray is the light arriving at the boundary. Its angle from the normal is the angle of incidence, θᵢ. Aim it at the centre of the card so that both scales are read from the right point.'],
  ['normal','Normal','The normal is the line at 90° to the boundary. The card marks it 0°, and every angle is measured from it.'],
  ['face','Flat face','The flat face of the block is the boundary, where light passes from air into perspex. This is where the bend happens.'],
  ['block','Perspex block','The semicircular block means the ray always meets the curved edge along a radius, so it leaves without bending a second time. Only the flat face bends it.'],
- ['ref','Refracted ray','The refracted ray is the new direction of the light inside the perspex. Its angle from the normal is θ₂.'],
- ['scale','Scales','The top scale reads the angle going in, θ₁. The bottom scale reads the angle coming out, θ₂. Both start at 0° on the normal.']];
+ ['ref','Refracted ray','The refracted ray is the new direction of the light inside the perspex. Its angle from the normal is the angle of refraction, θᵣ.'],
+ ['scale','Scales','The top scale reads the angle of incidence, θᵢ, the angle going in. The bottom scale reads the angle of refraction, θᵣ, the angle coming out. Both start at 0° on the normal.']];
 var SA={th:40,part:'inc'};
 function renderA(){
   $('fI').innerHTML=cardSVG(SA.th,N,{hl:SA.part});$('thIv').textContent=SA.th+'°';
@@ -507,7 +507,7 @@ $('thI').oninput=function(){SA.th=+this.value;renderA()};
 
 /* ======== B1 ======== */
 var IDEAS=[
- ['ang','The angle of incidence','Yes. Swing the ray box and the card shows both angles. It is built for this.',function(){return ['θ₁ 30° gives θ₂ '+f1(snell(30)),'θ₁ 50° gives θ₂ '+f1(snell(50))]},'good','Easy to change, easy to measure'],
+ ['ang','The angle of incidence','Yes. Swing the ray box and the card shows both angles. It is built for this.',function(){return ['θᵢ 30° gives θᵣ '+f1(snell(30)),'θᵢ 50° gives θᵣ '+f1(snell(50))]},'good','Easy to change, easy to measure'],
  ['mat','What the block is made of','A large effect, but this experiment has one block.',function(){return ['perspex gives '+f1(snell(50)),'water gives '+f1(snell(50,1.33))]},'warn','Big effect, one block available'],
  ['col','The colour of the light','Real, but tiny. Red and blue differ by about '+f1(snell(50,1.488)-snell(50,1.496))+'°, and the card reads to 1°.',function(){return ['red light gives '+f1(snell(50,1.488)),'blue light gives '+f1(snell(50,1.496))]},'warn','Too small to see with a 1° scale'],
  ['bri','How bright the light is','Brightness changes how easy the ray is to see. The angle stays the same.',function(){return ['dim: '+f1(snell(50)),'bright: '+f1(snell(50))]},'bad','No effect on the angle'],
@@ -520,7 +520,7 @@ function renderB1(){
   var n=SB1.idea==='mat'?1.33:N,th=50,gh=SB1.idea==='ang'?30:null;
   $('fB1').innerHTML=cardSVG(th,n,{ghost:gh,mat:SB1.idea==='mat'?'water':'perspex block'});
   $('ideas').innerHTML=IDEAS.map(function(x){return '<button class="card" data-v="'+x[0]+'" aria-pressed="'+(x[0]===SB1.idea)+'"><strong>'+x[1]+'</strong><span>'+x[5]+'</span></button>'}).join('');
-  $('ideaInfo').innerHTML='<b>'+it[1]+'.</b> '+it[2]+'<br><span class="hint">'+r[0]+' · '+r[1]+'</span>'+(SB1.idea==='ang'?'<br><span class="hint">The dashed ray shows θ₁ = 30° for comparison.</span>':'')}
+  $('ideaInfo').innerHTML='<b>'+it[1]+'.</b> '+it[2]+'<br><span class="hint">'+r[0]+' · '+r[1]+'</span>'+(SB1.idea==='ang'?'<br><span class="hint">The dashed ray shows θᵢ = 30° for comparison.</span>':'')}
 $('ideas').addEventListener('click',function(e){var b=e.target.closest('.card');if(b){SB1.idea=b.dataset.v;renderB1()}});
 function rq(){var a=$('rqA').value,b=$('rqB').value,ok=a==='the angle of incidence'&&b==='the angle of refraction';
   $('rqOut').innerHTML=ok?'<span class="good">✓ Names both variables, and you can change one and measure the other with the card.</span>':'<span class="warn">Both variables are named. Check that you can change the first one easily and measure the second one with your equipment.</span>'}
@@ -535,7 +535,7 @@ function renderB2(){
   var o='<circle cx="220" cy="222" r="160" fill="var(--air)" stroke="var(--ink2)" stroke-width="1.2"/>'; // placeholder replaced below
   var s=cardSVG(20,N,{ghost:60});$('fB2').innerHTML=s;
   $('predB2').innerHTML=segHTML([['inc','increase'],['dec','decrease'],['same','stay the same']],SB2.pred);
-  var m={inc:['<span class="good">Matches the data.</span> θ₂ goes from 0° at θ₁ = 0° up to about 42° as θ₁ approaches 90°, and it is always smaller than θ₁.','The dashed ray (θ₁ = 60°) turns further than the solid one (θ₁ = 20°).'],
+  var m={inc:['<span class="good">Matches the data.</span> θᵣ goes from 0° at θᵢ = 0° up to about 42° as θᵢ approaches 90°, and it is always smaller than θᵢ.','The dashed ray (θᵢ = 60°) turns further than the solid one (θᵢ = 20°).'],
     dec:['<span class="bad">Does not match the data.</span> The refraction angle grows as the incidence angle grows. A wrong prediction with a reason is still a good hypothesis, and C3 is where you say so.',''],
     same:['<span class="bad">Does not match the data.</span> The ray swings further round each time you swing the ray box further.','']}[SB2.pred];
   $('predOut').innerHTML=m[0]+(m[1]?'<br><span class="hint">'+m[1]+'</span>':'')}
@@ -595,7 +595,7 @@ function renderB3(){
     $('fB3c').innerHTML=cardSVG(SB3.th,SB3.ctl==='block'?SB3.mat:N,{offset:SB3.ctl==='centre'?SB3.off:0,mat:SB3.ctl==='block'?(MATS.filter(function(m){return m[1]===SB3.mat})[0]||['perspex'])[0].toLowerCase():'perspex block',hl:SB3.ctl==='centre'?'box':SB3.ctl==='block'?'block':null})}
   if(t==='rep')renderRep()}
 function renderRep(){
-  var r=SB3.reads,h='<table class="strip"><tr><th>Reading</th><th>1st</th><th>2nd</th><th>3rd</th><th>Average</th></tr><tr><th>θ₂ / °</th>';
+  var r=SB3.reads,h='<table class="strip"><tr><th>Reading</th><th>1st</th><th>2nd</th><th>3rd</th><th>Average</th></tr><tr><th>θᵣ / °</th>';
   for(var i=0;i<3;i++)h+='<td>'+(r[i]!=null?r[i]:'·')+'</td>';
   var avg=r.length===3?(r[0]+r[1]+r[2])/3:null;h+='<td><b>'+(avg!=null?f1(avg):'·')+'</b></td></tr></table>';
   $('repP').innerHTML=h;
@@ -616,12 +616,12 @@ var SC={idx:0,reveal:0,curve:false,cls:false,maths:false};
 function renderC1(){
   var a=ANG[SC.idx],t2=snell(a);
   $('fC1').innerHTML=cardSVG(a,N,{});
-  var h='<span><small>angle in</small>'+f0(a)+'°</span><span class="t2"><small>angle out</small>'+f1(t2)+(a===90?'°*':'°')+'</span>';
-  if(SC.maths&&a>0)h+='<span style="font-size:15px"><small>sin θ₁ ÷ sin θ₂</small>'+(Math.sin(a*RAD)/Math.sin(t2*RAD)).toFixed(2)+'</span>';
+  var h='<span><small>incidence θᵢ</small>'+f0(a)+'°</span><span class="t2"><small>refraction θᵣ</small>'+f1(t2)+(a===90?'°*':'°')+'</span>';
+  if(SC.maths&&a>0)h+='<span style="font-size:15px"><small>sin θᵢ ÷ sin θᵣ</small>'+(Math.sin(a*RAD)/Math.sin(t2*RAD)).toFixed(2)+'</span>';
   $('c1read').innerHTML=h;
   $('c1cap').innerHTML=a===0?'The ray travels along the normal, so it goes straight through. No bend at all.'
-   :a===90?'* The limit. The ray would skim along the flat face, so there is no ray to measure, and 90° stays an expected value only. It also shows the most θ₂ could ever be in perspex: '+f1(MAXT)+'°.'
-   :'The ray bends <b>towards the normal</b>: θ₂ is '+f1(a-t2)+'° smaller than θ₁. Light slows down in perspex.';
+   :a===90?'* The limit. The ray would skim along the flat face, so there is no ray to measure, and 90° stays an expected value only. It also shows the most θᵣ could ever be in perspex: '+f1(MAXT)+'°.'
+   :'The ray bends <b>towards the normal</b>: θᵣ is '+f1(a-t2)+'° smaller than θᵢ. Light slows down in perspex.';
   var g=G();
   if(SC.curve||SC.idx===9)g.cap();
   if(SC.curve){g.curve(function(x){return snell(x)},0,90,'s-theory');g.text(46,13,'expected curve, perspex (n = 1.49)','var(--theory)')}
@@ -630,7 +630,7 @@ function renderC1(){
   if(SC.cls){CLASSPTS.forEach(function(p){if(p[0]<=ANG[SC.reveal])g.dot(p[0],p[1],5,'var(--data)','last year: '+tip(p[0],p[1]),true)});g.text(2,47,'◆ last year\'s class averages','var(--data)')}
   g.end('gC1');
   $('c1chips').innerHTML=ANG.map(function(v,i){return '<button class="chip'+(i<=SC.reveal?' seen':'')+'" data-i="'+i+'" aria-pressed="'+(i===SC.idx)+'">'+v+'°</button>'}).join('');
-  var tb='<tr><th rowspan="2">Angle of incidence θ₁ / degrees</th><th colspan="4">Angle of refraction θ₂ / degrees</th><th rowspan="2">Expected</th></tr><tr><th>1st</th><th>2nd</th><th>3rd</th><th>Average</th></tr>';
+  var tb='<tr><th rowspan="2">Angle of incidence θᵢ / degrees</th><th colspan="4">Angle of refraction θᵣ / degrees</th><th rowspan="2">Expected</th></tr><tr><th>1st</th><th>2nd</th><th>3rd</th><th>Average</th></tr>';
   ANG.forEach(function(v,i){if(i>SC.reveal)return;var c=CLASS[v],cur=i===SC.idx?' class="cur"':'';
     if(v===0)tb+='<tr><td'+cur+'>0</td><td>0</td><td>0</td><td>0</td><td><b>0</b></td><td>0.0</td></tr>';
     else if(v===90)tb+='<tr><td'+cur+'>90</td><td colspan="4" class="off">cannot be measured: the ray skims the boundary</td><td>'+f1(MAXT)+'*</td></tr>';
@@ -662,7 +662,7 @@ function renderG(){
   var pr=SG.probe;g.o+='<line x1="'+g.X(pr)+'" y1="'+g.Y(0)+'" x2="'+g.X(pr)+'" y2="'+g.Y(50)+'" class="s-guide"/>';
   if(L.dots)g.dot(pr,interp(pts,pr),5,'var(--dots)','joined dots');if(L.fit)g.dot(pr,fit(pr),5,'var(--fit)','best fit');if(L.theory)g.dot(pr,snell(pr),5,'var(--theory)','expected');
   g.end('gG');$('probeGv').textContent=pr+'°';
-  var rows='<tr><th></th><th>θ₂ read off</th></tr>';
+  var rows='<tr><th></th><th>θᵣ read off</th></tr>';
   if(L.dots)rows+='<tr><td style="color:var(--dots)">Joined dots</td><td>'+f1(interp(pts,pr))+'°</td></tr>';
   if(L.fit)rows+='<tr><td style="color:var(--fit)">Best-fit curve</td><td>'+f1(fit(pr))+'°</td></tr>';
   rows+='<tr><td style="color:var(--theory)">Expected (physics)</td><td>'+f1(snell(pr))+'°</td></tr>';$('probeGt').innerHTML=rows;
@@ -679,7 +679,7 @@ $('sdG').oninput=function(){SG.sd=+this.value;renderG()};$('seedG').onclick=func
 /* ======== C1 check table ======== */
 var S5={tbl:CLASSPTS.map(function(p){return +f1(p[1])})};
 function render5(){
-  var tb='<tr><th>θ₁ / °</th><th>θ₂ average / °</th><th>vs expected</th></tr>';
+  var tb='<tr><th>θᵢ / °</th><th>θᵣ average / °</th><th>vs expected</th></tr>';
   for(var i=0;i<9;i++){var a=i*10,v=S5.tbl[i],e=snell(a),msg='',cls='';
     if(v!=null&&!isNaN(v)){var d=v-e;cls=Math.abs(d)<=3?'good':Math.abs(d)<=6?'warn':'bad';msg='expected '+f1(e)+'°, '+(d>=0?'+':'')+f1(d)+'°'}
     tb+='<tr><td>'+a+'</td><td><input type="number" id="in'+i+'" step="0.1" value="'+(v==null||isNaN(v)?'':v)+'" aria-label="Average angle of refraction at '+a+' degrees"></td><td class="'+cls+'">'+msg+'</td></tr>'}
@@ -693,9 +693,9 @@ function render5(){
   else{var near=pts.filter(function(p){return Math.abs(p[1]-snell(p[0]))<=3}).length,mir=pts.filter(function(p){return Math.abs(p[1]-snell(p[0]))>3&&Math.abs(p[1]-(90-snell(p[0])))<=3}).length;
     if(S5.tbl[0]!=null&&!isNaN(S5.tbl[0])&&S5.tbl[0]!==0)out.push(['bad','The 0° row should read 0°. '+(Math.abs(S5.tbl[0]-90)<=3?'A row that starts near 90° was measured from the flat face instead of the normal.':'The ray goes straight through along the normal.')]);
     if(mir>=3)out.push(['bad','Several readings match 90° minus the expected angle. Measure both angles from the normal, not from the boundary.']);
-    var over=pts.filter(function(p){return p[1]>MAXT+0.5}).map(function(p){return p[0]});if(over.length)out.push(['bad','Above '+f1(MAXT)+'° at θ₁ = '+over.join(', ')+'°. Perspex cannot bend light that far, so re-read these.']);
-    var big=pts.filter(function(p){return p[0]>0&&p[1]>p[0]+0.5}).map(function(p){return p[0]});if(big.length)out.push(['bad','θ₂ is larger than θ₁ at '+big.join(', ')+'°. In perspex the ray bends towards the normal, so θ₂ is smaller. Re-check which scale you read.']);
-    var dips=[];for(var j=1;j<pts.length;j++)if(pts[j][1]<pts[j-1][1]-0.5)dips.push(pts[j][0]);if(dips.length)out.push(['warn','θ₂ goes down at θ₁ = '+dips.join(', ')+'°. It should rise at every step.']);
+    var over=pts.filter(function(p){return p[1]>MAXT+0.5}).map(function(p){return p[0]});if(over.length)out.push(['bad','Above '+f1(MAXT)+'° at θᵢ = '+over.join(', ')+'°. Perspex cannot bend light that far, so re-read these.']);
+    var big=pts.filter(function(p){return p[0]>0&&p[1]>p[0]+0.5}).map(function(p){return p[0]});if(big.length)out.push(['bad','θᵣ is larger than θᵢ at '+big.join(', ')+'°. In perspex the ray bends towards the normal, so θᵣ is smaller. Re-check which scale you read.']);
+    var dips=[];for(var j=1;j<pts.length;j++)if(pts[j][1]<pts[j-1][1]-0.5)dips.push(pts[j][0]);if(dips.length)out.push(['warn','θᵣ goes down at θᵢ = '+dips.join(', ')+'°. It should rise at every step.']);
     out.push([near===n?'good':near>=n*0.7?'warn':'bad',near+' of '+n+' readings are within 3° of the expected curve'+(near===n?'. Measured well.':'.')])}
   $('diag5').innerHTML='<ul class="tight" style="list-style:none;padding:0">'+out.map(function(r){return '<li class="'+r[0]+'" style="margin:4px 0">'+(r[0]==='good'?'✓ ':r[0]?'• ':'')+r[1]+'</li>'}).join('')+'</ul>'}
 $('tbl5').addEventListener('input',function(e){var m=/^in(\d)$/.exec(e.target.id);if(m){S5.tbl[+m[1]]=e.target.value===''?null:parseFloat(e.target.value);render5()}});
@@ -791,7 +791,7 @@ function renderCV(){
   $('cvSeg').innerHTML=segHTML([['A','Student A: averages look right'],['B','Student B: averages look wrong']],SV.cv);
   var rows=CVD[SV.cv].map(function(p){var t=p[1],s=t[0]+t[1]+t[2];return {a:p[0],t:t,avg:s/3,rg:Math.max.apply(null,t)-Math.min.apply(null,t)}});
   var g=trialG(rows,{bars:true,avg:true});g.text(2,47,'● trials   ◆ average   dotted line: expected','var(--muted)');g.end('gCV');
-  $('cvTab').innerHTML='<tr><th>θ₁ / °</th><th>Trials</th><th>Range</th><th>Average</th><th>Expected</th></tr>'+rows.map(function(r){return '<tr><td>'+r.a+'</td><td>'+r.t.join(', ')+'</td><td class="'+(r.rg<=2?'good':'bad')+'">'+r.rg+'°</td><td>'+f1(r.avg)+'</td><td>'+f1(snell(r.a))+'</td></tr>'}).join('');
+  $('cvTab').innerHTML='<tr><th>θᵢ / °</th><th>Trials</th><th>Range</th><th>Average</th><th>Expected</th></tr>'+rows.map(function(r){return '<tr><td>'+r.a+'</td><td>'+r.t.join(', ')+'</td><td class="'+(r.rg<=2?'good':'bad')+'">'+r.rg+'°</td><td>'+f1(r.avg)+'</td><td>'+f1(snell(r.a))+'</td></tr>'}).join('');
   var lo=Math.min.apply(null,rows.map(function(r){return r.rg})),hi=Math.max.apply(null,rows.map(function(r){return r.rg}));
   var dev=rows.map(function(r){return r.avg-snell(r.a)}),md=dev.reduce(function(a,b){return a+b},0)/dev.length;
   $('cvWhy').innerHTML=SV.cv==='A'
@@ -819,14 +819,14 @@ function renderV(){
       :whyV('Look at the shape of the whole graph. Does it go somewhere?',false,'Light does not behave randomly. If the graph shows no pattern, the experiment is not measuring what we think it is measuring. That is a fundamental problem with the method, and it is the most important thing to say in C4.','No clear relationship can be seen, so something is fundamentally wrong with how the experiment was designed or run.')}
   if(t==='rep'){scs=[['close','Trials close together'],['far','Trials far apart']];var rr=sc==='close'?rowsClass():rowsNoisy(5,5),g3=trialG(rr,{bars:true,avg:true}),mx=Math.max.apply(null,rr.map(function(r){return r.rg})),mn=Math.min.apply(null,rr.map(function(r){return r.rg}));
     g3.text(2,47,'● trials   ◆ average   orange bar: range of the three trials','var(--ink2)');gv=g3;
-    vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Three trials at every angle with their range"></svg><div class="strip" style="margin-top:8px"><table><tr><th>θ₁ / °</th>'+rr.map(function(r){return '<td>'+r.a+'</td>'}).join('')+'</tr><tr><th>range</th>'+rr.map(function(r){return '<td class="'+(r.rg<=2?'good':'bad')+'">'+r.rg+'°</td>'}).join('')+'</tr></table></div>';
+    vis='<svg id="gV" viewBox="0 0 520 380" role="img" aria-label="Three trials at every angle with their range"></svg><div class="strip" style="margin-top:8px"><table><tr><th>θᵢ / °</th>'+rr.map(function(r){return '<td>'+r.a+'</td>'}).join('')+'</tr><tr><th>range</th>'+rr.map(function(r){return '<td class="'+(r.rg<=2?'good':'bad')+'">'+r.rg+'°</td>'}).join('')+'</tr></table></div>';
     why=sc==='close'?whyV('Take the biggest of your three trials and subtract the smallest. That is the <b>range</b>. Work it out at each angle.',true,'The ranges run from '+mn+' to '+mx+'°, close to the 1° resolution of the protractor. The same set-up gives the same answer each time, so the method is repeatable.','My three trials at each angle agree to within '+mx+'°, so my method is repeatable.')
       :whyV('Take the biggest of your three trials and subtract the smallest. That is the <b>range</b>. Work it out at each angle.',false,'The ranges run from '+mn+' to '+mx+'°. Same angle, same equipment, different answers. If repeating the measurement does not repeat the result, the method is not under control.','My three trials at each angle differ by up to '+mx+'°, so my method does not give repeatable results.')}
   if(t==='ins'){scs=[['good','Narrow line, 1° scale'],['wide','Wide ray line'],['wrong','Wrong scale'],['face','From the flat face']];
     if(sc==='good'||sc==='wide'){var rs=resSVG(sc==='good'?0.5:4,1);vis=rs.svg;
       why=sc==='good'?whyV('Look at how precisely each angle can be read.',true,'A narrow line on a 1° scale pins each reading to the nearest degree. The instruments are doing their job as well as this equipment allows.','I used the printed protractor with a resolution of 1° and a narrow ray line, so my readings are as precise as the kit allows.')
         :whyV('Look at how precisely each angle can be read.',null,'A wide line leaves the reading anywhere across '+rs.span+'°. The method still works, but it is less precise than it could be, and a narrower ray line is a good improvement for C5.','My ray line was wide, so each reading could be out by about '+rs.span+'°. A narrower line would make it more precise.')}
-    else{var fn=sc==='wrong'?function(x){return 180-x}:function(x){return 90-x},h='<div class="strip"><table><tr><th>θ₁ / °</th><th>θ₂ read / °</th><th>expected / °</th></tr>';[0,20,40,60].forEach(function(a){h+='<tr><td>'+a+'</td><td class="bad">'+f1(fn(snell(a)))+'</td><td>'+f1(snell(a))+'</td></tr>'});vis=h+'</table></div>';
+    else{var fn=sc==='wrong'?function(x){return 180-x}:function(x){return 90-x},h='<div class="strip"><table><tr><th>θᵢ / °</th><th>θᵣ read / °</th><th>expected / °</th></tr>';[0,20,40,60].forEach(function(a){h+='<tr><td>'+a+'</td><td class="bad">'+f1(fn(snell(a)))+'</td><td>'+f1(snell(a))+'</td></tr>'});vis=h+'</table></div>';
       why=whyV('Check the 0° row first. A ray along the normal goes straight through, so it should read 0°.',false,'The 0° row reads '+(sc==='wrong'?'180°':'90°')+'. Every number is tidy, but none of them describes the light, because the angle was '+(sc==='wrong'?'read from the wrong scale (180° minus the true angle)':'measured from the flat face instead of the normal (90° minus the true angle)')+'. That is a fundamental problem with how the instrument was used, whatever the graph looks like.','Something went wrong with how I used the protractor: my 0° reading was '+(sc==='wrong'?'180°':'90°')+', so I read the wrong scale.')}}
   if(t==='ctl'){scs=[['same','Same block throughout'],['swap','Block swapped between readings']];var nf=sc==='same'?null:function(a,k){return BLK[(a/10+k)%3][1]},rc=rowsNoisy(9,0.8,nf),g4=trialG(rc,{avg:false,col:function(r,k){return sc==='same'?'var(--theory)':BLK[(r.a/10+k)%3][2]}});
     if(sc==='swap')BLK.forEach(function(b){g4.curve(function(x){return snell(x,b[1])},0,90,'s-ref')});
