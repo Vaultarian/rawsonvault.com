@@ -502,12 +502,12 @@ CALENDARS = {
         "Programming the micro:bit, to the October break"),
     "physics-8a": (
         VAULT / "01-Teaching/Physics - MYP/Year 8/Calendar"
-              / "y8a-physics-calendar-autumn-1.pdf",
-        "Light and the EM Spectrum, to the October break"),
+              / "y8a-physics-calendar-autumn-2.pdf",
+        "Forces and Motion, to the Christmas break"),
     "physics-8b": (
         VAULT / "01-Teaching/Physics - MYP/Year 8/Calendar"
-              / "y8b-physics-calendar-autumn-1.pdf",
-        "Light and the EM Spectrum, to the October break"),
+              / "y8b-physics-calendar-autumn-2.pdf",
+        "Forces and Motion, to the Christmas break"),
     "physics-9a": (
         VAULT / "01-Teaching/Physics - MYP/Year 9/Calendar"
               / "y9a-physics-calendar-autumn-1.pdf",
