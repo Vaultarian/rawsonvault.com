@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>The Law of Reflection</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:wght@600;700&display=swap">
+<style>
+/* SHELL v1: left sidebar (built from <section class="sec" data-title data-group>), each section = header + .two (figure left, .why right). Shared by the Refraction and Reflection packets. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --ink:#16202e; --ink2:#44536a; --muted:#6a798d;
+  --line:#cbd5e2; --grid:#e3e8ef; --air:#f8fafc; --block:#d9e6f4;
+  --ray:#c62828; --theory:#0f766e; --data:#2455a4; --dots:#a8431f; --fit:#b45f06;
+  --accent:#c97b3a; --accent-bg:#fbf0e4; --good:#1e7a46; --warn:#8f5b00; --bad:#b3261e;
+  --f-display:'Source Serif 4',Georgia,serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --surface:#17212e; --ink:#e6edf5; --ink2:#aab8c9; --muted:#8798ac;
+  --line:#2c3a4c; --grid:#243242; --air:#121b27; --block:#1b334f;
+  --ray:#ff6b6b; --theory:#35c2ae; --data:#86adff; --dots:#ff9a73; --fit:#f0b04a;
+  --accent:#e29a5a; --accent-bg:#2b2119; --good:#5cd08a; --warn:#e8b04a; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --surface:#17212e; --ink:#e6edf5; --ink2:#aab8c9; --muted:#8798ac;
+  --line:#2c3a4c; --grid:#243242; --air:#121b27; --block:#1b334f;
+  --ray:#ff6b6b; --theory:#35c2ae; --data:#86adff; --dots:#ff9a73; --fit:#f0b04a;
+  --accent:#e29a5a; --accent-bg:#2b2119; --good:#5cd08a; --warn:#e8b04a; --bad:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+h1{font:700 26px/1.15 var(--f-display);margin:0 0 4px;text-wrap:balance}
+h2{font:600 22px/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:600 16px/1.3 var(--f-body);margin:14px 0 4px}
+p{margin:0 0 10px;max-width:66ch}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:22px 14px 22px max(16px,env(safe-area-inset-left,0px));border-right:1px solid var(--line);background:var(--surface)}
+.side .brand{font:700 17px/1.2 var(--f-display);margin:0 0 4px}
+.side .meta{font-size:12px;color:var(--muted);margin:0 0 16px}
+.side .grp{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+.side a{display:flex;gap:8px;align-items:baseline;padding:6px 8px;border-radius:6px;color:var(--ink2);text-decoration:none;font-size:14px;border-left:3px solid transparent}
+.side a b{font:500 12px var(--f-mono);color:var(--muted);min-width:22px}
+.side a:hover{background:var(--bg)}
+.side a[aria-current="true"]{background:var(--accent-bg);color:var(--ink);border-left-color:var(--accent)}
+.side a[aria-current="true"] b{color:var(--accent)}
+main{padding:28px max(20px,env(safe-area-inset-right,0px)) 80px 28px;min-width:0;max-width:1060px}
+.sec{padding:8px 0 44px;scroll-margin-top:16px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.sec:last-child{border-bottom:0}
+.sh{display:flex;gap:12px;align-items:baseline;margin-bottom:14px}
+.tag{font:500 13px var(--f-mono);background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:5px}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.vis{margin:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+.why{min-width:0}
+.why .lead{font-size:16px;color:var(--ink);margin-bottom:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.panel svg{display:block;width:100%;height:auto}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--f-body);padding:7px 13px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font:500 13px var(--f-mono);padding:5px 10px;border-radius:999px;cursor:pointer}
+.chip.seen{color:var(--ink);border-color:var(--theory)}
+.chip[aria-pressed="true"]{background:var(--theory);border-color:var(--theory);color:var(--surface)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{appearance:none;border:0;border-right:1px solid var(--line);background:none;color:var(--ink2);font:500 13px var(--f-body);padding:7px 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.readout{display:flex;flex-wrap:wrap;gap:4px 22px;align-items:baseline;font:500 22px var(--f-mono)}
+.readout small{font:400 13px var(--f-body);color:var(--muted);margin-right:6px}
+.readout .t2{color:var(--theory)}
+.note{background:var(--accent-bg);border-left:4px solid var(--accent);padding:10px 12px;border-radius:0 8px 8px 0;max-width:66ch;margin:0 0 10px}
+.note b{font-weight:600}
+.why-box{border:1px solid var(--line);border-left:4px solid var(--theory);background:var(--surface);padding:10px 12px;border-radius:0 8px 8px 0;max-width:66ch;margin:0 0 10px}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+ul.tight{margin:0 0 10px;padding-left:18px} ul.tight li{margin:3px 0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label.f{display:block;font:500 13px var(--f-body);color:var(--ink2);margin-bottom:4px}
+select,input[type=number]{font:500 14px var(--f-mono);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+input[type=number]{width:74px}
+table{border-collapse:collapse;font:500 13px var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl td,.tbl th{padding:4px 8px;border-bottom:1px solid var(--grid);text-align:left}
+.tbl th{color:var(--muted);font-weight:500}
+.strip{overflow-x:auto}
+.strip td,.strip th{border:1px solid var(--line);padding:5px 9px;text-align:center;min-width:50px}
+.strip th{font-weight:500;color:var(--muted);background:var(--bg);text-align:left}
+.strip td.cur{background:var(--accent-bg);outline:2px solid var(--accent);outline-offset:-2px}
+.strip td.off{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.card{appearance:none;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer;font:400 14px/1.35 var(--f-body)}
+.card strong{display:block;font:600 15px var(--f-body)}
+.card span{color:var(--muted);font-size:13px}
+.card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+.yes,.no{border-radius:10px;padding:10px 12px;border:1px solid var(--line);background:var(--surface)}
+.yes{border-left:4px solid var(--good)} .no{border-left:4px solid var(--bad)}
+.hint{font-size:13px;color:var(--muted)}
+.check{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 8px;margin:0;padding:0;list-style:none}
+.check li{display:contents}
+.check .box{font:600 15px/1.3 var(--f-mono)}
+.verdict{font:600 17px var(--f-display);padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--data);outline-offset:2px}
+/* svg classes */
+.grid{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--ink2);stroke-width:1.2}
+.tick{fill:var(--ink2);font:11px var(--f-mono)}
+.atitle{fill:var(--ink2);font:500 12px var(--f-body)}
+.lbl{font:500 12px var(--f-body)}
+.ln{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.s-theory{stroke:var(--theory);stroke-width:2.5}
+.s-dots{stroke:var(--dots);stroke-width:2;stroke-dasharray:5 4}
+.s-fit{stroke:var(--fit);stroke-width:3}
+.s-ref{stroke:var(--muted);stroke-width:2;stroke-dasharray:2 5}
+.s-guide{stroke:var(--accent);stroke-width:1.2;stroke-dasharray:3 3}
+.s-cap{stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.band{fill:var(--theory);opacity:.13}
+.simt{font:500 12px var(--f-body);fill:var(--ink2)}
+.simn{font:500 11px var(--f-mono);fill:var(--muted)}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:0;z-index:20;height:auto;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:8px max(12px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line);align-items:center}
+  .side .brand,.side .meta,.side .grp{display:none}
+  .side a{flex:0 0 auto;white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:6px 6px 0 0}
+  .side a[aria-current="true"]{border-bottom-color:var(--accent)}
+  main{padding:18px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
+  .sec{scroll-margin-top:56px}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+<script>
+/* SHELL v1 init: builds the sidebar from the sections and highlights the one being read. Call initShell(title, subtitle) once at the end of the page script. */
+function initShell(title,meta){
+  var secs=[].slice.call(document.querySelectorAll('.sec')),nav=document.getElementById('toc'),h='<p class="brand">'+title+'</p><p class="meta">'+meta+'</p>',g=null;
+  secs.forEach(function(s){var gr=s.getAttribute('data-group');if(gr&&gr!==g){g=gr;h+='<div class="grp">'+gr+'</div>'}
+    h+='<a href="#'+s.id+'" data-id="'+s.id+'"><b>'+(s.getAttribute('data-tag')||'')+'</b><span>'+s.getAttribute('data-title')+'</span></a>'});
+  nav.innerHTML=h;
+  var links=[].slice.call(nav.querySelectorAll('a'));
+  function mark(id){links.forEach(function(a){var on=a.getAttribute('data-id')===id;if(on)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');if(on&&nav.scrollWidth>nav.clientWidth&&window.innerWidth<=900){try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}})}
+  if('IntersectionObserver' in window){var vis={};var io=new IntersectionObserver(function(es){es.forEach(function(e){vis[e.target.id]=e.isIntersecting?e.intersectionRatio:0});
+    var best=null,bv=0;secs.forEach(function(s){if((vis[s.id]||0)>bv){bv=vis[s.id];best=s.id}});if(best)mark(best)},{rootMargin:'-10% 0px -55% 0px',threshold:[0,.1,.3,.6,1]});
+    secs.forEach(function(s){io.observe(s)})}
+  mark(secs[0].id);
+  nav.addEventListener('click',function(e){var a=e.target.closest('a');if(a)mark(a.getAttribute('data-id'))});
+}
+</script>
+
+<style>
+.foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line);font:12px var(--f-mono);color:var(--muted)}
+.pagehead{margin-bottom:26px}
+.pagehead p{color:var(--ink2);margin:0}
+.lad{width:100%;border-collapse:collapse;font:14px/1.45 var(--f-body)}
+.lad th,.lad td{border:1px solid var(--line);padding:7px 10px;vertical-align:top;text-align:left}
+.lad th{background:var(--bg);font-weight:600}
+.lad td:first-child{font:600 14px var(--f-mono);white-space:nowrap;width:64px}
+.lad tr.on td{background:var(--accent-bg)}
+.lad tr.on td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.kw{background:var(--accent-bg);border-bottom:2px solid var(--accent);padding:0 2px;border-radius:2px}
+.qa{font-size:16px;line-height:1.55;max-width:62ch}
+.cmd{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 10px;font-size:13px;margin:0 0 10px;max-width:66ch}
+.mt{margin-top:4px}
+input[type=range]{-webkit-appearance:none;appearance:none;height:22px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);margin-top:-6px;box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+</style>
+
+</head>
+<body>
+
+<div class="app">
+<nav class="side" id="toc" aria-label="Sections of the packet"></nav>
+<main>
+<header class="pagehead">
+  <h1>The Law of Reflection</h1>
+  <p>Year 8 Physics · Unit 1: Light &amp; EM Spectrum · Mr. Rawson. Work down the packet in order, or use the list on the left to jump to any part.</p>
+</header>
+
+<!-- 1 -->
+<section class="sec" id="two-kinds" data-tag="1" data-title="Two kinds of reflection" data-group="Ideas">
+  <div class="sh"><span class="tag">1</span><h2>Two kinds of reflection</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="panel"><svg id="svg1" viewBox="0 0 460 300" role="img" aria-label="Six parallel rays hitting a surface. Slide the roughness and watch the reflected rays spread out, each obeying the law at its own bump."></svg></div>
+      <div class="row"><span class="hint">Surface:</span><div class="seg" id="pre1"><button data-r="0">Mirror</button><button data-r="6">Paper</button><button data-r="10">Gravel</button></div></div>
+      <div><label class="f" for="rough1">Roughness: <b id="rough1v"></b></label><input type="range" id="rough1" min="0" max="10" step="1" value="0"></div>
+      <div class="chips" id="rays1" aria-label="Choose a ray to measure"></div>
+      <div class="readout" id="read1"></div>
+    </figure>
+    <div class="why">
+      <p class="lead">Light bounces off <b>every</b> surface it lands on. What changes from one surface to the next is which way the reflected rays go.</p>
+      <div class="why-box"><b>A smooth surface: specular reflection.</b> A mirror is flat on the scale that matters to light. Rays that arrive parallel leave parallel, still in formation. The pattern survives the bounce, so your eye can rebuild it and you see an <b>image</b>.</div>
+      <div class="why-box"><b>A rough surface: diffuse reflection.</b> Paper feels smooth but close up it is a landscape of bumps, each one facing a slightly different way. Rays that arrive parallel leave in all directions. The pattern is destroyed, so there is <b>no image</b>, but light still reaches your eye from every part of the page, which is why you can see the paper itself.</div>
+      <div class="note"><b>Every scattered ray still obeys the law.</b> Each tiny bump has its own normal (the dashed lines) pointing its own way, so the same law gives a different answer at every point on the surface. <br><b>Check:</b> choose any ray above. Its <i>i</i> and <i>r</i> match.</div>
+      <p id="cap1" class="hint"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="sec" id="four-labels" data-tag="2" data-title="The four labels" data-group="Ideas">
+  <div class="sh"><span class="tag">2</span><h2>The four labels</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="panel"><svg id="svg2" viewBox="0 0 460 290" role="img" aria-label="The packet diagram: A is the incident ray, B the normal, C the reflected ray, D the mirror."></svg></div>
+      <div class="chips" id="lab2"></div>
+      <div><label class="f" for="i2">Swing the ray: angle of incidence <i>i</i> = <b id="i2v"></b></label><input type="range" id="i2" min="10" max="75" step="1" value="40"></div>
+    </figure>
+    <div class="why">
+      <div class="panel" id="info2"></div>
+      <div class="note mt"><b>Measure both angles from the normal.</b> The normal is a construction line drawn at 90° to the mirror, dashed because it is not a ray of light.<br><b>Check:</b> <i>i</i> and <i>r</i> both start at the dashed line.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="sec" id="one-ray" data-tag="3" data-title="One ray, and why we can draw it" data-group="Ideas">
+  <div class="sh"><span class="tag">3</span><h2>One ray, and why we can draw it</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="panel"><svg id="svg3" viewBox="0 0 460 240" role="img" aria-label="A bulb sends light in every direction. The ray box blocks most of it and a single slit lets one narrow strip through."></svg></div>
+      <div class="row"><div class="seg" id="mode3"><button data-b="0">Bulb on its own</button><button data-b="1">Bulb in the ray box</button></div><button class="btn" id="ray3" aria-pressed="true">Draw it as a ray</button></div>
+      <div><label class="f" for="w3">Slit width: <b id="w3v"></b></label><input type="range" id="w3" min="2" max="16" step="1" value="6"></div>
+    </figure>
+    <div class="why">
+      <p class="lead">The bulb sends light out in <b>every direction</b>. The single slit on the ray box blocks nearly all of it and lets one narrow strip through, so you get one clean straight line you can trace.</p>
+      <p>We draw that line with an arrow on it and call it a <b>ray</b>: a straight line showing the direction light travels. It is a model, not an object you could pick up.</p>
+      <div class="why-box"><b>Check:</b> make the slit narrower. The strip gets thinner and its middle is easier to find, so the line you trace is sharper.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="sec" id="protractor" data-tag="4" data-title="Using a protractor" data-group="Practical">
+  <div class="sh"><span class="tag">4</span><h2>Using a protractor</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="panel"><svg id="svg4" viewBox="0 0 460 275" role="img" aria-label="A protractor with two scales counting opposite ways, centred on the dot, with a ray at the chosen angle."></svg></div>
+      <div class="row"><span class="hint">Baseline laid along:</span><div class="seg" id="mode4"><button data-m="n">The normal</button><button data-m="m">The mirror</button></div></div>
+      <div><label class="f" for="th4">True angle of incidence: <b id="th4v"></b></label><input type="range" id="th4" min="5" max="85" step="1" value="20"></div>
+      <div class="panel"><table class="tbl" id="tbl4" style="width:100%"></table></div>
+    </figure>
+    <div class="why">
+      <p class="lead">A protractor has <b>two scales</b>, counting opposite ways. Only one is right.</p>
+      <ol class="tight"><li><b>Centre mark</b> on your dot.</li><li><b>Baseline</b> along the normal.</li><li>Read the scale that starts at <b>0</b> on your line.</li></ol>
+      <div class="note"><b>If it looks wrong, it probably is.</b> Reading the wrong scale gives 180° minus the true angle (20° reads 160°). Measuring from the mirror gives 90° minus the true angle (20° reads 70°).</div>
+      <div class="why-box"><b>Check:</b> set the true angle to 20° and try both baselines. Only one combination gives a reading of 20°. The other readings tell you what went wrong.</div>
+      <p id="cap4"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="sec" id="practical" data-tag="5" data-title="Measure the law" data-group="Practical">
+  <div class="sh"><span class="tag">5</span><h2>Measure the law</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="panel"><svg id="svg5" viewBox="0 0 460 290" role="img" aria-label="The practical built up one step at a time on the paper."></svg></div>
+      <div class="row"><button class="btn" id="prev5">Back</button><button class="btn primary" id="next5">Next step</button></div>
+      <div class="chips" id="steps5"></div>
+    </figure>
+    <div class="why">
+      <p class="hint" style="margin-bottom:8px"><b>Kit:</b> ray box with a single slit, plane mirror, protractor, ruler, sharp pencil, plain paper.</p>
+      <div class="panel"><div id="cap5"></div></div>
+      <div class="note mt"><b>Care:</b> the lamp gets hot, so carry the box by the case. Never shine it at anyone's eyes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="sec" id="trials" data-tag="6" data-title="Your five trials" data-group="Practical">
+  <div class="sh"><span class="tag">6</span><h2>Your five trials</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="panel"><svg id="svg6" viewBox="0 0 460 290" role="img" aria-label="Mirror diagram for the chosen angle of incidence."></svg></div>
+      <div><label class="f" for="i6">Move the ray box: angle of incidence <i>i</i> = <b id="i6v"></b></label><input type="range" id="i6" min="10" max="80" step="1" value="35"></div>
+      <div class="row"><button class="btn primary" id="rec6">Record trial</button><button class="btn" id="clr6">Start again</button></div>
+      <div class="panel"><table class="tbl" id="tbl6" style="width:100%"></table></div>
+    </figure>
+    <div class="why">
+      <p class="lead">Do each trial in its own box: mirror line, dot, dashed normal, then trace both rays through the dot. Write your two angles underneath.</p>
+      <div class="panel"><svg id="g6" viewBox="0 0 520 380" role="img" aria-label="Graph of angle of reflection against angle of incidence with the line r equals i."></svg></div>
+      <div class="note mt"><b>Expected.</b> In every trial <i>r</i> matches <i>i</i> to within a degree or two. A pair that adds up to 90° (for example 20° and 70°) means the angle was measured from the mirror, so measure again from the normal. A reading over 90° means the other protractor scale was read.</div>
+      <p id="cap6"></p>
+    </div>
+  </div>
+  <h3 style="margin-top:22px">Check a results table</h3>
+  <p class="hint">Type your own pairs, or start from the example. Each row is checked against the law.</p>
+  <div class="panel" style="max-width:640px"><table class="tbl" id="tbl6c" style="width:100%"></table>
+    <div class="row mt"><button class="btn" id="ex6">Example table</button><button class="btn" id="cl6">Clear</button></div></div>
+</section>
+
+<!-- 7 -->
+<section class="sec" id="conclusions" data-tag="7" data-title="Conclusions" data-group="Write-up">
+  <div class="sh"><span class="tag">7</span><h2>Conclusions</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="cards" id="cards7">
+        <button class="card" data-q="0"><strong>1  State</strong><span>the law of reflection</span></button>
+        <button class="card" data-q="1"><strong>2  Describe</strong><span>the pattern in your table</span></button>
+        <button class="card" data-q="2"><strong>3  Explain</strong><span>mirror vs paper</span></button>
+      </div>
+      <div class="panel"><svg id="svg7" viewBox="0 0 460 290" role="img" aria-label="A picture to go with the chosen question."></svg></div>
+    </figure>
+    <div class="why" id="why7"></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="sec" id="extension" data-tag="8" data-title="Extension: predict, then test" data-group="Write-up">
+  <div class="sh"><span class="tag">8</span><h2>Extension: predict, then test</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <h3 style="margin-top:0">A. Raise the angle of incidence by 10°</h3>
+      <div class="panel"><svg id="svg8a" viewBox="0 0 460 250" role="img" aria-label="Incident and reflected rays with the angle between them marked."></svg></div>
+      <div class="row"><button class="btn primary" id="up8">Add 10° to <i>i</i></button><button class="btn" id="dn8">Take 10° off</button></div>
+      <div class="readout" id="read8a" style="font-size:18px"></div>
+      <h3>B. Tilt the mirror by 10°, ray box still</h3>
+      <div class="panel"><svg id="svg8b" viewBox="0 0 460 250" role="img" aria-label="A mirror tilting while the incident ray stays still, with the reflected ray swinging twice as far."></svg></div>
+      <div class="row"><button class="btn primary" id="tl8">Tilt 10°</button><button class="btn" id="tr8">Tilt back</button></div>
+      <div><label class="f" for="t8">Mirror tilt: <b id="t8v"></b></label><input type="range" id="t8" min="-20" max="20" step="1" value="0"></div>
+      <div class="readout" id="read8b" style="font-size:18px"></div>
+    </figure>
+    <div class="why">
+      <div class="note"><b>Predict, then test.</b> If the angle of incidence goes up by 10°, what happens to the angle <i>between</i> the incident ray and the reflected ray? And if you keep the ray still but tilt the <i>mirror</i> by 10°, what does the reflected ray do? Write your prediction, then try both with your kit.</div>
+      <div class="why-box"><b>A.</b> The angle between the rays is <i>i</i> + <i>r</i> = 2<i>i</i>, so it grows by 20°. Press the button and watch the number.</div>
+      <div class="why-box"><b>B.</b> Tilting the mirror by 10° swings the reflected ray by 20°. The normal tilts with the mirror, which changes both <i>i</i> and <i>r</i>.</div>
+      <p class="hint">Both results come from the same law. The ray bends away from the normal by the same amount on each side, so any change to the mirror counts twice.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="sec" id="criterion-a" data-tag="9" data-title="Criterion A: the verbs ladder" data-group="Write-up">
+  <div class="sh"><span class="tag">9</span><h2>Criterion A: Knowing and understanding</h2></div>
+  <div class="two">
+    <figure class="vis">
+      <div class="row"><span class="hint">Look at level:</span><div class="seg" id="lv9"><button data-l="0">0</button><button data-l="1">1–2</button><button data-l="2">3–4</button><button data-l="3">5–6</button><button data-l="4">7–8</button></div></div>
+      <div style="overflow-x:auto"><table class="lad" id="lad9"></table></div>
+      <p class="hint">Wording taken verbatim from the <i>MYP Sciences guide</i> (2015), assessment criteria Year 3, Criterion A. Bold emphasis added to show what changes between levels.</p>
+    </figure>
+    <div class="why">
+      <p class="lead">This task is <b>formative</b>. It does not go on your report. We are practising the writing, and this is the standard we are practising against. Your three answers (State, Describe, Explain) are the evidence.</p>
+      <p>Read down the right-hand column. The <b>verb</b> gets more demanding each time, and the situations go from <b>familiar</b> to <b>unfamiliar</b>.</p>
+      <h3>Question 3, three ways to answer it</h3>
+      <p class="hint">Examples for comparison only. No marks are claimed for them.</p>
+      <div class="seg" id="ex9"><button data-e="0">Example A</button><button data-e="1">Example B</button><button data-e="2">Example C</button></div>
+      <div class="panel mt"><p class="qa" id="ans9"></p><p class="hint" id="why9" style="margin:0"></p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">Year 8 Physics · Unit 1: Light &amp; EM Spectrum · St Leonards</footer>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var RAD=Math.PI/180;
+function $(id){return document.getElementById(id)}
+function f0(v){return String(Math.round(v))}
+function f1(v){return (Math.round(v*10)/10).toFixed(1)}
+function rng(seed){var a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){var u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function iv(t){return '<tspan font-style="italic" font-family="Source Serif 4,Georgia,serif" font-size="15">'+t+'</tspan>'}
+var DEFS='<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ray)"/></marker></defs>';
+function bg(w,h){return '<rect width="'+w+'" height="'+h+'" fill="var(--surface)"/>'}
+function motionOK(){try{return !window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return true}}
+
+/* ---------- the packet diagram ---------- */
+function mirrorSVG(o){
+  var i=o.i,r=o.r==null?o.i:o.r,cx=230,cy=230,L=185,si=Math.sin(i*RAD),ci=Math.cos(i*RAD),sr=Math.sin(r*RAD),cr=Math.cos(r*RAD),hl=o.hl||'',s=DEFS+bg(460,290);
+  for(var x=56;x<=404;x+=14)s+='<line x1="'+x+'" y1="230" x2="'+(x-9)+'" y2="243" stroke="var(--ink2)" stroke-width="1"/>';
+  var Sx=cx-L*si,Sy=cy-L*ci,Ex=cx+L*sr,Ey=cy-L*cr;
+  if(hl==='D')s+='<line x1="50" y1="230" x2="410" y2="230" stroke="var(--accent)" stroke-width="14" opacity=".35" stroke-linecap="round"/>';
+  if(hl==='B')s+='<line x1="'+cx+'" y1="230" x2="'+cx+'" y2="38" stroke="var(--accent)" stroke-width="14" opacity=".35" stroke-linecap="round"/>';
+  if(hl==='A')s+='<line x1="'+Sx+'" y1="'+Sy+'" x2="'+cx+'" y2="'+cy+'" stroke="var(--accent)" stroke-width="14" opacity=".35" stroke-linecap="round"/>';
+  if(hl==='C')s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+Ex+'" y2="'+Ey+'" stroke="var(--accent)" stroke-width="14" opacity=".35" stroke-linecap="round"/>';
+  s+='<line x1="50" y1="230" x2="410" y2="230" stroke="var(--ink)" stroke-width="3"/>';
+  s+='<line x1="'+cx+'" y1="230" x2="'+cx+'" y2="38" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="6 5"/>';
+  var m1x=cx-100*si,m1y=cy-100*ci,m2x=cx+110*sr,m2y=cy-110*cr;
+  s+='<line x1="'+Sx+'" y1="'+Sy+'" x2="'+m1x+'" y2="'+m1y+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+m1x+'" y1="'+m1y+'" x2="'+cx+'" y2="'+cy+'" stroke="var(--ray)" stroke-width="2.6"/>';
+  s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+m2x+'" y2="'+m2y+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+m2x+'" y1="'+m2y+'" x2="'+Ex+'" y2="'+Ey+'" stroke="var(--ray)" stroke-width="2.6"/>';
+  if(o.arcs!==false){
+    s+='<path d="M '+cx+' 160 A 70 70 0 0 0 '+(cx-70*si)+' '+(cy-70*ci)+'" fill="none" stroke="var(--ink)" stroke-width="1.6"/>';
+    s+='<path d="M '+cx+' 160 A 70 70 0 0 1 '+(cx+70*sr)+' '+(cy-70*cr)+'" fill="none" stroke="var(--theory)" stroke-width="1.8"/>';
+    s+='<text x="'+(cx-90*Math.sin(i*RAD/2)-(i<22?6:0))+'" y="'+(cy-90*Math.cos(i*RAD/2)+4)+'" text-anchor="middle" fill="var(--ink)">'+iv('i')+'</text>';
+    s+='<text x="'+(cx+90*Math.sin(r*RAD/2)+(r<22?6:0))+'" y="'+(cy-90*Math.cos(r*RAD/2)+4)+'" text-anchor="middle" fill="var(--theory)">'+iv('r')+'</text>';
+  }
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--ink)"/>';
+  if(o.letters){var pos={A:[cx-(L+20)*si,cy-(L+20)*ci],B:[cx+16,28],C:[cx+(L+20)*sr,cy-(L+20)*cr],D:[44,262]};
+    ['A','B','C','D'].forEach(function(k){var p=pos[k],on=hl===k;
+      s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="12" fill="'+(on?'var(--accent-bg)':'var(--surface)')+'" stroke="'+(on?'var(--accent)':'var(--ink)')+'" stroke-width="'+(on?3:1.6)+'"/><text x="'+p[0]+'" y="'+(p[1]+4.5)+'" text-anchor="middle" class="lbl" fill="var(--ink)" font-weight="600">'+k+'</text>'})}
+  return s}
+
+/* ---------- 1: smooth and rough ---------- */
+var SG=[0.9,-0.6,0.35,-1,0.7,-0.25];
+function field(rough,ox,oy,w,n,sel,cid){
+  var I=35,d=[Math.sin(I*RAD),Math.cos(I*RAD)],sp=w/n,fl=Math.min(sp-8,40),pts=[[ox,oy]],rays='',norms='',info=[],k;
+  for(k=0;k<n;k++){
+    var al=SG[k%SG.length]*rough*3.5*RAD,hx=ox+(k+0.5)*sp,hy=oy,nx=Math.sin(al),ny=-Math.cos(al),dn=d[0]*nx+d[1]*ny,rx=d[0]-2*dn*nx,ry=d[1]-2*dn*ny,ex=Math.cos(al)*fl/2,ey=Math.sin(al)*fl/2;
+    pts.push([hx-ex,hy-ey],[hx+ex,hy+ey]);
+    var on=(k===sel),sw=on?3.6:2;
+    rays+='<line x1="'+(hx-d[0]*125)+'" y1="'+(hy-d[1]*125)+'" x2="'+hx+'" y2="'+hy+'" stroke="var(--ray)" stroke-width="'+sw+'" marker-end="url(#ah)"/>';
+    rays+='<line x1="'+hx+'" y1="'+hy+'" x2="'+(hx+rx*105)+'" y2="'+(hy+ry*105)+'" stroke="var(--ray)" stroke-width="'+sw+'" marker-end="url(#ah)"/>';
+    norms+='<line x1="'+hx+'" y1="'+hy+'" x2="'+(hx+nx*40)+'" y2="'+(hy+ny*40)+'" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="4 3"/>';
+    info.push({i:Math.acos(-dn)/RAD,r:Math.acos(rx*nx+ry*ny)/RAD,dir:Math.atan2(-ry,rx)/RAD});
+  }
+  pts.push([ox+w,oy]);
+  var line=pts.map(function(p,j){return (j?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join('');
+  var svg='<clipPath id="'+cid+'"><rect x="'+ox+'" y="0" width="'+w+'" height="'+(oy+20)+'"/></clipPath>'+
+    '<path d="'+line+'L'+(ox+w)+' '+(oy+16)+'L'+ox+' '+(oy+16)+'Z" fill="var(--block)"/>'+
+    '<g clip-path="url(#'+cid+')">'+norms+rays+'</g><path d="'+line+'" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>';
+  return {svg:svg,info:info}}
+var s1={rough:0,sel:2};
+function r1(){
+  var f=field(s1.rough,20,222,420,6,s1.sel,'cp1');
+  $('svg1').innerHTML=DEFS+bg(460,300)+f.svg+'<text x="24" y="262" class="simt">'+(s1.rough===0?'smooth surface':s1.rough<5?'slightly rough surface':'rough surface')+'</text><text x="24" y="280" class="simn">dashed lines: the normal at each point</text>';
+  $('rough1').value=s1.rough;$('rough1v').textContent=s1.rough;
+  Array.prototype.forEach.call(document.querySelectorAll('#pre1 button'),function(b){b.setAttribute('aria-pressed',+b.dataset.r===s1.rough)});
+  var h='';for(var k=0;k<6;k++)h+='<button class="chip" data-k="'+k+'" aria-pressed="'+(k===s1.sel)+'">Ray '+(k+1)+'</button>';$('rays1').innerHTML=h;
+  var inf=f.info[s1.sel],dirs=f.info.map(function(d){return d.dir}),sp=Math.max.apply(null,dirs)-Math.min.apply(null,dirs);
+  $('read1').innerHTML='<span><small>ray '+(s1.sel+1)+':</small><i>i</i> = '+f0(inf.i)+'°</span><span class="t2"><i>r</i> = '+f0(inf.r)+'°</span><span style="font-size:15px"><small>reflected rays fan out over</small>'+f0(sp)+'°</span>';
+  $('cap1').textContent=s1.rough===0?'Parallel rays leave parallel, the pattern survives, and you see an image.':s1.rough<5?'The rays begin to spread. The image blurs.':'The rays leave in every direction. There is no image, yet light still reaches your eye from every part of the surface.'}
+
+/* ---------- 2: four labels ---------- */
+var LAB={A:['A = incident ray','The ray travelling towards the mirror. It carries an arrow because a ray shows the direction light travels.'],
+  B:['B = the normal','A construction line at 90° to the mirror. It is dashed because it is not a ray of light. Both angles are measured from it.'],
+  C:['C = reflected ray','The ray leaving the mirror, with an arrow of its own. It leaves at the same angle from the normal as the incident ray arrived.'],
+  D:['D = mirror','The reflecting surface. It is drawn as a solid line, with hatching on the back to show which side is the mirror.']};
+var s2={k:'A',i:40};
+function r2(){
+  $('svg2').innerHTML=mirrorSVG({i:s2.i,hl:s2.k,letters:true});
+  $('i2').value=s2.i;$('i2v').textContent=s2.i+'°';
+  var h='';['A','B','C','D'].forEach(function(k){h+='<button class="chip" data-k="'+k+'" aria-pressed="'+(k===s2.k)+'">'+k+'</button>'});$('lab2').innerHTML=h;
+  $('info2').innerHTML='<h3 style="margin-top:0">'+LAB[s2.k][0]+'</h3><p style="margin:0">'+LAB[s2.k][1]+'</p>'}
+
+/* ---------- 3: one ray ---------- */
+var s3={box:1,ray:true,w:6};
+function r3(){
+  var cx=130,cy=120,half=60,w=s3.w,s=DEFS+bg(460,240),a;
+  for(a=0;a<360;a+=20){var c=Math.cos(a*RAD),sn=Math.sin(a*RAD),t=s3.box?half/Math.max(Math.abs(c),Math.abs(sn)):105,pass=s3.box&&c>0.01&&Math.abs(half*sn/c)<=w/2;
+    if(!pass)s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+c*t)+'" y2="'+(cy+sn*t)+'" stroke="var(--ray)" stroke-width="1.6" opacity=".5"/>'}
+  if(s3.box){
+    s+='<path d="M190 '+(cy-half)+' L70 '+(cy-half)+' L70 '+(cy+half)+' L190 '+(cy+half)+'" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/>';
+    s+='<line x1="190" y1="'+(cy-half)+'" x2="190" y2="'+(cy-w/2)+'" stroke="var(--ink)" stroke-width="6"/><line x1="190" y1="'+(cy+w/2)+'" x2="190" y2="'+(cy+half)+'" stroke="var(--ink)" stroke-width="6"/>';
+    s+='<rect x="190" y="'+(cy-w/2)+'" width="250" height="'+w+'" fill="var(--ray)" opacity=".28"/>';
+    if(s3.ray)s+='<line x1="190" y1="'+cy+'" x2="440" y2="'+cy+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/>';
+    s+='<text x="76" y="'+(cy-half-10)+'" class="simt">ray box</text><text x="196" y="'+(cy-half-10)+'" class="simt">single slit</text>';
+    s+='<text x="310" y="'+(cy-18)+'" class="simt" fill="var(--ray)">'+(s3.ray?'one ray':'one narrow strip of light')+'</text>';
+  }else{s+='<text x="'+(cx-56)+'" y="'+(cy+92)+'" class="simt">light goes everywhere</text>'}
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="var(--fit)" stroke="var(--ink)" stroke-width="1.5"/><text x="'+(cx-12)+'" y="'+(cy+26)+'" class="simn">bulb</text>';
+  $('svg3').innerHTML=s;$('w3v').textContent=w+' px';
+  Array.prototype.forEach.call(document.querySelectorAll('#mode3 button'),function(b){b.setAttribute('aria-pressed',+b.dataset.b===s3.box)});
+  $('ray3').setAttribute('aria-pressed',s3.ray)}
+
+/* ---------- 4: protractor ---------- */
+var s4={th:20,m:'n'};
+function pt(cx,cy,r,a){return [cx+r*Math.cos(a*RAD),cy-r*Math.sin(a*RAD)]}
+function r4(){
+  var cx=230,cy=238,R=170,th=s4.th,phi=s4.m==='n'?th:90-th,s=DEFS+bg(460,275),a,p,q,i;
+  if(s4.m==='n'){
+    s+='<line x1="40" y1="'+cy+'" x2="420" y2="'+cy+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="6 5"/><text x="44" y="'+(cy+18)+'" class="simn">the normal (baseline lies along it)</text>';
+    for(i=44;i<=222;i+=14)s+='<line x1="'+cx+'" y1="'+i+'" x2="'+(cx-10)+'" y2="'+(i+9)+'" stroke="var(--ink2)"/>';
+    s+='<line x1="'+cx+'" y1="30" x2="'+cx+'" y2="'+cy+'" stroke="var(--ink)" stroke-width="3"/><text x="'+(cx+8)+'" y="40" class="simn">mirror</text>';
+  }else{
+    for(i=44;i<=416;i+=14)s+='<line x1="'+i+'" y1="'+cy+'" x2="'+(i-9)+'" y2="'+(cy+11)+'" stroke="var(--ink2)"/>';
+    s+='<line x1="40" y1="'+cy+'" x2="420" y2="'+cy+'" stroke="var(--ink)" stroke-width="3"/><text x="44" y="'+(cy-6)+'" class="simn">mirror (baseline lies along it)</text>';
+    s+='<line x1="'+cx+'" y1="30" x2="'+cx+'" y2="'+cy+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="6 5"/><text x="'+(cx+8)+'" y="40" class="simn">normal</text>';
+  }
+  s+='<path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 1 '+(cx+R)+' '+cy+' Z" fill="var(--air)" fill-opacity=".72" stroke="var(--ink2)" stroke-width="1.5"/>';
+  for(a=0;a<=180;a+=5){var big=a%10===0,len=big?12:6;p=pt(cx,cy,R-len,a);q=pt(cx,cy,R,a);s+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="var(--ink2)" stroke-width="'+(big?1.2:.8)+'"/>'}
+  for(a=0;a<=180;a+=20){var dy=(a===0||a===180)?-7:4;p=pt(cx,cy,R-26,a);s+='<text x="'+p[0]+'" y="'+(p[1]+dy)+'" text-anchor="middle" class="tick" fill="var(--ink)">'+(180-a)+'</text>';
+    q=pt(cx,cy,R-44,a);s+='<text x="'+q[0]+'" y="'+(q[1]+dy)+'" text-anchor="middle" class="tick" fill="var(--accent)" font-weight="600">'+a+'</text>'}
+  s+='<line x1="'+cx+'" y1="'+(cy-8)+'" x2="'+cx+'" y2="'+(cy+2)+'" stroke="var(--ink)" stroke-width="2"/>';
+  var e=pt(cx,cy,205,phi),m=pt(cx,cy,110,phi);
+  s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+m[0]+'" y2="'+m[1]+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+m[0]+'" y1="'+m[1]+'" x2="'+e[0]+'" y2="'+e[1]+'" stroke="var(--ray)" stroke-width="2.6"/>';
+  var ko=pt(cx,cy,R-44,phi),kb=pt(cx,cy,R-26,phi);
+  s+='<circle cx="'+ko[0]+'" cy="'+ko[1]+'" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="1.5"/><circle cx="'+kb[0]+'" cy="'+kb[1]+'" r="4" fill="var(--ink)" stroke="var(--surface)" stroke-width="1.5"/>';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--ink)"/>';
+  $('svg4').innerHTML=s;
+  $('th4').value=th;$('th4v').textContent=th+'°';
+  Array.prototype.forEach.call(document.querySelectorAll('#mode4 button'),function(b){b.setAttribute('aria-pressed',b.dataset.m===s4.m)});
+  var orange=phi,black=180-phi,okO=Math.abs(orange-th)<0.5,okB=Math.abs(black-th)<0.5;
+  $('tbl4').innerHTML='<tr><th>Scale</th><th>Reads</th><th>True angle is '+th+'°</th></tr>'+
+   '<tr><td style="color:var(--accent);font-weight:600">Orange (0 at the right)</td><td>'+f0(orange)+'°</td><td class="'+(okO?'good':'bad')+'">'+(okO?'✓ correct':'✗ '+(s4.m==='m'?'90° minus the true angle':'wrong value'))+'</td></tr>'+
+   '<tr><td>Black (0 at the left)</td><td>'+f0(black)+'°</td><td class="'+(okB?'good':'bad')+'">'+(okB?'✓ correct':'✗ '+(s4.m==='n'?'180° minus the true angle':'wrong value'))+'</td></tr>';
+  $('cap4').innerHTML=s4.m==='n'?'<b>Baseline on the normal.</b> The scale that starts at 0 on your line is the orange one, and it reads '+th+'°. The black scale reads '+f0(180-th)+'°, which is 180° minus the true angle.':'<b>Baseline on the mirror.</b> Both scales now read something other than '+th+'°: the orange scale gives '+f0(90-th)+'°, which is 90° minus the true angle. Turn the protractor so the baseline lies along the normal, then read again.'}
+
+/* ---------- 5: the practical ---------- */
+var STEP=[
+ ['Stand the mirror on the paper. Rule a line along the front of it: the <b>mirror line</b>.','The line runs right along the front edge of the mirror.'],
+ ['Mark a <b>dot</b> on that line, near the middle.','The dot sits on the mirror line.'],
+ ['With the protractor, rule a line at 90° to the mirror line through the dot. Make it <b>dashed</b> and label it <b>the normal</b>.','The normal crosses the mirror line exactly at your dot.'],
+ ['Shine the ray box so the ray hits <b>the dot</b>. Trace the ray going in and the ray coming out.','Both rays pass through the dot.'],
+ ['Measure <b>both</b> angles from the normal. Record them.','Both angles start at the dashed line.'],
+ ['Move the ray box to a new angle and repeat.','Each trial has its own box and its own pair of angles.']];
+var s5={n:0};
+function r5(){
+  var cx=230,cy=230,L=185,n=s5.n+1,s=DEFS+bg(460,290),i=35,si=Math.sin(i*RAD),ci=Math.cos(i*RAD),x;
+  s+='<rect x="30" y="20" width="400" height="250" rx="6" fill="var(--air)" stroke="var(--line)"/><text x="40" y="38" class="simn">paper</text>';
+  s+='<rect x="60" y="233" width="340" height="12" fill="var(--ink2)"/><text x="68" y="262" class="simn">mirror</text>';
+  if(n>=1){s+='<line x1="50" y1="230" x2="410" y2="230" stroke="var(--ink)" stroke-width="1.6"/><text x="330" y="222" class="simt">mirror line</text>'}
+  if(n>=2){s+='<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="var(--ink)"/><text x="238" y="248" class="simt">dot</text>'}
+  if(n>=3){s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+cx+'" y2="48" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="6 5"/><text x="'+(cx+8)+'" y="58" class="simt">the normal</text>'}
+  if(n>=6){var j=55,sj=Math.sin(j*RAD),cj=Math.cos(j*RAD);
+    s+='<line x1="'+(cx-L*sj)+'" y1="'+(cy-L*cj)+'" x2="'+cx+'" y2="'+cy+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/><line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+L*sj)+'" y2="'+(cy-L*cj)+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>';
+    s+='<text x="'+(cx-L*sj+4)+'" y="'+(cy-L*cj-8)+'" class="simn">trial 2</text>'}
+  if(n>=4){var Sx=cx-L*si,Sy=cy-L*ci,Ex=cx+L*si,Ey=cy-L*ci,mx=cx-100*si,my=cy-100*ci,nx=cx+110*si,ny=cy-110*ci;
+    s+='<line x1="'+Sx+'" y1="'+Sy+'" x2="'+mx+'" y2="'+my+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+mx+'" y1="'+my+'" x2="'+cx+'" y2="'+cy+'" stroke="var(--ray)" stroke-width="2.6"/>';
+    s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+nx+'" y2="'+ny+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+nx+'" y1="'+ny+'" x2="'+Ex+'" y2="'+Ey+'" stroke="var(--ray)" stroke-width="2.6"/>';
+    var ang=Math.atan2(ci,si)/RAD*-1+0;var bx=Sx-20*si,by=Sy-20*ci;
+    s+='<g transform="translate('+bx+' '+by+') rotate('+(Math.atan2(ci,si)/RAD)+')"><rect x="-22" y="-9" width="44" height="18" rx="3" fill="var(--ink2)"/><circle cx="22" cy="0" r="5" fill="var(--ray)"/></g>';
+    s+='<text x="'+(bx-34)+'" y="'+(by-14)+'" class="simt">ray box</text>'}
+  if(n>=5){s+='<path d="M '+cx+' 160 A 70 70 0 0 0 '+(cx-70*si)+' '+(cy-70*ci)+'" fill="none" stroke="var(--ink)" stroke-width="1.6"/><path d="M '+cx+' 160 A 70 70 0 0 1 '+(cx+70*si)+' '+(cy-70*ci)+'" fill="none" stroke="var(--theory)" stroke-width="1.8"/>';
+    s+='<text x="'+(cx-94*Math.sin(i*RAD/2))+'" y="'+(cy-94*Math.cos(i*RAD/2)+4)+'" text-anchor="middle" fill="var(--ink)">'+iv('i = 35°')+'</text><text x="'+(cx+98*Math.sin(i*RAD/2))+'" y="'+(cy-94*Math.cos(i*RAD/2)+4)+'" text-anchor="middle" fill="var(--theory)">'+iv('r = 35°')+'</text>'}
+  $('svg5').innerHTML=s;
+  var h='';for(var k=0;k<6;k++)h+='<button class="chip" data-k="'+k+'" aria-pressed="'+(k===s5.n)+'">'+(k+1)+'</button>';$('steps5').innerHTML=h;
+  $('cap5').innerHTML='<p class="hint" style="margin:0 0 4px">Step '+n+' of 6</p><p class="lead" style="margin:0 0 8px">'+STEP[s5.n][0]+'</p><p class="good" style="margin:0"><b>Check:</b> '+STEP[s5.n][1]+'</p>';
+  $('prev5').disabled=s5.n===0;$('next5').disabled=s5.n===5}
+
+/* ---------- graph builder ---------- */
+function G(){
+  var W=520,H=380,m={l:54,r:20,t:16,b:50},xm=90,ym=90;
+  var g={X:function(v){return m.l+(W-m.l-m.r)*v/xm},Y:function(v){return H-m.b-(H-m.t-m.b)*v/ym},o:''},v;
+  for(v=0;v<=xm;v+=10){g.o+='<line x1="'+g.X(v)+'" y1="'+g.Y(0)+'" x2="'+g.X(v)+'" y2="'+g.Y(ym)+'" class="grid"/><text x="'+g.X(v)+'" y="'+(g.Y(0)+16)+'" text-anchor="middle" class="tick">'+v+'</text>';
+    g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(v)+'" x2="'+g.X(xm)+'" y2="'+g.Y(v)+'" class="grid"/><text x="'+(g.X(0)-8)+'" y="'+(g.Y(v)+4)+'" text-anchor="end" class="tick">'+v+'</text>'}
+  g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(0)+'" x2="'+g.X(xm)+'" y2="'+g.Y(0)+'" class="axis"/><line x1="'+g.X(0)+'" y1="'+g.Y(0)+'" x2="'+g.X(0)+'" y2="'+g.Y(ym)+'" class="axis"/>';
+  g.o+='<text x="'+((g.X(0)+g.X(xm))/2)+'" y="'+(H-10)+'" text-anchor="middle" class="atitle">Angle of incidence '+iv('i')+' / degrees</text>';
+  g.o+='<text transform="translate(14 '+((g.Y(0)+g.Y(ym))/2)+') rotate(-90)" text-anchor="middle" class="atitle">Angle of reflection '+iv('r')+' / degrees</text>';
+  g.line=function(x0,y0,x1,y1,cls){g.o+='<line x1="'+g.X(x0)+'" y1="'+g.Y(y0)+'" x2="'+g.X(x1)+'" y2="'+g.Y(y1)+'" class="ln '+cls+'"/>'};
+  g.dot=function(x,y,r,fill,tip){g.o+='<circle cx="'+g.X(x)+'" cy="'+g.Y(y)+'" r="'+r+'" fill="'+fill+'" stroke="var(--surface)" stroke-width="1.5"><title>'+tip+'</title></circle>'};
+  g.text=function(x,y,t,fill){g.o+='<text x="'+g.X(x)+'" y="'+g.Y(y)+'" class="lbl" fill="'+fill+'">'+t+'</text>'};
+  g.end=function(id){$(id).innerHTML=g.o};
+  return g}
+
+/* ---------- 6: five trials ---------- */
+var s6={i:35,rows:[],seed:1};
+function r6(){
+  $('svg6').innerHTML=mirrorSVG({i:s6.i});
+  $('i6').value=s6.i;$('i6v').textContent=s6.i+'°';
+  var full=s6.rows.length>=5;$('rec6').disabled=full;
+  var t='<tr><th>Trial</th><th><i>i</i> / °</th><th><i>r</i> / °</th><th>r − i</th></tr>';
+  for(var k=0;k<5;k++){var w=s6.rows[k];t+='<tr><td>'+(k+1)+'</td><td>'+(w?w.i:'')+'</td><td>'+(w?w.r:'')+'</td><td>'+(w?(w.r-w.i>0?'+':'')+(w.r-w.i):'')+'</td></tr>'}
+  $('tbl6').innerHTML=t;
+  var g=G();g.line(0,0,90,90,'s-theory');g.text(46,52,'r = i','var(--theory)');
+  s6.rows.forEach(function(w){g.dot(w.i,w.r,5.5,'var(--data)','i '+w.i+'°, r '+w.r+'°')});
+  g.end('g6');
+  var mx=0;s6.rows.forEach(function(w){mx=Math.max(mx,Math.abs(w.r-w.i))});
+  $('cap6').innerHTML=!s6.rows.length?'Press <b>Record trial</b> to take a reading at the angle you chose, then move the ray box and take another.':(full?'<b class="good">Five trials recorded.</b> Every <i>r</i> is within '+mx+'° of <i>i</i>, so the points lie on the line <i>r</i> = <i>i</i>. Draw a straight line through the points; it passes through (0, 0).':s6.rows.length+' of 5 recorded. Choose a new angle for the next trial.')}
+function rec6(){if(s6.rows.length>=5)return;var r=rng(s6.seed*977+s6.rows.length*31+s6.i),d=Math.max(-1,Math.min(1,Math.round(gauss(r)*0.7)));s6.rows.push({i:s6.i,r:s6.i+d});r6()}
+
+var CT=[[20,20],[35,36],[45,45],[60,30],[25,155]];
+function verdict(i,r){
+  if(i==null||r==null||isNaN(i)||isNaN(r))return ['',''];
+  if(Math.abs(r-i)<=2)return ['good','✓ r matches i'];
+  if(r>90)return ['bad','✗ over 90°: the other protractor scale was read'+(Math.abs(r-(180-i))<=3?' (this is 180° − i)':'')+'. Read the scale that starts at 0 on the normal.'];
+  if(Math.abs(i+r-90)<=2)return ['bad','✗ i + r is about 90°: measured from the mirror. Measure again from the normal.'];
+  if(Math.abs(r-(180-i))<=3)return ['bad','✗ this is 180° − i: the other scale was read.'];
+  return ['warn','r differs from i by '+f0(Math.abs(r-i))+'°. Measure again from the normal.']}
+function r6c(){
+  var t='<tr><th><i>i</i> / °</th><th><i>r</i> / °</th><th>Check</th></tr>';
+  CT.forEach(function(p,k){var v=verdict(p[0],p[1]);t+='<tr><td><input type="number" id="ci'+k+'" value="'+(p[0]==null?'':p[0])+'" aria-label="Angle of incidence, row '+(k+1)+'"></td><td><input type="number" id="cr'+k+'" value="'+(p[1]==null?'':p[1])+'" aria-label="Angle of reflection, row '+(k+1)+'"></td><td class="'+v[0]+'" id="cv'+k+'">'+v[1]+'</td></tr>'});
+  $('tbl6c').innerHTML=t}
+function upd6c(k){var v=verdict(CT[k][0],CT[k][1]);var c=$('cv'+k);c.className=v[0];c.textContent=v[1]}
+
+/* ---------- 7: conclusions ---------- */
+var CMD=['<b>State:</b> Give a specific name, value or other brief answer without explanation or calculation.','<b>Describe:</b> Give a detailed account or picture of a situation, event, pattern or process.','<b>Explain:</b> Give a detailed account including reasons or causes.'];
+var QT=['State the law of reflection.','Describe the pattern in your results table.','Explain why you can see your face in a mirror but not in a sheet of paper. Use the words <i>specular</i> and <i>diffuse</i>.'];
+var MA=['The angle of incidence is equal to the angle of reflection, <i>i</i> = <i>r</i>, with both angles measured from the normal.',
+ 'Whatever the angle of incidence, the angle of reflection is the same as it, to within a degree or two. As <i>i</i> increases from 20° to 60°, <i>r</i> increases with it, staying equal every time.',
+ 'A mirror is smooth, so reflection is <b>specular</b>: rays that arrive together leave together, and the pattern of light from your face is kept, making an image. Paper is rough, so reflection is <b>diffuse</b>: each ray hits a surface at a different angle and the rays scatter in all directions. The light still reflects, and that is why you can see the paper, but the pattern is scrambled, so there is no image.'];
+var WHY7=['Short and exact. The command word <b>State</b> asks for the fact alone, with no reasons attached.','Say what the numbers do, using values from your table. <b>Describe</b> asks for the pattern, so give a detailed account of it.','Give the cause, in two steps: smooth or rough surface, then what that does to the rays. <b>Explain</b> needs reasons, and the key words show you know the idea.'];
+var s7={q:0};
+function r7(){
+  Array.prototype.forEach.call(document.querySelectorAll('#cards7 .card'),function(b){b.setAttribute('aria-pressed',+b.dataset.q===s7.q)});
+  var q=s7.q,s;
+  if(q===0){s=mirrorSVG({i:40})+'<text x="24" y="40" fill="var(--ink)" font-size="22">'+iv('i')+' = '+iv('r')+'</text>'}
+  else if(q===1){var g=G();g.line(0,0,90,90,'s-theory');[20,30,40,50,60].forEach(function(v){g.dot(v,v,5.5,'var(--data)','i '+v+'°, r '+v+'°')});g.text(46,52,'r = i','var(--theory)');
+    $('why7').innerHTML='';s=null;g.end('svg7');$('svg7').setAttribute('viewBox','0 0 520 380')}
+  else{var a=field(0,16,185,200,4,-1,'cp7a'),b=field(8,244,185,200,4,-1,'cp7b');
+    s=DEFS+bg(460,260)+a.svg+b.svg+'<text x="16" y="222" class="simt" font-weight="600">Mirror: specular</text><text x="16" y="240" class="simn">rays stay in formation: an image</text><text x="244" y="222" class="simt" font-weight="600">Paper: diffuse</text><text x="244" y="240" class="simn">rays scatter: no image</text>'}
+  if(s!==null){$('svg7').setAttribute('viewBox',q===2?'0 0 460 260':'0 0 460 290');$('svg7').innerHTML=(q===0?s:s)}
+  $('why7').innerHTML='<p class="hint" style="margin:0 0 6px">Question '+(q+1)+'</p><p class="lead" style="margin:0 0 8px">'+QT[q]+'</p><div class="cmd">'+CMD[q]+'</div><h3 style="margin-top:0">Model answer</h3><div class="why-box qa">'+MA[q]+'</div><p>'+WHY7[q]+'</p><div class="row"><button class="btn primary" id="nx7"'+(q===2?' disabled':'')+'>Next question</button></div>'}
+
+/* ---------- 8: extension ---------- */
+var s8={i:30,prev:null},s8b={t:0},anim=null;
+function r8a(){
+  var i=s8.i,cx=230,cy=200,L=170,si=Math.sin(i*RAD),ci=Math.cos(i*RAD),s=DEFS+bg(460,250),k;
+  for(var x=56;x<=404;x+=14)s+='<line x1="'+x+'" y1="200" x2="'+(x-9)+'" y2="212" stroke="var(--ink2)"/>';
+  s+='<line x1="50" y1="200" x2="410" y2="200" stroke="var(--ink)" stroke-width="3"/><line x1="'+cx+'" y1="200" x2="'+cx+'" y2="26" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="6 5"/>';
+  s+='<line x1="'+(cx-L*si)+'" y1="'+(cy-L*ci)+'" x2="'+cx+'" y2="'+cy+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+L*si)+'" y2="'+(cy-L*ci)+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/>';
+  var a0=90+i,a1=90-i; // from +x anticlockwise: incident ray on the left is at 90+i, reflected at 90-i
+  var p0=[cx+78*Math.cos(a0*RAD),cy-78*Math.sin(a0*RAD)],p1=[cx+78*Math.cos(a1*RAD),cy-78*Math.sin(a1*RAD)];
+  s+='<path d="M '+p0[0]+' '+p0[1]+' A 78 78 0 0 1 '+p1[0]+' '+p1[1]+'" fill="none" stroke="var(--fit)" stroke-width="3.4"/>';
+  s+='<text x="24" y="34" class="lbl" fill="var(--fit)" font-weight="600" font-size="14">angle between the rays = '+f0(2*i)+'°</text>';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--ink)"/>';
+  $('svg8a').innerHTML=s;
+  var h='<span><small>i</small>'+f0(i)+'°</span><span class="t2"><small>r</small>'+f0(i)+'°</span><span><small>between</small>'+f0(2*i)+'°</span>';
+  if(s8.prev!=null)h+='<span style="font-size:15px"><small>i changed by '+((i-s8.prev)>=0?'+':'')+f0(i-s8.prev)+'°, so the angle between the rays changed by</small><b class="'+'good'+'">'+((i-s8.prev)>=0?'+':'')+f0(2*(i-s8.prev))+'°</b></span>';
+  $('read8a').innerHTML=h}
+function go8a(target){
+  var from=s8.i;s8.prev=from;
+  if(anim){cancelAnimationFrame(anim);anim=null}
+  if(!motionOK()||from===target){s8.i=target;r8a();return}
+  var t0=null;function stepf(ts){if(t0==null)t0=ts;var u=Math.min(1,(ts-t0)/500);s8.i=from+(target-from)*u;r8a();if(u<1)anim=requestAnimationFrame(stepf);else{anim=null;s8.i=target;r8a()}}
+  anim=requestAnimationFrame(stepf)}
+function r8b(){
+  var t=s8b.t,i0=30,cx=230,cy=200,L=170,d=[Math.sin(i0*RAD),Math.cos(i0*RAD)],tr=t*RAD,n=[-Math.sin(tr),-Math.cos(tr)],dn=d[0]*n[0]+d[1]*n[1],r=[d[0]-2*dn*n[0],d[1]-2*dn*n[1]];
+  var ang=function(v){return Math.atan2(-v[1],v[0])/RAD},r0=[d[0],-d[1]],swing=ang(r)-ang(r0),inew=Math.acos(-dn)/RAD,s=DEFS+bg(460,250);
+  s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+L*r0[0])+'" y2="'+(cy+L*r0[1])+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/><text x="'+(cx+L*r0[0]+4)+'" y="'+(cy+L*r0[1]+12)+'" class="simn">before</text>';
+  s+='<g transform="rotate('+(-t)+' '+cx+' '+cy+')">';
+  for(var x=56;x<=404;x+=14)s+='<line x1="'+x+'" y1="200" x2="'+(x-9)+'" y2="212" stroke="var(--ink2)"/>';
+  s+='<line x1="50" y1="200" x2="410" y2="200" stroke="var(--ink)" stroke-width="3"/><line x1="'+cx+'" y1="200" x2="'+cx+'" y2="40" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="6 5"/></g>';
+  s+='<line x1="'+(cx-L*d[0])+'" y1="'+(cy-L*d[1])+'" x2="'+cx+'" y2="'+cy+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/><line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+L*r[0])+'" y2="'+(cy+L*r[1])+'" stroke="var(--ray)" stroke-width="2.6" marker-end="url(#ah)"/>';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--ink)"/>';
+  $('svg8b').innerHTML=s;$('t8').value=t;$('t8v').textContent=(t>0?'+':'')+t+'°';
+  $('read8b').innerHTML='<span><small>mirror tilted</small>'+(t>0?'+':'')+t+'°</span><span class="t2"><small>reflected ray swung</small>'+(swing>0?'+':'')+f0(swing)+'°</span><span style="font-size:15px"><small>new <i>i</i> = <i>r</i> =</small>'+f0(inew)+'°</span>'}
+
+/* ---------- 9: criterion A ---------- */
+var LAD=[
+ ['0','Does not reach a standard indicated by any of the descriptors below.'],
+ ['1–2','i. <b>recall</b> scientific knowledge<br>ii. apply scientific knowledge and understanding to <b>suggest solutions</b> to problems set in <b>familiar</b> situations<br>iii. <b>apply</b> information to make judgments.'],
+ ['3–4','i. <b>state</b> scientific knowledge<br>ii. apply scientific knowledge and understanding to <b>solve</b> problems set in <b>familiar</b> situations<br>iii. <b>apply</b> information to make <b>scientifically supported</b> judgments.'],
+ ['5–6','i. <b>outline</b> scientific knowledge<br>ii. apply scientific knowledge and understanding to solve problems set in familiar situations <b>and suggest solutions to problems set in unfamiliar situations</b><br>iii. <b>interpret</b> information to make scientifically supported judgments.'],
+ ['7–8','i. <b>describe</b> scientific knowledge<br>ii. apply scientific knowledge and understanding to solve problems set in <b>familiar and unfamiliar</b> situations<br>iii. <b>analyse</b> information to make scientifically supported judgments.']];
+var EXA=['A mirror is shiny and paper is not.',
+ 'A mirror is smooth so the light bounces off in one direction, but paper is rough so the light goes in lots of directions.',
+ MA[2]];
+var EXW=['This states a fact about the surfaces. It does not use the words specular or diffuse and does not say what happens to the light.',
+ 'It links smooth and rough to what the light does, which is a good start. It is missing the key words, the idea of the pattern being kept or scrambled, and why the paper is still visible.',
+ 'It uses both key words, gives the cause (smooth against rough), says what happens to the pattern and the image, and explains why the paper can still be seen.'];
+var s9={l:2,e:2};
+function kw(t){return t.replace(/specular|diffuse|pattern|image|scatter(?:ed)?/g,function(m){return '<span class="kw">'+m+'</span>'})}
+function r9(){
+  $('lad9').innerHTML='<tr><th>Level</th><th>The student is able to:</th></tr>'+LAD.map(function(r,k){return '<tr class="'+(k===s9.l?'on':'')+'"><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('#lv9 button'),function(b){b.setAttribute('aria-pressed',+b.dataset.l===s9.l)});
+  Array.prototype.forEach.call(document.querySelectorAll('#ex9 button'),function(b){b.setAttribute('aria-pressed',+b.dataset.e===s9.e)});
+  $('ans9').innerHTML=s9.e===2?MA[2]:kw(EXA[s9.e]);
+  if(s9.e===2)$('ans9').innerHTML=kw(MA[2].replace(/<\/?b>/g,''));
+  $('why9').textContent=EXW[s9.e]}
+
+/* ---------- wiring ---------- */
+function on(id,ev,fn){$(id).addEventListener(ev,fn)}
+on('pre1','click',function(e){var b=e.target.closest('button');if(b){s1.rough=+b.dataset.r;r1()}});
+on('rough1','input',function(){s1.rough=+this.value;r1()});
+on('rays1','click',function(e){var b=e.target.closest('.chip');if(b){s1.sel=+b.dataset.k;r1()}});
+on('lab2','click',function(e){var b=e.target.closest('.chip');if(b){s2.k=b.dataset.k;r2()}});
+on('i2','input',function(){s2.i=+this.value;r2()});
+on('mode3','click',function(e){var b=e.target.closest('button');if(b){s3.box=+b.dataset.b;r3()}});
+on('ray3','click',function(){s3.ray=!s3.ray;r3()});
+on('w3','input',function(){s3.w=+this.value;r3()});
+on('mode4','click',function(e){var b=e.target.closest('button');if(b){s4.m=b.dataset.m;r4()}});
+on('th4','input',function(){s4.th=+this.value;r4()});
+on('next5','click',function(){s5.n=Math.min(5,s5.n+1);r5()});on('prev5','click',function(){s5.n=Math.max(0,s5.n-1);r5()});
+on('steps5','click',function(e){var b=e.target.closest('.chip');if(b){s5.n=+b.dataset.k;r5()}});
+on('i6','input',function(){s6.i=+this.value;r6()});on('rec6','click',rec6);on('clr6','click',function(){s6.rows=[];s6.seed++;r6()});
+on('tbl6c','input',function(e){var m=/^c([ir])(\d)$/.exec(e.target.id);if(m){var k=+m[2],v=e.target.value===''?null:parseFloat(e.target.value);CT[k][m[1]==='i'?0:1]=v;upd6c(k)}});
+on('ex6','click',function(){CT=[[20,20],[35,36],[45,45],[60,30],[25,155]];r6c()});
+on('cl6','click',function(){CT=[[null,null],[null,null],[null,null],[null,null],[null,null]];r6c()});
+on('cards7','click',function(e){var b=e.target.closest('.card');if(b){s7.q=+b.dataset.q;r7()}});
+on('why7','click',function(e){if(e.target.id==='nx7'){s7.q=Math.min(2,s7.q+1);r7()}});
+on('up8','click',function(){go8a(Math.min(80,Math.round(s8.i)+10))});on('dn8','click',function(){go8a(Math.max(10,Math.round(s8.i)-10))});
+on('tl8','click',function(){s8b.t=10;r8b()});on('tr8','click',function(){s8b.t=0;r8b()});on('t8','input',function(){s8b.t=+this.value;r8b()});
+on('lv9','click',function(e){var b=e.target.closest('button');if(b){s9.l=+b.dataset.l;r9()}});
+on('ex9','click',function(e){var b=e.target.closest('button');if(b){s9.e=+b.dataset.e;r9()}});
+r1();r2();r3();r4();r5();r6();r6c();r7();r8a();r8b();r9();
+initShell('The Law of Reflection','Year 8 Physics · Unit 1 · Mr. Rawson');
+})();
+</script>
+
+</body>
+</html>

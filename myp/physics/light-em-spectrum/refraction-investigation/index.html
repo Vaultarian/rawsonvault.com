@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Refraction Investigation</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:wght@600;700&display=swap">
+<style>
+/* SHELL v1: left sidebar (built from <section class="sec" data-title data-group>), each section = header + .two (figure left, .why right). Shared by the Refraction and Reflection packets. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --ink:#16202e; --ink2:#44536a; --muted:#6a798d;
+  --line:#cbd5e2; --grid:#e3e8ef; --air:#f8fafc; --block:#d9e6f4;
+  --ray:#c62828; --theory:#0f766e; --data:#2455a4; --dots:#a8431f; --fit:#b45f06;
+  --accent:#c97b3a; --accent-bg:#fbf0e4; --good:#1e7a46; --warn:#8f5b00; --bad:#b3261e;
+  --f-display:'Source Serif 4',Georgia,serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --surface:#17212e; --ink:#e6edf5; --ink2:#aab8c9; --muted:#8798ac;
+  --line:#2c3a4c; --grid:#243242; --air:#121b27; --block:#1b334f;
+  --ray:#ff6b6b; --theory:#35c2ae; --data:#86adff; --dots:#ff9a73; --fit:#f0b04a;
+  --accent:#e29a5a; --accent-bg:#2b2119; --good:#5cd08a; --warn:#e8b04a; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --surface:#17212e; --ink:#e6edf5; --ink2:#aab8c9; --muted:#8798ac;
+  --line:#2c3a4c; --grid:#243242; --air:#121b27; --block:#1b334f;
+  --ray:#ff6b6b; --theory:#35c2ae; --data:#86adff; --dots:#ff9a73; --fit:#f0b04a;
+  --accent:#e29a5a; --accent-bg:#2b2119; --good:#5cd08a; --warn:#e8b04a; --bad:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+h1{font:700 26px/1.15 var(--f-display);margin:0 0 4px;text-wrap:balance}
+h2{font:600 22px/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:600 16px/1.3 var(--f-body);margin:14px 0 4px}
+p{margin:0 0 10px;max-width:66ch}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:22px 14px 22px max(16px,env(safe-area-inset-left,0px));border-right:1px solid var(--line);background:var(--surface)}
+.side .brand{font:700 17px/1.2 var(--f-display);margin:0 0 4px}
+.side .meta{font-size:12px;color:var(--muted);margin:0 0 16px}
+.side .grp{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+.side a{display:flex;gap:8px;align-items:baseline;padding:6px 8px;border-radius:6px;color:var(--ink2);text-decoration:none;font-size:14px;border-left:3px solid transparent}
+.side a b{font:500 12px var(--f-mono);color:var(--muted);min-width:22px}
+.side a:hover{background:var(--bg)}
+.side a[aria-current="true"]{background:var(--accent-bg);color:var(--ink);border-left-color:var(--accent)}
+.side a[aria-current="true"] b{color:var(--accent)}
+main{padding:28px max(20px,env(safe-area-inset-right,0px)) 80px 28px;min-width:0;max-width:1060px}
+.sec{padding:8px 0 44px;scroll-margin-top:16px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.sec:last-child{border-bottom:0}
+.sh{display:flex;gap:12px;align-items:baseline;margin-bottom:14px}
+.tag{font:500 13px var(--f-mono);background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:5px}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.vis{margin:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+.why{min-width:0}
+.why .lead{font-size:16px;color:var(--ink);margin-bottom:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.panel svg{display:block;width:100%;height:auto}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--f-body);padding:7px 13px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font:500 13px var(--f-mono);padding:5px 10px;border-radius:999px;cursor:pointer}
+.chip.seen{color:var(--ink);border-color:var(--theory)}
+.chip[aria-pressed="true"]{background:var(--theory);border-color:var(--theory);color:var(--surface)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{appearance:none;border:0;border-right:1px solid var(--line);background:none;color:var(--ink2);font:500 13px var(--f-body);padding:7px 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.readout{display:flex;flex-wrap:wrap;gap:4px 22px;align-items:baseline;font:500 22px var(--f-mono)}
+.readout small{font:400 13px var(--f-body);color:var(--muted);margin-right:6px}
+.readout .t2{color:var(--theory)}
+.note{background:var(--accent-bg);border-left:4px solid var(--accent);padding:10px 12px;border-radius:0 8px 8px 0;max-width:66ch;margin:0 0 10px}
+.note b{font-weight:600}
+.why-box{border:1px solid var(--line);border-left:4px solid var(--theory);background:var(--surface);padding:10px 12px;border-radius:0 8px 8px 0;max-width:66ch;margin:0 0 10px}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+ul.tight{margin:0 0 10px;padding-left:18px} ul.tight li{margin:3px 0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label.f{display:block;font:500 13px var(--f-body);color:var(--ink2);margin-bottom:4px}
+select,input[type=number]{font:500 14px var(--f-mono);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+input[type=number]{width:74px}
+table{border-collapse:collapse;font:500 13px var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl td,.tbl th{padding:4px 8px;border-bottom:1px solid var(--grid);text-align:left}
+.tbl th{color:var(--muted);font-weight:500}
+.strip{overflow-x:auto}
+.strip td,.strip th{border:1px solid var(--line);padding:5px 9px;text-align:center;min-width:50px}
+.strip th{font-weight:500;color:var(--muted);background:var(--bg);text-align:left}
+.strip td.cur{background:var(--accent-bg);outline:2px solid var(--accent);outline-offset:-2px}
+.strip td.off{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.card{appearance:none;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer;font:400 14px/1.35 var(--f-body)}
+.card strong{display:block;font:600 15px var(--f-body)}
+.card span{color:var(--muted);font-size:13px}
+.card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+.yes,.no{border-radius:10px;padding:10px 12px;border:1px solid var(--line);background:var(--surface)}
+.yes{border-left:4px solid var(--good)} .no{border-left:4px solid var(--bad)}
+.hint{font-size:13px;color:var(--muted)}
+.check{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 8px;margin:0;padding:0;list-style:none}
+.check li{display:contents}
+.check .box{font:600 15px/1.3 var(--f-mono)}
+.verdict{font:600 17px var(--f-display);padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--data);outline-offset:2px}
+/* svg classes */
+.grid{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--ink2);stroke-width:1.2}
+.tick{fill:var(--ink2);font:11px var(--f-mono)}
+.atitle{fill:var(--ink2);font:500 12px var(--f-body)}
+.lbl{font:500 12px var(--f-body)}
+.ln{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.s-theory{stroke:var(--theory);stroke-width:2.5}
+.s-dots{stroke:var(--dots);stroke-width:2;stroke-dasharray:5 4}
+.s-fit{stroke:var(--fit);stroke-width:3}
+.s-ref{stroke:var(--muted);stroke-width:2;stroke-dasharray:2 5}
+.s-guide{stroke:var(--accent);stroke-width:1.2;stroke-dasharray:3 3}
+.s-cap{stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.band{fill:var(--theory);opacity:.13}
+.simt{font:500 12px var(--f-body);fill:var(--ink2)}
+.simn{font:500 11px var(--f-mono);fill:var(--muted)}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:0;z-index:20;height:auto;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:8px max(12px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line);align-items:center}
+  .side .brand,.side .meta,.side .grp{display:none}
+  .side a{flex:0 0 auto;white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:6px 6px 0 0}
+  .side a[aria-current="true"]{border-bottom-color:var(--accent)}
+  main{padding:18px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
+  .sec{scroll-margin-top:56px}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+<script>
+/* SHELL v1 init: builds the sidebar from the sections and highlights the one being read. Call initShell(title, subtitle) once at the end of the page script. */
+function initShell(title,meta){
+  var secs=[].slice.call(document.querySelectorAll('.sec')),nav=document.getElementById('toc'),h='<p class="brand">'+title+'</p><p class="meta">'+meta+'</p>',g=null;
+  secs.forEach(function(s){var gr=s.getAttribute('data-group');if(gr&&gr!==g){g=gr;h+='<div class="grp">'+gr+'</div>'}
+    h+='<a href="#'+s.id+'" data-id="'+s.id+'"><b>'+(s.getAttribute('data-tag')||'')+'</b><span>'+s.getAttribute('data-title')+'</span></a>'});
+  nav.innerHTML=h;
+  var links=[].slice.call(nav.querySelectorAll('a'));
+  function mark(id){links.forEach(function(a){var on=a.getAttribute('data-id')===id;if(on)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');if(on&&nav.scrollWidth>nav.clientWidth&&window.innerWidth<=900){try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}})}
+  if('IntersectionObserver' in window){var vis={};var io=new IntersectionObserver(function(es){es.forEach(function(e){vis[e.target.id]=e.isIntersecting?e.intersectionRatio:0});
+    var best=null,bv=0;secs.forEach(function(s){if((vis[s.id]||0)>bv){bv=vis[s.id];best=s.id}});if(best)mark(best)},{rootMargin:'-10% 0px -55% 0px',threshold:[0,.1,.3,.6,1]});
+    secs.forEach(function(s){io.observe(s)})}
+  mark(secs[0].id);
+  nav.addEventListener('click',function(e){var a=e.target.closest('a');if(a)mark(a.getAttribute('data-id'))});
+}
+</script>
+
+
+</head>
+<body>
+
+<div class="app">
+<nav class="side" id="toc" aria-label="Sections of the refraction packet"></nav>
+<main>
+<h1>Refraction Investigation</h1>
+<p class="hint" style="margin-bottom:26px">Year 8 Physics · Unit 1: Light &amp; EM Spectrum · Criterion B (Inquiring and designing) and Criterion C (Processing and evaluating). Use the list on the left to jump to any part of the packet.</p>
+
+<!-- APPARATUS -->
+<section class="sec" id="apparatus" data-tag="A" data-title="The apparatus" data-group="The investigation">
+<div class="sh"><span class="tag">A</span><h2>The apparatus and the card</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fI" viewBox="0 0 440 440" role="img" aria-label="The protractor card with a semicircular perspex block, a normal, an incident ray and a refracted ray"></svg></div>
+  <div class="chips" id="partsI"></div>
+  <div><label class="f" for="thI">Swing the ray box: angle of incidence <b id="thIv"></b></label><input type="range" id="thI" min="0" max="80" step="1" value="40"></div></figure>
+ <div class="why">
+  <p class="lead">Reflection is what light does when it <b>bounces off</b> a surface. Refraction is what light does when it <b>passes into</b> a new material. Together they explain every mirror, lens, pair of glasses and camera.</p>
+  <p>That light changes direction is easy to see. The investigation asks <b>how much</b> it bends, and what decides that.</p>
+  <div class="why-box" id="partInfo"></div>
+  <h3>How to read the card</h3>
+  <ul class="tight"><li>Aim the ray at the <b>centre</b> of the card.</li><li>Read the <b>top</b> scale for the angle going in, <b>θ₁</b>.</li><li>Read the <b>bottom</b> scale for the angle coming out, <b>θ₂</b>.</li><li>The normal is <b>0°</b>. Both scales count away from it.</li></ul>
+  <p class="hint">Tap a part of the apparatus under the picture to see what it does and why it is there.</p>
+ </div>
+</div></section>
+
+<!-- B1 -->
+<section class="sec" id="b1" data-tag="B1" data-title="Research question" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B1</span><h2>Your research question</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fB1" viewBox="0 0 440 440" role="img" aria-label="The card with the chosen idea tested"></svg></div>
+  <div class="cards" id="ideas"></div></figure>
+ <div class="why">
+  <p class="lead">List every idea that might change <b>how much</b> the light bends. Tap an idea to test it on the card at θ₁ = 50°.</p>
+  <div class="why-box" id="ideaInfo"></div>
+  <h3>Turn the best idea into a question</h3>
+  <div class="panel"><p style="margin:0 0 6px">How does changing <select id="rqA"><option>the angle of incidence</option><option>the colour of the light</option><option>the material of the block</option><option>how bright the light is</option></select> affect <select id="rqB"><option>the angle of refraction</option><option>how bright the light is</option><option>the size of the block</option></select>?</p>
+   <p id="rqOut" style="margin:0"></p></div>
+  <p class="hint" style="margin-top:8px">The first blank is the <b>independent variable</b>, the thing you change. The second is the <b>dependent variable</b>, the thing you measure.</p>
+ </div>
+</div></section>
+
+<!-- B2 -->
+<section class="sec" id="b2" data-tag="B2" data-title="Hypothesis" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B2</span><h2>Your hypothesis</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fB2" viewBox="0 0 440 440" role="img" aria-label="Three incident rays and their refracted rays on the card"></svg></div>
+  <div><label class="f">My prediction: as θ₁ increases, θ₂ will…</label><div class="seg" id="predB2"></div></div>
+  <div class="why-box" id="predOut"></div></figure>
+ <div class="why">
+  <p class="lead">A hypothesis is your <b>answer</b> to the research question, written before you do the experiment. The word <b>because</b> is where the marks are.</p>
+  <p>Tap each reason to see how it reads in a hypothesis.</p>
+  <div class="cards" id="reasons"></div>
+  <div class="note" id="reasonOut" style="margin-top:10px"></div>
+  <p class="hint">A hypothesis is a reasoned prediction you then test, not a guess at the right answer. A prediction that turns out wrong, with a clear reason behind it, is a perfectly good hypothesis.</p>
+ </div>
+</div></section>
+
+<!-- B3 -->
+<section class="sec" id="b3" data-tag="B3" data-title="Method" data-group="B · Inquiring and designing">
+<div class="sh"><span class="tag">B3</span><h2>Your method</h2></div>
+<div class="row" style="margin-bottom:12px"><div class="seg" id="tabB3"></div></div>
+<div class="two">
+ <figure class="vis" id="visB3"></figure>
+ <div class="why" id="whyB3"></div>
+</div></section>
+
+<!-- C1 table -->
+<section class="sec" id="c1" data-tag="C1" data-title="Results table" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C1</span><h2>Your results: the expected data, one angle at a time</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="fC1" viewBox="0 0 440 440" role="img" aria-label="The card at the chosen angle of incidence"></svg></div>
+  <div class="row"><button class="btn" id="c1prev">← Back</button><button class="btn primary" id="c1next">Next angle →</button><button class="btn" id="c1reset">Start again</button></div>
+  <div class="chips" id="c1chips"></div></figure>
+ <div class="why">
+  <div class="panel"><div class="readout" id="c1read"></div><p id="c1cap" style="margin:8px 0 0"></p></div>
+  <div class="panel" style="margin-top:10px"><svg id="gC1" viewBox="0 0 520 380" role="img" aria-label="Expected angle of refraction against angle of incidence"></svg></div>
+  <div class="row" style="margin-top:8px"><button class="btn" id="c1curve" aria-pressed="false">Draw the expected curve</button><button class="btn" id="c1class" aria-pressed="false">Add last year's class</button><label class="hint"><input type="checkbox" id="c1maths"> Show the maths</label></div>
+ </div>
+</div>
+<div class="panel strip" style="margin-top:14px"><table id="c1table"></table></div>
+<div class="two" style="margin-top:14px"><div class="why">
+  <h3>Three conventions that carry marks</h3>
+  <ul class="tight"><li><b>Units in the heading</b>, not beside each number.</li><li>The <b>independent variable</b> goes in the first column.</li><li>Work out each <b>average</b> and write it in.</li></ul></div>
+ <div class="why"><h3>The first check to make</h3><p>The 0° row reads 0°. A ray along the normal goes straight through, so a table that starts anywhere else was read from the wrong scale.</p></div></div>
+</section>
+
+<!-- C1 graph -->
+<section class="sec" id="c1g" data-tag="C1" data-title="Graph: line of best fit" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C1</span><h2>Your graph: a line of best fit, not join the dots</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="gG" viewBox="0 0 520 380" role="img" aria-label="Data with joined dots and a curve of best fit"></svg></div>
+  <div class="row" id="layersG"><button class="btn" data-l="dots" aria-pressed="true">Join the dots</button><button class="btn" data-l="fit" aria-pressed="false">Curve of best fit</button><button class="btn" data-l="gaps" aria-pressed="false">Show the gaps</button><button class="btn" data-l="theory" aria-pressed="false">Expected curve</button></div>
+  <div class="row"><span class="hint">Data:</span><div class="seg" id="dsG"></div></div>
+  <div id="simG" hidden><label class="f" for="sdG">Reading error in the simulated class: <b id="sdGv"></b></label><input type="range" id="sdG" min="0" max="5" step="0.5" value="2"><button class="btn" id="seedG" style="margin-top:8px">New set of readings</button></div></figure>
+ <div class="why">
+  <p class="lead">Every measurement carries a small error, so real points sit a little above and below the true pattern. A graph should show the <b>pattern</b>.</p>
+  <div class="note" id="noteG"></div>
+  <div class="panel"><label class="f" for="probeG">Predict a reading nobody took: θ₁ = <b id="probeGv"></b></label><input type="range" id="probeG" min="5" max="75" step="1" value="55"><table class="tbl" id="probeGt" style="margin-top:8px"></table></div>
+  <h3>Four things the marker looks for</h3>
+  <ul class="tight"><li>Axis numbers evenly spaced.</li><li>Both axes labelled, with units.</li><li>Points plotted accurately.</li><li>A ruler used for the axes, and one smooth curve through the middle of the points.</li></ul>
+  <p class="hint">Both variables are numbers, so this is a scatter graph with a line of best fit. A bar chart is for when the thing you changed is words.</p>
+ </div>
+</div></section>
+
+<!-- C1 check -->
+<section class="sec" id="c1c" data-tag="C1" data-title="Check your table" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C1</span><h2>Check your table against the expected curve</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><table class="tbl" id="tbl5"></table></div>
+  <div class="row"><button class="btn" data-ex="class">Last year's class</button><button class="btn" data-ex="mirror">Example: measured from the flat face</button><button class="btn" data-ex="clear">Clear</button></div></figure>
+ <div class="why"><p class="lead">Type your averages and see each point marked against what perspex should give. The table starts with last year's class as an example.</p>
+  <div class="panel"><svg id="gE" viewBox="0 0 520 380" role="img" aria-label="Entered results against the expected band"></svg></div>
+  <div class="panel" id="diag5" style="margin-top:10px"></div></div>
+</div></section>
+
+<!-- C2 -->
+<section class="sec" id="c2" data-tag="C2" data-title="Conclusion" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C2</span><h2>Your conclusion</h2></div>
+<div class="two">
+ <figure class="vis"><div class="cards" id="shapes"></div>
+  <div class="panel"><svg id="gC2" viewBox="0 0 520 380" role="img" aria-label="Last year's class data with its curve of best fit"></svg></div></figure>
+ <div class="why">
+  <p class="lead">Your conclusion answers your research question. Look at the shape of your graph and choose the sentence that matches it.</p>
+  <div class="why-box" id="shapeOut"></div>
+  <h3>Then say why you can say that</h3>
+  <div class="panel"><p style="margin:0 0 8px">Use numbers off your own graph. When θ₁ was <select id="n1"></select> θ₂ was about <b id="v1"></b>, and when θ₁ was <select id="n2"></select> θ₂ was about <b id="v2"></b>.</p><p class="hint" style="margin:0">Values read off the curve of best fit through last year's class.</p></div>
+ </div>
+</div>
+<div class="two" style="margin-top:22px">
+ <figure class="vis"><div class="panel"><svg id="wave" viewBox="0 0 440 360" role="img" aria-label="Wave fronts crossing from air into perspex and turning towards the normal"></svg></div>
+  <div class="row"><button class="btn primary" id="wplay">Play</button><button class="btn" id="wstep">Step</button></div>
+  <div><label class="f" for="wth">Angle of incidence <b id="wthv"></b></label><input type="range" id="wth" min="10" max="80" step="1" value="50"></div></figure>
+ <div class="why"><h3>To go further: explain it</h3>
+  <p>The best conclusions explain what is happening to the light, as well as what the graph does.</p>
+  <div class="why-box"><p style="margin:0">Light travels more slowly in perspex than in air, so the wave fronts squash closer together. The side of the ray that reaches the boundary first slows down first while the other side is still going quickly, so the ray swings round towards the normal. The bigger the angle of incidence, the bigger that head start between the two sides, so the more the ray turns.</p></div>
+  <p class="hint">Watch the left end of each front slow down as it enters the block. Change the angle and compare.</p></div>
+</div></section>
+
+<!-- C3 -->
+<section class="sec" id="c3" data-tag="C3" data-title="Was your hypothesis right?" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C3</span><h2>Was your hypothesis right?</h2></div>
+<div class="two">
+ <figure class="vis"><div><label class="f">My hypothesis said θ₂ would…</label><div class="seg" id="hypC3"></div></div>
+  <div class="panel"><svg id="gC3" viewBox="0 0 520 380" role="img" aria-label="Prediction arrow compared with the data"></svg></div></figure>
+ <div class="why">
+  <p class="lead">This asks whether the prediction you made in B2 turned out to be correct.</p>
+  <div class="verdict" id="verdC3"></div>
+  <p style="margin-top:10px">Point back at your conclusion and your data. A hypothesis that turned out wrong is not a problem. Saying so clearly, and showing which data proves it, is what earns the marks.</p>
+  <p class="hint">Last year's class predicted θ₂ would decrease. Their data showed otherwise, and they wrote exactly that.</p>
+ </div>
+</div></section>
+
+<!-- C4 -->
+<section class="sec" id="c4" data-tag="C4" data-title="Was your method valid?" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C4</span><h2>Was your method valid?</h2></div>
+<div class="two">
+ <figure class="vis"><div class="panel"><svg id="gD" viewBox="0 0 520 380" role="img" aria-label="Simulated student results with best fit and the expected band"></svg></div><p class="hint" id="stat4"></p>
+  <div><label class="f">How carefully are the angles read?</label><div class="seg" id="care4"></div></div>
+  <div><label class="f">How many repeats at each angle?</label><div class="seg" id="rep4"></div></div>
+  <div><label class="f">The block</label><div class="seg" id="ctl4"></div></div>
+  <div class="row"><button class="btn" id="seed4">Run it again</button></div></figure>
+ <div class="why">
+  <p class="lead">A method is <b>valid</b> if it gave you results you can trust. Change how the experiment is run and watch the checklist respond.</p>
+  <div class="panel"><ul class="check" id="check4"></ul></div>
+  <div class="verdict" id="verdict4" style="margin-top:10px"></div>
+  <p style="margin-top:10px">Write about the <b>design and the data</b>: the spread of the points, the repeats, the instruments, the controls. How fast you worked is not what this question is about.</p>
+ </div>
+</div></section>
+
+<!-- C5 -->
+<section class="sec" id="c5" data-tag="C5" data-title="Improvements and extension" data-group="C · Processing and evaluating">
+<div class="sh"><span class="tag">C5</span><h2>Improvements and extensions</h2></div>
+<div class="row" style="margin-bottom:12px"><div class="seg" id="tabC5"></div></div>
+<div class="two">
+ <figure class="vis" id="visC5"></figure>
+ <div class="why" id="whyC5"></div>
+</div></section>
+
+<!-- END -->
+<section class="sec" id="handin" data-tag="✓" data-title="Before you hand it in" data-group="Finish">
+<div class="sh"><span class="tag">✓</span><h2>Before you hand it in</h2></div>
+<div class="two"><figure class="vis"><div class="panel"><ul class="check" id="hand"></ul></div><div class="verdict" id="handv"></div></figure>
+<div class="why"><p class="lead">Two checks decide the top band in the method: could another Year 8 follow it and get the same data, and would it actually work?</p><p>Tick each item as you check it in your own report.</p></div></div>
+</section>
+<p class="hint" style="margin-top:20px">Year 8 Physics · Unit 1: Light &amp; EM Spectrum · St Leonards</p>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var N=1.49,RAD=Math.PI/180,ANG=[0,10,20,30,40,50,60,70,80,90];
+function $(id){return document.getElementById(id)}
+function snell(t,n){n=n||N;return Math.asin(Math.min(1,Math.sin(t*RAD)/n))/RAD}
+function f1(v){return (Math.round(v*10)/10).toFixed(1)}
+function f0(v){return String(Math.round(v))}
+var MAXT=snell(90);
+var T1='θ<tspan dy="3" font-size="9">1</tspan>',T2='θ<tspan dy="3" font-size="9">2</tspan>';
+var CLASS={10:[7,8,8],20:[12,13,12],30:[17,17,17],40:[25,26,24],50:[32,31,32],60:[33,34,32],70:[38,39,38],80:[46,45,47]};
+var CLASSPTS=[[0,0]].concat(Object.keys(CLASS).map(function(k){var a=CLASS[k];return [+k,(a[0]+a[1]+a[2])/3]}));
+var MATS=[['Water',1.33],['Perspex',1.49],['Glass',1.52],['Diamond',2.42]];
+function rng(seed){var a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){var u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function fitQ(pts){var s2=0,s3=0,s4=0,sxy=0,sx2y=0;pts.forEach(function(p){var x=p[0],y=p[1];s2+=x*x;s3+=x*x*x;s4+=x*x*x*x;sxy+=x*y;sx2y+=x*x*y});var d=s2*s4-s3*s3,a=(sxy*s4-sx2y*s3)/d,b=(s2*sx2y-s3*sxy)/d;return function(x){return a*x+b*x*x}}
+function interp(pts,x){for(var i=1;i<pts.length;i++){if(x<=pts[i][0]){var p=pts[i-1],q=pts[i];return p[1]+(q[1]-p[1])*(x-p[0])/(q[0]-p[0])}}return pts[pts.length-1][1]}
+var CFIT=fitQ(CLASSPTS);
+function segHTML(items,cur){return items.map(function(it){return '<button data-v="'+it[0]+'" aria-pressed="'+(String(it[0])===String(cur))+'">'+it[1]+'</button>'}).join('')}
+function segOn(id,fn){$(id).addEventListener('click',function(e){var b=e.target.closest('button');if(b)fn(b.dataset.v)})}
+
+/* ======== base visual: the card from page 1 of the packet ======== */
+function cardSVG(th1,n,o){
+  o=o||{};var cx=220,cy=222,R=160,d=o.offset||0,px=cx+d,th2=snell(th1,n),hl=o.hl,out='';
+  function V(t){return [Math.sin(t*RAD),Math.cos(t*RAD)]}
+  var a=V(th1),b=V(th2),L=R+34,graz=th1>=89.5;
+  out+='<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ray)"/></marker></defs>';
+  out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="var(--air)" stroke="var(--ink2)" stroke-width="1.2"/>';
+  out+='<path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 0 '+(cx+R)+' '+cy+' Z" fill="var(--block)" stroke="var(--ink2)" stroke-width="1.2"/>';
+  for(var k=10;k<=80;k+=10){var s=Math.sin(k*RAD),c=Math.cos(k*RAD);
+    out+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*s)+'" y2="'+(cy-R*c)+'" stroke="var(--ink2)" stroke-width=".8" opacity=".35"/><line x1="'+cx+'" y1="'+cy+'" x2="'+(cx-R*s)+'" y2="'+(cy+R*c)+'" stroke="var(--ink2)" stroke-width=".8" opacity=".35"/>';
+    out+='<text x="'+(cx+(R+11)*s)+'" y="'+(cy-(R+11)*c+3)+'" text-anchor="middle" class="tick" font-size="9">'+k+'</text><text x="'+(cx-(R+11)*s)+'" y="'+(cy+(R+11)*c+3)+'" text-anchor="middle" class="tick" font-size="9">'+k+'</text>'}
+  out+='<line x1="'+(cx-R)+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="var(--ink)" stroke-width="2"/>';
+  out+='<line x1="'+cx+'" y1="'+(cy-R-14)+'" x2="'+cx+'" y2="'+(cy+R+14)+'" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="6 5"/>';
+  out+='<text x="'+cx+'" y="'+(cy-R-22)+'" text-anchor="middle" class="simn" font-weight="600">the normal = 0°</text>';
+  out+='<text x="'+(cx+8)+'" y="'+(cy-R-8)+'" class="tick">0</text><text x="'+(cx+8)+'" y="'+(cy+R+20)+'" class="tick">0</text><text x="'+(cx-R-18)+'" y="'+(cy+4)+'" class="tick">90</text><text x="'+(cx+R+6)+'" y="'+(cy+4)+'" class="tick">90</text>';
+  out+='<text x="'+(cx-R+8)+'" y="'+(cy-19)+'" class="simn" font-style="italic" font-size="10">flat face of the block</text><text x="'+(cx-R+8)+'" y="'+(cy-7)+'" class="simn" font-style="italic" font-size="10">(the boundary)</text>';
+  out+='<text x="'+(cx+16)+'" y="'+(cy+R*0.72)+'" class="simn" font-style="italic" font-size="11" fill="var(--data)">'+(o.mat||'perspex block')+'</text><text x="'+(cx+16)+'" y="'+(cy+R*0.72+14)+'" class="simn" font-size="11" fill="var(--data)">n = '+n.toFixed(2)+'</text>';
+  if(o.ghost!=null){var ga=V(o.ghost),gb=V(snell(o.ghost,n));out+='<line x1="'+(px+L*ga[0])+'" y1="'+(cy-L*ga[1])+'" x2="'+px+'" y2="'+cy+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4"/><line x1="'+px+'" y1="'+cy+'" x2="'+(px-L*gb[0])+'" y2="'+(cy+L*gb[1])+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4"/>'}
+  var Sx=px+L*a[0],Sy=cy-L*a[1],Ex=px-L*b[0],Ey=cy+L*b[1];
+  if(hl==='inc')out+='<line x1="'+Sx+'" y1="'+Sy+'" x2="'+px+'" y2="'+cy+'" stroke="var(--accent)" stroke-width="13" opacity=".35" stroke-linecap="round"/>';
+  if(hl==='ref')out+='<line x1="'+px+'" y1="'+cy+'" x2="'+Ex+'" y2="'+Ey+'" stroke="var(--accent)" stroke-width="13" opacity=".35" stroke-linecap="round"/>';
+  if(hl==='normal')out+='<line x1="'+cx+'" y1="'+(cy-R-14)+'" x2="'+cx+'" y2="'+(cy+R+14)+'" stroke="var(--accent)" stroke-width="12" opacity=".35"/>';
+  if(hl==='face')out+='<line x1="'+(cx-R)+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="var(--accent)" stroke-width="12" opacity=".35"/>';
+  if(hl==='block')out+='<path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 0 '+(cx+R)+' '+cy+' Z" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="9 6"/>';
+  if(hl==='scale')out+='<path d="M '+cx+' '+(cy-R-4)+' A '+(R+4)+' '+(R+4)+' 0 0 1 '+(cx+R+4)+' '+cy+'" fill="none" stroke="var(--accent)" stroke-width="7" opacity=".5"/><path d="M '+cx+' '+(cy+R+4)+' A '+(R+4)+' '+(R+4)+' 0 0 1 '+(cx-R-4)+' '+cy+'" fill="none" stroke="var(--accent)" stroke-width="7" opacity=".5"/>';
+  var reflx=px-L*a[0],refly=cy-L*a[1];
+  out+='<line x1="'+px+'" y1="'+cy+'" x2="'+reflx+'" y2="'+refly+'" stroke="var(--ray)" stroke-width="2.5" opacity=".22"/>';
+  var mx1=px+105*a[0],my1=cy-105*a[1];
+  out+='<line x1="'+Sx+'" y1="'+Sy+'" x2="'+mx1+'" y2="'+my1+'" stroke="var(--ray)" stroke-width="3" marker-end="url(#ah)"/><line x1="'+mx1+'" y1="'+my1+'" x2="'+px+'" y2="'+cy+'" stroke="var(--ray)" stroke-width="3"/>';
+  var mx2=px-100*b[0],my2=cy+100*b[1],da=graz?' stroke-dasharray="6 5"':'';
+  out+='<line x1="'+px+'" y1="'+cy+'" x2="'+mx2+'" y2="'+my2+'" stroke="var(--ray)" stroke-width="3"'+da+' marker-end="url(#ah)"/><line x1="'+mx2+'" y1="'+my2+'" x2="'+Ex+'" y2="'+Ey+'" stroke="var(--ray)" stroke-width="3"'+da+'/>';
+  var ang=Math.atan2(a[1],-a[0])/RAD,bx=Sx+22*a[0],by=Sy-22*a[1];
+  out+='<g transform="translate('+bx+' '+by+') rotate('+ang+')"><rect x="-24" y="-10" width="48" height="20" rx="3" fill="var(--ink2)"/><rect x="18" y="-4" width="6" height="8" fill="var(--bg)"/></g>';
+  if(hl==='box')out+='<circle cx="'+bx+'" cy="'+by+'" r="30" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>';
+  if(th1>0&&!graz){out+='<path d="M '+px+' '+(cy-60)+' A 60 60 0 0 1 '+(px+60*a[0])+' '+(cy-60*a[1])+'" fill="none" stroke="var(--ink)" stroke-width="1.6"/><text x="'+(px+80*Math.sin(th1*RAD/2)+(th1<25?10:0))+'" y="'+(cy-80*Math.cos(th1*RAD/2)+4)+'" text-anchor="middle" class="lbl" fill="var(--ink)">'+T1+'</text>';
+    out+='<path d="M '+px+' '+(cy+60)+' A 60 60 0 0 1 '+(px-60*b[0])+' '+(cy+60*b[1])+'" fill="none" stroke="var(--theory)" stroke-width="1.8"/><text x="'+(px-82*Math.sin(th2*RAD/2)-(th2<25?10:0))+'" y="'+(cy+82*Math.cos(th2*RAD/2)+4)+'" text-anchor="middle" class="lbl" fill="var(--theory)">'+T2+'</text>'}
+  out+='<circle cx="'+px+'" cy="'+cy+'" r="4" fill="var(--ink)"/>';
+  return out}
+
+/* ======== graph builder ======== */
+function G(){
+  var W=520,H=380,m={l:54,r:20,t:16,b:50},xm=90,ym=50;
+  var g={X:function(v){return m.l+(W-m.l-m.r)*v/xm},Y:function(v){return H-m.b-(H-m.t-m.b)*v/ym},o:''};
+  for(var v=0;v<=xm;v+=10)g.o+='<line x1="'+g.X(v)+'" y1="'+g.Y(0)+'" x2="'+g.X(v)+'" y2="'+g.Y(ym)+'" class="grid"/><text x="'+g.X(v)+'" y="'+(g.Y(0)+16)+'" text-anchor="middle" class="tick">'+v+'</text>';
+  for(v=0;v<=ym;v+=10)g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(v)+'" x2="'+g.X(xm)+'" y2="'+g.Y(v)+'" class="grid"/><text x="'+(g.X(0)-8)+'" y="'+(g.Y(v)+4)+'" text-anchor="end" class="tick">'+v+'</text>';
+  g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(0)+'" x2="'+g.X(xm)+'" y2="'+g.Y(0)+'" class="axis"/><line x1="'+g.X(0)+'" y1="'+g.Y(0)+'" x2="'+g.X(0)+'" y2="'+g.Y(ym)+'" class="axis"/>';
+  g.o+='<text x="'+((g.X(0)+g.X(xm))/2)+'" y="'+(H-10)+'" text-anchor="middle" class="atitle">Angle of incidence '+T1+' / degrees</text><text transform="translate(14 '+((g.Y(0)+g.Y(ym))/2)+') rotate(-90)" text-anchor="middle" class="atitle">Angle of refraction '+T2+' / degrees</text>';
+  g.curve=function(fn,x0,x1,cls){var d='';for(var x=x0;x<=x1+0.01;x+=1)d+=(d?'L':'M')+g.X(x).toFixed(1)+' '+g.Y(fn(x)).toFixed(1);g.o+='<path d="'+d+'" class="ln '+cls+'"/>'};
+  g.poly=function(pts,cls){g.o+='<path d="'+pts.map(function(p,i){return (i?'L':'M')+g.X(p[0]).toFixed(1)+' '+g.Y(p[1]).toFixed(1)}).join('')+'" class="ln '+cls+'"/>'};
+  g.dot=function(x,y,r,fill,tip,sq,ring){var X=g.X(x),Y=g.Y(y);g.o+=(sq?'<rect x="'+(X-r)+'" y="'+(Y-r)+'" width="'+2*r+'" height="'+2*r+'" transform="rotate(45 '+X+' '+Y+')"':'<circle cx="'+X+'" cy="'+Y+'" r="'+r+'"')+' fill="'+(ring?'var(--surface)':fill)+'" stroke="'+(ring?fill:'var(--surface)')+'" stroke-width="'+(ring?2.5:1.5)+'"><title>'+tip+'</title>'+(sq?'</rect>':'</circle>')};
+  g.text=function(x,y,t,fill,anchor){g.o+='<text x="'+g.X(x)+'" y="'+g.Y(y)+'" class="lbl" fill="'+fill+'" text-anchor="'+(anchor||'start')+'">'+t+'</text>'};
+  g.cap=function(){g.o+='<line x1="'+g.X(0)+'" y1="'+g.Y(MAXT)+'" x2="'+g.X(90)+'" y2="'+g.Y(MAXT)+'" class="s-cap"/>';g.text(2,MAXT+1.8,'limit as the ray skims the boundary: '+f1(MAXT)+'°','var(--muted)')};
+  g.end=function(id){$(id).innerHTML=g.o};
+  return g}
+function tip(x,y){return 'θ₁ '+f0(x)+'°, θ₂ '+f1(y)+'°'}
+
+/* ======== A: apparatus ======== */
+var PARTS=[['box','Ray box','The ray box has a single slit. The bulb sends light in every direction and the slit blocks nearly all of it, leaving one narrow strip. That gives you one clean line to trace.'],
+ ['inc','Incident ray','The incident ray is the light arriving at the boundary. Aim it at the centre of the card so that both scales are read from the right point.'],
+ ['normal','Normal','The normal is the line at 90° to the boundary. The card marks it 0°, and every angle is measured from it.'],
+ ['face','Flat face','The flat face of the block is the boundary, where light passes from air into perspex. This is where the bend happens.'],
+ ['block','Perspex block','The semicircular block means the ray always meets the curved edge along a radius, so it leaves without bending a second time. Only the flat face bends it.'],
+ ['ref','Refracted ray','The refracted ray is the new direction of the light inside the perspex. Its angle from the normal is θ₂.'],
+ ['scale','Scales','The top scale reads the angle going in, θ₁. The bottom scale reads the angle coming out, θ₂. Both start at 0° on the normal.']];
+var SA={th:40,part:'inc'};
+function renderA(){
+  $('fI').innerHTML=cardSVG(SA.th,N,{hl:SA.part});$('thIv').textContent=SA.th+'°';
+  $('partsI').innerHTML=PARTS.map(function(p){return '<button class="chip" data-v="'+p[0]+'" aria-pressed="'+(p[0]===SA.part)+'" style="font-family:var(--f-body)">'+p[1]+'</button>'}).join('');
+  var p=PARTS.filter(function(x){return x[0]===SA.part})[0];$('partInfo').innerHTML='<b>'+p[1]+'.</b> '+p[2]}
+$('partsI').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b){SA.part=b.dataset.v;renderA()}});
+$('thI').oninput=function(){SA.th=+this.value;renderA()};
+
+/* ======== B1 ======== */
+var IDEAS=[
+ ['ang','The angle of incidence','Yes. Swing the ray box and the card shows both angles. It is built for this.',function(){return ['θ₁ 30° gives θ₂ '+f1(snell(30)),'θ₁ 50° gives θ₂ '+f1(snell(50))]},'good','Easy to change, easy to measure'],
+ ['mat','What the block is made of','A large effect, but this experiment has one block.',function(){return ['perspex gives '+f1(snell(50)),'water gives '+f1(snell(50,1.33))]},'warn','Big effect, one block available'],
+ ['col','The colour of the light','Real, but tiny. Red and blue differ by about '+f1(snell(50,1.488)-snell(50,1.496))+'°, and the card reads to 1°.',function(){return ['red light gives '+f1(snell(50,1.488)),'blue light gives '+f1(snell(50,1.496))]},'warn','Too small to see with a 1° scale'],
+ ['bri','How bright the light is','Brightness changes how easy the ray is to see. The angle stays the same.',function(){return ['dim: '+f1(snell(50)),'bright: '+f1(snell(50))]},'bad','No effect on the angle'],
+ ['siz','How big the block is','The flat face bends the ray by the same amount whatever the block size.',function(){return ['small block: '+f1(snell(50)),'large block: '+f1(snell(50))]},'bad','No effect on the angle'],
+ ['tmp','The temperature','Temperature changes the perspex by an amount far too small to measure in one lesson.',function(){return ['cool room: '+f1(snell(50)),'warm room: '+f1(snell(50))]},'bad','Not measurable here'],
+ ['edg','Flat or curved edge','The ray meets the curved edge along a radius, so it does not bend there. The flat face is what bends it.',function(){return ['flat face: bends',' curved edge (along a radius): no bend']},'warn','Changes the set-up, not the bend']];
+var SB1={idea:'ang'};
+function renderB1(){
+  var it=IDEAS.filter(function(x){return x[0]===SB1.idea})[0],r=it[3]();
+  var n=SB1.idea==='mat'?1.33:N,th=50,gh=SB1.idea==='ang'?30:null;
+  $('fB1').innerHTML=cardSVG(th,n,{ghost:gh,mat:SB1.idea==='mat'?'water':'perspex block'});
+  $('ideas').innerHTML=IDEAS.map(function(x){return '<button class="card" data-v="'+x[0]+'" aria-pressed="'+(x[0]===SB1.idea)+'"><strong>'+x[1]+'</strong><span>'+x[5]+'</span></button>'}).join('');
+  $('ideaInfo').innerHTML='<b>'+it[1]+'.</b> '+it[2]+'<br><span class="hint">'+r[0]+' · '+r[1]+'</span>'+(SB1.idea==='ang'?'<br><span class="hint">The dashed ray shows θ₁ = 30° for comparison.</span>':'')}
+$('ideas').addEventListener('click',function(e){var b=e.target.closest('.card');if(b){SB1.idea=b.dataset.v;renderB1()}});
+function rq(){var a=$('rqA').value,b=$('rqB').value,ok=a==='the angle of incidence'&&b==='the angle of refraction';
+  $('rqOut').innerHTML=ok?'<span class="good">✓ Names both variables, and you can change one and measure the other with the card.</span>':'<span class="warn">Both variables are named. Check that you can change the first one easily and measure the second one with your equipment.</span>'}
+$('rqA').onchange=rq;$('rqB').onchange=rq;
+
+/* ======== B2 ======== */
+var SB2={pred:'inc',reason:null};
+var REASONS=[['phys','…because light slows down in perspex, so it bends towards the normal.','A physics reason. It explains why the ray turns, so it lifts the hypothesis into the top band.'],
+ ['guess','…because I think it will.','This is an opinion. A prediction with no reason scores in the bottom band even when it turns out to be right.'],
+ ['same','…because the angle gets bigger.','This repeats the prediction in other words. Say what the light is doing that makes the angle change.']];
+function renderB2(){
+  var o='<circle cx="220" cy="222" r="160" fill="var(--air)" stroke="var(--ink2)" stroke-width="1.2"/>'; // placeholder replaced below
+  var s=cardSVG(20,N,{ghost:60});$('fB2').innerHTML=s;
+  $('predB2').innerHTML=segHTML([['inc','increase'],['dec','decrease'],['same','stay the same']],SB2.pred);
+  var m={inc:['<span class="good">Matches the data.</span> θ₂ goes from 0° at θ₁ = 0° up to about 42° as θ₁ approaches 90°, and it is always smaller than θ₁.','The dashed ray (θ₁ = 60°) turns further than the solid one (θ₁ = 20°).'],
+    dec:['<span class="bad">Does not match the data.</span> The refraction angle grows as the incidence angle grows. A wrong prediction with a reason is still a good hypothesis, and C3 is where you say so.',''],
+    same:['<span class="bad">Does not match the data.</span> The ray swings further round each time you swing the ray box further.','']}[SB2.pred];
+  $('predOut').innerHTML=m[0]+(m[1]?'<br><span class="hint">'+m[1]+'</span>':'')}
+segOn('predB2',function(v){SB2.pred=v;renderB2()});
+$('reasons').innerHTML=REASONS.map(function(r){return '<button class="card" data-v="'+r[0]+'" aria-pressed="false"><strong>'+r[1]+'</strong></button>'}).join('');
+$('reasons').addEventListener('click',function(e){var b=e.target.closest('.card');if(!b)return;var r=REASONS.filter(function(x){return x[0]===b.dataset.v})[0];
+  [].forEach.call($('reasons').children,function(c){c.setAttribute('aria-pressed',c===b)});$('reasonOut').innerHTML=r[2]});
+$('reasonOut').innerHTML='Choose a reason above.';
+
+/* ======== B3 ======== */
+var SB3={tab:'setup',th:50,ctl:'block',off:0,mat:1.49,reads:[],misread:false,beam:2};
+var B3TABS=[['setup','Set-up'],['values','Values'],['res','Resolution'],['ctl','Controls'],['rep','Repeats'],['safe','Safety']];
+function benchSVG(){
+  return '<svg viewBox="0 0 520 300" role="img" aria-label="The apparatus on the bench: power supply, ray box with single-slit slide, protractor card and semicircular perspex block"><rect x="0" y="0" width="520" height="300" fill="var(--air)"/>'+
+  '<rect x="14" y="196" width="104" height="70" rx="6" fill="var(--ink2)"/><circle cx="82" cy="231" r="14" fill="var(--bg)"/><rect x="28" y="214" width="34" height="8" fill="var(--bg)" opacity=".6"/>'+
+  '<path d="M118 226 C150 226 150 150 168 150" fill="none" stroke="var(--ink)" stroke-width="3"/>'+
+  '<rect x="168" y="124" width="96" height="52" rx="5" fill="var(--ink2)"/><rect x="258" y="144" width="10" height="12" fill="var(--bg)"/><rect x="236" y="116" width="24" height="10" fill="var(--accent)"/>'+
+  '<circle cx="400" cy="190" r="92" fill="var(--surface)" stroke="var(--ink2)" stroke-width="1.5"/><path d="M308 190 A92 92 0 0 0 492 190 Z" fill="var(--block)" stroke="var(--ink2)" stroke-width="1.5"/><line x1="308" y1="190" x2="492" y2="190" stroke="var(--ink)" stroke-width="2"/><line x1="400" y1="92" x2="400" y2="288" stroke="var(--ink)" stroke-dasharray="5 4"/>'+
+  '<line x1="268" y1="150" x2="400" y2="190" stroke="var(--ray)" stroke-width="3"/><line x1="400" y1="190" x2="428" y2="260" stroke="var(--ray)" stroke-width="3"/><circle cx="400" cy="190" r="4" fill="var(--ink)"/>'+
+  '<g class="lbl" fill="var(--ink)" font-size="12"><text x="16" y="186">power supply</text><text x="150" y="104">ray box</text><text x="150" y="118" class="simn">(single-slit slide)</text><text x="250" y="96" fill="var(--accent)">slit slide</text><text x="316" y="82">protractor card</text><text x="440" y="236" fill="var(--data)">perspex block</text><text x="276" y="212" class="simn">ray arrives at the centre</text></g></svg>'}
+function resSVG(beam,res){
+  var W=520,H=210,x0=40,x1=480,lo=26,hi=36,pxd=(x1-x0)/(hi-lo),o='<rect width="'+W+'" height="'+H+'" fill="var(--air)"/>';
+  for(var v=lo;v<=hi;v+=res){var x=x0+(v-lo)*pxd,big=Math.abs(v-Math.round(v))<1e-9&&Math.round(v)%5===0;
+    o+='<line x1="'+x+'" y1="130" x2="'+x+'" y2="'+(big?96:112)+'" stroke="var(--ink2)" stroke-width="1.3"/>';
+    if(Math.abs(v-Math.round(v))<1e-9&&Math.round(v)%2===0)o+='<text x="'+x+'" y="150" text-anchor="middle" class="tick">'+Math.round(v)+'°</text>'}
+  o+='<line x1="'+x0+'" y1="130" x2="'+x1+'" y2="130" stroke="var(--ink2)" stroke-width="1.5"/>';
+  var c=31,bw=beam*pxd;
+  o+='<rect x="'+(x0+(c-lo)*pxd-bw/2)+'" y="20" width="'+bw+'" height="76" fill="var(--ray)" opacity=".7"/>';
+  var lo2=Math.max(lo,Math.floor((c-beam/2)/res)*res),hi2=Math.min(hi,Math.ceil((c+beam/2)/res)*res);
+  o+='<rect x="'+(x0+(lo2-lo)*pxd)+'" y="162" width="'+((hi2-lo2)*pxd)+'" height="14" fill="var(--accent)" opacity=".75"/>';
+  o+='<text x="'+(x0+(lo2-lo)*pxd)+'" y="196" class="lbl" fill="var(--ink)">the reading could be anywhere from '+lo2+'° to '+hi2+'°</text>';
+  return {svg:'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="A magnified protractor scale with a ray line on it">'+o+'</svg>',span:hi2-lo2}}
+function renderB3(){
+  $('tabB3').innerHTML=segHTML(B3TABS,SB3.tab);var v='',w='',t=SB3.tab;
+  if(t==='setup'){v='<div class="panel">'+benchSVG()+'</div>';
+    w='<p class="lead">Draw the apparatus <b>as it will actually look on the bench</b>, and label every piece.</p><ul class="tight"><li>Ray box, with its single-slit slide, and the power supply.</li><li>The protractor card.</li><li>The semicircular perspex block, flat face along the centre line.</li><li>The ray arriving at the <b>centre</b> of the card.</li></ul><div class="why-box">Another Year 8 should be able to build your set-up from the drawing alone. That is the test of a good diagram.</div>'}
+  if(t==='values'){v='<div class="panel"><svg id="fB3v" viewBox="0 0 440 440"></svg></div><div class="chips" id="valChips"></div>';
+    w='<p class="lead">I will use angles of incidence of <b>0° to 80°, in steps of 10°</b>. Nine values.</p><ul class="tight"><li><b>0°</b> is a check: the ray goes straight through. It should read 0°.</li><li><b>10° steps</b> spread the points across the range so the shape of the curve shows.</li><li><b>Up to 80°.</b> At 90° the ray would run along the flat face with no ray left to read.</li></ul><div class="why-box">Measured with the protractor printed on the card, resolution <b>1°</b>. Write both the instrument and its resolution.</div>'}
+  if(t==='res'){var r=resSVG(SB3.beam,1);v='<div class="panel">'+r.svg+'</div><div><label class="f" for="beamS">Width of the ray line on the card: <b id="beamV"></b></label><input type="range" id="beamS" min="0.5" max="4" step="0.5" value="'+SB3.beam+'"></div>';
+    w='<p class="lead"><b>Resolution</b> is the smallest change an instrument can show. On a metre ruler marked in millimetres it is 1 mm. On the card protractor it is <b>1°</b>.</p><p>Write it like this: <i>I will use the protractor printed on the card, which has a resolution of 1°.</i></p><div class="why-box">A wider ray line widens the range of readings you could honestly give. A narrower line lets you trust the nearest degree.</div><p class="hint">The same idea returns in C5 as an improvement.</p>'}
+  if(t==='ctl'){v='<div class="panel"><svg id="fB3c" viewBox="0 0 440 440"></svg></div><div class="cards" id="ctlCards"></div>';
+    w='<p class="lead">A <b>control variable</b> is something you keep the same so the test is fair. For each one write three things: what it is, how you keep it the same, why it matters.</p><div class="why-box" id="ctlInfo"></div><p class="hint">Two or three real controls beat a long list.</p>'}
+  if(t==='rep'){v='<div class="panel" id="repP"></div><div class="row"><button class="btn primary" id="takeR">Take a reading at 50°</button><button class="btn" id="resetR">Start again</button><label class="hint"><input type="checkbox" id="misr"> Include one misread</label></div>';
+    w='<p class="lead">I will repeat each measurement <b>3 times</b> and find an <b>average</b>.</p><div class="why-box" id="repInfo"></div>'}
+  if(t==='safe'){v='<div class="panel"><svg viewBox="0 0 520 200" role="img" aria-label="A hot ray box with heat rising from it"><rect width="520" height="200" fill="var(--air)"/><rect x="170" y="90" width="150" height="70" rx="6" fill="var(--ink2)"/><circle cx="320" cy="125" r="8" fill="var(--ray)"/><path d="M200 80 q-10 -20 0 -40 t0 -40 M240 80 q-10 -20 0 -40 t0 -40 M280 80 q-10 -20 0 -40 t0 -40" fill="none" stroke="var(--ray)" stroke-width="3" opacity=".6" transform="translate(0 20)"/><text x="170" y="185" class="lbl" fill="var(--ink)">the ray box bulb gets hot</text></svg></div>';
+    w='<p class="lead">Name something that could genuinely cause injury, and say what you will do about it.</p><div class="why-box"><b>The shape of a safety point.</b> <i>The ray box could cause burns, and paper left on it could catch fire. To stay safe I will keep paper, sleeves and pencil cases clear of the ray box, handle it by the case, and switch it off at the power supply if anything smells of burning, then tell Mr. Rawson.</i></div><p>Check yourself: you named a real hazard, and you wrote a specific action that matches it.</p>'}
+  $('visB3').innerHTML=v;$('whyB3').innerHTML=w;
+  if(t==='values'){$('fB3v').innerHTML=cardSVG(SB3.th,N);$('valChips').innerHTML=[0,10,20,30,40,50,60,70,80].map(function(a){return '<button class="chip" data-v="'+a+'" aria-pressed="'+(a===SB3.th)+'">'+a+'°</button>'}).join('')}
+  if(t==='res'){$('beamV').textContent=SB3.beam+'°'}
+  if(t==='ctl'){var ci=[['block','Same block'],['light','Same ray box and power'],['centre','Ray at the centre'],['lesson','One lesson']];
+    $('ctlCards').innerHTML=ci.map(function(c){return '<button class="card" data-v="'+c[0]+'" aria-pressed="'+(c[0]===SB3.ctl)+'"><strong>'+c[1]+'</strong></button>'}).join('');
+    var info={block:'<b>The same block throughout.</b> A different block might be a different material or shape and would refract by a different amount.<br><span class="hint">Swap the block and compare: at 50° perspex gives '+f1(snell(50))+'°.</span><br><select id="matS">'+MATS.map(function(m){return '<option value="'+m[1]+'"'+(m[1]===SB3.mat?' selected':'')+'>'+m[0]+' (n = '+m[1].toFixed(2)+')</option>'}).join('')+'</select> gives <b>'+f1(snell(50,SB3.mat))+'°</b> at 50°.',
+      light:'<b>The same ray box and power setting.</b> This keeps the brightness and the colour the same, and different colours refract by slightly different amounts.',
+      centre:'<b>The ray hitting the centre every time.</b> Both scales are drawn from the centre. Slide the ray off it and the readings come from the wrong point.<br><label class="f" for="offS" style="margin-top:6px">Slide the ray sideways: <b>'+SB3.off+' mm</b></label><input type="range" id="offS" min="-40" max="40" step="5" value="'+SB3.off+'"><span class="hint">'+(function(){var a=SB3.th*RAD,L=160,x=SB3.off+L*Math.sin(a),y=L*Math.cos(a),rd=Math.atan2(x,y)/RAD,b=snell(SB3.th)*RAD,x2=SB3.off-L*Math.sin(b),y2=L*Math.cos(b),rd2=Math.atan2(-x2,y2)/RAD;return SB3.off===0?'Centred: the card reads '+f1(SB3.th)+'° in and '+f1(snell(SB3.th))+'° out, which is correct.':'Read from the card the angle in looks like '+f1(rd)+'° instead of '+f1(SB3.th)+'°, and the angle out looks like '+f1(rd2)+'° instead of '+f1(snell(SB3.th))+'°.'})()+'</span>',
+      lesson:'<b>One lesson.</b> The classroom temperature changes very little within a lesson, so doing the whole experiment in one sitting controls it. If the temperature changed, the perspex might refract light slightly differently.'}[SB3.ctl];
+    $('ctlInfo').innerHTML=info;
+    $('fB3c').innerHTML=cardSVG(SB3.th,SB3.ctl==='block'?SB3.mat:N,{offset:SB3.ctl==='centre'?SB3.off:0,mat:SB3.ctl==='block'?(MATS.filter(function(m){return m[1]===SB3.mat})[0]||['perspex'])[0].toLowerCase():'perspex block',hl:SB3.ctl==='centre'?'box':SB3.ctl==='block'?'block':null})}
+  if(t==='rep')renderRep()}
+function renderRep(){
+  var r=SB3.reads,h='<table class="strip"><tr><th>Reading</th><th>1st</th><th>2nd</th><th>3rd</th><th>Average</th></tr><tr><th>θ₂ / °</th>';
+  for(var i=0;i<3;i++)h+='<td>'+(r[i]!=null?r[i]:'·')+'</td>';
+  var avg=r.length===3?(r[0]+r[1]+r[2])/3:null;h+='<td><b>'+(avg!=null?f1(avg):'·')+'</b></td></tr></table>';
+  $('repP').innerHTML=h;
+  var t='True value at 50° is about '+f1(snell(50))+'°.';
+  if(r.length===3){var one=r[1];t+=' <b>One reading alone</b> (the 2nd) would be off by '+f1(Math.abs(one-snell(50)))+'°. The <b>average</b> is off by '+f1(Math.abs(avg-snell(50)))+'°.'+(SB3.misread?' The misread pulls the average only a third as far as it pulls a single reading.':'')}
+  else t+=' Take three readings.';
+  $('repInfo').innerHTML=t+'<br><span class="hint">Repeating and averaging stops one misread value from changing your result.</span>'}
+$('visB3').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b){SB3.th=+b.dataset.v;renderB3();return}
+  var c=e.target.closest('.card');if(c){SB3.ctl=c.dataset.v;renderB3();return}
+  if(e.target.id==='takeR'){if(SB3.reads.length>=3)SB3.reads=[];var r=rng(31+SB3.reads.length*7+(SB3.misread?100:0)+Math.floor(Math.random()*5));var v=Math.round(snell(50)+gauss(r)*0.9);if(SB3.misread&&SB3.reads.length===1)v=Math.round(snell(50)+5);SB3.reads.push(v);renderRep()}
+  if(e.target.id==='resetR'){SB3.reads=[];renderRep()}});
+$('visB3').addEventListener('input',function(e){if(e.target.id==='beamS'){SB3.beam=+e.target.value;renderB3()}if(e.target.id==='offS'){SB3.off=+e.target.value;renderB3()}if(e.target.id==='misr'){SB3.misread=e.target.checked;SB3.reads=[];renderRep()}});
+$('visB3').addEventListener('change',function(e){if(e.target.id==='matS'){SB3.mat=+e.target.value;renderB3()}});
+segOn('tabB3',function(v){SB3.tab=v;renderB3()});
+
+/* ======== C1 table ======== */
+var SC={idx:0,reveal:0,curve:false,cls:false,maths:false};
+function renderC1(){
+  var a=ANG[SC.idx],t2=snell(a);
+  $('fC1').innerHTML=cardSVG(a,N,{});
+  var h='<span><small>angle in</small>'+f0(a)+'°</span><span class="t2"><small>angle out</small>'+f1(t2)+(a===90?'°*':'°')+'</span>';
+  if(SC.maths&&a>0)h+='<span style="font-size:15px"><small>sin θ₁ ÷ sin θ₂</small>'+(Math.sin(a*RAD)/Math.sin(t2*RAD)).toFixed(2)+'</span>';
+  $('c1read').innerHTML=h;
+  $('c1cap').innerHTML=a===0?'The ray travels along the normal, so it goes straight through. No bend at all.'
+   :a===90?'* The limit. The ray would skim along the flat face, so there is no ray to measure, and 90° stays an expected value only. It also shows the most θ₂ could ever be in perspex: '+f1(MAXT)+'°.'
+   :'The ray bends <b>towards the normal</b>: θ₂ is '+f1(a-t2)+'° smaller than θ₁. Light slows down in perspex.';
+  var g=G();
+  if(SC.curve||SC.idx===9)g.cap();
+  if(SC.curve){g.curve(function(x){return snell(x)},0,90,'s-theory');g.text(46,13,'expected curve, perspex (n = 1.49)','var(--theory)')}
+  g.o+='<line x1="'+g.X(a)+'" y1="'+g.Y(0)+'" x2="'+g.X(a)+'" y2="'+g.Y(t2)+'" class="s-guide"/><line x1="'+g.X(0)+'" y1="'+g.Y(t2)+'" x2="'+g.X(a)+'" y2="'+g.Y(t2)+'" class="s-guide"/>';
+  for(var i=0;i<=SC.reveal;i++){var y=snell(ANG[i]);g.dot(ANG[i],y,i===SC.idx?7:5,'var(--theory)',tip(ANG[i],y),false,ANG[i]===90)}
+  if(SC.cls){CLASSPTS.forEach(function(p){if(p[0]<=ANG[SC.reveal])g.dot(p[0],p[1],5,'var(--data)','last year: '+tip(p[0],p[1]),true)});g.text(2,47,'◆ last year\'s class averages','var(--data)')}
+  g.end('gC1');
+  $('c1chips').innerHTML=ANG.map(function(v,i){return '<button class="chip'+(i<=SC.reveal?' seen':'')+'" data-i="'+i+'" aria-pressed="'+(i===SC.idx)+'">'+v+'°</button>'}).join('');
+  var tb='<tr><th rowspan="2">Angle of incidence θ₁ / degrees</th><th colspan="4">Angle of refraction θ₂ / degrees</th><th rowspan="2">Expected</th></tr><tr><th>1st</th><th>2nd</th><th>3rd</th><th>Average</th></tr>';
+  ANG.forEach(function(v,i){if(i>SC.reveal)return;var c=CLASS[v],cur=i===SC.idx?' class="cur"':'';
+    if(v===0)tb+='<tr><td'+cur+'>0</td><td>0</td><td>0</td><td>0</td><td><b>0</b></td><td>0.0</td></tr>';
+    else if(v===90)tb+='<tr><td'+cur+'>90</td><td colspan="4" class="off">cannot be measured: the ray skims the boundary</td><td>'+f1(MAXT)+'*</td></tr>';
+    else tb+='<tr><td'+cur+'>'+v+'</td><td>'+c[0]+'</td><td>'+c[1]+'</td><td>'+c[2]+'</td><td><b>'+f1((c[0]+c[1]+c[2])/3)+'</b></td><td>'+f1(snell(v))+'</td></tr>'});
+  $('c1table').innerHTML=tb+'<caption style="caption-side:bottom;text-align:left;padding-top:6px;color:var(--muted);font-weight:400">Trials and averages are last year\'s class. Expected values are what perspex (n = 1.49) should give.</caption>';
+  $('c1prev').disabled=SC.idx===0;$('c1next').disabled=SC.idx===9;
+  $('c1curve').setAttribute('aria-pressed',SC.curve);$('c1curve').textContent=SC.curve?'Hide the expected curve':'Draw the expected curve';
+  $('c1class').setAttribute('aria-pressed',SC.cls);$('c1class').textContent=SC.cls?'Hide last year\'s class':'Add last year\'s class'}
+function setC1(i){SC.idx=Math.max(0,Math.min(9,i));SC.reveal=Math.max(SC.reveal,SC.idx);renderC1()}
+$('c1next').onclick=function(){setC1(SC.idx+1)};$('c1prev').onclick=function(){setC1(SC.idx-1)};
+$('c1reset').onclick=function(){SC.idx=0;SC.reveal=0;SC.curve=false;SC.cls=false;renderC1()};
+$('c1chips').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b)setC1(+b.dataset.i)});
+$('c1curve').onclick=function(){SC.curve=!SC.curve;renderC1()};$('c1class').onclick=function(){SC.cls=!SC.cls;renderC1()};
+$('c1maths').onchange=function(){SC.maths=this.checked;renderC1()};
+
+/* ======== C1 graph ======== */
+var SG={layers:{dots:true,fit:false,gaps:false,theory:false},ds:'class',sd:2,seed:1,probe:55};
+function dataG(){if(SG.ds==='class')return CLASSPTS;var r=rng(SG.seed*7919),p=[[0,0]];for(var a=10;a<=80;a+=10)p.push([a,Math.max(0.5,Math.round(snell(a)+gauss(r)*SG.sd))]);return p}
+function renderG(){
+  var pts=dataG(),fit=fitQ(pts),L=SG.layers,g=G();
+  $('simG').hidden=SG.ds!=='sim';$('sdGv').textContent='±'+SG.sd+'°';
+  [].forEach.call(document.querySelectorAll('#layersG .btn'),function(b){b.setAttribute('aria-pressed',!!L[b.dataset.l])});
+  $('dsG').innerHTML=segHTML([['class',"Last year's class"],['sim','Simulated class']],SG.ds);
+  if(L.theory){g.cap();g.curve(function(x){return snell(x)},0,90,'s-theory');g.text(46,13,'expected, perspex','var(--theory)')}
+  if(L.gaps)pts.forEach(function(p){if(p[0]>0)g.o+='<line x1="'+g.X(p[0])+'" y1="'+g.Y(p[1])+'" x2="'+g.X(p[0])+'" y2="'+g.Y(fit(p[0]))+'" stroke="var(--fit)" stroke-width="2.5" opacity=".6"/>'});
+  if(L.dots){g.poly(pts,'s-dots');g.text(52,38,'joined dots','var(--dots)')}
+  if(L.fit){g.curve(fit,0,80,'s-fit');g.text(52,43,'curve of best fit','var(--fit)')}
+  pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tip(p[0],p[1]),SG.ds==='class'&&p[0]===80)});
+  var pr=SG.probe;g.o+='<line x1="'+g.X(pr)+'" y1="'+g.Y(0)+'" x2="'+g.X(pr)+'" y2="'+g.Y(50)+'" class="s-guide"/>';
+  if(L.dots)g.dot(pr,interp(pts,pr),5,'var(--dots)','joined dots');if(L.fit)g.dot(pr,fit(pr),5,'var(--fit)','best fit');if(L.theory)g.dot(pr,snell(pr),5,'var(--theory)','expected');
+  g.end('gG');$('probeGv').textContent=pr+'°';
+  var rows='<tr><th></th><th>θ₂ read off</th></tr>';
+  if(L.dots)rows+='<tr><td style="color:var(--dots)">Joined dots</td><td>'+f1(interp(pts,pr))+'°</td></tr>';
+  if(L.fit)rows+='<tr><td style="color:var(--fit)">Best-fit curve</td><td>'+f1(fit(pr))+'°</td></tr>';
+  rows+='<tr><td style="color:var(--theory)">Expected (physics)</td><td>'+f1(snell(pr))+'°</td></tr>';$('probeGt').innerHTML=rows;
+  var up=0,dn=0;pts.forEach(function(p){if(p[0]>0){(p[1]>fit(p[0]))?up++:dn++}});
+  var nt='<b>What to notice.</b> ';
+  if(L.dots&&!L.fit)nt+='Joining the dots sends the line through <b>every</b> reading, including the ones a little too high or low. It wobbles, and it goes almost flat between 50° and 60°, which light never does. Each reading carries a small error, so the line copies the errors.';
+  else if(L.fit)nt+='The best-fit curve passes <b>between</b> the points: '+up+' above it and '+dn+' below it. It ignores the small errors and shows the pattern, so it can predict a reading you did not take. '+(SG.ds==='class'?'The last point, 46°, is higher than light can reach in perspex ('+f1(MAXT)+'°), so it was a misread, and a curve of best fit does not chase it.':'Raise the reading error, then join the dots again.');
+  else nt+='Turn on <b>Join the dots</b> or <b>Curve of best fit</b>.';
+  $('noteG').innerHTML=nt}
+$('layersG').addEventListener('click',function(e){var b=e.target.closest('.btn');if(b){SG.layers[b.dataset.l]=!SG.layers[b.dataset.l];renderG()}});
+segOn('dsG',function(v){SG.ds=v;renderG()});
+$('sdG').oninput=function(){SG.sd=+this.value;renderG()};$('seedG').onclick=function(){SG.seed++;renderG()};$('probeG').oninput=function(){SG.probe=+this.value;renderG()};
+
+/* ======== C1 check table ======== */
+var S5={tbl:CLASSPTS.map(function(p){return +f1(p[1])})};
+function render5(){
+  var tb='<tr><th>θ₁ / °</th><th>θ₂ average / °</th><th>vs expected</th></tr>';
+  for(var i=0;i<9;i++){var a=i*10,v=S5.tbl[i],e=snell(a),msg='',cls='';
+    if(v!=null&&!isNaN(v)){var d=v-e;cls=Math.abs(d)<=3?'good':Math.abs(d)<=6?'warn':'bad';msg='expected '+f1(e)+'°, '+(d>=0?'+':'')+f1(d)+'°'}
+    tb+='<tr><td>'+a+'</td><td><input type="number" id="in'+i+'" step="0.1" value="'+(v==null||isNaN(v)?'':v)+'" aria-label="Average angle of refraction at '+a+' degrees"></td><td class="'+cls+'">'+msg+'</td></tr>'}
+  var act=document.activeElement&&document.activeElement.id;$('tbl5').innerHTML=tb;if(act&&/^in\d$/.test(act)){var el=$(act);if(el)el.focus()}
+  var g=G(),band='M'+g.X(0)+' '+g.Y(0);for(var x=0;x<=90;x+=2)band+='L'+g.X(x)+' '+g.Y(snell(x)+3);for(x=90;x>=0;x-=2)band+='L'+g.X(x)+' '+g.Y(Math.max(0,snell(x)-3));g.o+='<path d="'+band+'Z" class="band"/>';
+  g.curve(function(x){return snell(x)},0,90,'s-theory');g.text(46,13,'expected ±3°','var(--theory)');
+  var pts=[];S5.tbl.forEach(function(v,i){if(v!=null&&!isNaN(v)){var d=Math.abs(v-snell(i*10));pts.push([i*10,v]);g.dot(i*10,Math.min(v,50),5.5,d<=3?'var(--data)':d<=6?'var(--warn)':'var(--bad)',tip(i*10,v)+(d<=3?' (within 3°)':' (off by '+f1(d)+'°)'),d>3)}});
+  g.end('gE');
+  var out=[],n=pts.length;
+  if(!n)out.push(['','Enter at least one reading.']);
+  else{var near=pts.filter(function(p){return Math.abs(p[1]-snell(p[0]))<=3}).length,mir=pts.filter(function(p){return Math.abs(p[1]-snell(p[0]))>3&&Math.abs(p[1]-(90-snell(p[0])))<=3}).length;
+    if(S5.tbl[0]!=null&&!isNaN(S5.tbl[0])&&S5.tbl[0]!==0)out.push(['bad','The 0° row should read 0°. '+(Math.abs(S5.tbl[0]-90)<=3?'A row that starts near 90° was measured from the flat face instead of the normal.':'The ray goes straight through along the normal.')]);
+    if(mir>=3)out.push(['bad','Several readings match 90° minus the expected angle. Measure both angles from the normal, not from the boundary.']);
+    var over=pts.filter(function(p){return p[1]>MAXT+0.5}).map(function(p){return p[0]});if(over.length)out.push(['bad','Above '+f1(MAXT)+'° at θ₁ = '+over.join(', ')+'°. Perspex cannot bend light that far, so re-read these.']);
+    var big=pts.filter(function(p){return p[0]>0&&p[1]>p[0]+0.5}).map(function(p){return p[0]});if(big.length)out.push(['bad','θ₂ is larger than θ₁ at '+big.join(', ')+'°. In perspex the ray bends towards the normal, so θ₂ is smaller. Re-check which scale you read.']);
+    var dips=[];for(var j=1;j<pts.length;j++)if(pts[j][1]<pts[j-1][1]-0.5)dips.push(pts[j][0]);if(dips.length)out.push(['warn','θ₂ goes down at θ₁ = '+dips.join(', ')+'°. It should rise at every step.']);
+    out.push([near===n?'good':near>=n*0.7?'warn':'bad',near+' of '+n+' readings are within 3° of the expected curve'+(near===n?'. Measured well.':'.')])}
+  $('diag5').innerHTML='<ul class="tight" style="list-style:none;padding:0">'+out.map(function(r){return '<li class="'+r[0]+'" style="margin:4px 0">'+(r[0]==='good'?'✓ ':r[0]?'• ':'')+r[1]+'</li>'}).join('')+'</ul>'}
+$('tbl5').addEventListener('input',function(e){var m=/^in(\d)$/.exec(e.target.id);if(m){S5.tbl[+m[1]]=e.target.value===''?null:parseFloat(e.target.value);render5()}});
+document.querySelector('#c1c').addEventListener('click',function(e){var b=e.target.closest('[data-ex]');if(!b)return;
+  if(b.dataset.ex==='class')S5.tbl=CLASSPTS.map(function(p){return +f1(p[1])});else if(b.dataset.ex==='mirror')S5.tbl=ANG.slice(0,9).map(function(a){return Math.round(90-snell(a))});else S5.tbl=[null,null,null,null,null,null,null,null,null];render5()});
+
+/* ======== C2 ======== */
+var SHAPES=[['rise','Rising','As x increases, y increases.',function(x){return x}],
+ ['prop','Straight, through (0, 0)','x is directly proportional to y, because the graph is a straight line through the origin.',function(x){return x}],
+ ['lin','Straight, missing (0, 0)','There is a linear relationship between x and y, because the graph is a straight line that misses the origin.',function(x){return .6*x+.3}],
+ ['up','Curving upwards','As x increases, y increases at an increasing rate.',function(x){return x*x}],
+ ['lev','Levelling off','However, after x is 20, y stops increasing.',function(x){return Math.min(x,.5)}],
+ ['none','No pattern','There is no correlation between x and y.',null]];
+var SC2={shape:'rise'};
+function thumb(id){var s=SHAPES.filter(function(x){return x[0]===id})[0],o='<svg viewBox="0 0 60 44" width="60" height="44"><rect width="60" height="44" fill="none"/><path d="M6 38 H54 M6 38 V6" stroke="var(--muted)" fill="none"/>';
+  if(id==='rise')o+='<path d="M6 38 C20 22 34 14 54 10" stroke="var(--theory)" stroke-width="2.4" fill="none"/>';
+  else if(id==='prop')o+='<path d="M6 38 L54 8" stroke="var(--theory)" stroke-width="2.4" fill="none"/>';
+  else if(id==='lin')o+='<path d="M6 30 L54 8" stroke="var(--theory)" stroke-width="2.4" fill="none"/>';
+  else if(id==='up')o+='<path d="M6 38 C30 36 44 28 54 8" stroke="var(--theory)" stroke-width="2.4" fill="none"/>';
+  else if(id==='lev')o+='<path d="M6 38 C16 16 24 10 30 10 L54 10" stroke="var(--theory)" stroke-width="2.4" fill="none"/>';
+  else o+='<circle cx="14" cy="14" r="2.5" fill="var(--theory)"/><circle cx="30" cy="30" r="2.5" fill="var(--theory)"/><circle cx="44" cy="12" r="2.5" fill="var(--theory)"/><circle cx="22" cy="24" r="2.5" fill="var(--theory)"/><circle cx="50" cy="32" r="2.5" fill="var(--theory)"/>';
+  return o+'</svg>'}
+function renderC2(){
+  $('shapes').innerHTML=SHAPES.map(function(s){return '<button class="card" data-v="'+s[0]+'" aria-pressed="'+(s[0]===SC2.shape)+'" style="display:flex;gap:8px;align-items:center">'+thumb(s[0])+'<strong style="font-size:13px">'+s[1]+'</strong></button>'}).join('');
+  var s=SHAPES.filter(function(x){return x[0]===SC2.shape})[0],txt;
+  if(s[0]==='rise')txt='<b class="good">This is the one for our graph.</b> '+s[2]+' It climbs, and it gets flatter as it goes, so none of the other five describes it. Say it in the words of your own research question: <i>as the angle of incidence increases, the angle of refraction also increases.</i>';
+  else if(s[0]==='up')txt='<b>Curving upwards</b> would need the graph to get steeper as it goes. Ours bends the other way, so this sentence does not fit. '+s[2];
+  else txt='<b>'+s[1]+'.</b> '+s[2]+(s[0]==='prop'||s[0]==='lin'?' Our curve is not straight, so this sentence does not fit.':s[0]==='lev'?' Ours never stops rising, so this does not fit.':' Our points follow a clear pattern, so this does not fit.');
+  $('shapeOut').innerHTML=txt;
+  var g=G();g.curve(CFIT,0,80,'s-fit');CLASSPTS.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tip(p[0],p[1]),p[0]===80)});
+  var a=+$('n1').value,b=+$('n2').value;[[a,'var(--accent)'],[b,'var(--accent)']].forEach(function(q){g.o+='<line x1="'+g.X(q[0])+'" y1="'+g.Y(0)+'" x2="'+g.X(q[0])+'" y2="'+g.Y(CFIT(q[0]))+'" class="s-guide"/><line x1="'+g.X(0)+'" y1="'+g.Y(CFIT(q[0]))+'" x2="'+g.X(q[0])+'" y2="'+g.Y(CFIT(q[0]))+'" class="s-guide"/>';g.dot(q[0],CFIT(q[0]),6,'var(--accent)','',false,true)});
+  g.end('gC2');$('v1').textContent=f0(CFIT(a))+'°';$('v2').textContent=f0(CFIT(b))+'°'}
+(function(){var o=[20,30,40,50,60,70].map(function(v){return '<option>'+v+'</option>'}).join('');$('n1').innerHTML=o;$('n2').innerHTML=o;$('n1').value='20';$('n2').value='50';$('n1').onchange=renderC2;$('n2').onchange=renderC2})();
+$('shapes').addEventListener('click',function(e){var b=e.target.closest('.card');if(b){SC2.shape=b.dataset.v;renderC2()}});
+/* wave fronts */
+var SW={th:50,tau:0,play:false};
+function waveSVG(){
+  var cx=220,cy=180,L1=44,n=N,L2=L1/n,t1=SW.th*RAD,t2=snell(SW.th)*RAD,d1=[-Math.sin(t1),Math.cos(t1)],d2=[-Math.sin(t2),Math.cos(t2)];
+  var o='<defs><clipPath id="cA"><rect x="0" y="0" width="440" height="180"/></clipPath><clipPath id="cB"><rect x="0" y="180" width="440" height="180"/></clipPath><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"/></marker></defs>';
+  o+='<rect width="440" height="180" fill="var(--air)"/><rect y="180" width="440" height="180" fill="var(--block)"/><line x1="0" y1="180" x2="440" y2="180" stroke="var(--ink)" stroke-width="1.5"/><line x1="'+cx+'" y1="10" x2="'+cx+'" y2="350" stroke="var(--ink)" stroke-dasharray="6 5"/>';
+  function fronts(d,lam,clip,col){var s='';var p=[-d[1],d[0]];for(var k=-14;k<=14;k++){var sd=(k+SW.tau)*lam,x=cx+d[0]*sd,y=cy+d[1]*sd;s+='<line x1="'+(x-p[0]*400)+'" y1="'+(y-p[1]*400)+'" x2="'+(x+p[0]*400)+'" y2="'+(y+p[1]*400)+'" stroke="'+col+'" stroke-width="2.4" clip-path="url(#'+clip+')" opacity=".85"/>'}return s}
+  o+=fronts(d1,L1,'cA','var(--ray)')+fronts(d2,L2,'cB','var(--data)');
+  o+='<line x1="'+(cx-d1[0]*140)+'" y1="'+(cy-d1[1]*140)+'" x2="'+(cx-d1[0]*60)+'" y2="'+(cy-d1[1]*60)+'" stroke="var(--ink)" stroke-width="2" marker-end="url(#ah2)"/><line x1="'+(cx+d2[0]*60)+'" y1="'+(cy+d2[1]*60)+'" x2="'+(cx+d2[0]*140)+'" y2="'+(cy+d2[1]*140)+'" stroke="var(--ink)" stroke-width="2" marker-end="url(#ah2)"/>';
+  o+='<text x="12" y="24" class="simt">air: wave fronts far apart</text><text x="12" y="346" class="simt" fill="var(--data)">perspex: closer together, light is slower</text><text x="'+(cx+6)+'" y="24" class="simn">normal</text>';
+  return o}
+function renderW(){$('wthv').textContent=SW.th+'°';$('wth').value=SW.th;$('wave').innerHTML=waveSVG();$('wplay').textContent=SW.play?'Pause':'Play'}
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tick(){if(!SW.play)return;SW.tau=(SW.tau+0.006)%1;$('wave').innerHTML=waveSVG();requestAnimationFrame(tick)}
+$('wplay').onclick=function(){if(reduce){SW.tau=(SW.tau+0.15)%1;renderW();return}SW.play=!SW.play;renderW();if(SW.play)requestAnimationFrame(tick)};
+$('wstep').onclick=function(){SW.play=false;SW.tau=(SW.tau+0.15)%1;renderW()};
+$('wth').oninput=function(){SW.th=+this.value;renderW()};
+
+/* ======== C3 ======== */
+var S3={h:'inc'};
+function renderC3(){
+  $('hypC3').innerHTML=segHTML([['inc','increase'],['dec','decrease'],['same','stay the same']],S3.h);
+  var g=G();g.curve(CFIT,0,80,'s-fit');CLASSPTS.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tip(p[0],p[1]),p[0]===80)});
+  var arrow=S3.h==='inc'?[[10,6],[70,38]]:S3.h==='dec'?[[10,38],[70,6]]:[[10,24],[70,24]];
+  g.o+='<defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--dots)"/></marker></defs><line x1="'+g.X(arrow[0][0])+'" y1="'+g.Y(arrow[0][1])+'" x2="'+g.X(arrow[1][0])+'" y2="'+g.Y(arrow[1][1])+'" stroke="var(--dots)" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#ah3)"/>';
+  g.text(52,46,'dashed arrow: my prediction','var(--dots)');g.text(52,41,'blue points and curve: what happened','var(--data)');g.end('gC3');
+  var txt=S3.h==='inc'?'My hypothesis was <span class="good">correct</span>, because I predicted that as the angle of incidence increased the angle of refraction would also increase, and my results show exactly that: at 20° the refraction angle was 12° and at 60° it was 33°.'
+   :'My hypothesis was <span class="bad">not correct</span>, because I predicted that the angle of refraction would '+(S3.h==='dec'?'decrease':'stay the same')+', but my results show it increased: at 20° the refraction angle was 12° and at 60° it was 33°.';
+  $('verdC3').innerHTML=txt}
+segOn('hypC3',function(v){S3.h=v;renderC3()});
+
+/* ======== C4 ======== */
+var S4={care:0.8,rep:3,ctl:1,seed:1};
+function data4(){var r=rng(S4.seed*104729),pts=[[0,0]];for(var a=10;a<=80;a+=10){var s=0;for(var k=0;k<S4.rep;k++){var n=S4.ctl?N:1.30+r()*0.32;s+=Math.round(snell(a,n)+gauss(r)*S4.care)}pts.push([a,Math.max(0,s/S4.rep)])}return pts}
+function render4(){
+  $('care4').innerHTML=segHTML([[0.8,'Carefully'],[2.5,'Rushed'],[5,'Sloppy']],S4.care);$('rep4').innerHTML=segHTML([[1,'One reading'],[3,'Three, averaged']],S4.rep);$('ctl4').innerHTML=segHTML([[1,'Same block throughout'],[0,'Swapped between readings']],S4.ctl);
+  var pts=data4(),fit=fitQ(pts),g=G(),rms=0,dev=0,k=0;pts.forEach(function(p){if(p[0]>0){rms+=Math.pow(p[1]-fit(p[0]),2);dev+=Math.abs(p[1]-snell(p[0]));k++}});rms=Math.sqrt(rms/k);dev/=k;
+  var band='M'+g.X(0)+' '+g.Y(0);for(var x=0;x<=80;x+=2)band+='L'+g.X(x)+' '+g.Y(snell(x)+3);for(x=80;x>=0;x-=2)band+='L'+g.X(x)+' '+g.Y(Math.max(0,snell(x)-3));g.o+='<path d="'+band+'Z" class="band"/>';
+  g.curve(function(x){return snell(x)},0,80,'s-theory');g.text(46,13,'expected ±3°','var(--theory)');g.curve(fit,0,80,'s-fit');pts.forEach(function(p){g.dot(p[0],p[1],5.5,'var(--data)',tip(p[0],p[1]))});g.end('gD');
+  var c=[[rms<=1.5,'The points are close to the line of best fit','The points are a long way from the line of best fit'],[rms<=3,'A clear relationship can be seen','No clear relationship can be seen'],[S4.rep>=3,'Repeats were done and averaged','No repeats were done'],[S4.care<=2.5,'The measuring instruments worked well','Something went wrong with the instruments or with how they were read'],[!!S4.ctl,'All the variables were controlled','Some variables were hard to control (the block changed)']];
+  $('check4').innerHTML=c.map(function(r){return '<li><span class="box '+(r[0]?'good':'bad')+'">'+(r[0]?'✓':'✗')+'</span><span>'+(r[0]?r[1]:r[2])+'</span></li>'}).join('');
+  var t=c.filter(function(r){return r[0]}).length,v=t===5?'valid':t>=3?'partly valid':'not valid',why=c.filter(function(r){return !r[0]}).map(function(r){return r[2].charAt(0).toLowerCase()+r[2].slice(1)});
+  $('verdict4').innerHTML='My method was <span class="'+(t===5?'good':t>=3?'warn':'bad')+'">'+v+'</span>, because '+(why.length?why.join('; ')+'.':'the points sit close to the curve, every reading was repeated and averaged, and the block never changed.');
+  $('stat4').textContent='Average distance from the expected value: '+f1(dev)+'°. Spread of the points about the best-fit curve: '+f1(rms)+'°.'}
+segOn('care4',function(v){S4.care=+v;render4()});segOn('rep4',function(v){S4.rep=+v;render4()});segOn('ctl4',function(v){S4.ctl=+v;render4()});$('seed4').onclick=function(){S4.seed++;render4()};
+
+/* ======== C5 ======== */
+var S5c={tab:'range',steps:10,beam:2,res:1,cand:null};
+var C5TABS=[['range','Widen the range?'],['steps','Smaller steps?'],['read','Hard to measure?'],['not','What counts'],['ext','Extension']];
+var CANDS=[['slow','Work more slowly','no','This is about the person, not the experiment. An improvement changes the <b>design</b> so the data gets better, such as the instrument, the range or the steps.'],
+ ['focus','Concentrate harder','no','This is about the person, not the experiment. Name something in the method or the equipment that you would change.'],
+ ['fine','"Our data came out correct, so no improvements"','no','Every experiment has limits, even when the data looks right: the 1° resolution, the 0 to 80° range, the 10° steps. Naming the limits is the skill.'],
+ ['narrow','Use a narrower ray line','yes','A narrower line is easier to place on the scale, so each reading can be trusted to the nearest degree.'],
+ ['five','Take readings every 5°','yes','Seventeen points from 0° to 80° instead of nine, so the shape of the curve is clearer and the line of best fit is better placed.'],
+ ['prot','Use a protractor with finer divisions','yes','A smaller resolution lets you show a smaller change. The same idea as the ray line, from the instrument side.'],
+ ['rep5','Repeat five times instead of three','yes','More repeats make the average less sensitive to one misread value. A reasonable improvement to the method.'],
+ ['wide','Take readings beyond 80°','part','Only a little more is possible. The card stops at 90°, and at 90° the ray skims the flat face with nothing to read. A reading at 85° is the most you could add.']];
+function readSVG(beam,res){var r=resSVG(beam,res);return r}
+function renderC5(){
+  $('tabC5').innerHTML=segHTML(C5TABS,S5c.tab);var v='',w='',t=S5c.tab;
+  if(t==='range'){v='<div class="panel"><svg id="gR" viewBox="0 0 520 380" role="img" aria-label="Graph showing the range measured, 0 to 80 degrees, and the range that cannot be measured"></svg></div>';
+    w='<p class="lead">Could you widen the range? <b class="warn">Not really.</b></p><ul class="tight"><li>The card only goes up to <b>90°</b>, and we took readings from <b>0° to 80°</b>.</li><li>At 90° the ray runs along the flat face. There is no ray going into the block to read.</li><li>The most you could add is a point at about <b>85°</b>.</li></ul><div class="why-box">A good answer to this question looks at the equipment and says what limit it sets. Here the limit is the card itself.</div>'}
+  if(t==='steps'){v='<div class="panel"><svg id="gS" viewBox="0 0 520 380" role="img" aria-label="Nine points at 10 degree steps compared with seventeen points at 5 degree steps"></svg></div><div class="seg" id="stepSeg"></div>';
+    w='<p class="lead">Could you take readings in smaller steps? <b class="good">Yes.</b></p><ul class="tight"><li>Steps of <b>5°</b> instead of 10° give <b>seventeen</b> points between 0° and 80°, instead of nine.</li><li>More points show the shape of the curve more clearly, especially where it bends.</li><li>A line of best fit through more points is placed with more confidence.</li></ul><div class="why-box">Say what the extra data would have done for the graph. That is the reasoning that earns the mark.</div>'}
+  if(t==='read'){var rr=readSVG(S5c.beam,S5c.res);v='<div class="panel">'+rr.svg+'</div><div class="row"><div><label class="f">Ray line</label><div class="seg" id="beamSeg"></div></div><div><label class="f">Protractor divisions</label><div class="seg" id="resSeg"></div></div></div>';
+    w='<p class="lead">Was anything hard to measure? <b class="good">Yes: reading the angle where the ray crosses the scale.</b></p><ul class="tight"><li>A wide ray line made it hard to say where the middle of the ray crosses the scale.</li><li><b>Improvement:</b> a more precise ray box line, from a narrower slit.</li><li><b>Improvement:</b> a protractor with finer divisions.</li></ul><div class="why-box" id="readInfo"></div>'}
+  if(t==='not'){v='<div class="cards" id="cands"></div>';
+    w='<p class="lead">Tap each idea to see whether it works as an improvement.</p><div class="why-box" id="candInfo">Choose an idea.</div><p class="hint">An improvement is about the experiment: the range, the steps, the instrument, the method. Aim for two or more, and explain what each one would have done for the data.</p>'}
+  if(t==='ext'){v='<div class="panel"><svg id="gX" viewBox="0 0 520 380" role="img" aria-label="Curves for different materials and for red and blue light"></svg></div>';
+    w='<p class="lead">An extension asks a <b>new research question</b> with a <b>different independent variable</b>, then says briefly how you would do it.</p><ul class="tight"><li><b>The material of the block.</b> Water, perspex, glass and diamond give clearly different curves, easy to see with a 1° scale.</li><li><b>The colour of the light.</b> A real effect, called dispersion, but the red and blue curves sit about 0.2° apart. The card reads to 1°, so you would need a much more sensitive set-up to see it.</li></ul><div class="why-box">A strong extension changes something whose effect is bigger than your resolution, and says how you would keep everything else the same.</div>'}
+  $('visC5').innerHTML=v;$('whyC5').innerHTML=w;
+  if(t==='range'){var g=G();g.o+='<rect x="'+g.X(80)+'" y="'+g.Y(50)+'" width="'+(g.X(90)-g.X(80))+'" height="'+(g.Y(0)-g.Y(50))+'" fill="var(--bad)" opacity=".12"/>';g.curve(function(x){return snell(x)},0,90,'s-ref');
+    for(var a=0;a<=80;a+=10){g.dot(a,snell(a),5,'var(--theory)',tip(a,snell(a)))}g.dot(90,MAXT,6,'var(--bad)','90°: cannot be measured',false,true);g.text(81,46,'no ray to read','var(--bad)');g.text(2,47,'measured: 0° to 80°','var(--theory)');g.end('gR')}
+  if(t==='steps'){$('stepSeg').innerHTML=segHTML([[10,'10° steps'],[5,'5° steps']],S5c.steps);var g2=G(),r=rng(77),pts=[[0,0]];for(var b=S5c.steps;b<=80;b+=S5c.steps)pts.push([b,Math.max(0.5,Math.round(snell(b)+gauss(r)*1.2))]);
+    var fit=fitQ(pts);g2.curve(fit,0,80,'s-fit');pts.forEach(function(p){g2.dot(p[0],p[1],5,'var(--data)',tip(p[0],p[1]))});g2.text(2,47,pts.length+' points, '+S5c.steps+'° steps (illustration)','var(--data)');g2.end('gS')}
+  if(t==='read'){$('beamSeg').innerHTML=segHTML([[3,'Wide'],[0.5,'Narrow']],S5c.beam);$('resSeg').innerHTML=segHTML([[1,'1°'],[0.5,'0.5°']],S5c.res);
+    $('readInfo').innerHTML='With this ray line and these divisions the reading could be anywhere across <b>'+f1(readSVG(S5c.beam,S5c.res).span)+'°</b>. Narrow the line and add finer divisions and that range shrinks.'}
+  if(t==='not'){$('cands').innerHTML=CANDS.map(function(c){var st=S5c.cand===c[0]?c[2]:null;return '<button class="card" data-v="'+c[0]+'" aria-pressed="'+(S5c.cand===c[0])+'" style="'+(st==='yes'?'border-left:4px solid var(--good)':st==='no'?'border-left:4px solid var(--bad)':st==='part'?'border-left:4px solid var(--warn)':'')+'"><strong>'+c[1]+'</strong>'+(st?'<span class="'+(st==='yes'?'good':st==='no'?'bad':'warn')+'">'+(st==='yes'?'Works as an improvement':st==='no'?'Not an improvement':'Only partly')+'</span>':'')+'</button>'}).join('');
+    var sel=CANDS.filter(function(c){return c[0]===S5c.cand})[0];if(sel)$('candInfo').innerHTML=sel[3]}
+  if(t==='ext'){var g3=G(),cols=['var(--data)','var(--theory)','var(--fit)','var(--dots)'];MATS.forEach(function(m,i){g3.curve(function(x){return snell(x,m[1])},0,90,'');g3.o=g3.o.replace(/class="ln "/,'class="ln" stroke="'+cols[i]+'" stroke-width="2.4"');g3.text(91,snell(88,m[1]),m[0],cols[i],'end')});
+    g3.curve(function(x){return snell(x,1.488)},0,90,'');g3.o=g3.o.replace(/class="ln "/,'class="ln" stroke="var(--ray)" stroke-width="1.5" stroke-dasharray="3 3"');g3.text(2,47,'dashed: red and blue light in perspex lie on top of each other','var(--ray)');g3.end('gX')}
+}
+segOn('tabC5',function(v){S5c.tab=v;renderC5()});
+$('visC5').addEventListener('click',function(e){var b=e.target.closest('.card');if(b){S5c.cand=b.dataset.v;renderC5()}});
+$('visC5').addEventListener('click',function(e){var b=e.target.closest('#stepSeg button');if(b){S5c.steps=+b.dataset.v;renderC5()}var c=e.target.closest('#beamSeg button');if(c){S5c.beam=+c.dataset.v;renderC5()}var d=e.target.closest('#resSeg button');if(d){S5c.res=+d.dataset.v;renderC5()}});
+
+/* ======== hand in ======== */
+var HAND=['B1 research question names both variables','B2 hypothesis has a because','B3 has a labelled diagram, values, resolutions, controls, repeats and safety','C1 table has units in the headings and the averages worked out','C1 graph has both axes labelled with units and a line of best fit','C2 conclusion uses numbers from your own graph','C3 and C4 both say because','C5 has two improvements and one extension'],SH={};
+function renderH(){var n=0;$('hand').innerHTML=HAND.map(function(t,i){if(SH[i])n++;return '<li><button class="chip" data-i="'+i+'" aria-pressed="'+(!!SH[i])+'" style="border-radius:6px;min-width:34px">'+(SH[i]?'✓':'')+'</button><span style="padding-top:4px">'+t+'</span></li>'}).join('');$('handv').textContent=n===HAND.length?'Everything is checked. Ready to hand in.':n+' of '+HAND.length+' checked'}
+$('hand').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b){SH[b.dataset.i]=!SH[b.dataset.i];renderH()}});
+
+/* ======== boot ======== */
+renderA();renderB1();rq();renderB2();renderB3();renderC1();renderG();render5();renderC2();renderW();renderC3();render4();renderC5();renderH();
+initShell('Refraction Investigation','Year 8 Physics · Mr. Rawson');
+})();
+</script>
+
+</body>
+</html>
