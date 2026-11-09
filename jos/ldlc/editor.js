@@ -339,40 +339,55 @@ function drawRepeater(c, x, y, s) {
   c.fillRect(cx - s * .04, cy + s * .13, s * .08, s * .08);
 }
 /* Jos (9 Nov): the checkpoint, a cracked kite. Grey with a glowing green edge. When the hero touches it, a green lightning bolt
-   strikes it, the cracks go, and it turns bright green and glows. age = null (not touched yet) or the seconds since it was struck. */
+   comes down from the ceiling and strikes it, the cracks go, and it turns into the green diamond from The Sims (flat, 2D:
+   black edge, white band, a light green top and a bright green bottom). age = null (not touched yet) or the seconds since it was struck. */
 function drawCheckpoint(c, x, y, s, time, age) {
   const on = age !== null && age >= 0;
-  const k = on ? Math.min(1, Math.max(0, (age - .12) / .3)) : 0;               // 0 = grey, 1 = bright green
+  const k = on ? Math.min(1, Math.max(0, (age - .12) / .3)) : 0;               // 0 = grey, 1 = finished
   const crack = on ? Math.max(0, 1 - (age - .08) / .25) : 1;                    // the cracks fade out
-  const P = [[.5, .05], [.82, .4], [.5, .96], [.18, .4]];
-  const kite = () => { c.beginPath(); P.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](x + s * q[0], y + s * q[1])); c.closePath(); };
-  const mix = (a, b) => Math.round(a + (b - a) * k);
+  const shape = (cx, top, hw, mid, bot) => { c.beginPath(); c.moveTo(x + s * cx, y + s * top); c.lineTo(x + s * (cx + hw), y + s * mid);
+                                              c.lineTo(x + s * cx, y + s * bot); c.lineTo(x + s * (cx - hw), y + s * mid); c.closePath(); };
   c.save();
-  c.shadowColor = '#3dff6a'; c.shadowBlur = s * (.3 + .35 * k * (.7 + .3 * Math.sin(time * 3)));
-  c.fillStyle = 'rgb(' + mix(88, 70) + ',' + mix(88, 255) + ',' + mix(96, 120) + ')';
-  kite(); c.fill();
-  c.strokeStyle = '#3dff6a'; c.lineWidth = s * .055; c.lineJoin = 'round';
-  kite(); c.stroke();
-  c.shadowBlur = 0;
-  if (k > 0) { c.fillStyle = 'rgba(255,255,255,' + (.35 * k) + ')'; c.beginPath();                       // a shine on the left
-    c.moveTo(x + s * .5, y + s * .1); c.lineTo(x + s * .26, y + s * .4); c.lineTo(x + s * .5, y + s * .5); c.closePath(); c.fill(); }
-  if (crack > 0) {
-    c.globalAlpha = crack; c.strokeStyle = '#17171b'; c.lineWidth = s * .03; c.lineCap = 'round'; c.lineJoin = 'round';
-    [[.5, .05, .45, .3, .55, .46, .47, .64, .52, .96], [.45, .3, .3, .38], [.55, .46, .72, .42], [.47, .64, .34, .56]].forEach(l => {
-      c.beginPath(); c.moveTo(x + s * l[0], y + s * l[1]);
-      for (let i = 2; i < l.length; i += 2) c.lineTo(x + s * l[i], y + s * l[i + 1]);
-      c.stroke();
-    });
-    c.globalAlpha = 1;
+  c.lineJoin = 'round';
+  if (k < 1) {                                                                  // the broken grey kite
+    c.globalAlpha = 1 - k;
+    c.shadowColor = '#3dff6a'; c.shadowBlur = s * .3;
+    c.fillStyle = '#585860'; shape(.5, .02, .27, .44, .98); c.fill();
+    c.strokeStyle = '#3dff6a'; c.lineWidth = s * .055; shape(.5, .02, .27, .44, .98); c.stroke();
+    c.shadowBlur = 0;
+    if (crack > 0) {
+      c.globalAlpha = (1 - k) * crack; c.strokeStyle = '#17171b'; c.lineWidth = s * .03; c.lineCap = 'round';
+      [[.5, .02, .46, .28, .54, .46, .47, .66, .52, .98], [.46, .28, .36, .36], [.54, .46, .66, .42], [.47, .66, .39, .58]].forEach(l => {
+        c.beginPath(); c.moveTo(x + s * l[0], y + s * l[1]);
+        for (let q = 2; q < l.length; q += 2) c.lineTo(x + s * l[q], y + s * l[q + 1]);
+        c.stroke();
+      });
+    }
   }
-  if (on && age < .12) { c.fillStyle = 'rgba(255,255,255,' + (.85 * (1 - age / .12)) + ')'; kite(); c.fill(); }   // the flash
-  if (on && age < .45 && (age < .15 || Math.floor(age * 40) % 2 === 0)) {                                       // the lightning bolt
-    const pts = [[.62, -3.2], [.4, -2.3], [.6, -1.5], [.42, -.7], [.56, 0], [.5, .38]];
-    const bolt = () => { c.beginPath(); pts.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](x + s * q[0], y + s * q[1])); };
-    c.lineCap = 'round'; c.lineJoin = 'round';
-    c.shadowColor = '#3dff6a'; c.shadowBlur = s * .5;
-    c.strokeStyle = 'rgba(61,255,106,.75)'; c.lineWidth = s * .2; bolt(); c.stroke();
-    c.strokeStyle = '#eaffee'; c.lineWidth = s * .07; bolt(); c.stroke();
+  if (k > 0) {                                                                  // the green diamond
+    c.globalAlpha = k;
+    c.shadowColor = '#3dff6a'; c.shadowBlur = s * (.35 + .15 * Math.sin(time * 3));
+    c.fillStyle = '#000'; shape(.5, .0, .3, .44, 1); c.fill();                  // black edge
+    c.shadowBlur = 0;
+    c.fillStyle = '#fff'; shape(.5, .05, .26, .44, .95); c.fill();              // white band
+    c.fillStyle = '#000'; shape(.5, .16, .19, .44, .84); c.fill();              // thin black line
+    c.fillStyle = '#8df08a'; c.beginPath();                                      // light green top half
+    c.moveTo(x + s * .5, y + s * .185); c.lineTo(x + s * .685, y + s * .44); c.lineTo(x + s * .315, y + s * .44); c.closePath(); c.fill();
+    c.fillStyle = '#00ff1e'; c.beginPath();                                      // bright green bottom half
+    c.moveTo(x + s * .315, y + s * .44); c.lineTo(x + s * .685, y + s * .44); c.lineTo(x + s * .5, y + s * .815); c.closePath(); c.fill();
+  }
+  c.globalAlpha = 1;
+  if (on && age < .12) { c.fillStyle = 'rgba(255,255,255,' + (.85 * (1 - age / .12)) + ')'; shape(.5, .02, .27, .44, .98); c.fill(); }   // the flash
+  if (on && age < .5 && (age < .15 || Math.floor(age * 40) % 2 === 0)) {                                       // the lightning bolt, from the ceiling (the top of the level is y = 0)
+    const x0 = x + s * .5, n = Math.max(4, Math.round(y / (s * .55))), y1 = y + s * .12, pts = [];
+    for (let q = 0; q <= n; q++) {
+      const f = q / n, jag = q === 0 || q === n ? 0 : (q % 2 ? 1 : -1) * s * (.1 + .08 * Math.abs(Math.sin(q * 7.3)));
+      pts.push([x0 + jag, y1 * f]);
+    }
+    const bolt = () => { c.beginPath(); pts.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](q[0], q[1])); };
+    c.lineCap = 'round';
+    c.strokeStyle = '#3dff6a'; c.lineWidth = s * .16; bolt(); c.stroke();
+    c.strokeStyle = '#eaffee'; c.lineWidth = s * .06; bolt(); c.stroke();
   }
   c.restore();
 }
