@@ -1722,14 +1722,21 @@ function refreshSend() {
 const levelName = () => (LDLC.list().find(x => x.id === levelId) || { name:'' }).name;
 /* Jos (9 Nov): Copy link, next to Test. It works even if the level hasn't been sent: the whole level is inside the link.
    Open it on another device and it asks to add the level to My levels. From localhost the link goes to the real site. */
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (err) { const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+}
 document.getElementById('copyLinkBtn').addEventListener('click', async e => {
   e.currentTarget.blur();
+  const code = await LDLC.pack(levelId, levelName(), '');
   const local = /^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname);
-  const base = local ? 'https://rawsonvault.com/jos/ldlc/levels.html' : new URL('levels.html', location.href).href;
-  const link = base + '#get=' + await LDLC.pack(levelId, levelName(), '');
-  try { await navigator.clipboard.writeText(link); }
-  catch (err) { const t = document.createElement('textarea'); t.value = link; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+  await copyText((local ? 'https://rawsonvault.com/jos/ldlc/levels.html' : new URL('levels.html', location.href).href) + '#get=' + code);
   say('🔗 Link copied! Paste it on another device');
+});
+document.getElementById('copyCodeBtn').addEventListener('click', async e => {   // the code on its own: Paste level code on My levels takes it
+  e.currentTarget.blur();
+  await copyText(await LDLC.pack(levelId, levelName(), ''));
+  say('📋 Code copied! Use Paste level code on My levels');
 });
 document.getElementById('sendBtn').addEventListener('click', e => {
   e.currentTarget.blur();

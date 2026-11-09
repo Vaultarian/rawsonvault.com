@@ -49,6 +49,8 @@ button.soon { opacity:.45; }
 #testBtn.stop { background:#ff2a3d; }
 #copyLinkBtn { background:#3a6fd8; font-size:1.05rem; padding:.55rem 1rem; }
 #copyLinkBtn:hover { background:#4f86f0; }
+#copyCodeBtn { background:#3a6fd8; font-size:1.05rem; padding:.55rem 1rem; }
+#copyCodeBtn:hover { background:#4f86f0; }
 /* Send to Jos: gold like the door. Grey until you beat the level */
 #goBtns { display:flex; gap:.5rem; margin-left:auto; }   /* TEST and Send to Jos stay side by side */
 #sendWrap { position:relative; display:inline-flex; }
@@ -276,6 +278,7 @@ body.testing #panel { display:none; }
     <span id="goBtns">
       <button id="testBtn">▶ TEST</button>
       <button id="copyLinkBtn" title="Copy a link to this level, to send to another device">🔗 Copy link</button>
+      <button id="copyCodeBtn" title="Copy the level code. Paste it with Paste level code on My levels">📋 Copy code</button>
       <span id="sendWrap"><button id="sendBtn" class="off">📤 Send<span class="long"> to Jos</span></button><span class="tip">Beat the level to send it to Jos</span></span>
     </span>
   </div>
@@ -326,10 +329,10 @@ body.testing #panel { display:none; }
   <canvas id="mouth"></canvas>
   <div id="toast"></div>
 
-<script src="levels.js?v=20261109a"></script>
-<script src="send.js?v=20261109a"></script>
-<script src="editor.js?v=20261109a"></script>
+<script src="levels.js?v=20261109c"></script>
+<script src="send.js?v=20261109c"></script>
+<script src="editor.js?v=20261109c"></script>
 <!-- Jos: type the secret word "beginner" for the beginner guide -->
-<script src="beginner.js?v=20261109a"></script>
+<script src="beginner.js?v=20261109c"></script>
 </body>
 </html>
