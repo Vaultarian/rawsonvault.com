@@ -46,6 +46,7 @@ const BLOCKS = [
   { id:'hill',       name:'Hill',          ready:true },   // Jos (8 Nov): a slope the ball rolls down
   { id:'camera',     name:'Camera position', ready:true }, // Jos (8 Nov): moves the camera when the hero touches it
   { id:'repeater',   name:'Repeating trigger', ready:true }, // Jos (8 Nov): a trigger whose steps repeat over and over
+  { id:'checkpoint', name:'Checkpoint',   ready:true },   // Jos (9 Nov): touch it and, if you die, you start again from here
   { id:'startpos',   name:'Start pos',     ready:true }    // Jos: an editor command, hidden without the secret word
 ];
 const NAME = {};
@@ -68,6 +69,7 @@ const DEFAULTS = {
   ball:       { collision:false, deadly:false, gravity:false, crush:false, triggers:false },   // Jos: only deadly if you turn it on
   hill:       { collision:true,  deadly:false },
   camera:     { visible:false, action:true },   // Jos: invisible when you play, like the trigger
+  checkpoint: { collision:false, deadly:false, action:true },
   repeater:   { visible:false, action:true }    // Jos: invisible when you play, like the trigger
 };
 /* the part of a deadly block that actually gets you, inside its square: x, y, width, height */
@@ -126,7 +128,7 @@ needSize = !applySize(levelId) && !playAll;
    Advanced: the advanced commands are on, you also get Camera position, Hill and Ball, and you can put down
    more than one Hero and more than one Door (they all do the same). */
 let difficulty = 'regular';
-const BLOCK_NEEDS = { dashorb:'regular', controls:'regular', ball:'advanced', hill:'advanced', camera:'advanced', repeater:'advanced' };
+const BLOCK_NEEDS = { checkpoint:'regular', dashorb:'regular', controls:'regular', ball:'advanced', hill:'advanced', camera:'advanced', repeater:'advanced' };
 function blockAllowed(id) {
   const need = BLOCK_NEEDS[id];
   return !need || (need === 'regular' ? difficulty !== 'beginner' : difficulty === 'advanced');
@@ -335,6 +337,44 @@ function drawRepeater(c, x, y, s) {
   c.beginPath();                                   // the small "!" in the middle
   c.moveTo(cx - s * .045, cy - s * .2); c.lineTo(cx + s * .045, cy - s * .2); c.lineTo(cx + s * .03, cy + s * .06); c.lineTo(cx - s * .03, cy + s * .06); c.fill();
   c.fillRect(cx - s * .04, cy + s * .13, s * .08, s * .08);
+}
+/* Jos (9 Nov): the checkpoint, a cracked kite. Grey with a glowing green edge. When the hero touches it, a green lightning bolt
+   strikes it, the cracks go, and it turns bright green and glows. age = null (not touched yet) or the seconds since it was struck. */
+function drawCheckpoint(c, x, y, s, time, age) {
+  const on = age !== null && age >= 0;
+  const k = on ? Math.min(1, Math.max(0, (age - .12) / .3)) : 0;               // 0 = grey, 1 = bright green
+  const crack = on ? Math.max(0, 1 - (age - .08) / .25) : 1;                    // the cracks fade out
+  const P = [[.5, .05], [.82, .4], [.5, .96], [.18, .4]];
+  const kite = () => { c.beginPath(); P.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](x + s * q[0], y + s * q[1])); c.closePath(); };
+  const mix = (a, b) => Math.round(a + (b - a) * k);
+  c.save();
+  c.shadowColor = '#3dff6a'; c.shadowBlur = s * (.3 + .35 * k * (.7 + .3 * Math.sin(time * 3)));
+  c.fillStyle = 'rgb(' + mix(88, 70) + ',' + mix(88, 255) + ',' + mix(96, 120) + ')';
+  kite(); c.fill();
+  c.strokeStyle = '#3dff6a'; c.lineWidth = s * .055; c.lineJoin = 'round';
+  kite(); c.stroke();
+  c.shadowBlur = 0;
+  if (k > 0) { c.fillStyle = 'rgba(255,255,255,' + (.35 * k) + ')'; c.beginPath();                       // a shine on the left
+    c.moveTo(x + s * .5, y + s * .1); c.lineTo(x + s * .26, y + s * .4); c.lineTo(x + s * .5, y + s * .5); c.closePath(); c.fill(); }
+  if (crack > 0) {
+    c.globalAlpha = crack; c.strokeStyle = '#17171b'; c.lineWidth = s * .03; c.lineCap = 'round'; c.lineJoin = 'round';
+    [[.5, .05, .45, .3, .55, .46, .47, .64, .52, .96], [.45, .3, .3, .38], [.55, .46, .72, .42], [.47, .64, .34, .56]].forEach(l => {
+      c.beginPath(); c.moveTo(x + s * l[0], y + s * l[1]);
+      for (let i = 2; i < l.length; i += 2) c.lineTo(x + s * l[i], y + s * l[i + 1]);
+      c.stroke();
+    });
+    c.globalAlpha = 1;
+  }
+  if (on && age < .12) { c.fillStyle = 'rgba(255,255,255,' + (.85 * (1 - age / .12)) + ')'; kite(); c.fill(); }   // the flash
+  if (on && age < .45 && (age < .15 || Math.floor(age * 40) % 2 === 0)) {                                       // the lightning bolt
+    const pts = [[.62, -3.2], [.4, -2.3], [.6, -1.5], [.42, -.7], [.56, 0], [.5, .38]];
+    const bolt = () => { c.beginPath(); pts.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](x + s * q[0], y + s * q[1])); };
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    c.shadowColor = '#3dff6a'; c.shadowBlur = s * .5;
+    c.strokeStyle = 'rgba(61,255,106,.75)'; c.lineWidth = s * .2; bolt(); c.stroke();
+    c.strokeStyle = '#eaffee'; c.lineWidth = s * .07; bolt(); c.stroke();
+  }
+  c.restore();
 }
 function drawCameraBlock(c, x, y, s) {
   /* Jos (8 Nov): the camera position block: like the trigger, with a little camera on it. Only in the creator. */
@@ -555,6 +595,7 @@ function drawBlock(c, type, x, y, s, time, r) {
   else if (type === 'trigger') drawTrigger(c, x, y, s);
   else if (type === 'controls') drawControls(c, x, y, s);
   else if (type === 'camera') drawCameraBlock(c, x, y, s);
+  else if (type === 'checkpoint') drawCheckpoint(c, x, y, s, time || 0, null);
   else if (type === 'repeater') drawRepeater(c, x, y, s);
   else if (type === 'button') drawButton(c, x, y, s);
   else if (type === 'door') drawDoor(c, x, y, s);
@@ -589,6 +630,7 @@ const SWITCHES = {
   controls:   ['visible', 'action'],
   ball:       ['deadly', 'gravity', 'crush', 'triggers', 'visible', 'disguise'],      // Jos (8 Nov)
   hill:       ['collision', 'visible', 'disguise'],
+  checkpoint: ['visible', 'action'],
   camera:     ['visible', 'action'],            // Jos: the regular Visible and Do action, then its own camera settings
   repeater:   ['visible', 'action']             // Jos: like the trigger
 };
@@ -1618,6 +1660,7 @@ function startTest() {
     deaths = 0;
     deathsEl.textContent = '💀 0';
     hideBanner();
+    cpRespawn = null;
     spawn();
     play.state = 'intro';         // nothing moves until his mouth is open
     document.body.classList.add('testing');
@@ -1640,6 +1683,7 @@ function nextPlay() {
     deaths = 0;
     deathsEl.textContent = '💀 0';
     bits = [];
+    cpRespawn = null;
     spawn();
     play.state = 'intro';
     fit();
@@ -1671,16 +1715,28 @@ function heroState(cell, at) {
            ground:false, face:1, walkT:0, on:null,
            jumpH:cell.jumpH === undefined ? JUMP_H : cell.jumpH, speedPct:cell.speed === undefined ? 100 : cell.speed };
 }
+/* Jos (9 Nov): a checkpoint. Once the hero has touched it, every time he dies he starts again from it (until he touches another,
+   or presses Restart, or stops the test). A new try builds everything fresh, so the checkpoint is told it is already green. */
+let cpRespawn = null;                        // { level, id }
+function activateCheckpoint(t) {
+  t.on = true; t.struckAt = performance.now() / 1000;
+  cpRespawn = { level:levelId, id:t.id };
+  for (let k = 0; k < 14; k++) {
+    bits.push({ x:t.x + .5, y:t.y + .5, vx:(Math.random() - .5) * 8, vy:-2 - Math.random() * 6, life:.7, col:'#3dff6a' });
+  }
+}
 function spawn() {
   // every try starts fresh: coins come back, traps reset
   const h = find('hero'), at = !playAll && editorOn && startPos ? startPos : h;   // Jos: the Start pos wins (not in PLAY)
   // the first hero is `play` itself (his numbers sit beside the level's own); any others are in play.others
-  play = Object.assign(heroState(h.c, at),
+  const cpf = cpRespawn && cpRespawn.level === levelId ? byId(cpRespawn.id) : null, cpAt = cpf && cpf.c.t === 'checkpoint' ? cpf : null;
+  play = Object.assign(heroState(h.c, cpAt || at),
          { fromHero:at === h, state:'play', timer:0, coins:0, things:makeThings(), later:[], cam:{ x:0, y:0, z:1, snap:3 } });
   play.others = allBlocks().filter(f => f.c.t === 'hero' && f.c.id !== h.c.id).map(f => heroState(f.c, f));
   { const [cw, ch] = heroBox(play); play.cam.x = play.x + cw / 2 - viewW / 2; play.cam.y = play.y + ch / 2 - viewH / 2; clampCam(play.cam); }
   play.byId = {};
   play.things.forEach(t => { play.byId[t.id] = t; });
+  if (cpAt && play.byId[cpAt.c.id]) { const t = play.byId[cpAt.c.id]; t.on = true; t.struckAt = -1e9; }   // already fixed
 }
 
 const coinSound = new Audio('sounds/coin.wav');   // Jos's coin sound
@@ -1754,7 +1810,7 @@ function beatLevel() {
 }
 document.getElementById('editBtn').addEventListener('click', e => { stopTest(); e.target.blur(); });
 document.getElementById('restartBtn').addEventListener('click', e => {
-  if (play && !chomp) spawn();
+  if (play && !chomp) { cpRespawn = null; spawn(); }   // Restart goes right back to the start
   e.target.blur();
 });
 
@@ -2421,6 +2477,7 @@ function heroStep(p, dt) {
     }
     if (t.t === 'trigger' && pr.action) fire(t);
     if (t.t === 'repeater' && pr.action) fireRepeat(t);
+    if (t.t === 'checkpoint' && pr.action && !t.on) activateCheckpoint(t);
     const pb = t.t === 'button' && turnBox([.14, .5, .72, .5], t.r);
     if (pb && boxesTouch(p.x, p.y, W, H, t.x + pb[0] * t.w, t.y + pb[1] * t.h, pb[2] * t.w, pb[3] * t.h)) {
       t.pressed = true;                           // Jos: it goes down when you stand on it
@@ -2547,6 +2604,7 @@ function renderPlay(time) {
     }
     if (!t.as && t.t === 'spring') { turn(ctx, X, Y, S, t.r, () => drawSpring(ctx, X, Y, S, springExt(t.ext))); continue; }
     if (!t.as && t.t === 'button') { turn(ctx, X, Y, S, t.r, () => drawButton(ctx, X, Y, S, t.pressed)); continue; }
+    if (!t.as && t.t === 'checkpoint') { drawCheckpoint(ctx, X, Y, S, time, t.on ? performance.now() / 1000 - t.struckAt : null); continue; }
     if (t.t === 'door' && t.wait && !t.sink && !t.as) { drawDoorWaiting(ctx, X, Y, S, t.wait.t); continue; }
     if (t.t === 'door' && t.sink) { drawSunk(ctx, X, Y, S, t.sink, () => drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r)); continue; }
     drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r);
