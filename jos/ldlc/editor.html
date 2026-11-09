@@ -47,6 +47,8 @@ button.soon { opacity:.45; }
 #testBtn { background:#2e9e4f; font-size:1.15rem; padding:.55rem 1.4rem; }
 #testBtn:hover { background:#38c261; }
 #testBtn.stop { background:#ff2a3d; }
+#copyLinkBtn { background:#3a6fd8; font-size:1.05rem; padding:.55rem 1rem; }
+#copyLinkBtn:hover { background:#4f86f0; }
 /* Send to Jos: gold like the door. Grey until you beat the level */
 #goBtns { display:flex; gap:.5rem; margin-left:auto; }   /* TEST and Send to Jos stay side by side */
 #sendWrap { position:relative; display:inline-flex; }
@@ -273,6 +275,7 @@ body.testing #panel { display:none; }
     <button class="tool" id="clearBtn">🗑 Clear</button>
     <span id="goBtns">
       <button id="testBtn">▶ TEST</button>
+      <button id="copyLinkBtn" title="Copy a link to this level, to send to another device">🔗 Copy link</button>
       <span id="sendWrap"><button id="sendBtn" class="off">📤 Send<span class="long"> to Jos</span></button><span class="tip">Beat the level to send it to Jos</span></span>
     </span>
   </div>
