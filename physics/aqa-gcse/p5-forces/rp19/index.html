@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP19 Trendline Clips — P5 Forces — AQA GCSE Physics — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        .clip {
+            background: var(--white);
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            padding: var(--gap-lg);
+            margin: 0 0 var(--gap-xl);
+        }
+        @media (max-width: 600px) {
+            .clip { padding: var(--gap-md); }
+        }
+        .clip h2 {
+            font-family: var(--font-heading);
+            margin: 0 0 var(--gap-xs);
+        }
+        .clip .clip-purpose {
+            color: var(--gray-dark);
+            margin: 0 0 var(--gap-md);
+        }
+        .clip button.clip-media {
+            display: block;
+            width: 100%;
+            padding: 0;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            background: none;
+            cursor: zoom-in;
+        }
+        .clip img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+        }
+        .clip .clip-hint {
+            font-family: var(--font-ui);
+            font-size: 0.8rem;
+            color: var(--gray-mid);
+            margin: var(--gap-xs) 0 var(--gap-md);
+        }
+        .clip .equation-figure {
+            display: block;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            margin: 0 auto var(--gap-md);
+            background: var(--white);
+        }
+        .clip ol { margin: 0; padding-left: 1.4rem; }
+        .clip li { margin-bottom: 0.3rem; }
+        .clip code {
+            font-family: Menlo, Consolas, monospace;
+            background: var(--bronze-parch);
+            padding: 0 0.3em;
+            border-radius: 3px;
+        }
+
+        /* Full-screen viewer */
+        #viewer {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            cursor: zoom-out;
+        }
+        #viewer.open { display: flex; }
+        #viewer img {
+            max-width: 100vw;
+            max-height: 100vh;
+            width: auto;
+            height: auto;
+        }
+        #viewer .viewer-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-family: var(--font-ui);
+            font-size: 0.85rem;
+            color: #ddd;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #555;
+            border-radius: var(--radius);
+            padding: 0.3rem 0.7rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">Physics</a><span>·</span>
+            <a href="../../">AQA GCSE Physics</a><span>·</span>
+            <a href="../">P5 Forces</a><span>·</span>
+            RP19
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">The Vault · P5 Forces</span>
+            <h1>RP19: Force, Mass and Acceleration</h1>
+            <p class="subtitle">Trendline clips for the required practical data sheet</p>
+        </div>
+        <div class="rule--full"></div>
+
+        <section class="clip" id="trendline-part-a">
+            <h2>Add a trendline: Part A, Constant Mass, Changing Force</h2>
+            <p class="clip-purpose">Draw the straight line of best fit through your acceleration and force points and show its equation.</p>
+            <button class="clip-media" type="button" aria-label="Open the clip full screen">
+                <img src="trendline-part-a.gif" width="960" height="837" loading="lazy"
+                     alt="Clicking a data point on the Part A graph of acceleration against force, scrolling the Series options to tick Trend line, keeping the type as Linear, choosing Use equation under Label, and setting the legend font size.">
+            </button>
+            <p class="clip-hint">Click the clip to watch it full screen.</p>
+            <ol>
+                <li>Click one of your data points. The <strong>Series</strong> options open.</li>
+                <li>Scroll down and tick the <strong>Trend line</strong> box.</li>
+                <li>Keep <strong>Type</strong> as <strong>Linear</strong>.</li>
+                <li>Under <strong>Label</strong>, choose <strong>Use equation</strong>.</li>
+                <li>Open <strong>Legend</strong> and set the legend font size so the equation is easy to read.</li>
+                <li>Check: the line and its equation appear on your graph.</li>
+            </ol>
+        </section>
+
+        <section class="clip" id="trendline-part-b">
+            <h2>Add a trendline to a curve: Part B, Constant Force, Changing Mass</h2>
+            <p class="clip-purpose">Fit a curve through your acceleration and total mass points and show its equation.</p>
+            <button class="clip-media" type="button" aria-label="Open the clip full screen">
+                <img src="trendline-part-b.gif" width="960" height="837" loading="lazy"
+                     alt="Clicking a data point on the Part B graph of acceleration against total mass, ticking Trend line, opening the Type menu and choosing Power Series so the line becomes a curve, choosing Use equation under Label, and setting the legend font size.">
+            </button>
+            <p class="clip-hint">Click the clip to watch it full screen.</p>
+            <ol>
+                <li>Click one of your data points. The <strong>Series</strong> options open.</li>
+                <li>Scroll down and tick the <strong>Trend line</strong> box.</li>
+                <li>Open the <strong>Type</strong> menu and choose <strong>Power series</strong>. The line becomes a curve.</li>
+                <li>Under <strong>Label</strong>, choose <strong>Use equation</strong>.</li>
+                <li>Open <strong>Legend</strong> and set the legend font size so the equation is easy to read.</li>
+                <li>Check: the curve and its equation appear on your graph.</li>
+            </ol>
+        </section>
+
+        <p class="clip-purpose">General skills such as averaging, graphs and titles are on the <a href="../../../../spreadsheets/">Google Spreadsheets</a> page.</p>
+
+        <footer class="site-footer">The Vault · RP19 · 2026</footer>
+    </div>
+
+    <div id="viewer" role="dialog" aria-modal="true" aria-label="Clip, full screen">
+        <button class="viewer-close" type="button">Close · Esc</button>
+        <img alt="">
+    </div>
+
+    <script>
+    (function () {
+        var viewer = document.getElementById('viewer');
+        var big = viewer.querySelector('img');
+
+        function open(src, alt) {
+            big.src = src;
+            big.alt = alt;
+            viewer.classList.add('open');
+            if (viewer.requestFullscreen) {
+                viewer.requestFullscreen().catch(function () {});
+            } else if (viewer.webkitRequestFullscreen) {
+                viewer.webkitRequestFullscreen();
+            }
+        }
+
+        function close() {
+            viewer.classList.remove('open');
+            big.removeAttribute('src');
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(function () {});
+            }
+        }
+
+        document.querySelectorAll('.clip-media').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var img = btn.querySelector('img');
+                open(img.getAttribute('src'), img.alt);
+            });
+        });
+        viewer.addEventListener('click', close);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') close();
+        });
+        document.addEventListener('fullscreenchange', function () {
+            if (!document.fullscreenElement) viewer.classList.remove('open');
+        });
+    })();
+    </script>
+</body>
+</html>
