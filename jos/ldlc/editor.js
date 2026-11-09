@@ -1486,6 +1486,8 @@ function actionBox(link, a, j, target, saved = save, steps = false) {
     grip.addEventListener('dragend', () => { dragStep = null; document.querySelectorAll('.p-action.drop').forEach(b => b.classList.remove('drop')); });
     box.firstChild.prepend(grip);
   }
+  if (steps && a.do) box.append(row('Wait after', number(a.wait || 0, 0, 30, .1, v => { a.wait = v; saved(); }),
+                                    el('span', { className:'p-or', textContent:'seconds' })));   // Jos (9 Nov): a delay between every step
   if (a.do === 'size') box.append(row('New size', number(a.size, .5, 6, .5, v => { a.size = v; saved(); })));
   if (a.do === 'move') {
     box.append(row('Go', pick([['left', 'Left'], ['right', 'Right'], ['up', 'Up'], ['down', 'Down']], a.dir,
@@ -1921,7 +1923,7 @@ function nextStep(g) {
   const L = g.loop, a = L.steps[L.i];
   L.i = (L.i + 1) % L.steps.length;
   applyAction(g, a);
-  L.wait = a.do === 'props' ? .5 : 0;
+  L.wait = (a.do === 'props' ? .5 : 0) + (a.wait || 0);   // Jos (9 Nov): each step can Wait before the next one starts
 }
 function moveThings(dt) {
   play.things.forEach(t => {
@@ -1939,7 +1941,7 @@ function moveThings(dt) {
       t.move.left -= go;
       if (t.move.left <= 0) t.move = null;
     }
-    if (t.loop) { if (t.loop.wait > 0) t.loop.wait -= dt; else if (!t.move && !t.grow) nextStep(t); }   // the next step of a repeating trigger
+    if (t.loop && !t.move && !t.grow) { if (t.loop.wait > 0) t.loop.wait -= dt; else nextStep(t); }   // the wait only counts once the step has finished   // the next step of a repeating trigger
     t.dx = t.x - ox; t.dy = t.y - oy;
     if (t.ext !== undefined) { t.ext += dt; if (t.ext > .5) t.ext = undefined; }
     if (t.wait) { t.wait.t += dt; if (t.wait.t > DOOR_WAIT_END) t.wait = null; }

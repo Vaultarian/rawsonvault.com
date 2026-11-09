@@ -93,6 +93,7 @@ const LDLC = (() => {
     if (WAYS.includes(a.dir)) out.dir = a.dir;
     if (a.n !== undefined) out.n = num(a.n, 1, 31, 1);
     if (a.speed !== undefined) out.speed = num(a.speed, 1, 50, 1);
+    if (a.wait !== undefined) out.wait = num(a.wait, 0, 30, 0);
     if (a.props && typeof a.props === 'object') {
       out.props = {};
       SWITCH.forEach(k => { if (typeof a.props[k] === 'boolean') out.props[k] = a.props[k]; });
