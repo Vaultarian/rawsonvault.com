@@ -52,18 +52,24 @@ const LDLC = (() => {
   function rename(id, name) {
     keep(list().map(l => l.id === id ? Object.assign(l, { name }) : l));
   }
+  /* Jos (8 Nov): Beginner, Regular or Advanced, chosen when you create the level. null = an older level (the editor works it out) */
+  const DIFFICULTIES = ['beginner', 'regular', 'advanced'];
+  function difficulty(id) { const d = localStorage.getItem(key('difficulty', id)); return DIFFICULTIES.includes(d) ? d : null; }
+  function setDifficulty(id, d) { if (DIFFICULTIES.includes(d)) localStorage.setItem(key('difficulty', id), d); }
   function remove(id) {
     keep(list().filter(l => l.id !== id));
-    ['level', 'edges', 'start', 'beaten'].forEach(w => localStorage.removeItem(key(w, id)));
+    ['level', 'edges', 'start', 'beaten', 'size', 'difficulty'].forEach(w => localStorage.removeItem(key(w, id)));
   }
 
   /* Jos: you can only send a level you have beaten. Beating it saves a fingerprint of the level;
      change anything and the fingerprint doesn't match any more, so you have to beat it again. */
   function fingerprint(id) {
-    const s = (localStorage.getItem(key('level', id)) || '') + '|' + (localStorage.getItem(key('edges', id)) || '');
+    const s = (localStorage.getItem(key('level', id)) || '') + '|' + (localStorage.getItem(key('edges', id)) || '') ;
+    const sz = localStorage.getItem(key('size', id));
+    const t = sz ? s + '|' + sz : s;           // an older level has no size, so its fingerprint stays what it was
     let h = 2166136261;
-    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return (h >>> 0).toString(16) + '-' + s.length;
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(16) + '-' + t.length;
   }
   const beaten = id => localStorage.getItem(key('beaten', id)) === fingerprint(id);
   function markBeaten(id) { try { localStorage.setItem(key('beaten', id), fingerprint(id)); } catch (e) {} }
@@ -73,8 +79,8 @@ const LDLC = (() => {
      a link or in Dad's Google Form. Coming back in, a code is only ever read as blocks: anything that
      isn't a known block, switch or number is thrown away, and nothing in it is ever run. */
   const KINDS = ['tile', 'hero', 'door', 'spike', 'smallspike', 'sawblade', 'spring', 'coin', 'oneway',
-                 'portal', 'trigger', 'button', 'controls', 'dashorb'];
-  const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed'];
+                 'portal', 'trigger', 'button', 'controls', 'dashorb', 'ball', 'hill', 'camera', 'repeater', 'checkpoint'];
+  const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed', 'gravity', 'crush', 'triggers'];
   const WAYS = ['up', 'down', 'left', 'right'];
   const num = (v, lo, hi, d) => typeof v === 'number' && isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d;
   const text = (v, most) => typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').trim().slice(0, most) : '';
@@ -87,6 +93,7 @@ const LDLC = (() => {
     if (WAYS.includes(a.dir)) out.dir = a.dir;
     if (a.n !== undefined) out.n = num(a.n, 1, 31, 1);
     if (a.speed !== undefined) out.speed = num(a.speed, 1, 50, 1);
+    if (a.wait !== undefined) out.wait = num(a.wait, 0, 30, 0);
     if (a.props && typeof a.props === 'object') {
       out.props = {};
       SWITCH.forEach(k => { if (typeof a.props[k] === 'boolean') out.props[k] = a.props[k]; });
@@ -111,20 +118,45 @@ const LDLC = (() => {
     if (c.controls && typeof c.controls === 'object') out.controls = {
       left:keyList(c.controls.left), right:keyList(c.controls.right), up:keyList(c.controls.up),
       auto:[-1, 0, 1].includes(c.controls.auto) ? c.controls.auto : 0 };
+    if (out.controls && c.controls.jumpH !== undefined) out.controls.jumpH = num(c.controls.jumpH, .5, 20, 2);
+    if (out.controls && c.controls.speed !== undefined) out.controls.speed = num(c.controls.speed, 10, 300, 100);
+    if (c.t === 'hero') {          // the hero's own Jump power (blocks high) and Speed (% of normal)
+      if (c.jumpH !== undefined) out.jumpH = num(c.jumpH, .5, 20, 2);
+      if (c.speed !== undefined) out.speed = num(c.speed, 10, 300, 100);
+
+      if (WAYS.includes(c.gravity)) out.gravity = c.gravity;     // which way gravity pulls him from the start
+    }
+    if (c.t === 'camera') {          // Camera position: the spot, and Moving (way, speed, and the off screen switch)
+      if (c.cam && typeof c.cam === 'object') out.cam = { x:Math.round(num(c.cam.x, 0, 159, 0)), y:Math.round(num(c.cam.y, 0, 89, 0)) };
+      if (c.cmoving === true) { out.cmoving = true; out.cdir = WAYS.includes(c.cdir) ? c.cdir : 'right'; out.cspeed = num(c.cspeed, .5, 30, 3); }
+      if (c.coff === true) out.coff = true;
+    }
+    if (Array.isArray(c.does)) out.does = c.does.slice(0, 20).filter(a => a && typeof a === 'object').map(a => {
+      if (a.do === 'gravity') return { do:'gravity', dir:WAYS.includes(a.dir) ? a.dir : 'down' };
+      if (a.do === 'controls') {
+        const o = { do:'controls', left:keyList(a.left), right:keyList(a.right), up:keyList(a.up), auto:[-1, 0, 1].includes(a.auto) ? a.auto : 0 };
+        if (a.jumpH !== undefined) o.jumpH = num(a.jumpH, .5, 20, 2);
+        if (a.speed !== undefined) o.speed = num(a.speed, 10, 300, 100);
+        return o;
+      }
+      return { do:'' };
+    });
     if (!inside && c.inner) { const i = cleanCell(c.inner, true); if (i) out.inner = i; }
     return out;
   }
   function cleanLevel(o) {
-    if (!o || typeof o !== 'object' || o.v !== 1 || !Array.isArray(o.grid) || o.grid.length !== 18) return null;
-    if (!o.grid.every(r => Array.isArray(r) && r.length === 32)) return null;
+    if (!o || typeof o !== 'object' || o.v !== 1 || !Array.isArray(o.grid)) return null;
+    // any size from 12 by 8 to 160 by 90 (Jos: you choose your grid size)
+    if (o.grid.length < 8 || o.grid.length > 90) return null;
+    if (!o.grid.every(r => Array.isArray(r) && r.length === o.grid[0].length) || o.grid[0].length < 12 || o.grid[0].length > 160) return null;
     const edges = {};
     ['top', 'bottom', 'left', 'right'].forEach(k => { if (['solid', 'edge'].includes(o.edges && o.edges[k])) edges[k] = o.edges[k]; });
-    return { name:text(o.name, 40) || 'Shared level', by:text(o.by, 40),
+    return { name:text(o.name, 40) || 'Shared level', by:text(o.by, 40), difficulty:DIFFICULTIES.includes(o.difficulty) ? o.difficulty : undefined,
              grid:o.grid.map(r => r.map(c => cleanCell(c, false))), edges };
   }
 
   async function pack(id, name, by) {
-    const level = { v:1, name, by, grid:read(key('level', id)), edges:read(key('edges', id)) || {} };
+    const level = { v:1, name, by, grid:read(key('level', id)), edges:read(key('edges', id)) || {}, difficulty:difficulty(id) || undefined };
     const squashed = new Blob([JSON.stringify(level)]).stream().pipeThrough(new CompressionStream('deflate-raw'));
     const bytes = new Uint8Array(await new Response(squashed).arrayBuffer());
     let bin = '';
@@ -156,9 +188,11 @@ const LDLC = (() => {
     if (level.by) keep(list().map(x => x.id === l.id ? Object.assign(x, { by:level.by }) : x));
     localStorage.setItem(key('level', l.id), JSON.stringify(level.grid));
     localStorage.setItem(key('edges', l.id), JSON.stringify(level.edges));
+    localStorage.setItem(key('size', l.id), JSON.stringify({ cols:level.grid[0].length, rows:level.grid.length }));
+    if (level.difficulty) setDifficulty(l.id, level.difficulty);
     return l;
   }
 
   moveOldLevel();
-  return { list, make, ensure, key, read, playable, rename, remove, beaten, markBeaten, pack, unpack, addShared };
+  return { list, make, ensure, key, read, playable, difficulty, setDifficulty, rename, remove, beaten, markBeaten, pack, unpack, addShared };
 })();

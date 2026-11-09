@@ -63,6 +63,129 @@ won't collect.
 The coin sound is `sounds/coin.wav`, from Freesound: *8Bit Coin Collection #2* by Duskbreaker,
 sound 649726. **Licence checked 31 Oct: Creative Commons 0**, free to use with no credit needed.
 
+## The ball and the hill (Jos, 8 Nov)
+
+Jos: **"Ball is not a thing in edit controls. It is an object."** It is a block of its own, and the
+**Hill** comes straight after it.
+
+**Ball.** It is **blue** (Jos: "the ball is not gray, how about it's just blue"). *"Basically like a sawblade, except it doesn't spin and it does not kill you unless you have
+deadly turned on."* Its properties (switches): **Deadly** (off), **Gravity** (off), **Crush deadly** (off),
+Visible, Disguise as block.
+
+- **Gravity off:** it just sits there, like a sawblade. A trigger's **Movement** still carries it.
+- **Gravity on:** it falls, bounces and rolls down hills. When a trigger's Movement is over, it falls too.
+  **Carl's choice:** it falls the way the hero's gravity is pointing (so Set gravity turns the balls with him).
+- A trigger can turn Gravity on and off with **Change properties**, like any other switch.
+- **Crush deadly:** if it **falls on his head, he dies**. Touching the **side or top** of it does nothing.
+  **Crush deadly turns Gravity on by itself** (and turning Gravity off turns Crush deadly off).
+  Carl's choice: it only crushes when it is really falling (a ball that has just rolled up and rests on him won't).
+- **Crush deadly off:** it just **bounces off him**. He is never stopped or pushed by it.
+
+**Hill.** A slope, a block cut corner to corner. Turned 0 it rises to the right; **R** turns it. Properties:
+Collision, Visible, Disguise.
+
+- **The ball rolls down it**, any way it is turned.
+- **The hero walks up and down it** (gravity pointing down). Its straight side is a wall. He keeps hold of it
+  going downhill, and a jump leaves it. **Carl's choice:** with any other gravity, or a hill turned onto the
+  ceiling, the hill is a plain solid block for the hero (the ball still rolls on its slope).
+- Not built: balls pushing each other, balls pushing the hero, a hill that kills.
+
+## The repeating trigger (Jos, 8 Nov)
+
+A block called **Repeating trigger**, in **Advanced** levels only (after Camera position in BLOCKS). Its picture is the
+trigger's **!** with **two arrows curling round it** (drawn, not an emoji). Properties: Visible (off) and Do action,
+like a trigger. You connect it with **Trigger to block** like a trigger.
+
+- **Touch it and its steps go round and round.** The actions you give a connected block are **steps**: they are done
+  **one after another**, in the order you put them, and then it **starts again from the first**, over and over. A step is
+  finished when its block has stopped moving or growing, so *up 3, then down 3* is a block that bobs for ever.
+- A **Change properties** step takes half a second, so a loop made only of those (a block that blinks away and back) goes
+  at a steady pace instead of flickering.
+- **Drag ⠿ to change the order.** In the connected block's *Connected triggers* card, a repeating trigger's actions are
+  numbered Step 1, Step 2... and each has a **⠿ handle**. Drag one onto another to move it there.
+- **Delay** still works: a connection with a delay starts its loop that long after he touches the trigger.
+- It starts once per try (like a trigger); each connected block goes round on its own, and a block can only be in one loop.
+- A plain trigger does not change: its actions all go off together, once.
+
+## Difficulties (Jos, 8 Nov)
+
+When you press **Create** on My levels, it asks **What difficulty?** *before* it sends you into the creator
+(Cancel makes nothing). Then the creator asks for the grid size. The difficulty is kept with the level, and it
+travels with a shared level.
+
+| | Beginner | Regular | Advanced |
+|---|---|---|---|
+| Beginner guide (the bubbles) | **on, locked** | on or off (type `beginner`) | off, locked |
+| Advanced commands | **off, locked** | on or off (type `advanced`) | **on, locked** |
+| Edit controls, Dash orb | **no** | yes | yes |
+| Camera position, Hill, Ball | no | no | **yes** |
+| More than one Hero or Door | no | no | **yes** |
+
+- **Editor commands are now called Advanced commands.** The secret word is **advanced** (**editor** still works
+  too). In a Beginner or Advanced level the word says why it won't toggle.
+- Hidden blocks are only hidden from the palette (and from the Disguise list). Blocks already in a level stay.
+- An older level with no difficulty is **Regular**, unless it already has a Ball, Hill, Camera position or more than
+  one Hero or Door: then it is **Advanced**, so nothing in it goes missing.
+- **Several Heroes and Doors (Advanced).** They all do the same thing: press left and every Hero goes left,
+  press jump and they all jump. Each has his own Jump power, Speed and Set gravity. **Any Hero reaching any Door
+  finishes the level** (Carl's choice: the doors "all do the same thing"). If any Hero dies, the whole level starts
+  again. The camera follows the first Hero (the top-left one). With "If off screen, die" on, any Hero off the
+  screen dies. A Ball can crush any of them.
+- **The camera follows every Hero** (Jos, 8 Nov): with no Camera position touched, it follows the Hero, or all of them
+  together: it points at the middle of them, and **zooms out** if they spread apart, so **they are all on the screen**
+  (it zooms back in when they come together). Touching a Camera position block still takes over, as before.
+- **Needed for finish** (Jos, 8 Nov): a new switch on the **Hero**, also when you select several Heroes with Select
+  blocks. Once any Hero is marked, **only the marked Heroes count, and ALL of them must go into a Door** to finish.
+  A Hero that is not marked ignores the Doors. With nobody marked it is the old rule (any Hero at any Door).
+  A marked Hero who goes in while others are still out **waits inside the Door** (he is not drawn, and the camera
+  forgets him). The Door then shows Jos's picture: the shutter **closes and opens again, but it is RED inside, not
+  black**; a second later it **shakes and turns back to black**. When the last marked Hero goes in, the Door does the
+  usual finish (shutter, then it sinks).
+- Not done: separate keys for each Hero.
+
+## Grid size, the camera and the Camera position block (Jos, 8 Nov)
+
+Jos dropped "Game settings" (gravity and speed were already done) and kept one thing: **grid size**.
+
+**Grid size.** *"You choose what you want your grid size to be when you first go into the level."* A **new level**
+shows a **little red message**: *What do you want your grid size to be?* with **Wide** and **Tall** (in blocks) and a
+**Continue** button. 32 by 18 is one screen (and what older levels always were). It can be 12 to 160 wide and 8 to
+90 tall. Each level remembers its own size; sharing a level carries it; the My levels pictures shrink to fit.
+A level that is closed before pressing Continue asks again next time.
+
+**Rechoose size** (Jos, 8 Nov): a button next to *Show portal connections* and *Show trigger connections*. It shows the
+same red message with the current size filled in, and a **Cancel** button. The blocks stay put on the floor: the
+**bottom left corner stays where it is**, so a taller level gets room above and a wider one gets room on the right
+(the floor does not stretch by itself). A smaller level loses any block that no longer fits, and says how many.
+Camera position spots move with the floor. Because it changes the level, a beaten level has to be beaten again before
+it can be sent.
+
+**Moving around a big level.** A block is always the same size on the screen (the size that fits 32 by 18); a
+level smaller than that is blown up to fit, and a bigger one scrolls.
+- **Hold Space and drag** to move around, whatever block you are holding: *you don't put any blocks down.*
+- With the **Cursor**, **dragging on empty space** moves around too. The **mouse wheel** does as well
+  (hold Shift for sideways).
+- **When you play, the camera follows the hero.** Jos: *"Jos does not want the grid bigger when testing, so the
+  screen follows the hero."*
+
+**Zoom** (Jos, 8 Nov): a **🔍 Zoom** button next to Rechoose size. It opens a little box with a slider from *out* to *in*
+(the whole level at the far left, up to 200%), the percent, and two buttons: **Zoom to fit** (shows the whole board)
+and **100%**. Zooming keeps the middle of the screen where it is. It only changes the creator: when you TEST or PLAY
+the blocks are the normal size and the camera follows the hero.
+
+**The Camera position block** (placed after Hill, Advanced only). Properties: the regular **Visible** and **Do action**
+(invisible when you play, like a trigger), then:
+- **Camera position:** a **Choose** button. It takes the panel away; as you move the mouse a **pulsing green circle**
+  shows on each square; click one to choose it. (Esc or Cancel to give up.) Pan with Space + drag if the spot is far.
+  A chosen spot shows as a green circle with a dashed line from its block.
+- When the hero touches the block (once), **the camera glides to that position and stays there.**
+- **Moving** (a switch): says **Camera moving**, with **Go** (up, left, down, right) and **Speed** (blocks a second).
+  The camera slides that way until it reaches the edge of the level. It needs a level bigger than the screen that
+  way. Under it, the switch **If off screen, die**: if the hero is off the screen he dies.
+- A Camera position block with nothing chosen and Moving off puts the camera **back to following the hero.**
+- Carl's choices: Moving does not also use the chosen position; "school screen" was taken to mean *one screen*,
+  so in a level that already fits one screen the camera stays regular.
+
 ## The edit controls block
 
 **Its properties** (Jos): the controls settings below, **plus Do action and Visible.**
@@ -75,6 +198,29 @@ arrow, and they can change that, and they don't all have to be different."
 - The level maker picks which key does **left**, **right** and **up**.
 - Keys don't have to be different. Two moves can share a key.
 - It can also change what the character does: **always going left**, or **always going right**.
+- **A Do list, like a trigger** (Jos, 8 Nov): the block doesn't show all its settings at once. It
+  says **When touched** and has **+ Add**. Each one is a **Do** you choose: **Change controls**
+  (the keys, Always going, Jump power and Speed below) or **Set gravity**. The settings only show
+  once you have chosen. It does its whole list **once, when the hero touches it**. (Jos did not
+  want it called "switch gravity": it is an action.)
+- **Set gravity** (Jos, 8 Nov): **Up, Down, Left or Right**, and the hero turns so his feet are on that
+  side. He falls that way, **jumps straight away from it** (still exactly Jump power blocks), and
+  runs along the surface. With gravity sideways, **← runs up and → runs down**, and Jump is still the
+  Up key: that is what **Change controls** is for, to put them on whichever keys feel right.
+  Hero and walls: the level's **solid edges** are floors too (the default top edge is solid, so
+  gravity Up makes him stand on the ceiling). Gravity Up on a level whose top edge is set to
+  deadly will not work. The door pulls him upright again.
+  With sideways gravity a spring on a wall boots him and an up or down spring knocks him along.
+- **The hero has Set gravity too**, so he starts with the gravity you choose.
+- **Jump power** (Jos, 8 Nov): **how high he jumps, in blocks**, and **every jump goes exactly that high**.
+  The normal jump is **2 blocks** (so a 1-block wall is a hop, and a 2-block wall can't be climbed).
+  From 0.5 to 20 (the level is 18 blocks tall, so above about 17 he just bumps the top). Jos took out the old "let go early for a small hop": a tap and a hold are the same jump.
+  The movement is worked out exactly, so it is 2 blocks at any frame rate.
+- **Speed** (Jos, 8 Nov): how fast he runs, as a percent of normal. 100 is normal, 200 is twice as
+  fast, 50 is half. From 10 to 300. It also changes his speed when **Always going** is on.
+- **The hero has Jump power and Speed too**, so you can set them right from the start of the level.
+  An Edit controls block then changes them when he touches it. A block that only changes the keys
+  (it was never given a Jump power or Speed) leaves the hero's own settings alone.
 
 ## The door
 
@@ -561,8 +707,8 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 - The portal "switches colours" by **swapping its black and white**.
 - There is **one Hero and one Door** in a level. Putting down another one moves it.
 - A brand-new level starts with a floor, the Hero and the Door, so TEST works straight away.
-- Controls when you TEST: **← →** (or A D) to move, **↑ or Space** (or W) to jump. Let go of
-  jump early for a smaller jump. These are what the Edit controls block will change.
+- Controls when you TEST: **← →** (or A D) to move, **↑ or Space** (or W) to jump. (Jos took out the smaller jump for letting go early on 8 Nov: every jump is the full height.)
+  These are what the Edit controls block will change.
 - The hero has **tiny devil horns** and one eye, looking the way he runs.
 - Jos: **no coin counter.** Coins come back when you die.
 - A trigger or a button goes off **once per try**. The button **stays down** after you've stood on it.
@@ -628,3 +774,11 @@ Jos: **every single block has Visible** in its properties, the portal and the he
 - **31 Oct**: spring **Strength**, the **✏️ edge buttons** (floor/wall/roof or edge of screen), and
   **a block inside another block**. Not published.
 - **1 Nov**: secret word **beginner**: message bubbles with arrows show how to use everything (`beginner.js`). Not published.
+
+## Menu music
+
+Jos, 8 Nov: scary music on the LDLC **home screen** and the **levels page**, and **not** in the editor, TEST or PLAY.
+It is `sounds/menu-music.mp3`, started by `music.js`, which only `index.html` and `levels.html` load. It starts on the first
+click or key (browsers need that), carries on between the two pages, and loops. A speaker button in the top right turns it
+off and remembers. **Licence not checked yet** (the file came from Jos's Downloads: `vibehorn-scary-horror-music-horror-495564.mp3`).
+Check it before this is published.

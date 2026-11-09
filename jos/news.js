@@ -27,6 +27,103 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'💚', when:'9 Nov', title:'LDLC: the Checkpoint',
+      what:'A green diamond that remembers where you got to.',
+      more:'It starts as a grey cracked kite with a green glow. Touch it and a green lightning bolt comes down ' +
+           'from the ceiling and hits it. The cracks go and it turns into a bright green diamond. If you die, ' +
+           'you start again from it. Restart goes back to the very beginning.',
+      play:'ldlc/' },
+    { emoji:'📋', when:'9 Nov', title:'LDLC: share a level',
+      what:'Copy link and Copy code next to Test, and Paste level code on My levels.',
+      more:'Press Copy code in the creator, send it to another device, and press Paste level code on My levels. ' +
+           'It asks if you want to add the level. You do not have to send the level to Jos first.',
+      play:'ldlc/' },
+    { emoji:'🔗', when:'9 Nov', title:'LDLC: connecting blocks is easier',
+      what:'Trigger to block has a Done button, and you can drag a box round blocks to connect them all.',
+      more:'Choose your triggers, press Done, then drag a box round the blocks. A trigger can connect to another ' +
+           'trigger too. Many Camera position blocks can be changed together, and every step of a Repeating ' +
+           'trigger has a Wait box. Balls can go through portals and use triggers.',
+      play:'ldlc/' },
+    { emoji:'🔁', when:'8 Nov', title:'LDLC: the Repeating trigger',
+      what:'A new block in Advanced levels: the steps go round and round, over and over.',
+      more:'It is a trigger with arrows curling round its exclamation mark. Touch it and the blocks it is ' +
+           'connected to do their steps one after another, then start again, like a block that goes up three ' +
+           'and then down three for ever. Drag the steps into the order you want.',
+      play:'ldlc/' },
+    { emoji:'🚪', when:'8 Nov', title:'LDLC: Needed heroes and a smarter camera',
+      what:'With lots of Heroes, the camera follows all of them and zooms out so they stay on the screen.',
+      more:'Mark Heroes as Needed for finish, and then every Needed Hero has to go into a Door ' +
+           'before the level is won. The first one in makes the door close and open again, but it is ' +
+           'RED inside. A second later it shakes and turns black again, while the Hero waits inside ' +
+           'for the others. A Hero you did not mark ignores the doors.',
+      play:'ldlc/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: difficulties',
+      what:'When you create a level it asks: Beginner, Regular or Advanced.',
+      more:'Beginner keeps the guide on and hides Edit controls and the Dash orb. Regular has all ' +
+           'the usual blocks. Advanced gives you the advanced commands (the editor commands have a ' +
+           'new name), the Camera position, Hill and Ball blocks, and lets you put down lots of ' +
+           'Heroes and Doors that all do the same thing. Press left and every Hero goes left.',
+      play:'ldlc/' },
+    { emoji:'📷', when:'8 Nov', title:'LDLC: choose your grid size, and a camera',
+      what:'Choose how big your level is, from one screen up to 160 by 90, and zoom out to see it all.',
+      more:'A new level asks what grid size you want. Rechoose size changes it later, and Zoom has a ' +
+           'slider and Zoom to fit. Hold Space and drag to move around a big level without putting ' +
+           'blocks down. When you play, the camera follows your hero. The new Camera position block ' +
+           'can send the camera to a spot you choose, or slide it up, down, left or right, and it ' +
+           'can make the hero die if he goes off the screen.',
+      play:'ldlc/' },
+    { emoji:'⚪', when:'8 Nov', title:'LDLC: the Ball and the Hill',
+      what:'A blue Ball that is not deadly unless you say so, and a Hill for it to roll down.',
+      more:'Turn Gravity on and the ball falls, bounces and rolls down the hill. Turn Crush deadly ' +
+           'on and it kills you if it lands on your head, but you are safe if you touch its side or ' +
+           'top. A trigger can turn its Gravity on and off. Your hero can walk up and down the hill ' +
+           'too.',
+      play:'ldlc/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: gravity can go any way',
+      what:'Set gravity to Up, Down, Left or Right, and your hero turns so his feet stand on the new floor.',
+      more:'The Edit controls block now has a Do list, like a trigger: add Set gravity, or Change ' +
+           'controls. The Hero can start with any gravity too. He jumps straight away from the ' +
+           'floor, still exactly as high as his Jump power.',
+      play:'ldlc/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: speed and scary music',
+      what:'The Hero and Edit controls both have a Speed box, and the LDLC menus have scary music.',
+      more:'The music plays on the LDLC home screen and the My Levels page only, not when you build ' +
+           'or play. A little speaker button in the top right turns it off.',
+      play:'ldlc/' },
+    { emoji:'🧩', when:'8 Nov', title:'Sudoku is in the Games menu',
+      what:'You can find Sudoku in the Games list on the main page now.',
+      more:'It has its own how-to-play card too, and a Back button on its start screen.',
+      play:'sudoku/' },
+    { emoji:'😈', when:'8 Nov', title:'LDLC: jump power',
+      what:'Jump power is how many blocks high you jump, and every jump goes exactly that high.',
+      more:'A normal jump is 2 blocks. You can set it on the Hero from the very start, and an Edit ' +
+           'controls block can change it later in the level. Letting go early no longer makes a ' +
+           'smaller jump.',
+      play:'ldlc/' },
+    { emoji:'🔢', when:'8 Nov', title:'Sudoku: tutorials you can play, and an eraser that stays on',
+      what:'Three tutorials teach you Sudoku, and the eraser can stay on in lightning mode.',
+      more:'Tutorial 1 teaches the buttons one at a time, then a little clip shows someone finishing ' +
+           'a level. Tutorial 2 is a small 4 by 4 board and Tutorial 3 is 6 by 6, each with a guide ' +
+           'that asks which number is missing from a row, a column and a box. In lightning mode the ' +
+           'eraser stays glowing red so you can keep rubbing squares out.',
+      play:'sudoku/' },
+    { emoji:'💡', when:'7 Nov', title:'Sudoku: hints, coins and tutorials',
+      what:'Sudoku has a lightbulb hint button, coins you win by finishing levels, and a rewind button on levels you already did.',
+      more:'Click the lightbulb for a hint. Click the little + for more help: reveal a square, reveal a random ' +
+           'square, or type a number to reveal that many. Squares are named like chess, so the bottom left is A1. ' +
+           'A right number glows green and a wrong one goes red. Finish a level and confetti falls, a fanfare ' +
+           'plays and ten coins fly into your coin counter. Squares 1 to 3 are tutorials, and Level 1 is open ' +
+           'from the start. Open a level you already finished and a spinning rewind button lets you play it again.',
+      play:'sudoku/' },
+    { emoji:'🔢', when:'6 Nov', title:'Sudoku',
+      what:'A sudoku game with 100 levels. Every level is made brand new while the loading dots go round.',
+      more:'A little program puts random numbers in the grid and checks it can be solved. If it cannot, it tries ' +
+           'again, all in about 1.5 seconds. Higher levels start with fewer numbers. Pencil notes, an eraser, and a ' +
+           'red message that tells you the rule when you put a number in the wrong place. A good number glows green, ' +
+           'and finishing a row, column or box sends green spreading along it. Finish all nine of a number and its ' +
+           'button whirls away. Lightning mode lights up a number so you can click lots of squares. Click a ' +
+           'locked level and it shows which level to beat next. Pull the level screen down and a lock whirls in.',
+      play:'sudoku/' },
     { emoji:'📰', when:'2 Nov', title:'NEWS!',
       what:'This! Click NEWS and the newsman tells you every new thing, in one big speech bubble.',
       more:'The home page goes grey and all the news comes out of the newsman’s mouth in a giant speech ' +

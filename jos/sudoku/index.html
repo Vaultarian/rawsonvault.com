@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sudoku</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:#14213d;color:#fff;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center}
+  .screen{display:none;flex-direction:column;align-items:center;gap:18px;padding:16px;text-align:center}
+  .screen.on{display:flex}
+  h1{font-size:84px;margin:0;letter-spacing:8px;background:linear-gradient(90deg,#fca311,#ffe29a,#fca311);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 18px rgba(252,163,17,.45))}
+  @keyframes shine{to{background-position:200% 0}}
+  #start{position:relative;z-index:2}
+  #homeBack{position:fixed;top:14px;left:16px;text-decoration:none;font-weight:700;font-size:20px;background:#fca311;color:#14213d;border-radius:12px;padding:10px 20px}
+  #homeBack:hover{filter:brightness(1.1)}
+  #playBtn{font-size:30px;padding:16px 44px;box-shadow:0 0 28px rgba(252,163,17,.5);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(1.07)}}
+  body{background:radial-gradient(circle at 50% 40%,#22345f,#0d1630 70%)}
+  #bg{position:fixed;inset:0;overflow:hidden;z-index:1;display:none}
+  #bg.on{display:block}
+  .fl{position:absolute;animation:drift var(--d) ease-in-out infinite alternate;animation-delay:var(--s)}
+  @keyframes drift{from{transform:translate(0,0) rotate(var(--r0))}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r1))}}
+  .num{font-size:var(--sz);font-weight:800;color:rgba(252,163,17,.55);pointer-events:none}
+  @property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+  .mini{display:grid;grid-template-columns:repeat(2,1fr);width:72px;height:72px;gap:4px;padding:5px;background:linear-gradient(145deg,#ffffff,#cfd9f2);border-radius:14px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 14px rgba(160,190,255,.35);transition:background .6s,box-shadow .6s,filter .2s}
+  .mini:hover{filter:brightness(1.1)}
+  .mini div{display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#1b2b55;background:linear-gradient(160deg,#f4f6fc,#dfe5f5);border-radius:8px;position:relative;z-index:1}
+  .mini div.empty{background:#fff3d6;box-shadow:inset 0 0 0 2px #fca311;color:transparent}
+  .mini div.popnum{color:#0b7a33;animation:popnum .5s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes popnum{0%{transform:scale(0)}60%{transform:scale(1.9)}100%{transform:scale(1)}}
+  .mini .sweep{position:absolute;inset:0;border-radius:14px;z-index:2;pointer-events:none;background:conic-gradient(from 0deg,rgba(63,209,107,.88) calc(var(--a) - 50deg),rgba(63,209,107,0) var(--a));animation:sweepa 1.1s linear forwards,sweepout .5s 1.1s ease forwards}
+  @keyframes sweepout{to{opacity:0}}
+  @keyframes sweepa{from{--a:0deg}to{--a:410deg}}
+  .mini.ok{background:#3fd16b;box-shadow:0 0 26px rgba(63,209,107,.8)}
+  .mini.ok div{background:#c9f2d3}
+  .mini div{transition:background .5s,transform .22s ease}
+  @keyframes bump{0%{transform:scale(.4)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .mini div.bump{animation:bump .35s ease}
+  .mini .pip{position:absolute;left:50%;top:50%;width:6px;height:15px;margin:-7px 0 0 -3px;border-radius:3px;background:#3fd16b;box-shadow:0 0 8px #3fd16b;z-index:3;pointer-events:none;transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(0);animation:pippop .3s var(--del) forwards}
+  @keyframes pippop{0%{transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(0)}60%{transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(1.6)}100%{transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(1)}}
+  @keyframes sweepin{from{opacity:0}to{opacity:1}}
+  @keyframes sweepb{from{--a:410deg}to{--a:0deg}}
+  @keyframes pipb{0%{transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(1)}40%{transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(1.6)}100%{transform:translate(var(--x),var(--y)) rotate(var(--ang)) scale(0)}}
+  @keyframes popnumb{0%{transform:scale(1)}40%{transform:scale(1.9)}100%{transform:scale(0)}}
+  .mini.rev .sweep{animation:sweepin .5s ease both,sweepb 1.1s .5s linear both}
+  .mini.rev .pip{animation:pipb .3s var(--rdel) both}
+  .mini div.unpop{animation:popnumb .5s 1.6s both;color:#0b7a33}
+  #pullLock{position:fixed;left:0;right:0;bottom:6px;text-align:center;font-size:40px;opacity:0;pointer-events:none;z-index:5}
+  #swirlLock{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:140px;pointer-events:none;z-index:30}
+  #hint{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10;pointer-events:none}
+  #hint.on{display:flex}
+  #hintBox{width:170px;height:170px;border-radius:14px;border:4px solid #fff;color:#fff;font-size:100px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    background-color:#22345f;background-image:linear-gradient(rgba(255,255,255,.35) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.35) 2px,transparent 2px);background-size:56.6px 56.6px;animation:hintfade 1.4s ease forwards}
+  @keyframes hintfade{0%{opacity:0;transform:scale(.8)}15%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+  button{font:inherit;cursor:pointer;border:0;border-radius:12px;background:#fca311;color:#14213d;font-weight:700;padding:12px 24px;font-size:20px}
+  button:hover{filter:brightness(1.1)}
+  #levelScreen{position:fixed;inset:0;justify-content:flex-start;gap:10px;padding:10px}
+  #levels{display:grid;grid-template-columns:repeat(10,1fr);grid-auto-rows:1fr;gap:6px;width:100%;flex:1;min-height:0}
+  #levels button{height:100%;font-size:clamp(14px,3vw,34px);padding:0;border-radius:10px}
+  #levels button.hinting{color:#fff;background-color:#22345f;background-image:linear-gradient(rgba(255,255,255,.4) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.4) 2px,transparent 2px);background-size:33.3% 33.3%;box-shadow:0 0 0 3px #fff inset}
+  #levels button small{display:block;font-size:clamp(8px,1.2vw,14px);font-weight:600;line-height:1.1}
+  #levels button.locked{background:#3a4468;color:#7c86a8}
+  #levels button.done{background:#7bd88f}
+  #loading{position:fixed;inset:0;background:#050505;z-index:20;justify-content:center}
+  #loadCanvas{position:absolute;inset:0;width:100%;height:100%}
+  #pct{position:relative;z-index:2;text-shadow:0 0 10px rgba(0,85,255,.6)}
+  .bar{width:300px;height:26px;background:#2b3a67;border-radius:13px;overflow:hidden}
+  #fill{height:100%;width:0;background:#fca311}
+  #pct{font-size:28px;font-weight:700}
+  #grid{display:grid;width:min(92vw,450px);aspect-ratio:1;border:3px solid #fff;background:#fff}
+  .cell{transition:background .12s,color .5s;display:flex;align-items:center;justify-content:center;font-size:clamp(18px,5vw,30px);color:#14213d;background:#fff;border:1px solid #bbb;cursor:pointer;user-select:none}
+  .cell.r{border-right:3px solid #14213d}
+  .cell.b{border-bottom:3px solid #14213d}
+  .cell.given{background:#e5e5e5;font-weight:800}
+  .cell.sel{background:#ffd98a}
+  .cell.bad{color:#d00000;background:#ffd6d6}
+  .cell.mine{color:#1d5fd1;font-weight:700}
+  #padRow{display:flex;align-items:center;gap:12px;width:min(92vw,450px)}
+  #pad{display:grid;gap:5px;flex:1}
+  #pad button{padding:10px 0;font-size:22px;border-radius:10px;transition:background .25s,box-shadow .25s,transform .15s}
+  #pad button.armed{background:#ffe14d;box-shadow:0 0 16px 5px rgba(255,214,0,.85);transform:translateY(-3px)}
+  #pad button.gray{background:#3a4468;color:#7c86a8;box-shadow:none;cursor:default;transform:none}
+  #tools{display:flex;gap:10px}
+  .tool{display:flex;align-items:center;justify-content:center;width:72px;height:54px;padding:0;border-radius:14px}
+  .tool svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+  .tool.on{background:#7bd88f}
+  #gridWrap{position:relative;margin-bottom:24px}
+  #axisL{position:absolute;right:calc(100% + 6px);top:0;height:100%;display:grid}
+  #axisB{position:absolute;top:calc(100% + 4px);left:0;width:100%;display:grid}
+  #axisL i,#axisB i{font-style:normal;font-weight:700;font-size:16px;color:#9aa0b5;display:flex;align-items:center;justify-content:center}
+  #hintBtn{position:relative;flex:none;width:52px;height:46px}
+  #bulbBtn{width:100%;height:100%;padding:0;border-radius:10px;display:flex;align-items:center;justify-content:center}
+  #plusBtn{position:absolute;top:-9px;right:-9px;width:24px;height:24px;border-radius:50%;padding:0;font-size:18px;line-height:22px;background:#3fd16b;color:#14213d;border:2px solid #14213d}
+  #helpList .blankrow{display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:700;background:#3a4468;color:#7c86a8;border-radius:10px;padding:10px}
+  #helpList .blankrow input{width:56px;font:inherit;text-align:center;border-radius:8px;border:0;padding:4px;background:#e9ebf2;color:#14213d}
+  .cell.hinted{position:relative;z-index:2;animation:hintpulse 1s ease-in-out 4}
+  @keyframes hintpulse{50%{background:#ffe14d;box-shadow:0 0 14px 4px rgba(255,214,0,.9);transform:scale(1.12)}}
+  #helpMenu,#confirmBox{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:30}
+  #helpMenu.on,#confirmBox.on{display:flex}
+  #confirmBox{z-index:31}
+  .hbox{background:#1d2a4f;border-radius:16px;padding:20px;width:min(90vw,360px);display:flex;flex-direction:column;gap:10px;color:#fff;text-align:center}
+  .htitle{font-size:24px;font-weight:700}
+  #helpList button{width:100%;margin-bottom:8px;font-size:18px;padding:10px;border-radius:10px;display:flex;justify-content:space-between;gap:8px}
+  #helpList .hrow{display:flex;gap:8px;margin-bottom:8px}
+  #helpList .hrow button{margin:0}
+  #helpList .hrow .use{flex:1;display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fca311;color:#14213d;font-weight:700;font-size:18px;padding:10px;border-radius:10px;cursor:pointer}
+  #helpList .hrow .use.off{background:#3a4468;color:#7c86a8;cursor:default}
+  #helpList .hrow .buy{width:auto;flex:none;background:#3fd16b;font-size:14px;padding:6px 10px;white-space:nowrap;justify-content:center}
+  #helpList .use input{width:46px;font:inherit;text-align:center;border-radius:6px;border:0;padding:2px;background:#e9ebf2;color:#14213d}
+  #helpList button:disabled{background:#3a4468;color:#7c86a8;cursor:default}
+  #confirmText{font-size:20px;font-weight:700}
+  .crow{display:flex;gap:10px;justify-content:center}
+  .crow button{font-size:20px;padding:10px 24px;border-radius:10px}
+  #rule{width:min(92vw,450px);min-height:26px;font-size:17px;font-weight:700;color:#ff9a9a;text-align:center;opacity:0;transition:opacity .5s}
+  #rule.show{opacity:1}
+  #zap{position:relative;flex:none;width:62px;height:34px;border-radius:17px;padding:0;background:#9aa0b5;overflow:visible;transition:background .3s}
+  #zap .knob{position:absolute;left:3px;top:3px;width:28px;height:28px;border-radius:50%;background:#e9ebf2;color:#5d6378;display:flex;align-items:center;justify-content:center;transition:left .25s,background .25s,color .25s}
+  #zap.on{background:#3fd16b}
+  #zap.on .knob{left:31px;background:#fff9d6;color:#ffd400}
+  #zap.sparking .knob svg{animation:spark .7s}
+  @keyframes spark{0%{transform:scale(1)}15%{transform:scale(1.7) rotate(-12deg);filter:drop-shadow(0 0 6px #ffd400)}30%{transform:scale(.9) rotate(8deg)}45%{transform:scale(1.5);filter:drop-shadow(0 0 8px #ffd400)}100%{transform:scale(1);filter:none}}
+  #zap i.sp{position:absolute;left:43px;top:12px;width:3px;height:9px;border-radius:2px;background:#ffd400;opacity:0;pointer-events:none}
+  #zap.sparking i.sp{animation:sp .6s ease-out}
+  @keyframes sp{0%{opacity:1;transform:rotate(var(--a)) translateY(-8px)}100%{opacity:0;transform:rotate(var(--a)) translateY(-26px)}}
+  #coinBar{position:fixed;top:14px;right:18px;z-index:40;display:none;align-items:center;gap:8px;background:rgba(20,33,61,.9);border:2px solid #fca311;border-radius:24px;padding:4px 16px 4px 8px;font-weight:800;font-size:22px;color:#fff}
+  #coinBar.on{display:flex}
+  .coin{display:inline-block;width:26px;height:26px;border-radius:50%;box-sizing:border-box;background:radial-gradient(circle at 35% 30%,#fff3a0,#ffc400 55%,#c98a00);border:2px solid #a56b00}
+  .flycoin{position:fixed;z-index:60;pointer-events:none}
+  .popfx{position:fixed;z-index:60;pointer-events:none;width:30px;height:30px;border-radius:50%;border:3px solid #ffe14d;box-shadow:0 0 10px #ffc400}
+  #plusTen{position:absolute;right:14px;top:100%;color:#3fd16b;font-weight:800;font-size:24px;opacity:0;pointer-events:none}
+  #plusTen.go{animation:plusfade 1.5s ease-out}
+  @keyframes plusfade{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-28px)}}
+  #doneTab{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:35}
+  #doneTab.on{display:flex}
+  #doneTab .dcard{background:#1d2a4f;border:3px solid #fca311;border-radius:22px;padding:26px 34px;text-align:center;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:tabin .35s cubic-bezier(.3,1.5,.6,1)}
+  @keyframes tabin{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+  #doneTab h2{margin:0 0 4px;font-size:30px}
+  #doneTab .drow{display:flex;gap:12px;justify-content:center;margin-top:90px}
+  #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:36}
+  #rewindWrap{display:none;justify-content:center;padding:6px}
+  #game.cv #tools,#game.cv #padRow{display:none}
+  #game.cv #rewindWrap{display:flex}
+  #rewindBtn{width:88px;height:88px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;transition:opacity .6s}
+  #rewindBtn.gone{opacity:0;pointer-events:none}
+  #rewindBtn:hover svg{animation:spinrw .8s linear infinite}
+  @keyframes spinrw{to{transform:rotate(-360deg)}}
+  .fadein{animation:fadein .9s ease-out}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .cell.fadeout{color:transparent !important}
+  .cell.helped{color:#e0a800;font-weight:800}
+  .cell.hold{position:relative;z-index:2;background:#7be59a;box-shadow:0 0 12px 3px rgba(63,209,107,.9)}
+  .cell.flash{position:relative;z-index:2;animation:cellflash .9s ease-out}
+  @keyframes cellflash{0%{transform:scale(1)}18%{background:#3fd16b;transform:scale(1.18);box-shadow:0 0 14px 3px rgba(63,209,107,.9)}70%{background:#7be59a;transform:scale(1.05);box-shadow:0 0 8px rgba(63,209,107,.6)}100%{transform:scale(1);box-shadow:none}}
+  .notes{display:grid;width:100%;height:100%;font-size:clamp(7px,1.6vw,11px);color:#555;font-weight:600}
+  .notes i{font-style:normal;display:flex;align-items:center;justify-content:center}
+  #msg{font-size:24px;min-height:32px;color:#7bd88f;font-weight:700}
+  /* eraser: a quick red glow, or stays red in lightning mode */
+  .tool.glowred{background:#ff6b6b;box-shadow:0 0 16px 5px rgba(255,60,60,.85);transform:translateY(-3px)}
+  .tool.flashred{animation:redflash .8s ease-out}
+  @keyframes redflash{0%{background:#fca311}20%,50%{background:#ff6b6b;box-shadow:0 0 16px 5px rgba(255,60,60,.85)}100%{background:#fca311}}
+  /* tutorial 1: no grid, just a big look at the numbers and the buttons */
+  #tutBox{display:none;flex-direction:column;align-items:center;gap:14px;width:min(92vw,450px)}
+  #game.t1 #tutBox{display:flex}
+  #game.t1 #gridWrap,#game.t1 #rule{display:none}
+  #tutSay{font-size:26px;font-weight:700;min-height:68px;display:flex;align-items:center;justify-content:center}
+  #tutDemo{width:170px;height:170px;border-radius:16px;border:4px solid #fff;background:#fff;color:#14213d;font-size:110px;font-weight:800;display:flex;align-items:center;justify-content:center;user-select:none;transition:background .3s,box-shadow .3s}
+  #tutDemo .notes{font-size:30px;color:#555}
+  #tutDemo.good{background:#7be59a;box-shadow:0 0 22px 6px rgba(63,209,107,.9)}
+  #tutMini{display:none;grid-template-columns:repeat(2,92px);grid-template-rows:repeat(2,92px);gap:6px;padding:6px;background:#14213d;border:4px solid #fff;border-radius:16px;box-shadow:0 0 0 3px #14213d}
+  #tutMini .m{display:flex;align-items:center;justify-content:center;font-size:58px;font-weight:800;border-radius:10px;background:#f0f0f0;color:#14213d;user-select:none;transition:background .3s}
+  #tutMini .m.given{background:#e5e5e5}
+  #tutMini .m.empty{background:#fff3d6;box-shadow:inset 0 0 0 3px #fca311;cursor:pointer}
+  #tutMini .m.sel{background:#ffd98a}
+  #tutMini .m.mine{background:#fff;color:#1d5fd1}
+  #tutMini .m.good{background:#7be59a;box-shadow:0 0 18px 4px rgba(63,209,107,.9)}
+  #tutHint{min-height:30px;font-size:22px;font-weight:700;color:#ffe14d}
+  #game.t1 #pad{gap:8px}
+  #game.t1 #pad button{font-size:34px;padding:20px 0}
+  #game.t1 .tool{width:96px;height:72px}
+  #game.t1 #hintBtn{width:72px;height:62px}
+  .tutglow{position:relative;z-index:2;animation:tutglow 1s ease-in-out infinite}
+  @keyframes tutglow{50%{box-shadow:0 0 22px 8px rgba(255,225,77,.95);transform:scale(1.1)}}
+  #game.t1 #padRow{width:min(96vw,520px)}
+  #game.clip{pointer-events:none}
+  /* tutorial 2: the board, with the same words on top */
+  #game.t2 #tutBox{display:flex}
+  #game.t2 #tutMini,#game.t2 #tutDemo{display:none !important}
+  #game.t2 #tutSay{min-height:84px;font-size:24px}
+  .cell.unit{background:#fff0b8}
+  .cell.unit.given{background:#f3e3a6}
+  #fakeCur{position:fixed;left:0;top:0;width:34px;height:34px;z-index:50;pointer-events:none;transition:left 1s ease-in-out,top 1s ease-in-out,opacity .5s;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+  #fakeCur.press svg{transform:scale(.75);transition:transform .12s}
+  #fakeCur svg{transition:transform .12s}
+  #fakeCur i{position:absolute;left:-6px;top:-6px;width:26px;height:26px;border-radius:50%;border:3px solid #ffe14d;opacity:0;pointer-events:none}
+  #fakeCur.press i{animation:ring .5s ease-out}
+  @keyframes ring{from{opacity:1;transform:scale(.4)}to{opacity:0;transform:scale(1.8)}}
+  .top{display:flex;gap:12px;align-items:center}
+</style>
+</head>
+<body>
+
+<div id="bg" class="on"></div>
+
+<div id="start" class="screen on">
+  <a id="homeBack" href="../">← Back</a>
+  <h1>SUDOKU</h1>
+  <div>Put every number in every row, column and box once.</div>
+  <button id="playBtn">▶ Play</button>
+</div>
+
+<div id="pullLock">🔒</div>
+<div id="swirlLock">🔒</div>
+
+<div id="levelScreen" class="screen">
+  <div class="top" style="width:100%"><button id="backStart">Back</button><div style="font-size:26px;font-weight:700">Pick a level</div></div>
+  <div id="levels"></div>
+</div>
+
+<div id="loading" class="screen"><canvas id="loadCanvas"></canvas><div id="pct">0%</div></div>
+
+<div id="coinBar"><span class="coin"></span><b id="coinNum">0</b><span id="plusTen">+10</span></div>
+<div id="doneTab"><div class="dcard"><h2 id="doneTitle">Level completed!</h2><div class="drow"><button id="nextBtn">Next level</button><button id="toLevelsBtn">Levels</button></div></div></div>
+
+<div id="helpMenu"><div class="hbox"><div class="htitle">Hints</div><div id="helpCoins" style="font-size:17px;color:#ffe14d"></div><div id="helpList"></div><button id="helpClose">Close</button></div></div>
+<div id="confirmBox"><div class="hbox"><div id="confirmText"></div><div class="crow"><button id="confirmYes">Yes</button><button id="confirmNo">No</button></div></div></div>
+
+<div id="game" class="screen">
+  <div class="top"><button id="backLevels">Levels</button><div id="title" style="font-size:24px;font-weight:700"></div></div>
+  <div id="tutBox"><div id="tutSay"></div><div id="tutMini"></div><div id="tutDemo"></div><div id="tutHint"></div></div>
+  <div id="gridWrap"><div id="axisL"></div><div id="grid"></div><div id="axisB"></div></div>
+  <div id="rule"></div>
+  <div id="tools">
+    <button id="pencilBtn" class="tool" title="Pencil notes" aria-label="Pencil notes"><svg viewBox="0 0 32 32" width="42" height="42" aria-hidden="true"><g transform="rotate(45 16 16)" stroke="#14213d" stroke-opacity=".35" stroke-width=".6" stroke-linejoin="round">
+        <rect x="12" y="1.5" width="8" height="5" rx="1.8" fill="#f48a9c"/>
+        <rect x="12" y="6.5" width="8" height="3" fill="#c3c9d8"/>
+        <path d="M12 9.5h8V23h-8z" fill="#ffd23f"/><path d="M16 9.5h4V23h-4z" fill="#f0b400" stroke="none"/>
+        <path d="M12 23h8l-4 7.5z" fill="#f4d6a8"/><path d="M14.6 27.6h2.8L16 30.5z" fill="#2f3347" stroke="none"/>
+        <path d="M13.3 10v12.5" stroke="#fff" stroke-opacity=".55" stroke-width="1" stroke-linecap="round"/>
+      </g></svg></button>
+    <button id="eraseBtn" class="tool" title="Eraser" aria-label="Eraser"><svg viewBox="0 0 32 32" width="42" height="42" aria-hidden="true"><g transform="rotate(-30 16 16.5)" stroke="#14213d" stroke-opacity=".35" stroke-width=".6" stroke-linejoin="round">
+        <path d="M14 10.5h10a3.2 3.2 0 0 1 3.2 3.2v5.1a3.2 3.2 0 0 1-3.2 3.2H14z" fill="#f48a9c"/>
+        <path d="M8.2 10.5H14v11.5H8.2A3.2 3.2 0 0 1 5 18.8v-5.1a3.2 3.2 0 0 1 3.2-3.2z" fill="#5b8def"/>
+        <path d="M8 12.2h4.5" stroke="#fff" stroke-opacity=".6" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M16.5 12.2H23" stroke="#fff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round"/>
+      </g></svg></button>
+  </div>
+  <div id="rewindWrap"><button id="rewindBtn" aria-label="Start this level again" title="Start again"><svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="#14213d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button></div>
+  <div id="padRow">
+    <div id="hintBtn"><button id="bulbBtn" aria-label="Get a hint" title="Get a hint"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="#ffe14d" stroke="#14213d" stroke-width="1.3" stroke-linejoin="round" d="M12 2.5a6.5 6.5 0 0 0-3.7 11.9c.6.5.9 1.1.9 1.8v.8h5.6v-.8c0-.7.3-1.3.9-1.8A6.5 6.5 0 0 0 12 2.5z"/><path fill="#14213d" d="M9.2 18.5h5.6v1.2a1.3 1.3 0 0 1-1.3 1.3h-3a1.3 1.3 0 0 1-1.3-1.3z"/></svg></button><button id="plusBtn" aria-label="More hints" title="More hints">+</button></div>
+    <div id="pad"></div>
+    <button id="zap" aria-label="Lightning mode"><span class="knob"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span><i class="sp" style="--a:0deg"></i><i class="sp" style="--a:72deg"></i><i class="sp" style="--a:144deg"></i><i class="sp" style="--a:216deg"></i><i class="sp" style="--a:288deg"></i></button>
+  </div>
+  <div id="msg"></div>
+</div>
+
+<script src="gen.js?v=20261108"></script>
+<script>
+const LEVELS = 100;
+// Level 1 has the most starting numbers (34); every 6 levels it gets one fewer, down to 18 at level 100.
+const givensFor = l => l === 2 ? 6 : l === 3 ? 14 : Math.max(18, 34 - Math.floor((l - 1) / 6));
+// Tutorial 2 is 4 x 4, tutorial 3 is 6 x 6, everything else is 9 x 9.
+const sizeFor = l => l === 2 ? 4 : l === 3 ? 6 : 9;
+let unlocked = 1, doneSet = {};
+let savedRecs = {};
+try { savedRecs = JSON.parse(localStorage.sudokuSaved || '{}'); } catch (e) {}
+try { unlocked = +localStorage.sudokuUnlocked || 1; doneSet = JSON.parse(localStorage.sudokuDone || '{}'); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+// The address bar follows the screen: #/levels, then #/levels/T1 (tutorial 1) or #/levels/L1 (level 1).
+const tagOf = l => l <= 3 ? 'T' + l : 'L' + (l - 3);
+function levelOfTag(t) {
+  const m = /^([TL])(\d+)$/i.exec(t || ''); if (!m) return 0;
+  const n = +m[2], tut = m[1].toUpperCase() === 'T';
+  return tut ? (n >= 1 && n <= 3 ? n : 0) : (n >= 1 && n <= LEVELS - 3 ? n + 3 : 0);
+}
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  $('bg').classList.toggle('on', id === 'start');
+  $('coinBar').classList.toggle('on', id !== 'start');
+  const h = id === 'start' ? '#/' : id === 'levelScreen' ? '#/levels' : '#/levels/' + tagOf(level);
+  if (location.hash !== h && !(id === 'start' && !location.hash)) location.hash = h;
+}
+function route() {
+  const parts = location.hash.replace(/^#\/?/, '').split('/'), cur = (document.querySelector('.screen.on') || {}).id;
+  if (parts[0] === 'levels' && parts[1]) {
+    const l = levelOfTag(parts[1]);
+    if (l && (l <= unlocked || l === 4)) { if (!((cur === 'game' || cur === 'loading') && level === l)) startLevel(l); }
+    else { buildLevels(); show('levelScreen'); }
+  } else if (parts[0] === 'levels') { if (cur !== 'levelScreen') { buildLevels(); show('levelScreen'); } }
+  else if (cur !== 'start') show('start');
+}
+addEventListener('hashchange', route);
+
+// Locked level clicked: that square shows the level you need to beat next, on a little grid, then goes back.
+function hint(btn, l, n) {
+  if (btn.classList.contains('hinting')) return;
+  const old = btn.innerHTML;
+  btn.classList.add('hinting'); btn.textContent = n;
+  setTimeout(() => { btn.classList.remove('hinting'); btn.innerHTML = old; }, 1300);
+}
+
+// Floating numbers and little 2x2 grids around the edges of the home screen.
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function edgeSpot() {
+  // keep things on the outside: left strip or right strip, or top/bottom strip
+  const side = (Math.random() * 4) | 0;
+  if (side === 0) return [rnd(1, 14), rnd(2, 88)];
+  if (side === 1) return [rnd(80, 94), rnd(2, 88)];
+  if (side === 2) return [rnd(14, 80), rnd(1, 11)];
+  return [rnd(14, 80), rnd(80, 90)];
+}
+function makeMini(x, y) {
+  const el = document.createElement('div'); el.className = 'fl mini';
+  setFloat(el, x, y);
+  const cells = [0, 1, 2, 3].map(() => document.createElement('div'));
+  const newPuzzle = () => ({ nums: [1, 2, 3, 4].sort(() => Math.random() - 0.5), hole: (Math.random() * 4) | 0 });
+  const bump = d => { d.classList.remove('bump'); void d.offsetWidth; d.classList.add('bump'); };
+  const set = (d, n, blank) => { d.className = blank ? 'empty' : ''; d.textContent = blank ? '' : n; d.dataset.n = n; };
+
+  function build() {                         // first time: just put the numbers in
+    const { nums, hole } = newPuzzle();
+    cells.forEach((d, i) => { set(d, nums[i], i === hole); el.appendChild(d); });
+    el.dataset.busy = '';
+  }
+
+  // swap two squares by sliding them past each other
+  function slide(a, b) {
+    const ax = a.offsetLeft, ay = a.offsetTop, bx = b.offsetLeft, by = b.offsetTop;
+    const order = [...el.children], ia = order.indexOf(a), ib = order.indexOf(b);
+    order[ia] = b; order[ib] = a; order.forEach(n => el.appendChild(n));
+    [[a, ax - a.offsetLeft, ay - a.offsetTop], [b, bx - b.offsetLeft, by - b.offsetTop]].forEach(([d, dx, dy]) => {
+      d.style.transition = 'none'; d.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      void d.offsetWidth;
+      d.style.transition = 'transform .22s ease, background .5s'; d.style.transform = '';
+    });
+  }
+
+  // new puzzle: the blank wanders, the numbers change into other numbers, then they settle
+  function morph() {
+    el.classList.remove('ok', 'rev');
+    el.querySelectorAll('.sweep,.pip').forEach(n => n.remove());
+    const kids = () => [...el.children];
+    kids().forEach(d => { d.style.transform = ''; d.classList.remove('popnum', 'unpop', 'bump'); if (d.classList.contains('empty')) { d.textContent = ''; bump(d); } });
+    const { nums, hole } = newPuzzle();
+    const STEPS = 6;
+    for (let k = 1; k <= STEPS; k++) {
+      setTimeout(() => {
+        const ks = kids(), i = (Math.random() * 4) | 0; let j = (Math.random() * 4) | 0; if (j === i) j = (j + 1) % 4;
+        slide(ks[i], ks[j]);
+        const t = ks[(Math.random() * 4) | 0];                       // one number turns into another
+        if (!t.classList.contains('empty')) { t.textContent = 1 + ((Math.random() * 4) | 0); bump(t); }
+      }, k * 260);
+    }
+    setTimeout(() => {                                                // settle into the new puzzle
+      kids().forEach((d, i) => { set(d, nums[i], i === hole); bump(d); });
+      setTimeout(() => { el.dataset.busy = ''; }, 450);
+    }, (STEPS + 1) * 260);
+  }
+
+  el.onclick = () => {
+    if (el.dataset.busy) return;
+    el.dataset.busy = '1';
+    const c = el.querySelector('.empty'); c.textContent = c.dataset.n; c.classList.add('popnum');
+    const sw = document.createElement('i'); sw.className = 'sweep'; el.appendChild(sw);
+    // green bars pop out one after another, clockwise from the top, back round to the top
+    for (let k = 0; k < 16; k++) {
+      const pip = document.createElement('i'); pip.className = 'pip';
+      // walk round the outline of the square (just off the edge), clockwise from the top middle
+      const h = 44; let d = k * (8 * h / 16), x, y, ang;
+      if (d <= h) { x = d; y = -h; ang = 0; }
+      else if (d < 3 * h) { x = h; y = -h + (d - h); ang = 90; }
+      else if (d < 5 * h) { x = h - (d - 3 * h); y = h; ang = 180; }
+      else if (d < 7 * h) { x = -h; y = h - (d - 5 * h); ang = 270; }
+      else { x = -h + (d - 7 * h); y = -h; ang = 0; }
+      if (Math.abs(x) === h && Math.abs(y) === h) ang = x > 0 ? (y < 0 ? 45 : 135) : (y > 0 ? 225 : 315);
+      pip.style.setProperty('--x', x + 'px'); pip.style.setProperty('--y', y + 'px');
+      pip.style.setProperty('--ang', ang + 'deg'); pip.style.setProperty('--del', (k * 0.065) + 's');
+      el.appendChild(pip);
+    }
+    setTimeout(() => el.classList.add('ok'), 1000);   // fades into solid green
+    setTimeout(() => {                                 // then the whole thing plays backwards
+      el.classList.remove('ok');
+      el.querySelectorAll('.pip').forEach((pp, k) => pp.style.setProperty('--rdel', (0.5 + (15 - k) * 0.065) + 's'));
+      c.classList.remove('popnum'); void c.offsetWidth; c.classList.add('unpop');
+      el.classList.add('rev');
+    }, 2000);
+    setTimeout(morph, 4300);                           // then the squares shuffle into a new puzzle
+  };
+  build(); return el;
+}
+function setFloat(el, x, y) {
+  el.style.left = x + '%'; el.style.top = y + '%';
+  el.style.setProperty('--d', rnd(5, 10) + 's'); el.style.setProperty('--s', '-' + rnd(0, 8) + 's');
+  el.style.setProperty('--dx', rnd(-30, 30) + 'px'); el.style.setProperty('--dy', rnd(-40, 40) + 'px');
+  el.style.setProperty('--r0', rnd(-12, 0) + 'deg'); el.style.setProperty('--r1', rnd(0, 12) + 'deg');
+}
+(function buildBg() {
+  const bg = $('bg');
+  for (let i = 0; i < 16; i++) {
+    const [x, y] = edgeSpot(), el = document.createElement('div');
+    el.className = 'fl num'; el.textContent = 1 + ((Math.random() * 9) | 0);
+    el.style.setProperty('--sz', rnd(28, 70) + 'px'); setFloat(el, x, y); bg.appendChild(el);
+  }
+  for (let i = 0; i < 7; i++) { const [x, y] = edgeSpot(); bg.appendChild(makeMini(x, y)); }
+})();
+
+function buildLevels() {
+  const box = $('levels'); box.innerHTML = '';
+  for (let l = 1; l <= LEVELS; l++) {
+    const b = document.createElement('button');
+    b.innerHTML = l + (l <= 3 ? '<small>Tutorial ' + l + '</small>' : l === 4 ? '<small>Level 1</small>' : '');
+    const open = l <= unlocked || l === 4;   // level 4 (Level 1) is always open, so the tutorials can be skipped
+    if (!open) b.className = 'locked';
+    else if (doneSet[l]) b.className = 'done';
+    b.onclick = open ? () => startLevel(l) : () => hint(b, l, (l >= 5 && unlocked < 4) ? 4 : unlocked);
+    box.appendChild(b);
+  }
+}
+
+// Scratch's "whirl" (same maths as swirl.js on the home page): a picture is twisted round its middle.
+const WFRAG = 'precision mediump float;uniform sampler2D u_img;uniform float u_whirl;uniform float u_fade;uniform vec2 u_size;varying vec2 v_uv;' +
+  'void main(){vec2 p=(v_uv-0.5)*u_size;float r=0.5*length(u_size);float f=max(1.0-length(p)/r,0.0);float a=u_whirl*f*f;float s=sin(a),c=cos(a);' +
+  'vec2 q=mat2(c,-s,s,c)*p/u_size+0.5;vec4 t=texture2D(u_img,q);vec3 g=vec3(0.18,0.8,0.42)*t.a;gl_FragColor=vec4(mix(t.rgb,g,u_fade)*(1.0-u_fade),t.a*(1.0-u_fade));}';
+const WVERT = 'attribute vec2 a_pos;varying vec2 v_uv;void main(){v_uv=vec2(a_pos.x*0.5+0.5,0.5-a_pos.y*0.5);gl_Position=vec4(a_pos,0,1);}';
+const wsmooth = (a, b, k) => { const x = Math.min(1, Math.max(0, (k - a) / (b - a))); return x * x * (3 - 2 * x); };
+// o: { intro, hold, outro, ms, done } -- intro = whirl in out of green, outro = whirl away into green
+function whirl(pic, left, top, w, h, o) {
+  const cv = document.createElement('canvas'); cv.width = pic.width; cv.height = pic.height;
+  const gl = cv.getContext('webgl'); if (!gl) { if (o.done) o.done(); return; }
+  cv.style.cssText = 'position:fixed;left:' + left + 'px;top:' + top + 'px;width:' + w + 'px;height:' + h + 'px;z-index:30;pointer-events:none';
+  const sh = (t, src) => { const x = gl.createShader(t); gl.shaderSource(x, src); gl.compileShader(x); return x; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, WVERT)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, WFRAG));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'a_pos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pic);
+  gl.clearColor(0, 0, 0, 0);
+  gl.uniform2f(gl.getUniformLocation(prog, 'u_size'), cv.width, cv.height); gl.viewport(0, 0, cv.width, cv.height);
+  const uW = gl.getUniformLocation(prog, 'u_whirl'), uF = gl.getUniformLocation(prog, 'u_fade');
+  const draw = (amt, fade) => { gl.uniform1f(uW, amt * Math.PI / 180); gl.uniform1f(uF, fade); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
+  const MAX = 500, IN = o.intro ? o.ms : 0, HOLD = o.hold || 0, OUT = o.outro ? o.ms : 0, TOTAL = IN + HOLD + OUT;
+  const ease = k => 0.5 - 0.5 * Math.cos(Math.PI * k);
+  draw(IN ? MAX : 0, IN ? 1 : 0); document.body.appendChild(cv);
+  const t0 = performance.now();
+  (function step(now) {
+    const t = now - t0;
+    if (t < IN) { const k = t / IN; draw(MAX * (1 - ease(k)), 1 - wsmooth(0, 0.7, k)); }
+    else if (t < IN + HOLD) draw(0, 0);
+    else if (t < TOTAL) { const k = (t - IN - HOLD) / OUT; draw(MAX * ease(k), wsmooth(0.3, 1, k)); }
+    else { cv.remove(); if (o.done) o.done(); return; }
+    requestAnimationFrame(step);
+  })(t0);
+}
+
+// Pull the level screen down a tiny bit; pull more and a lock shows. Let go and a lock swirls in and fades.
+(function () {
+  const ls = $('levelScreen'), lv = $('levels'), pl = $('pullLock'), sl = $('swirlLock');
+  let pull = 0, idle, y0 = 0;
+  function apply() {
+    lv.style.transition = 'none'; lv.style.transform = 'translateY(' + (-Math.min(pull, 40)) + 'px)';
+    pl.style.opacity = pull > 60 ? Math.min(1, (pull - 60) / 40) : 0;
+  }
+  function release() {
+    const was = pull > 60; pull = 0;
+    lv.style.transition = 'transform .25s'; lv.style.transform = ''; pl.style.opacity = 0;
+    if (was) swirlLock();
+  }
+  let busy = false;
+  function swirlLock() {
+    if (busy) return; busy = true;
+    const W = innerWidth, H = innerHeight;
+    const pic = document.createElement('canvas'); pic.width = W; pic.height = H;
+    const c2 = pic.getContext('2d');
+    c2.font = Math.round(Math.min(W, H) * 0.5) + 'px serif'; c2.textAlign = 'center'; c2.textBaseline = 'middle';
+    c2.fillText('🔒', W / 2, H / 2);
+    whirl(pic, 0, 0, W, H, { intro: true, hold: 500, outro: true, ms: 1100, done: () => { busy = false; } });
+  }
+  ls.addEventListener('wheel', e => {
+    if (!ls.classList.contains('on')) return;
+    e.preventDefault();
+    pull = Math.max(0, Math.min(140, pull + e.deltaY * 0.5)); apply();
+    clearTimeout(idle); idle = setTimeout(release, 200);
+  }, { passive: false });
+  ls.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; });
+  ls.addEventListener('touchmove', e => { e.preventDefault(); pull = Math.max(0, Math.min(140, (y0 - e.touches[0].clientY) * 0.6)); apply(); }, { passive: false });
+  ls.addEventListener('touchend', release);
+})();
+
+$('playBtn').onclick = () => { buildLevels(); show('levelScreen'); };
+$('backStart').onclick = () => show('start');
+$('backLevels').onclick = () => { buildLevels(); show('levelScreen'); };
+
+let level = 1, puzzle = [], cells = [], cur = -1;
+
+function startLevel(l) {
+  level = l; clipOn = false; $('game').classList.remove('clip'); setSize(sizeFor(l)); show('loading');
+  const cv = $('loadCanvas'), ctx = cv.getContext('2d'), pct = $('pct');
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cx = cv.width / 2, cy = cv.height / 2, R = 160;
+  let made = null, shown = 0, parts = [], emit = -Math.PI / 2, ringA = 0, finished = false;
+  const t0 = Date.now(), total = 1500;
+  pct.textContent = '0%';
+  ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, cv.width, cv.height);
+  // The sudoku is made right now, while the dots go round.
+  setTimeout(() => { const rec = savedRecs[l] && savedRecs[l].puzzle.length === N * N ? savedRecs[l] : null; made = l === 1 ? { puzzle: [], solution: [] } : (l === 2 || l === 3) && !rec ? tut2Board() : rec ? { puzzle: rec.puzzle, solution: rec.vals, rec } : makeSudoku(givensFor(l)); }, 50);
+  (function loop() {
+    const f = Math.min(1, (Date.now() - t0) / total);
+    // 0% -> 50% -> 90% -> 100%
+    let p = f < 0.35 ? (f / 0.35) * 50 : f < 0.8 ? 50 + ((f - 0.35) / 0.45) * 40 : 90 + ((f - 0.8) / 0.2) * 10;
+    if (f === 1 && !made) p = 99;          // wait for the sudoku to be ready
+    p = Math.round(p);
+    if (p > shown) { for (let i = 0; i < Math.min(5, p - shown); i++) parts.push({ a: emit + i * 0.04, v: 0.03 + p * 0.0025 + Math.random() * 0.01, r: 4 + Math.random() * 1.5, h: [] }); shown = p; pct.textContent = p + '%'; }
+    ctx.fillStyle = 'rgba(5,5,5,.4)'; ctx.fillRect(0, 0, cv.width, cv.height);
+    emit += 0.04 + shown * 0.003;
+    for (const d of parts) {
+      d.a += d.v; const x = cx + Math.cos(d.a) * R, y = cy + Math.sin(d.a) * R;
+      d.h.push([x, y]); if (d.h.length > 6) d.h.shift();
+      ctx.beginPath(); ctx.moveTo(d.h[0][0], d.h[0][1]); d.h.forEach(q => ctx.lineTo(q[0], q[1]));
+      ctx.strokeStyle = 'rgba(0,60,255,.4)'; ctx.lineWidth = d.r * 0.7; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, d.r, 0, 7); ctx.fillStyle = '#0055ff'; ctx.fill();
+    }
+    if (f === 1 && made) {
+      if (!finished) { finished = true; pct.textContent = '100%'; setTimeout(() => begin(made.puzzle, made.solution, made.rec), 350); }
+      ringA = Math.min(1, ringA + 0.08);
+      ctx.beginPath(); ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.arc(cx, cy, R, 0, 7);
+      ctx.strokeStyle = 'rgba(0,85,255,' + ringA + ')'; ctx.stroke();
+    }
+    if ($('loading').classList.contains('on')) requestAnimationFrame(loop);
+  })();
+}
+
+const LET = 'ABCDEFGHI', CELLS = () => N * N;
+let eraserArmed = false;
+let vals = [], notes = [], pencil = false, lightning = false, armed = 0, digitDone = {}, padBtns = [];
+
+let solutionGrid = [], helpLeft = {}, helped = [], replay = false;
+function begin(p, sol, rec) {
+  helped = new Array(N * N).fill(false); replay = !!doneSet[level];
+  $('game').classList.remove('cv'); ['tools', 'padRow'].forEach(id => $(id).classList.remove('fadein')); $('rewindBtn').classList.remove('gone');
+  solutionGrid = sol || []; helpLeft = { complete: 0, selected: 2, random: 2, hint: 5, blanks: 1 }; autoToken++; cheated = false; won = false; forceCoins = false; owed = false;
+  puzzle = p.slice(); cur = -1; vals = new Array(N * N).fill(0); fitCache = new Map();
+  notes = Array.from({ length: N * N }, () => new Set());
+  pencil = false; lightning = false; armed = 0; digitDone = {}; eraserArmed = false; $('eraseBtn').classList.remove('glowred', 'flashred');
+  $('pencilBtn').classList.remove('on'); $('zap').classList.remove('on', 'sparking');
+  $('title').textContent = level <= 3 ? 'Tutorial ' + level : 'Level ' + (level - 3); $('msg').textContent = ''; $('rule').classList.remove('show');
+  const grid = $('grid'); grid.innerHTML = ''; cells = [];
+  grid.style.gridTemplateColumns = grid.style.gridTemplateRows = 'repeat(' + N + ',minmax(0,1fr))';
+  $('axisL').style.gridTemplateRows = 'repeat(' + N + ',1fr)'; $('axisB').style.gridTemplateColumns = 'repeat(' + N + ',1fr)';
+  $('pad').style.gridTemplateColumns = 'repeat(' + N + ',1fr)';
+  for (let i = 0; i < N * N; i++) {
+    const d = document.createElement('div');
+    d.className = 'cell' + ((i % N) % BW === BW - 1 && i % N !== N - 1 ? ' r' : '') + ((((i / N) | 0) % BH) === BH - 1 && i < N * N - N ? ' b' : '') + (puzzle[i] ? ' given' : '');
+    d.textContent = puzzle[i] || '';
+    d.onclick = () => cellClick(i);
+    grid.appendChild(d); cells.push(d);
+  }
+  $('axisL').innerHTML = Array.from({ length: N }, (_, k) => '<i>' + (N - k) + '</i>').join('');
+  $('axisB').innerHTML = LET.slice(0, N).split('').map(l => '<i>' + l + '</i>').join('');
+  const pad = $('pad'); pad.innerHTML = ''; padBtns = [];
+  for (let n = 1; n <= N; n++) { const b = document.createElement('button'); b.textContent = n; b.onclick = () => padPress(n); pad.appendChild(b); padBtns.push(b); }
+  show('game'); paint(); paintPad();
+  tutStart(level === 1 && !clipOn);
+  t2Start((level === 2 || level === 3) && !rec);
+  if (rec) {                                           // a level you already did: open it finished, with a rewind button
+    for (let i = 0; i < N * N; i++) if (!puzzle[i]) { vals[i] = rec.vals[i]; helped[i] = !!rec.helped[i]; }
+    for (let n = 1; n <= N; n++) digitDone[n] = true;
+    won = true; $('game').classList.add('cv'); paint(); paintPad();
+  }
+}
+
+function puzzleGiven(i) { return cells[i].classList.contains('given'); }
+function value(i) { return puzzleGiven(i) ? puzzle[i] : vals[i]; }
+const sameBox = (a, b) => ((a / N | 0) / BH | 0) === ((b / N | 0) / BH | 0) && ((a % N) / BW | 0) === ((b % N) / BW | 0);
+
+// which rules does square i break? (row, column, box)
+function conflictWhy(i) {
+  const v = value(i), why = [];
+  if (!v) return why;
+  for (let k = 0; k < N * N; k++) {
+    if (k === i || value(k) !== v) continue;
+    if ((k / N | 0) === (i / N | 0) && !why.includes('row')) why.push('row');
+    if (k % N === i % N && !why.includes('column')) why.push('column');
+    if (sameBox(k, i) && !why.includes('box')) why.push('box');
+  }
+  return why;
+}
+const conflict = i => conflictWhy(i).length > 0;
+
+// Is this number a wrong spot? Red if it breaks a rule, OR if the puzzle can no longer be finished with it in.
+// (Wrong with no rule broken: it just stays red, and no rule shows.)
+let fitCache = new Map();
+function fits(i) {
+  const key = i * 10 + value(i);
+  if (!fitCache.has(key)) {
+    const g = puzzle.slice(); g[i] = value(i);
+    fitCache.set(key, solve(g, 20000) !== null);
+  }
+  return fitCache.get(key);
+}
+const isBad = i => !!value(i) && !puzzleGiven(i) && (conflict(i) || !fits(i));
+
+function paint() {
+  cells.forEach((c, i) => {
+    if (!puzzleGiven(i)) {
+      const html = vals[i] ? String(vals[i])
+        : notes[i].size ? '<span class="notes" style="grid-template-columns:repeat(' + (N === 4 ? 2 : 3) + ',1fr)">' + Array.from({ length: N }, (_, k) => k + 1).map(n => '<i>' + (notes[i].has(n) ? n : '') + '</i>').join('') + '</span>' : '';
+      if (c.dataset.h !== html) { c.innerHTML = html; c.dataset.h = html; }
+    }
+    c.classList.toggle('sel', i === cur);
+    c.classList.toggle('mine', !puzzleGiven(i) && !!vals[i]);
+    c.classList.toggle('helped', !puzzleGiven(i) && !!vals[i] && !!helped[i]);
+    c.classList.toggle('bad', isBad(i));
+  });
+}
+function paintPad() {
+  padBtns.forEach((b, k) => { b.classList.toggle('armed', lightning && armed === k + 1); b.classList.toggle('gray', !!digitDone[k + 1]); b.disabled = !!digitDone[k + 1]; });
+}
+
+function cellClick(i) {
+  if (puzzle[i]) return;
+  cur = i;
+  if (lightning && eraserArmed) { placeAt(i, 0); return; }                                     // lightning eraser: every square you press is rubbed out
+  if (lightning && armed) { placeAt(i, (!pencil && vals[i] === armed) ? 0 : armed); return; }   // lightning: the lit number goes straight in
+  paint();
+}
+function padPress(n) {
+  if (digitDone[n]) return;
+  if (lightning) { armed = armed === n ? 0 : n; eraserArmed = false; $('eraseBtn').classList.remove('glowred'); paintPad(); return; }                          // light it up, then click squares
+  if (cur >= 0) placeAt(cur, n);
+}
+function erase() { if (cur >= 0 && !puzzle[cur]) placeAt(cur, 0); }
+
+function placeAt(i, n, helper) {
+  if (puzzle[i]) return;
+  helped[i] = !!helper && n > 0;
+  if (n === 0) { vals[i] = 0; notes[i].clear(); }
+  else if (pencil) { if (vals[i]) return; notes[i].has(n) ? notes[i].delete(n) : notes[i].add(n); }
+  else {
+    vals[i] = n; notes[i].clear();
+    for (let k = 0; k < N * N; k++) if (k !== i && ((k / N | 0) === (i / N | 0) || k % N === i % N || sameBox(k, i))) notes[k].delete(n);
+  }
+  paint(); updateDigits(); showRule(i); if (n && !pencil) celebrate(i); checkWin(); t2Check();
+}
+
+function showRule(i) {
+  const why = conflictWhy(i), r = $('rule');
+  if (why.length) { r.textContent = "Rule: the same number can't be twice in the same " + (why.length > 1 ? why.slice(0, -1).join(', ') + ' and ' + why[why.length - 1] : why[0]) + '.'; r.classList.add('show'); }
+  else r.classList.remove('show');
+}
+
+// A good number glows green. Finish a row, column or box and green spreads out along it from the square you just filled.
+function flash(k, ms) {
+  const c = cells[k];
+  c.classList.remove('flash'); void c.offsetWidth;
+  c.style.animationDelay = ms + 'ms'; c.classList.add('flash');
+  c.addEventListener('animationend', () => { c.classList.remove('flash'); c.style.animationDelay = ''; }, { once: true });
+}
+// Green runs along three squares at a time: when the third lights up, the first goes out, and so on to the end.
+const WAVE = 250, TAIL = 3;   // milliseconds between squares; each square stays green until the third one after it lights
+function hold(k, onAt, offAt) {
+  const c = cells[k];
+  setTimeout(() => { c.glow = (c.glow || 0) + 1; c.classList.add('hold'); }, onAt);
+  setTimeout(() => { c.glow = Math.max(0, (c.glow || 1) - 1); if (!c.glow) c.classList.remove('hold'); }, offAt);
+}
+// steps: Map of square -> how many steps from the start (0 = the square you put in, or the middle).
+function wave(steps, after) {
+  const last = Math.max(...steps.values());
+  steps.forEach((st, k) => hold(k, st * WAVE, (st + TAIL) * WAVE));
+  if (after) setTimeout(after, (last + TAIL) * WAVE + 250);
+}
+const boardFull = () => { for (let i = 0; i < N * N; i++) if (!value(i) || isBad(i)) return false; return true; };
+function celebrate(i) {
+  if (!value(i) || isBad(i)) return;
+  if (boardFull()) return;                      // the whole-board wave (from the middle) takes over
+  const r = i / N | 0, col = i % N;
+  const row = [], column = [], box = [];
+  const br = r - r % BH, bc = col - col % BW;
+  for (let k = 0; k < N; k++) { row.push(r * N + k); column.push(k * N + col); box.push((br + (k / BW | 0)) * N + bc + k % BW); }
+  const complete = arr => { const set = new Set(arr.map(value)); return !set.has(0) && set.size === N && arr.every(k => !isBad(k)); };
+  const steps = new Map();
+  [row, column, box].filter(complete).forEach(arr => arr.forEach(k => {
+    const d = Math.max(Math.abs((k / N | 0) - r), Math.abs(k % N - col));   // 0 = the square you just put in
+    steps.set(k, Math.min(d, steps.has(k) ? steps.get(k) : d));
+  }));
+  if (!steps.size) { flash(i, 0); return; }     // just one good number: the quick green glow
+  wave(steps);
+}
+
+// when all nine of a number are in (and right), its button whirls away and goes gray
+function updateDigits() {
+  for (let n = 1; n <= N; n++) {
+    let count = 0, ok = true;
+    for (let i = 0; i < N * N; i++) if (value(i) === n) { count++; if (isBad(i)) ok = false; }
+    const complete = count === N && ok;
+    if (complete && !digitDone[n]) { digitDone[n] = true; if (armed === n) armed = 0; swirlDigit(n); }
+    else if (!complete && digitDone[n]) digitDone[n] = false;
+  }
+  paintPad();
+}
+function swirlDigit(n) {
+  const btn = padBtns[n - 1], r = btn.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const pic = document.createElement('canvas'); pic.width = Math.round(r.width * dpr); pic.height = Math.round(r.height * dpr);
+  const c = pic.getContext('2d');
+  c.fillStyle = '#fca311'; c.beginPath(); c.roundRect(0, 0, pic.width, pic.height, 10 * dpr); c.fill();
+  c.fillStyle = '#14213d'; c.font = '700 ' + (22 * dpr) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(String(n), pic.width / 2, pic.height / 2 + dpr);
+  whirl(pic, r.left, r.top, r.width, r.height, { intro: false, hold: 0, outro: true, ms: 900 });
+}
+
+function checkWin() {
+  if (won || !boardFull()) return;
+  won = true;
+  coinShown = coins;                                   // the counter stays on the old number until the coins arrive
+  if ((!cheated || forceCoins) && !replay) coins += 10;
+  doneSet[level] = 1;
+  if (level !== 1) savedRecs[level] = { puzzle: puzzle.slice(), vals: Array.from({ length: N * N }, (_, i) => value(i)), helped: helped.map(Boolean) };
+  try { localStorage.sudokuSaved = JSON.stringify(savedRecs); } catch (e) {}
+  unlocked = Math.min(LEVELS, Math.max(unlocked, level + 1));
+  try { localStorage.sudokuUnlocked = unlocked; localStorage.sudokuDone = JSON.stringify(doneSet); } catch (e) {}
+  saveCoins(); $('msg').textContent = '';
+  // green spreads out from the middle square, ring by ring, then the message tab comes up
+  const steps = new Map();
+  const mid = (N - 1) / 2;
+  for (let k = 0; k < N * N; k++) steps.set(k, Math.round(Math.max(Math.abs((k / N | 0) - mid), Math.abs(k % N - mid))));
+  wave(steps, showDone);
+}
+
+// ---- The "Level completed" tab: confetti, a fanfare, and coins that fly to the counter ----
+let coinShown = 0, pendingCoins = [];
+const showCoins = () => { $('coinNum').textContent = coinShown; };
+
+function fanfare() {                                   // "too, toooo!"
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)(), t0 = ac.currentTime;
+    [[523.25, 0, .14], [783.99, .2, .85]].forEach(([f, t, d]) => {
+      const o = ac.createOscillator(), g = ac.createGain(), fl = ac.createBiquadFilter();
+      o.type = 'sawtooth'; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = 1800;
+      g.gain.setValueAtTime(0, t0 + t); g.gain.linearRampToValueAtTime(.25, t0 + t + .02); g.gain.exponentialRampToValueAtTime(.001, t0 + t + d);
+      o.connect(fl); fl.connect(g); g.connect(ac.destination); o.start(t0 + t); o.stop(t0 + t + d + .05);
+    });
+  } catch (e) {}
+}
+function confetti() {                                  // coloured paper pieces falling from the top
+  const cv = document.createElement('canvas'); cv.id = 'confetti'; cv.width = innerWidth; cv.height = innerHeight; document.body.appendChild(cv);
+  const x = cv.getContext('2d'), cols = ['#ff4d6d', '#ffd23f', '#3fd16b', '#4d9bff', '#b967ff', '#ff9a3c'];
+  const bits = Array.from({ length: 160 }, () => ({ x: rnd(0, cv.width), y: rnd(-260, -10), vx: rnd(-1.5, 1.5), vy: rnd(2, 5), w: rnd(6, 12), h: rnd(4, 8), a: rnd(0, 6.3), va: rnd(-.2, .2), c: cols[Math.random() * cols.length | 0] }));
+  const t0 = performance.now();
+  (function go(t) {
+    x.clearRect(0, 0, cv.width, cv.height);
+    bits.forEach(b => { b.x += b.vx; b.y += b.vy; b.a += b.va; x.save(); x.translate(b.x, b.y); x.rotate(b.a); x.fillStyle = b.c; x.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); x.restore(); });
+    if (t - t0 < 4500 && bits.some(b => b.y < cv.height + 20)) requestAnimationFrame(go); else cv.remove();
+  })(t0);
+}
+// a coin pops out of (x, y), flies off a little way and waits
+function coinAt(x, y, i, spread) {
+  const c = document.createElement('div'); c.className = 'coin flycoin'; c.style.left = (x - 13) + 'px'; c.style.top = (y - 13) + 'px'; document.body.appendChild(c);
+  const a = rnd(0, 6.28), r = rnd(spread * .4, spread);
+  c._x = x + Math.cos(a) * r; c._y = y + Math.sin(a) * r * .7; c._bx = x; c._by = y;
+  c.style.transform = 'scale(0)';
+  c.animate([{ transform: 'translate(0,0) scale(0)' }, { transform: `translate(${c._x - x}px,${c._y - y}px) scale(1.3)`, offset: .7 }, { transform: `translate(${c._x - x}px,${c._y - y}px) scale(1)` }], { duration: 450, delay: i * 40, fill: 'forwards', easing: 'ease-out' });
+  return c;
+}
+function popCoin(c) {                                  // disappear with a pop
+  const r = c.getBoundingClientRect(); c.remove();
+  const p = document.createElement('div'); p.className = 'popfx'; p.style.left = (r.left + r.width / 2 - 15) + 'px'; p.style.top = (r.top + r.height / 2 - 15) + 'px'; document.body.appendChild(p);
+  p.animate([{ transform: 'scale(.3)', opacity: 1 }, { transform: 'scale(1.9)', opacity: 0 }], { duration: 260, easing: 'ease-out' }); setTimeout(() => p.remove(), 300);
+}
+function flyCoins(list) {                              // zoom to the counter, pop, and add them up
+  const bar = $('coinBar').getBoundingClientRect(), tx = bar.left + 22, ty = bar.top + bar.height / 2;
+  let arrived = 0;
+  list.forEach((c, i) => {
+    c.animate([{ transform: `translate(${c._x - c._bx}px,${c._y - c._by}px) scale(1)` }, { transform: `translate(${tx - c._bx}px,${ty - c._by}px) scale(.8)` }], { duration: 650, delay: i * 70, fill: 'forwards', easing: 'cubic-bezier(.5,0,.9,.5)' });
+    setTimeout(() => {
+      popCoin(c); coinShown++; showCoins(); arrived++;
+      if (arrived === list.length) { coinShown = coins; showCoins(); const p = $('plusTen'); p.classList.remove('go'); void p.offsetWidth; p.classList.add('go'); }
+    }, i * 70 + 650);
+  });
+}
+let owed = false, tabCenter = [0, 0];
+function tabBurst() {                                  // coins pop out of the tab, then pop away a second later
+  const r = document.querySelector('#doneTab .dcard').getBoundingClientRect();
+  tabCenter = [r.left + r.width / 2, r.top + r.height / 2]; owed = true;
+  const list = Array.from({ length: 10 }, (_, i) => coinAt(tabCenter[0], tabCenter[1], i, 120));
+  setTimeout(() => list.forEach(popCoin), 1100);
+}
+function showDone() {
+  if (!document.querySelector('#game.on')) { coinShown = coins; showCoins(); return; }
+  $('doneTitle').textContent = level <= 3 ? 'Tutorial completed!' : 'Level completed!';
+  $('nextBtn').style.display = level < LEVELS ? '' : 'none';
+  $('doneTab').classList.add('on'); confetti(); fanfare();
+  if ((!cheated || forceCoins) && !replay) setTimeout(tabBurst, 350);
+  else { coinShown = coins; showCoins(); }
+}
+function leaveTab() { $('doneTab').classList.remove('on'); }
+$('nextBtn').onclick = () => {
+  leaveTab(); const was = owed, [x, y] = tabCenter; owed = false;
+  startLevel(level + 1);
+  if (!was) return;
+  const list = Array.from({ length: 10 }, (_, i) => coinAt(x, y, i, 60));   // the coins pop out again, then zoom to the counter
+  setTimeout(() => flyCoins(list), 450);
+};
+$('toLevelsBtn').onclick = () => {
+  leaveTab(); const was = owed; owed = false;
+  buildLevels(); show('levelScreen');
+  if (!was) return;
+  setTimeout(() => {                                   // coins pop out of the level you just did
+    const t = $('levels').children[level - 1], r = t.getBoundingClientRect();
+    const list = Array.from({ length: 10 }, (_, i) => coinAt(r.left + r.width / 2, r.top + r.height / 2, i, 50));
+    setTimeout(() => flyCoins(list), 450);
+  }, 300);
+};
+
+// ---- Hints menu (+ button) ----
+// Each game gives free uses. Bought uses go in a bag that is kept between games. Coins: 10 for every game you finish.
+let cheated = false, typed = '', won = false, forceCoins = false;
+let coins = 0, bag = { complete: 0, selected: 0, random: 0, blanks: 0, hint: 0 }, autoToken = 0;
+try { coins = +localStorage.sudokuCoins || 0; Object.assign(bag, JSON.parse(localStorage.sudokuBag || '{}')); } catch (e) {}
+coinShown = coins; showCoins();
+const saveCoins = () => { try { localStorage.sudokuCoins = coins; localStorage.sudokuBag = JSON.stringify(bag); } catch (e) {} };
+const PRICE = { complete: 20, selected: 5, random: 5, blanks: 8, hint: 2 };
+const leftOf = k => replay ? Infinity : helpLeft[k] + bag[k];
+const lbl = k => leftOf(k) === Infinity ? '∞' : leftOf(k);
+function consume(k) { if (replay) return; if (helpLeft[k] > 0) helpLeft[k]--; else bag[k]--; saveCoins(); }
+const closeHelp = () => $('helpMenu').classList.remove('on');
+const openCells = () => { const a = []; for (let i = 0; i < N * N; i++) if (!value(i) || isBad(i)) a.push(i); return a; };
+// the real answer for the board as it is now (falls back to the plain puzzle if your numbers can't be finished)
+function currentSolution() {
+  const g = puzzle.slice(); for (let i = 0; i < N * N; i++) if (!puzzle[i] && vals[i] && !isBad(i)) g[i] = vals[i];
+  return solve(g, 20000) || solve(puzzle, 20000) || solutionGrid;
+}
+function putIn(i, n) { const was = pencil; pencil = false; placeAt(i, n, true); pencil = was; }
+
+function openHelp() {
+  const list = $('helpList'); list.innerHTML = '';
+  $('helpCoins').textContent = '🪙 ' + coins + ' coins';
+  const row = (key, mid, go) => {
+    const d = document.createElement('div'); d.className = 'hrow';
+    const u = document.createElement('div'); u.className = 'use' + (leftOf(key) < 1 ? ' off' : ''); u.innerHTML = mid; u.onclick = () => { if (leftOf(key) >= 1) go(); };
+    const by = document.createElement('button'); by.className = 'buy'; by.textContent = 'Buy 🪙' + PRICE[key];
+    by.onclick = () => { if (coins < PRICE[key]) { $('helpCoins').textContent = 'Not enough coins yet. Finish a game for 10.'; return; } coins -= PRICE[key]; bag[key]++; saveCoins(); openHelp(); };
+    d.append(u); if (!replay) d.append(by); list.appendChild(d); return u;
+  };
+  row('complete', '<span>Complete game</span><span>' + lbl('complete') + ' left</span>', () => helpDo('complete'));
+  row('selected', '<span>Reveal selected square</span><span>' + lbl('selected') + ' left</span>', () => helpDo('selected'));
+  row('random', '<span>Reveal random square</span><span>' + lbl('random') + ' left</span>', () => helpDo('random'));
+  const u = row('blanks', '<span>Reveal <input id="blankN" type="number" min="1" max="10" placeholder="_" onclick="event.stopPropagation()"> squares</span><span>' + lbl('blanks') + ' left</span>', () => helpDo('blanks'));
+  row('hint', '<span>Hint</span><span>' + lbl('hint') + ' left</span>', () => { closeHelp(); giveHint(); });
+  $('helpMenu').classList.add('on');
+}
+function ask(text, yes) {
+  $('confirmText').textContent = text; $('confirmBox').classList.add('on');
+  $('confirmYes').onclick = () => { $('confirmBox').classList.remove('on'); yes(); };
+  $('confirmNo').onclick = () => $('confirmBox').classList.remove('on');
+}
+function helpDo(key) {
+  if (key === 'selected') {
+    if (cur < 0 || puzzle[cur]) { closeHelp(); $('msg').textContent = 'Click an empty square first, then try again.'; return; }
+    ask('Reveal the selected square?', () => { consume('selected'); closeHelp(); $('msg').textContent = ''; putIn(cur, currentSolution()[cur]); });
+  } else if (key === 'random') {
+    ask('Reveal a random square?', () => {
+      const o = openCells(); if (!o.length) return;
+      consume('random'); closeHelp(); const i = o[Math.random() * o.length | 0]; cur = i; putIn(i, currentSolution()[i]);
+      $('msg').textContent = 'Revealed ' + LET[i % N] + (N - (i / N | 0)) + '.';
+    });
+  } else if (key === 'blanks') {
+    const n = Math.floor(+($('blankN') || {}).value);
+    if (!(n >= 1 && n <= 10)) { $('helpCoins').textContent = 'Type a number from 1 to 10 in the blank.'; return; }
+    ask('Reveal ' + n + ' random squares?', () => {
+      const o = openCells(); if (!o.length) return;
+      consume('blanks'); closeHelp();
+      const sol = currentSolution();
+      for (let k = o.length - 1; k > 0; k--) { const j = Math.random() * (k + 1) | 0; [o[k], o[j]] = [o[j], o[k]]; }
+      o.slice(0, n).forEach(i => putIn(i, sol[i]));
+      $('msg').textContent = 'Revealed ' + Math.min(n, o.length) + ' squares.';
+    });
+  } else if (key === 'complete') {
+    ask('Complete the whole game? It fills in one square every tenth of a second.', () => {
+      consume('complete'); cheated = true; closeHelp(); $('msg').textContent = '';
+      const sol = currentSolution(), o = openCells(), my = ++autoToken;
+      const step = () => { if (my !== autoToken || !o.length) return; const i = o.shift(); putIn(i, sol[i]); if (o.length) setTimeout(step, 100); };
+      step();
+    });
+  }
+}
+// Secret code word, just for Jos: type  finish  while playing and the game completes itself. Free, no coins.
+addEventListener('keydown', e => {
+  if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.key.length !== 1) return;
+  typed = (typed + e.key.toLowerCase()).slice(-8);
+  if (typed.endsWith('coins') && document.querySelector('#game.on')) {   // secret: show me the coins even after finish
+    typed = ''; forceCoins = true;
+    if (won && cheated && !replay && $('doneTab').classList.contains('on') && !owed) { coins += 10; saveCoins(); tabBurst(); }
+    return;
+  }
+  if (typed.endsWith('finish') && document.querySelector('#game.on')) {
+    typed = ''; cheated = true; closeHelp();
+    const sol = currentSolution(), o = openCells(), my = ++autoToken;
+    const step = () => { if (my !== autoToken || !o.length) return; const i = o.shift(); putIn(i, sol[i]); if (o.length) setTimeout(step, 100); };
+    step();
+  }
+});
+$('plusBtn').onclick = openHelp;
+$('bulbBtn').onclick = giveHint;
+
+// Hint: 11 kinds. 9 tell you a number (70%), 1 lists what a square could be (20%), 1 puts a number in for you (10%). Five per game.
+const rowOf = i => i / N | 0, colOf = i => i % N;
+const boxCells = i => { const br = rowOf(i) - rowOf(i) % BH, bc = colOf(i) - colOf(i) % BW, a = []; for (let k = 0; k < N; k++) a.push((br + (k / BW | 0)) * N + bc + k % BW); return a; };
+const rowCells = i => Array.from({ length: N }, (_, k) => rowOf(i) * N + k);
+const colCells = i => Array.from({ length: N }, (_, k) => k * N + colOf(i));
+const BOXNAME = i => {
+  const v = N / BH === 3 ? ['top', 'middle', 'bottom'] : N / BH === 2 ? ['top', 'bottom'] : [''], h = N / BW === 3 ? ['left', 'middle', 'right'] : ['left', 'right'];
+  return [v[rowOf(i) / BH | 0], h[colOf(i) / BW | 0]].filter(Boolean).join('-');
+};
+function glow(list) {
+  list.forEach(k => { const c = cells[k]; c.classList.remove('hinted'); void c.offsetWidth; c.classList.add('hinted'); c.addEventListener('animationend', () => c.classList.remove('hinted'), { once: true }); });
+}
+function giveHint() {
+  if (leftOf('hint') < 1) { $('msg').textContent = 'No hints left. Press + to buy more with coins.'; return; }
+  const open = openCells();
+  if (!open.length) return;
+  const sol = currentSolution();
+  const i = open[Math.random() * open.length | 0], n = sol[i], r = N - rowOf(i), c = LET[colOf(i)];
+  consume('hint'); cur = i; paint();
+  const roll = Math.random(), tail = ' Hints left: ' + lbl('hint');
+  let text;
+  if (roll < 0.10) {                                   // 10%: put it in for you
+    putIn(i, n);
+    text = 'Hint: I put a ' + n + ' in ' + c + r + ' for you.';
+  } else if (roll < 0.30) {                            // 20%: what it might be
+    let best = i, bestC = null;
+    open.forEach(k => {
+      const seen = new Set();
+      for (let m = 0; m < N * N; m++) if (m !== k && value(m) && !isBad(m) && (rowOf(m) === rowOf(k) || colOf(m) === colOf(k) || sameBox(m, k))) seen.add(value(m));
+      const cand = Array.from({ length: N }, (_, q) => q + 1).filter(x => !seen.has(x));
+      if (!bestC || cand.length < bestC.length) { best = k; bestC = cand; }
+    });
+    cur = best; paint(); glow([best]);
+    text = 'Hint: ' + LET[colOf(best)] + (N - rowOf(best)) + ' might be ' + bestC.join(', ') + '. Add them as pencil notes.';
+  } else {                                             // 70%: nine ways of telling you a number
+    const kind = Math.random() * 9 | 0;
+    let left = 0; for (let k = 0; k < N * N; k++) if (value(k) !== n || isBad(k)) { if (sol[k] === n) left++; }
+    const texts = [
+      () => { glow([i]); return 'Hint: the glowing square is a ' + n + '.'; },
+      () => { glow(rowCells(i)); return 'Hint: row ' + r + ' is missing a ' + n + '. It goes in the square that is selected.'; },
+      () => { glow(colCells(i)); return 'Hint: column ' + c + ' is missing a ' + n + '. It goes in the square that is selected.'; },
+      () => { glow(boxCells(i)); return 'Hint: the ' + BOXNAME(i) + ' box is missing a ' + n + '. It goes in the square that is selected.'; },
+      () => { glow([i]); return 'Hint: ' + n + ' goes in ' + c + r + '.'; },
+      () => { glow([i]); return 'Hint: there are still ' + left + ' ' + n + (left === 1 ? '' : "'s") + ' to place. One is in the glowing square.'; },
+      () => { glow([i]); return 'Hint: look at where the other ' + n + "'s are. The glowing square is a " + n + '.'; },
+      () => { glow(rowCells(i)); return 'Hint: find the ' + n + ' for row ' + r + '. It is in column ' + c + '.'; },
+      () => { glow(colCells(i)); return 'Hint: find the ' + n + ' for column ' + c + '. It is in row ' + r + '.'; },
+    ];
+    text = texts[kind]();
+  }
+  $('msg').textContent = text + tail;
+}
+$('helpClose').onclick = closeHelp;
+
+// Rewind: your numbers fade away (the puzzle's own stay), then the number pad and tools fade back in.
+function rewind() {
+  $('rewindBtn').classList.add('gone');
+  cells.forEach((c, i) => { if (!puzzleGiven(i)) c.classList.add('fadeout'); });
+  setTimeout(() => {
+    vals.fill(0); helped.fill(false); notes.forEach(n => n.clear()); digitDone = {}; fitCache = new Map();
+    cells.forEach(c => c.classList.remove('fadeout'));
+    $('game').classList.remove('cv'); won = false; cheated = false; forceCoins = false; autoToken++;
+    ['tools', 'padRow'].forEach(id => { const e = $(id); e.classList.remove('fadein'); void e.offsetWidth; e.classList.add('fadein'); });
+    paint(); paintPad();
+  }, 700);
+}
+$('rewindBtn').onclick = rewind;
+
+// ---- Tutorials 2 and 3: a board with a few gaps, and a guide that walks through them ----
+// 4 x 4: three gaps, one in its own row, one in its own column, one in its own box, so each question has a different answer.
+// 6 x 6: four gaps in a 2 x 2 pattern (2 rows, 2 columns, 2 boxes unfinished). The guide helps with the first two, Jos does the rest.
+let t2On = false, t2Plan = [], t2Gaps = [], t2I = 0, t2Wait = false, t2Timer = 0;
+function tut2Board() {
+  const total = N * N, pick = () => Math.random() * total | 0, apart = (u, v) => rowOf(u) !== rowOf(v) && colOf(u) !== colOf(v) && !sameBox(u, v);
+  for (;;) {
+    const sol = makeSudoku(N === 4 ? 6 : 14).solution; let gaps;
+    if (N === 4) {
+      gaps = [pick(), pick(), pick()];
+      if (!(apart(gaps[0], gaps[1]) && apart(gaps[0], gaps[2]) && apart(gaps[1], gaps[2]))) continue;
+    } else {                                           // P Q on one row, S T on another row; P S and Q T on two columns, in different box columns
+      const band = Math.random() * 2 | 0, rs = [0, 1, 2].sort(() => Math.random() - 0.5).slice(0, 2).map(r => band * 3 + r);
+      const cs = [0, 1, 2].sort(() => Math.random() - 0.5).slice(0, 2).map(p => p * 2 + (Math.random() * 2 | 0));
+      gaps = [rs[0] * N + cs[0], rs[0] * N + cs[1], rs[1] * N + cs[0], rs[1] * N + cs[1]];
+    }
+    if (new Set(gaps.map(g => sol[g])).size !== gaps.length) continue;   // every gap needs a different number
+    const puz = sol.slice(); gaps.forEach(g => { puz[g] = 0; });
+    t2Gaps = gaps;
+    return { puzzle: puz, solution: sol };
+  }
+}
+function t2Build() {
+  const sol = solutionGrid, g = t2Gaps, seen = l => l.map(value).filter(Boolean).sort((x, y) => x - y).join(', ');
+  const two = (x, y) => Math.min(x, y) + ' and the ' + Math.max(x, y);
+  const ask = (units, what, accept, ok) => ({ kind: 'ask', units, accept, ok,
+    say: () => 'Look at the glowing ' + what + '. It has ' + seen(units) + '. Which ' + (accept.length > 1 ? 'numbers are' : 'number is') + ' missing? Press ' + (accept.length > 1 ? 'one of them.' : 'it.') });
+  const tell = (units, what, nums) => ({ kind: 'tell', units, say: () => 'Look at the glowing ' + what + '. It has ' + seen(units) + '. It is missing the ' + nums + '.' });
+  const place = (cell, units, say, showNum) => ({ kind: 'place', cell, num: sol[cell], units, say,
+    glow: [cells[cell]].concat(showNum ? [padBtns[sol[cell] - 1]] : []) });
+  if (N === 4) {
+    const [x, y, z] = g;
+    return [
+      ask(rowCells(x), 'row', [sol[x]], 'Yes! The row is missing the ' + sol[x] + '.'),
+      place(x, rowCells(x), 'Press the empty square. Then press the ' + sol[x] + '.', true),
+      ask(colCells(y), 'column', [sol[y]], 'Yes! The column is missing the ' + sol[y] + '.'),
+      place(y, colCells(y), 'Press the empty square. Then press the ' + sol[y] + '.', true),
+      ask(boxCells(z), 'box', [sol[z]], 'Yes! The box is missing the ' + sol[z] + '.'),
+      place(z, boxCells(z), 'Press the empty square. Then press the ' + sol[z] + '.', true),
+    ];
+  }
+  const [P, Q, S] = g;
+  return [
+    tell(rowCells(P), 'row', two(sol[P], sol[Q])),
+    tell(colCells(P), 'column', two(sol[P], sol[S])),
+    place(P, rowCells(P).concat(colCells(P)), 'The glowing square is where that row and that column cross. Which number is missing from both? Press the glowing square. Then press that number.', false),
+    ask(boxCells(S), 'box', [sol[S]], 'Yes! The box is missing the ' + sol[S] + '.'),
+    place(S, boxCells(S), 'Press the empty square in the glowing box. Then press the ' + sol[S] + '.', true),
+    { kind: 'free', units: [], say: 'Well done! Two gaps are left. Look at their rows, columns and boxes. You can finish it yourself.' },
+  ];
+}
+function t2Units(list) { cells.forEach((c, i) => c.classList.toggle('unit', list.includes(i))); }
+function t2Go(i) {
+  t2I = i; t2Wait = false; clearTimeout(t2Timer); $('tutHint').textContent = '';
+  const st = t2Plan[i];
+  if (!st) { t2Units([]); tutGlow([]); return; }
+  t2Units(st.units || []);
+  tutGlow(st.kind === 'ask' ? padBtns : st.kind === 'place' ? st.glow : []);
+  tutSay(typeof st.say === 'function' ? st.say() : st.say);
+  if (st.kind === 'tell') t2Timer = setTimeout(() => t2Go(t2I + 1), 3400);   // just read it: it moves on by itself
+}
+function t2Check() {                                   // a guided gap has been filled in: on to the next step
+  if (!t2On || t2Wait) return;
+  const st = t2Plan[t2I];
+  if (st && st.kind === 'place' && value(st.cell) === st.num) { t2Wait = true; clearTimeout(t2Timer); t2Timer = setTimeout(() => t2Go(t2I + 1), 450); }
+}
+function t2Start(on) {
+  t2On = on; $('game').classList.toggle('t2', on); cells.forEach(c => c.classList.remove('unit'));
+  if (!on) return;
+  tutGlow([]); t2Plan = t2Build(); t2Go(0);
+}
+$('game').addEventListener('click', e => {             // only the "which number is missing?" steps are caught; the rest is the real game
+  if (!t2On) return;
+  const st = t2Plan[t2I]; if (!st || (st.kind !== 'ask' && st.kind !== 'tell')) return;
+  const b = e.target.closest('button'); if (b && b.id === 'backLevels') return;
+  e.stopPropagation(); if (t2Wait || st.kind === 'tell') return;
+  const pad = b ? padBtns.indexOf(b) : -1; if (pad < 0) return;
+  if (st.accept.includes(pad + 1)) { t2Wait = true; tutGlow([]); tutSay(st.ok); t2Timer = setTimeout(() => t2Go(t2I + 1), 1600); }
+  else $('tutHint').textContent = 'Look at the numbers in the glowing squares. Which one is not there?';
+}, true);
+
+// ---- Tutorial 1: no grid. A big look at the numbers and the buttons, one step at a time. ----
+// After the last step a little clip shows someone finishing a level, and the level completes with no coins.
+let tutSub = 0, tutA = 0, tutAns = 0, tutOn = false, tutStep = 0, tutNotes = 0, tutVal = 0, tutTimer = 0, tutWait = false, clipOn = false, tutShown = new Set();
+const tutSay = t => { $('tutSay').textContent = t; };
+function tutGlow(ids) {
+  document.querySelectorAll('.tutglow').forEach(e => e.classList.remove('tutglow'));
+  ids.forEach(id => { const e = typeof id === 'string' ? $(id) : id; if (e) e.classList.add('tutglow'); });
+}
+function tutDemoPaint(extra) {
+  const d = $('tutDemo');
+  d.innerHTML = tutVal ? String(tutVal) : tutNotes ? '<span class="notes" style="display:flex;gap:10px">' + [...tutShown].map(n => '<i style="font-style:normal">' + n + '</i>').join('') + '</span>' : '';
+  d.classList.toggle('good', !!extra);
+}
+const up = k => ((k - 1) % 9) + 1;                     // numbers go up and wrap round: 9 then 1
+function tutMiniShow(vals) {                           // vals: array of 4, 0 = empty square, null = faint
+  $('tutMini').innerHTML = vals.map(v => '<div class="m ' + (v === null ? '' : v ? 'given' : 'empty') + '">' + (v || '') + '</div>').join('');
+}
+function tutGo(step) {
+  tutStep = step; tutWait = false; clearTimeout(tutTimer); tutSub = 0;
+  $('tutHint').textContent = '';
+  $('tutMini').style.display = step === 0 ? 'grid' : 'none'; $('tutDemo').style.display = step === 0 ? 'none' : 'flex';
+  if (step === 0) tutMiniShow([null, null, null, null]);
+  const pads = () => padBtns.slice();
+  const S = [
+    () => { tutSay('Press any number.'); tutGlow(pads()); $('tutHint').textContent = ''; },
+    () => { tutSay('Press the pencil. Then numbers go in small.'); tutGlow(['pencilBtn']); },
+    () => { tutSay('Now press two numbers. They go in small.'); tutGlow(pads()); },
+    () => { tutSay('Press the eraser to rub the small numbers out.'); tutGlow(['eraseBtn']); },
+    () => { tutSay('Press the lightbulb to get a hint.'); tutGlow(['bulbBtn']); },
+    () => { tutSay('There are more hints. Press the green plus.'); tutGlow(['plusBtn']); },
+    () => { tutSay('Press the lightning switch.'); tutGlow(['zap']); },
+    () => { tutSay('Now press a number. It lights up.'); tutGlow(pads()); },
+    () => { tutVal = 0; tutShown = new Set(); tutNotes = 0; $('tutHint').textContent = ''; tutDemoPaint(); tutSay('Press the big square. The lit number goes in.'); tutGlow(['tutDemo']); },
+  ];
+  if (step < S.length) S[step]();
+}
+function tutStart(on) {
+  tutOn = on; $('game').classList.toggle('t1', on);
+  document.querySelectorAll('.tutglow').forEach(e => e.classList.remove('tutglow'));
+  if (!on) return;
+  tutVal = 0; tutNotes = 0; tutShown = new Set(); $('tutHint').textContent = ''; tutDemoPaint(); tutGo(0);
+}
+function tutNext(msg, step) {                          // say well done for a moment, then the next step
+  tutSay(msg); tutGlow([]); tutWait = true; clearTimeout(tutTimer); tutTimer = setTimeout(() => tutGo(step), 1700);
+}
+function tutMenu() {                                   // the hints menu, shown just to read
+  const rows = [['Complete game', 'Fills in the whole game for you.'], ['Reveal selected square', 'Shows the number for the square you picked.'], ['Reveal random square', 'Shows one number for you.'], ['Reveal [_] squares', 'You choose how many squares to show.'], ['Hint', 'The same as the lightbulb.']];
+  $('helpCoins').textContent = '🪙 Coins buy more hints. Finish a level to get 10.';
+  $('helpList').innerHTML = rows.map(r => '<div class="hrow"><div class="use" style="flex-direction:column;align-items:flex-start;gap:2px"><span>' + r[0] + '</span><span style="font-size:14px;font-weight:600">' + r[1] + '</span></div></div>').join('');
+  $('helpMenu').classList.add('on'); tutGlow([]);
+}
+function tutFinish() {
+  tutSay('You did it! You know all the buttons.'); tutGlow([]);
+  $('tutDemo').classList.add('good'); tutWait = true;
+  tutTimer = setTimeout(tutClip, 1900);
+}
+// The clip: a nearly finished level, a little fake cursor presses 7, then presses the last empty square.
+function tutClip() {
+  tutOn = false; clipOn = true; tutWait = false;
+  setSize(9);
+  const mk = makeSudoku(28), sol = mk.solution;
+  const sevens = sol.map((v, i) => v === 7 ? i : -1).filter(i => i >= 0), hole = sevens[Math.random() * sevens.length | 0];
+  const puz = mk.puzzle.slice(); puz[hole] = 0;
+  level = 1; begin(puz, sol);
+  for (let i = 0; i < 81; i++) if (!puz[i] && i !== hole) vals[i] = sol[i];
+  for (let n = 1; n <= 9; n++) { let c = 0; for (let i = 0; i < 81; i++) if (value(i) === n) c++; if (c === 9) digitDone[n] = true; }
+  lightning = true; $('zap').classList.add('on'); cheated = true;   // no coins for a clip
+  paint(); paintPad();
+  $('game').classList.add('clip'); $('msg').textContent = 'Watch how a level finishes.';
+  const cur = document.createElement('div'); cur.id = 'fakeCur';
+  cur.innerHTML = '<i></i><svg viewBox="0 0 24 24" width="34" height="34"><path d="M4 2l15 9-6.5 1.6L9.5 19z" fill="#fff" stroke="#14213d" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+  cur.style.left = innerWidth / 2 + 'px'; cur.style.top = '40px'; document.body.appendChild(cur);
+  const at = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2 - 6, r.top + r.height / 2 - 4]; };
+  const moveTo = el => { const [x, y] = at(el); cur.style.left = x + 'px'; cur.style.top = y + 'px'; };
+  const press = fn => { cur.classList.remove('press'); void cur.offsetWidth; cur.classList.add('press'); setTimeout(() => { cur.classList.remove('press'); fn(); }, 150); };
+  setTimeout(() => moveTo(padBtns[6]), 900);
+  setTimeout(() => press(() => padPress(7)), 2100);
+  setTimeout(() => moveTo(cells[hole]), 2900);
+  setTimeout(() => press(() => cellClick(hole)), 4100);
+  setTimeout(() => { cur.style.opacity = 0; }, 4600);
+  setTimeout(() => { cur.remove(); $('game').classList.remove('clip'); }, 5300);
+}
+// catch every press in tutorial 1 before the normal game sees it
+$('game').addEventListener('click', e => {
+  if (!tutOn) return;
+  const b = e.target.closest('button'), demo = e.target.closest('#tutDemo');
+  if (b && b.id === 'backLevels') return;
+  e.stopPropagation();
+  if (tutWait) return;                                 // wait for the well done to finish
+  const pad = b ? padBtns.indexOf(b) : -1, id = b && b.id;
+  if (tutStep === 0) {
+    const sq = e.target.closest('#tutMini .empty');
+    if (tutSub === 0 && pad >= 0) {                    // 1. pick a number: the box fills with numbers going up, one missing
+      tutA = pad + 1;                                   // three random numbers, none of them the one he pressed, and one gap
+      const others = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(n => n !== tutA).sort(() => Math.random() - 0.5);
+      tutAns = tutA; const fill = [others[0], others[1], others[2]];   // the box never holds the number he pressed: that one goes in the gap
+      const hole = Math.random() * 4 | 0, box = []; for (let k = 0, f = 0; k < 4; k++) box.push(k === hole ? 0 : fill[f++]);
+      tutMiniShow(box);
+      tutSay('This box has 4 squares. Press the empty square.');
+      tutGlow([$('tutMini').querySelector('.empty')]); tutSub = 1;
+    } else if (tutSub === 1 && sq) {                   // 2. press the empty square
+      sq.classList.add('sel'); tutSay('Now press the ' + tutAns + '.'); tutGlow([padBtns[tutAns - 1]]); tutSub = 2;
+    } else if (tutSub === 2 && pad >= 0) {             // 3. press the missing number
+      if (pad + 1 === tutAns) {
+        const m = $('tutMini').querySelector('.empty'); m.textContent = pad + 1; m.className = 'm mine good';
+        tutNext('Well done! That is how you put a number in.', 1);
+      } else $('tutHint').textContent = 'Press the ' + tutAns + '.';
+    }
+  }
+  else if (tutStep === 1 && id === 'pencilBtn') { pencil = true; $('pencilBtn').classList.add('on'); tutGo(2); }
+  else if (tutStep === 2 && pad >= 0) {
+    tutShown.add(pad + 1); tutNotes = tutShown.size; tutDemoPaint();
+    if (tutNotes >= 2) tutNext('Small numbers are notes. Use them when you are not sure.', 3);
+  }
+  else if (tutStep === 3 && id === 'eraseBtn') {
+    tutShown = new Set(); tutNotes = 0; tutDemoPaint(); pencil = false; $('pencilBtn').classList.remove('on');
+    b.classList.remove('flashred'); void b.offsetWidth; b.classList.add('flashred'); setTimeout(() => b.classList.remove('flashred'), 850);
+    tutNext('Gone! The pencil is off again.', 4);
+  }
+  else if (tutStep === 4 && id === 'bulbBtn') {
+    $('tutHint').textContent = 'Hint: the big square is a 3.';
+    tutVal = 3; tutDemoPaint(); $('tutDemo').classList.add('good');
+    setTimeout(() => { if (tutStep > 5) return; $('tutHint').textContent = ''; tutVal = 0; tutDemoPaint(); }, 2600);
+    tutNext('That is a hint! But there are more.', 5);
+  }
+  else if (tutStep === 5 && id === 'plusBtn') { tutMenu(); }
+  else if (tutStep === 6 && id === 'zap') {
+    lightning = true; armed = 0; const z = $('zap'); z.classList.add('on', 'sparking'); setTimeout(() => z.classList.remove('sparking'), 800);
+    tutGo(7);
+  }
+  else if (tutStep === 7 && pad >= 0) { armed = pad + 1; paintPad(); tutGo(8); }
+  else if (tutStep === 8 && demo) {
+    tutVal = armed; tutDemoPaint(true); tutStep = 9; tutFinish();
+  }
+}, true);
+// the hints menu in the tutorial is only for reading; closing it moves on
+$('helpMenu').addEventListener('click', e => {
+  if (!tutOn || tutStep !== 5) return;
+  e.stopPropagation();
+  if (e.target.id === 'helpClose') { closeHelp(); $('tutHint').textContent = ''; tutNext('Now you know all the hints!', 6); }
+}, true);
+
+$('pencilBtn').onclick = () => { pencil = !pencil; $('pencilBtn').classList.toggle('on', pencil); };
+$('eraseBtn').onclick = () => {
+  const b = $('eraseBtn');
+  if (lightning) {                                     // lightning mode: the eraser stays red until you turn it off
+    eraserArmed = !eraserArmed; armed = 0; b.classList.toggle('glowred', eraserArmed); paintPad(); return;
+  }
+  erase();                                             // normal: a quick red glow, then back
+  b.classList.remove('flashred'); void b.offsetWidth; b.classList.add('flashred');
+  setTimeout(() => b.classList.remove('flashred'), 850);
+};
+$('zap').onclick = () => {
+  lightning = !lightning; armed = 0; eraserArmed = false; $('eraseBtn').classList.remove('glowred');
+  const z = $('zap'); z.classList.toggle('on', lightning); z.classList.remove('sparking');
+  if (lightning) { void z.offsetWidth; z.classList.add('sparking'); setTimeout(() => z.classList.remove('sparking'), 800); }
+  paintPad();
+};
+
+document.addEventListener('keydown', e => {
+  if (!$('game').classList.contains('on') || clipOn) return;
+  if (e.key >= '1' && e.key <= String(N)) padPress(+e.key);
+  else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') erase();
+  else if (e.key === 'p' || e.key === 'P') $('pencilBtn').click();
+});
+if (location.hash.length > 2) route();
+</script>
+</body>
+</html>

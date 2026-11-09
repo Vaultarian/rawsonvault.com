@@ -83,6 +83,10 @@ h1 {
   font-family:'Fredoka One', cursive; font-size:1rem; color:#fff; cursor:pointer;
   border:2px solid #ff2a3d77; background:#000; border-radius:8px; padding:.35rem .7rem;
 }
+#modal .diff { display:block; width:100%; text-align:left; margin-bottom:10px; padding:.6rem .8rem; }
+#modal .diff b { display:block; font-weight:400; font-size:1.2rem; color:#ff6b78; }
+#modal .diff span { font-family:'Nunito', sans-serif; font-weight:700; font-size:.88rem; line-height:1.3; color:#fff; }
+#modal .diff:hover { border-color:#ff2a3d; background:#2a000c; }
 #modal .go { display:flex; gap:10px; margin-top:16px; }
 #modal .go button { flex:1; padding:.55rem; }
 #modal .go .main { background:#ff2a3d; border-color:#ff2a3d; }
@@ -114,6 +118,10 @@ body.none #empty, body.none #arrow { display:block; }
   box-shadow:0 8px 24px rgba(0,0,0,.45), 0 0 18px rgba(255,42,61,.35); transition:transform .15s;
 }
 #createBtn:hover { transform:scale(1.04); }
+#pasteBtn { position:fixed; bottom:196px; left:24px; z-index:20; width:182px; padding:.6rem .4rem; border-radius:12px; cursor:pointer;
+  background:#1c0008; border:2px solid #ff2a3d; color:#fff; font-family:'Fredoka One', cursive; font-size:1rem; }
+#pasteBtn:hover { background:#ff2a3d44; }
+#pasteModal textarea { width:100%; box-sizing:border-box; height:110px; border-radius:8px; border:2px solid #ff2a3d77; background:#000; color:#fff; font:700 .9rem Nunito,sans-serif; padding:.5rem; user-select:text; }
 #createBtn .ring { width:110px; height:110px; background:url(ring-spin.webp) 0 0 / 5280px 110px no-repeat; }
 #createBtn:hover .ring { animation:ringSpin 2.16s steps(48) infinite; }
 @keyframes ringSpin { to { background-position:-5280px 0; } }
@@ -130,16 +138,20 @@ body.none #empty, body.none #arrow { display:block; }
   <div id="menu"></div>
   <div id="modal" hidden><div class="box"></div></div>
   <div id="note"></div>
+  <button id="pasteBtn" title="Add a level someone sent you">📋 Paste level code</button>
   <button id="createBtn" title="Create a level"><span class="ring"></span>Create</button>
 
-<script src="levels.js"></script>
+<script src="levels.js?v=20261109e"></script>
 <script>
 /* ---------- your levels, each with a little picture of it ---------- */
 const LOOK = { tile:'#ff2a3d', spike:'#ececf2', smallspike:'#ececf2', sawblade:'#ececf2', spring:'#ffd23f',
                coin:'#ffd23f', dashorb:'#3fd44a', oneway:'#9a9aa8', portal:'#fff', button:'#9a6233', door:'#ffd23f', hero:'#fff' };
 function thumb(c, grid) {
-  const s = 10;                                   // 32 × 18 squares → 320 × 180
+  const s = 10;                                   // drawn 10 pixels a square, then the whole level is shrunk to fit 320 × 180
+  const rows = (grid || []).length || 18, cols = Math.max(0, ...(grid || []).map(r => (r || []).length)) || 32;
   c.fillStyle = '#12000a'; c.fillRect(0, 0, 320, 180);
+  const k = Math.min(320 / (cols * s), 180 / (rows * s));
+  c.save(); c.scale(k, k);
   (grid || []).forEach((row, y) => (row || []).forEach((cell, x) => {
     [cell, cell && cell.inner].forEach(b => {
       if (!b || (b.p && b.p.visible === false)) return;
@@ -154,6 +166,7 @@ function thumb(c, grid) {
       else c.fillRect(x * s + 2, y * s + 2, 6, 6);
     });
   }));
+  c.restore();
 }
 const listEl = document.getElementById('list');
 function showLevels() {
@@ -261,6 +274,28 @@ async function getShared() {
         LDLC.addShared(level); closeModal(); showLevels(); note('Added! It’s in My levels.'); } }),
       make('button', { type:'button', textContent:'No thanks', onclick:closeModal })]));
 }
+/* Jos (9 Nov): Paste level code. Paste the whole link, or just the code that starts LDLC1. */
+function showShared(level) {
+  openModal(make('h2', { textContent:'Someone shared a level! 🎮' }),
+    make('p', { textContent:'Add "' + level.name + '"' + (level.by ? ' by ' + level.by : '') + ' to My levels?' }),
+    make('div', { className:'go' }, [
+      make('button', { type:'button', className:'main', textContent:'Add it', onclick:() => {
+        LDLC.addShared(level); closeModal(); showLevels(); note('Added! It’s in My levels.'); } }),
+      make('button', { type:'button', textContent:'No thanks', onclick:closeModal })]));
+}
+document.getElementById('pasteBtn').addEventListener('click', () => {
+  const area = make('textarea', { placeholder:'Paste the link or the code here' });
+  const msg = make('p', { className:'oops', textContent:'' });
+  openModal(make('h2', { textContent:'Paste level code' }), area, msg,
+    make('div', { className:'go' }, [
+      make('button', { type:'button', className:'main', textContent:'Open', onclick:async () => {
+        const m = area.value.match(/LDLC1\.[A-Za-z0-9_\-]+/);
+        const level = m && await LDLC.unpack(m[0]);
+        if (!level) { msg.textContent = "That code doesn't work. Ask for a new one."; return; }
+        showShared(level); } }),
+      make('button', { type:'button', textContent:'Cancel', onclick:closeModal })]));
+  area.focus();
+});
 addEventListener('hashchange', getShared);
 
 addEventListener('click', e => { if (!menu.contains(e.target)) closeMenu(); });
@@ -270,8 +305,19 @@ addEventListener('contextmenu', e => { if (!e.target.closest('.level')) closeMen
 /* ---------- the Create button: a new level ---------- */
 const btn = document.getElementById('createBtn');
 btn.addEventListener('click', () => {
-  const level = LDLC.make();
-  location.href = 'editor.html?level=' + encodeURIComponent(level.id);
+  // Jos (8 Nov): before it sends you into the creator, it asks what difficulty
+  const choose = (d) => {
+    const level = LDLC.make();
+    LDLC.setDifficulty(level.id, d);
+    location.href = 'editor.html?level=' + encodeURIComponent(level.id);
+  };
+  const option = (d, name, words) => make('button', { type:'button', className:'diff', onclick:() => choose(d) },
+    [make('b', { textContent:name }), make('span', { textContent:words })]);
+  openModal(make('h2', { textContent:'What difficulty?' }),
+    option('beginner', 'Beginner', 'The beginner guide is on and shows you how. No Edit controls or Dash orb.'),
+    option('regular', 'Regular', 'All the usual blocks. You can turn the beginner guide or the advanced commands on yourself.'),
+    option('advanced', 'Advanced', 'The advanced commands are on, and you get Camera position, Hill and Ball. You can put down lots of Heroes and Doors.'),
+    make('div', { className:'go' }, [make('button', { type:'button', textContent:'Cancel', onclick:closeModal })]));
 });
 
 /* ---------- no levels yet: an arrow from the words to the Create button ---------- */
@@ -285,5 +331,6 @@ addEventListener('resize', () => { if (document.body.classList.contains('none'))
 showLevels();
 getShared();
 </script>
+<script src="music.js?v=20261109e"></script>
 </body>
 </html>

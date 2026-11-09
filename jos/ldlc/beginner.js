@@ -17,6 +17,9 @@
   const STORE = 'jos-ldlc-beginner';
   let on = false;
   try { on = localStorage.getItem(STORE) === '1'; } catch (e) {}
+  // Jos (8 Nov): a Beginner level keeps the guide on, an Advanced level keeps it off. A Regular level remembers, as before.
+  const locked = typeof difficulty !== 'undefined' && difficulty !== 'regular';
+  if (locked) on = difficulty === 'beginner';
 
   document.head.append(Object.assign(document.createElement('style'), { textContent:`
 #bubbles, #bubArrows { position:fixed; inset:0; z-index:245; pointer-events:none; }
@@ -198,6 +201,7 @@ body.testing #bubbles, body.testing #bubArrows { display:none; }
     if (typed !== WORD) return;
     typed = '';
     e.stopPropagation();          // so the last r of beginner doesn't turn a block
+    if (locked) { say(difficulty === 'beginner' ? 'The guide stays on in a Beginner level' : 'The guide is off in an Advanced level'); return; }
     turn(!on);
     say(on ? '📖 Beginner guide on' : 'Beginner guide off');
   }, true);
