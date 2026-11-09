@@ -65,7 +65,7 @@ const DEFAULTS = {
   button:     { collision:false, deadly:false, action:true },
   portal:     { collision:false, deadly:false, action:true },
   dashorb:    { collision:false, deadly:false, action:true },
-  ball:       { collision:false, deadly:false, gravity:false, crush:false },   // Jos: only deadly if you turn it on
+  ball:       { collision:false, deadly:false, gravity:false, crush:false, triggers:false },   // Jos: only deadly if you turn it on
   hill:       { collision:true,  deadly:false },
   camera:     { visible:false, action:true },   // Jos: invisible when you play, like the trigger
   repeater:   { visible:false, action:true }    // Jos: invisible when you play, like the trigger
@@ -587,15 +587,20 @@ const SWITCHES = {
   hero:       ['visible', 'needed'],           // Jos (8 Nov): Needed for finish: every needed hero must go into a door
   trigger:    ['visible', 'action'],        // Jos: the trigger only has these two
   controls:   ['visible', 'action'],
-  ball:       ['deadly', 'gravity', 'crush', 'visible', 'disguise'],      // Jos (8 Nov)
+  ball:       ['deadly', 'gravity', 'crush', 'triggers', 'visible', 'disguise'],      // Jos (8 Nov)
   hill:       ['collision', 'visible', 'disguise'],
   camera:     ['visible', 'action'],            // Jos: the regular Visible and Do action, then its own camera settings
   repeater:   ['visible', 'action']             // Jos: like the trigger
 };
 const LABEL = { deadly:'Deadly', collision:'Collision', disguise:'Disguise as block',
                 action:'Do action', visible:'Visible', needed:'Needed for finish',
-                gravity:'Gravity', crush:'Crush deadly' };
+                gravity:'Gravity', crush:'Crush deadly', triggers:'Go through portals and use triggers' };
 /* Jos: Crush deadly needs gravity, so turning it on turns Gravity on, and turning Gravity off turns it off */
+function ballHasGravity(c) {
+  const p = props(c);
+  if (p.gravity || p.crush) return true;
+  return linksTo(c.id).some(f => (f.l.actions || []).some(a => a.do === 'props' && a.props && a.props.gravity === true));
+}
 function tieBall(p, k, v) {
   if (k === 'crush' && v) p.gravity = true;
   if (k === 'gravity' && !v) p.crush = false;
@@ -854,7 +859,7 @@ cv.addEventListener('pointerdown', e => {
   const a = cellAt(e), c = a && pickAt(a.x, a.y);
   cv.setPointerCapture(e.pointerId);
   if (camPick && !keys.Space) {                 // choosing where the camera goes
-    if (a) { const f = byId(camPick.id); if (f) { f.c.cam = { x:a.x, y:a.y }; save(); } endCamPick(); }
+    if (a) { camPick.ids.forEach(id => { const f = byId(id); if (f) f.c.cam = { x:a.x, y:a.y }; }); save(); endCamPick(); }
     return;
   }
   if (keys.Space || (tool === 'cursor' && !c)) {
@@ -870,7 +875,10 @@ cv.addEventListener('pointerdown', e => {
     else closePanel();
     return;
   }
-  if (tool === 'link') { linkClick(c, a && stackAt(a.x, a.y)); return; }
+  if (tool === 'link') {
+    if (linking) { const p = pointAt(e); boxDrag = { x0:p.x, y0:p.y, x1:p.x, y1:p.y, block:c, stack:a && stackAt(a.x, a.y), link:true }; return; }   // Jos (9 Nov): drag a box round blocks to connect them all
+    linkClick(c, a && stackAt(a.x, a.y)); return;
+  }
   if (tool === 'select') {
     // Jos: click one of the selected blocks (without dragging) to change all their properties
     if (c && stackAt(a.x, a.y).some(b => sel.has(b.id))) moveDrag = { from:a, off:{ x:0, y:0 }, ids:sel, click:true };
@@ -909,6 +917,7 @@ const sel = new Set();
 let boxDrag = null, moveDrag = null;
 
 function finishBox() {
+  if (boxDrag.link) { finishLinkBox(); return; }
   const x0 = Math.min(boxDrag.x0, boxDrag.x1), x1 = Math.max(boxDrag.x0, boxDrag.x1);
   const y0 = Math.min(boxDrag.y0, boxDrag.y1), y1 = Math.max(boxDrag.y0, boxDrag.y1);
   if (x1 - x0 < .2 && y1 - y0 < .2) {           // a click, not a box
@@ -1006,25 +1015,40 @@ function linkClick(c, stack) {
       return;
     }
     if (!linkFrom.length) { say('Click on one of your triggers (or a button) 😈'); return; }
-    linking = true;                                // the first other block: from now on every click connects
+    say('Press Done first 😈'); return;            // Jos (9 Nov): Done starts the connecting, nothing starts it by itself
   }
   if (!c || linkFrom.includes(c.id) || c.t === 'hero') return;
+  linkMany([c]);
+}
+function linkMany(list) {
+  if (!list.length) return;
   const trs = linkFrom.map(byId).filter(Boolean).map(f => f.c);
-  const had = trs.every(tr => (tr.links || []).some(l => l.id === c.id));
-  trs.forEach(tr => {
+  const had = list.every(c => trs.every(tr => (tr.links || []).some(l => l.id === c.id)));
+  list.forEach(c => trs.forEach(tr => {
     tr.links = tr.links || [];
     if (had) tr.links = tr.links.filter(l => l.id !== c.id);   // click a connected block again to undo it
     else if (!tr.links.some(l => l.id === c.id)) tr.links.push({ id:c.id, actions:[] });
-  });
-  if (!had) linkedLast = c.id;
+  }));
+  if (!had) linkedLast = list[list.length - 1].id;
   save();
   linkBanner();
+}
+function finishLinkBox() {
+  const b = boxDrag;
+  const x0 = Math.min(b.x0, b.x1), x1 = Math.max(b.x0, b.x1), y0 = Math.min(b.y0, b.y1), y1 = Math.max(b.y0, b.y1);
+  if (x1 - x0 < .2 && y1 - y0 < .2) { linkClick(b.block, b.stack); return; }     // a click, not a box
+  const list = [];
+  for (let y = 0; y < T.rows; y++)
+    for (let x = 0; x < T.cols; x++)
+      if (x < x1 && x + 1 > x0 && y < y1 && y + 1 > y0) stackAt(x, y).forEach(c => { if (!linkFrom.includes(c.id) && c.t !== 'hero') list.push(c); });
+  linkMany(list);
 }
 function linkBanner() {
   const n = linkFrom.length;
   if (!linking) {
-    banner(!n ? 'Choose a trigger or button' : n === 1 ? 'Click on a block/blocks, or choose more triggers or buttons'
-                                                   : n + ' chosen · click on a block/blocks');
+    // Jos (9 Nov): it says how many are chosen, and you press Done when you have them all
+    banner(!n ? 'Choose a trigger or button' : n + (n === 1 ? ' trigger' : ' triggers') + ' selected',
+           n ? [['Done', () => { linking = true; linkBanner(); }]] : []);
     return;
   }
   const any = linkFrom.some(id => (byId(id)?.c.links || []).length);
@@ -1163,6 +1187,10 @@ function renderPanel() {
     }
   });
 
+  /* Jos (9 Nov): a ball that uses triggers and portals needs Gravity on, or a connected trigger that turns it on */
+  if (cells.some(x => x.t === 'ball' && props(x).triggers && !ballHasGravity(x))) {
+    panel.append(el('p', { className:'p-note', textContent:'Gravity must be on, or a trigger must turn it on (Change properties, Gravity).' }));
+  }
   if (cells.every(x => TURNS.includes(x.t))) {
     const go = by => { cells.forEach(x => { x.r = ((x.r || 0) + by + 4) % 4; }); save(); renderPanel(); };
     const r = common(cells.map(facing));
@@ -1187,10 +1215,11 @@ function renderPanel() {
   }
   if (many) {
     panel.append(el('p', { className:'p-note', textContent:'Changing a switch changes all ' + cells.length + ' blocks.' }));
+    if (cells.every(x => x.t === 'camera')) cameraSection(cells);
     manyTriggersSection(cells);
   } else {
     if (c.t === 'controls') controlsSection(c);
-    if (c.t === 'camera') cameraSection(c);
+    if (c.t === 'camera') cameraSection([c]);
     if (c.t === 'hero') heroSection(c);
     if (LINKERS.includes(c.t)) linksSection(c);
     triggersSection(c);
@@ -1245,34 +1274,37 @@ function controlsDo(c, a, j) {
    the spot the camera should go to. Moving is a switch: it says Camera moving, with a way (up, left, down, right) and a
    speed, and under that a switch: if the hero is off the screen, he dies. */
 let camPick = null;                              // the block whose spot is being chosen
-function cameraSection(c) {
+function cameraSection(cells) {                   // Jos (9 Nov): works for one camera block or lots selected together
+  cells = [].concat(cells);
+  const c = cells[0], lots = cells.length > 1;
   panel.append(el('div', { className:'p-sub', textContent:'Camera' }));
-  const where = c.cam ? 'column ' + (c.cam.x + 1) + ', row ' + (c.cam.y + 1) : 'not chosen yet';
+  const spots = common(cells.map(x => x.cam ? x.cam.x + ',' + x.cam.y : ''));
+  const where = lots && spots === null ? 'different spots' : c.cam ? 'column ' + (c.cam.x + 1) + ', row ' + (c.cam.y + 1) : 'not chosen yet';
   panel.append(row('Camera position', el('span', { className:'p-face', textContent:where }),
-    el('button', { className:'p-cmd', textContent:c.cam ? 'Choose again' : 'Choose', onclick:() => startCamPick(c.id) })));
-  panel.append(toggle('Moving', !!c.cmoving, v => {
-    c.cmoving = v; if (v) { c.cdir = c.cdir || 'right'; c.cspeed = c.cspeed || 3; } save(); renderPanel();
+    el('button', { className:'p-cmd', textContent:c.cam || lots ? 'Choose again' : 'Choose', onclick:() => startCamPick(cells.map(x => x.id)) })));
+  panel.append(toggle('Moving', common(cells.map(x => !!x.cmoving)), v => {
+    cells.forEach(x => { x.cmoving = v; if (v) { x.cdir = x.cdir || 'right'; x.cspeed = x.cspeed || 3; } }); save(); renderPanel();
   }));
-  if (c.cmoving) {
+  if (cells.every(x => x.cmoving)) {
     panel.append(el('div', { className:'p-sub', textContent:'Camera moving' }));
     panel.append(row('Go', pick([['up', 'Up'], ['left', 'Left'], ['down', 'Down'], ['right', 'Right']], c.cdir || 'right',
-                                v => { c.cdir = v; save(); })));
-    panel.append(row('Speed', number(c.cspeed || 3, .5, 30, .5, v => { c.cspeed = v; save(); }),
+                                v => { cells.forEach(x => { x.cdir = v; }); save(); })));
+    panel.append(row('Speed', number(c.cspeed || 3, .5, 30, .5, v => { cells.forEach(x => { x.cspeed = v; }); save(); }),
                     el('span', { className:'p-or', textContent:'blocks a second' })));
-    panel.append(toggle('If off screen, die', !!c.coff, v => { c.coff = v; save(); }));
+    panel.append(toggle('If off screen, die', common(cells.map(x => !!x.coff)), v => { cells.forEach(x => { x.coff = v; }); save(); }));
   }
   if (T.cols <= viewW && T.rows <= viewH) {
     panel.append(el('p', { className:'p-note', textContent:'The camera only moves in a level bigger than one screen.' }));
   }
 }
-function startCamPick(id) {
-  camPick = { id };
+function startCamPick(ids) {
+  camPick = { ids };
   closePanel();
   banner('Click the spot the camera should go to', [['Cancel', endCamPick]]);
 }
 function endCamPick(open) {
-  const id = camPick && camPick.id; camPick = null; hideBanner();
-  if (id && byId(id)) openPanel(id);
+  const ids = (camPick && camPick.ids || []).filter(byId); camPick = null; hideBanner();
+  if (ids.length > 1) openSelection(new Set(ids)); else if (ids.length) openPanel(ids[0]);
 }
 
 /* Jos (8 Nov): the hero has Jump power and Speed too, so you can set them right from the start.
@@ -2004,6 +2036,30 @@ function circlePoly(cx, cy, r, poly) {
   if (dmin >= r) return null;
   return { nx:(cx - qx) / (dmin || 1e-9), ny:(cy - qy) / (dmin || 1e-9), depth:r - dmin };
 }
+/* Jos (9 Nov): a ball with "Go through portals and use triggers" on sets off triggers, repeating triggers and buttons, and
+   goes in one portal and comes out of its partner (on the Output side, or out of the bottom) */
+function ballUse(b) {
+  let inP = null;
+  play.things.forEach(t => {
+    if (t === b || t.gone || !t.pr.action) return;
+    if (t.t === 'trigger' && boxesTouch(b.x, b.y, b.w, b.h, t.x, t.y, t.w, t.h)) fire(t);
+    if (t.t === 'repeater' && boxesTouch(b.x, b.y, b.w, b.h, t.x, t.y, t.w, t.h)) fireRepeat(t);
+    if (t.t === 'button') {
+      const pb = turnBox([.14, .5, .72, .5], t.r);
+      if (pb && boxesTouch(b.x, b.y, b.w, b.h, t.x + pb[0] * t.w, t.y + pb[1] * t.h, pb[2] * t.w, pb[3] * t.h)) { t.pressed = true; fire(t); }
+    }
+    if (t.t === 'portal' && boxesTouch(b.x, b.y, b.w, b.h, t.x + .2 * t.w, t.y + .2 * t.h, .6 * t.w, .6 * t.h)) inP = t;
+  });
+  if (!inP) { b.portalLock = null; return; }
+  if (inP.id === b.portalLock) return;
+  const out = play.byId[inP.pair];
+  if (!out) return;
+  const dir = out.out || 'down', d = DIRS[dir] || DIRS.down;
+  b.x = out.x + (out.w - b.w) / 2 + d[0] * (out.w + b.w) / 2;
+  b.y = out.y + (out.h - b.h) / 2 + d[1] * (out.h + b.h) / 2;
+  b.bvx = d[0] * (dir === 'down' ? 0 : T.portalSpit); b.bvy = d[1] * (dir === 'down' ? 0 : T.portalSpit);
+  b.portalLock = out.id;
+}
 function stepBalls(dt) {                     // true if one of them killed the hero
   const p = play, G = GDIRS[p.gdir], heroes = [p].concat(p.others || []);
   const balls = p.things.filter(t => t.t === 'ball' && !t.gone);
@@ -2011,6 +2067,7 @@ function stepBalls(dt) {                     // true if one of them killed the h
   let killed = false;
   balls.forEach(b => {
     if (killed) return;
+    if (b.pr.triggers) ballUse(b);
     if (!(b.pr.gravity || b.pr.crush) || b.move) { b.bvx = b.bvy = 0; return; }   // Crush deadly means Gravity too
     b.bvx = b.bvx || 0; b.bvy = b.bvy || 0;
     const r = BALL_R * b.w;

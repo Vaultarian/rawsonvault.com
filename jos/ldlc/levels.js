@@ -80,7 +80,7 @@ const LDLC = (() => {
      isn't a known block, switch or number is thrown away, and nothing in it is ever run. */
   const KINDS = ['tile', 'hero', 'door', 'spike', 'smallspike', 'sawblade', 'spring', 'coin', 'oneway',
                  'portal', 'trigger', 'button', 'controls', 'dashorb', 'ball', 'hill', 'camera', 'repeater'];
-  const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed', 'gravity', 'crush'];
+  const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed', 'gravity', 'crush', 'triggers'];
   const WAYS = ['up', 'down', 'left', 'right'];
   const num = (v, lo, hi, d) => typeof v === 'number' && isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d;
   const text = (v, most) => typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').trim().slice(0, most) : '';
