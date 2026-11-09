@@ -27,6 +27,23 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'💚', when:'9 Nov', title:'LDLC: the Checkpoint',
+      what:'A green diamond that remembers where you got to.',
+      more:'It starts as a grey cracked kite with a green glow. Touch it and a green lightning bolt comes down ' +
+           'from the ceiling and hits it. The cracks go and it turns into a bright green diamond. If you die, ' +
+           'you start again from it. Restart goes back to the very beginning.',
+      play:'ldlc/' },
+    { emoji:'📋', when:'9 Nov', title:'LDLC: share a level',
+      what:'Copy link and Copy code next to Test, and Paste level code on My levels.',
+      more:'Press Copy code in the creator, send it to another device, and press Paste level code on My levels. ' +
+           'It asks if you want to add the level. You do not have to send the level to Jos first.',
+      play:'ldlc/' },
+    { emoji:'🔗', when:'9 Nov', title:'LDLC: connecting blocks is easier',
+      what:'Trigger to block has a Done button, and you can drag a box round blocks to connect them all.',
+      more:'Choose your triggers, press Done, then drag a box round the blocks. A trigger can connect to another ' +
+           'trigger too. Many Camera position blocks can be changed together, and every step of a Repeating ' +
+           'trigger has a Wait box. Balls can go through portals and use triggers.',
+      play:'ldlc/' },
     { emoji:'🔁', when:'8 Nov', title:'LDLC: the Repeating trigger',
       what:'A new block in Advanced levels: the steps go round and round, over and over.',
       more:'It is a trigger with arrows curling round its exclamation mark. Touch it and the blocks it is ' +
