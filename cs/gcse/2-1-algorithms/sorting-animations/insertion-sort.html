@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Insertion Sort Animation</title>
 <!--
-  insertion-sort-animation.html  ·  v1.0 · 2026-11-11
+  insertion-sort-animation.html  ·  v1.1 · 2026-11-11
   CS 11, Algorithms 4. Steps through the exact Python on page 5 of alg-04-sorting,
   one line at a time, on the list 7 3 9 2 6 4. Back and Next (or the arrow keys); loops
   until stopped. Written from scratch: no libraries, no network. Open it in any browser.
   The line numbers match the handout's Python listing.
+  v1.1: bars now SLIDE left and right. The card in hand lifts out and leaves a dashed gap;
+  each bigger sorted bar slides one place right into the gap (so the gap moves left); the
+  card then drops into the gap. Every bar keeps its identity from start to finish.
 -->
 <style>
   :root{
@@ -32,21 +35,22 @@
   .ln{display:block;padding:0 8px 0 0;border-left:5px solid transparent;white-space:pre}
   .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:12px;color:var(--muted);font-style:normal}
   .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
-  /* bars (histogram) */
-  .row{display:flex;gap:8px;justify-content:center;align-items:flex-end;flex-wrap:nowrap;margin:6px 0 4px}
+  /* the row: bars slide between slots, 54px wide, 62px apart */
+  .row{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap;margin:2px 0}
   .cell{width:54px;text-align:center;flex:none}
-  .gap{width:16px;flex:none}
-  .barbox{height:230px;display:flex;align-items:flex-end}
-  .bar{width:100%;border:3px solid var(--accent);border-radius:8px 8px 0 0;background:var(--accent);color:#fff;
-    display:flex;align-items:flex-start;justify-content:center;padding-top:6px;
-    font-size:1.4rem;font-weight:800;transition:height .45s ease,background .25s,border-color .25s,opacity .25s}
+  .stage{position:relative;height:310px;margin:0 auto}
+  .bar{position:absolute;bottom:0;width:54px;border:3px solid var(--accent);border-radius:8px 8px 0 0;
+    background:var(--accent);color:#fff;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;
+    font-size:1.4rem;font-weight:800;z-index:2;
+    transition:left .6s ease, bottom .6s ease, height .35s ease, background .25s, border-color .25s}
   .bar.cmp{background:var(--hot);border-color:var(--ink)}
   .bar.done{background:var(--done);border-color:var(--done)}
+  .bar.cmp.done{background:var(--hot);border-color:var(--ink)}
+  .bar.hand{z-index:3;box-shadow:0 6px 10px rgba(0,0,0,.35)}
   .bar.flash{outline:4px solid var(--hilite)}
-  .bar.done.cmp{background:var(--hot);border-color:var(--ink)}
-  .bar.hand{border-style:dashed}
-  .bar.gone{opacity:.18}
-  .idx{font-size:.78rem;color:var(--muted);margin-top:4px;min-height:1.1em}
+  .gapbox{position:absolute;bottom:0;width:54px;border:3px dashed var(--muted);border-radius:8px 8px 0 0;
+    z-index:1;transition:left .6s ease,height .35s ease,opacity .25s}
+  .idx{font-size:.78rem;color:var(--muted);margin-top:2px;min-height:1.1em}
   .ptr{height:1.1rem;font-weight:800;color:var(--accent);font-size:.8rem;white-space:nowrap}
   .vars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
   .var{border:2px solid #888;border-radius:8px;padding:6px 8px;text-align:center}
@@ -71,9 +75,9 @@
       <pre id="code"></pre>
     </div>
     <div class="panel">
-      <p class="label">The list: items (dark bars are the sorted part)</p>
+      <p class="label">The list: items (dark bars are the sorted part · the raised bar is the card in hand · the dashed outline is the gap)</p>
       <div class="row" id="ptrs"></div>
-      <div class="row" id="cards"></div>
+      <div class="stage" id="stage"></div>
       <div class="row" id="idx"></div>
       <div class="vars">
         <div class="var"><b>index</b><span id="v-index">–</span></div>
@@ -116,6 +120,7 @@
   ];
   var START = [7, 3, 9, 2, 6, 4];
   var list = START.slice();
+  var PITCH = 62, RAISE = 74;   // px between slots; px the card in hand is lifted
 
   var codeEl = document.getElementById("code"), lineEls = [];
   function renderCode(){
@@ -129,71 +134,80 @@
     });
   }
 
-  // ---- build the whole run as a list of snapshots, one per executed line ----
+  // ---- run the real algorithm once, recording one snapshot for every line that runs ----
+  // Every bar has an id (0..n-1) that never changes. order[slot] is the id sitting in that slot,
+  // or null for the gap left by the card in hand. A slide moves a bar into the gap, and the gap
+  // moves to the slot the bar left.
   function buildTrace(start){
-    var a = start.slice(), n = a.length, T = [];
-    var index = null, item = null, position = null, hand = false, sorted = 0,
-        out = [], cmp = null, finished = false;
-    function snap(line, note, changed, hi){
-      T.push({line: line, hi: hi || null, note: note, items: a.slice(), index: index, item: item, position: position,
-              hand: hand, sorted: sorted, cmp: cmp, out: out.slice(), finished: finished,
-              changed: changed === undefined ? -1 : changed});
+    var n = start.length, T = [];
+    var order = []; for (var q = 0; q < n; q++) order.push(q);
+    var vals = start.slice();
+    var sortedIds = [], handId = null, gap = null, index = null, item = null, position = null,
+        cmpId = null, flashId = null, out = [], finished = false;
+    function show(){ return "[" + order.map(function(id){ return id === null ? "_" : vals[id]; }).join(", ") + "]"; }
+    function snap(line, note, hi){
+      T.push({line: line, hi: hi || null, note: note, order: order.slice(), vals: vals.slice(),
+              handId: handId, gap: gap, sortedIds: sortedIds.slice(), cmpId: cmpId, flashId: flashId,
+              index: index, item: item, position: position, out: out.slice(), finished: finished});
+      flashId = null;
     }
-    snap(1, "Python reads the file from the top. Lines 1-9 define the function insertion_sort: Python stores it so it can be called later. None of its body runs yet.", undefined, [1, 9]);
+    snap(1, "Python reads the file from the top. Lines 1-9 define the function insertion_sort: Python stores it so it can be called later. None of its body runs yet.", [1, 9]);
     snap(11, "Line 11 is the first line that runs: the program calls insertion_sort with the list.");
-    sorted = 1;
+    sortedIds = [order[0]];
     snap(1, "The function starts. The first item, items[0], counts as the sorted part.");
     for (index = 1; index < n; index++){
-      sorted = index; hand = false; cmp = null; position = null;
+      sortedIds = order.slice(0, index);
+      handId = null; gap = null; cmpId = null; position = null;
       snap(2, "for: index is " + index + ", so the next card to insert is items[" + index + "].");
-      item = a[index]; hand = true;
-      snap(3, "item_to_insert holds a copy of items[" + index + "], which is " + item + ": the card in hand.");
+      handId = order[index]; item = vals[handId]; order[index] = null; gap = index;
+      snap(3, "item_to_insert holds " + item + ": the card is lifted out of its place and held in hand. It leaves a gap at index " + index + ".");
       position = index - 1;
-      snap(4, "position points at the sorted item just to the left: items[" + position + "] is " + a[position] + ".");
+      snap(4, "position points at the sorted item just to the left of the gap: items[" + position + "] is " + vals[order[position]] + ".");
       while (true){
-        var ok = position >= 0 && a[position] > item;
-        cmp = position >= 0 ? position : null;
+        var ok = position >= 0 && vals[order[position]] > item;
+        cmpId = position >= 0 ? order[position] : null;
         if (position < 0){
           snap(5, "position is " + position + ": no sorted items are left, so the while loop stops.");
         } else {
-          snap(5, "Is " + a[position] + " > " + item + "?  " + (ok ? "Yes: the sorted item is bigger, so it moves right." : "No: the card in hand belongs here, so the while loop stops."));
+          snap(5, "Is " + vals[order[position]] + " > " + item + "?  " + (ok ? "Yes: the sorted item is bigger, so it slides right into the gap." : "No: the card in hand belongs in the gap, so the while loop stops."));
         }
         if (!ok) break;
-        a[position + 1] = a[position];
-        snap(6, "items[" + (position + 1) + "] takes the value " + a[position + 1] + ": the bigger sorted item slides one place right.", position + 1);
+        var movedId = order[position];
+        order[position + 1] = movedId; order[position] = null; gap = position;
+        flashId = movedId;
+        snap(6, "items[" + (position + 1) + "] = items[" + position + "]: the " + vals[movedId] + " slides one place right into the gap. The gap is now at index " + gap + ".");
         position--;
         snap(7, "position moves left, to " + position + ".");
       }
-      cmp = null;
-      a[position + 1] = item; hand = false; sorted = index + 1;
-      snap(8, "items[" + (position + 1) + "] = " + item + ": the card in hand goes down in the gap.", position + 1);
-      out.push("[" + a.join(", ") + "]");
+      cmpId = null;
+      order[gap] = handId; sortedIds.push(handId); flashId = handId;
+      var landed = gap; handId = null; gap = null;
+      snap(8, "items[" + (position + 1) + "] = item_to_insert: the " + item + " drops into the gap at index " + landed + ".");
+      out.push(show());
       snap(9, "print(items) shows the list. The sorted part is now one item longer.");
     }
-    finished = true; sorted = n; cmp = null;
+    finished = true; sortedIds = order.slice();
     snap(2, "for: there are no more items to insert. The whole list is sorted and the function ends.");
     return T;
   }
 
   var trace = [], pos = 0, timer = null, playing = true;
-  var cardsEl = document.getElementById("cards"), idxEl = document.getElementById("idx"),
+  var stageEl = document.getElementById("stage"), idxEl = document.getElementById("idx"),
       ptrEl = document.getElementById("ptrs"), sayEl = document.getElementById("say"),
       outEl = document.getElementById("out"), statusEl = document.getElementById("status");
   var vIndex = document.getElementById("v-index"), vItem = document.getElementById("v-item"),
       vPos = document.getElementById("v-pos");
+  var barEls = [], gapEl = null;
 
   function buildCells(){
-    cardsEl.innerHTML = ""; idxEl.innerHTML = ""; ptrEl.innerHTML = "";
-    // the card in hand, then a gap, then the list
-    var h = document.createElement("div"); h.className = "cell";
-    h.innerHTML = '<div class="barbox"><div class="bar hand" id="hand"></div></div>'; cardsEl.appendChild(h);
-    var hi = document.createElement("div"); hi.className = "cell";
-    hi.innerHTML = '<div class="idx">in hand</div>'; idxEl.appendChild(hi);
-    var hp = document.createElement("div"); hp.className = "cell"; ptrEl.appendChild(hp);
-    [cardsEl, idxEl, ptrEl].forEach(function(r){ var g = document.createElement("div"); g.className = "gap"; r.appendChild(g); });
+    var n = list.length;
+    stageEl.innerHTML = ""; idxEl.innerHTML = ""; ptrEl.innerHTML = "";
+    stageEl.style.width = (n * PITCH - 8) + "px";
+    gapEl = document.createElement("div"); gapEl.className = "gapbox"; gapEl.style.opacity = 0; stageEl.appendChild(gapEl);
+    barEls = [];
     list.forEach(function(_, k){
-      var c = document.createElement("div"); c.className = "cell";
-      c.innerHTML = '<div class="barbox"><div class="bar" id="c' + k + '"></div></div>'; cardsEl.appendChild(c);
+      var b = document.createElement("div"); b.className = "bar"; b.style.left = (k * PITCH) + "px";
+      stageEl.appendChild(b); barEls.push(b);
       var x = document.createElement("div"); x.className = "cell";
       x.innerHTML = '<div class="idx">index ' + k + '</div>'; idxEl.appendChild(x);
       var p = document.createElement("div"); p.className = "cell";
@@ -203,24 +217,36 @@
 
   function show(k){
     var s = trace[k], mx = Math.max.apply(null, list.concat(10));
-    function h(v){ return Math.max(34, Math.round(v / mx * 220)) + "px"; }
-    lineEls.forEach(function(el, n){ el.classList.toggle("on", s.hi ? (n + 1 >= s.hi[0] && n + 1 <= s.hi[1]) : n === s.line - 1); });
-    s.items.forEach(function(v, n){
-      var c = document.getElementById("c" + n);
-      var changed = (c.textContent !== String(v));
-      c.textContent = v; c.style.height = h(v);
-      c.className = "bar" + (s.cmp !== null && n === s.cmp ? " cmp" : "") +
-                    (n < s.sorted ? " done" : "") +
-                    (changed && n === s.changed ? " flash" : "");
-      var tag = "";
-      if (s.index !== null && !s.finished && n === s.index) tag = "index";
-      if (s.position !== null && s.position >= 0 && !s.finished && n === s.position) tag = tag ? tag + "/pos" : "position";
-      document.getElementById("p" + n).textContent = tag;
+    function h(v){ return Math.max(34, Math.round(v / mx * 220)); }
+    lineEls.forEach(function(el, n){
+      el.classList.toggle("on", s.hi ? (n + 1 >= s.hi[0] && n + 1 <= s.hi[1]) : n === s.line - 1);
     });
-    var hd = document.getElementById("hand");
-    hd.textContent = s.item === null ? "" : s.item;
-    hd.style.height = s.item === null ? "34px" : h(s.item);
-    hd.className = "bar hand" + (s.hand ? "" : " gone") + (s.hand && s.cmp !== null ? " cmp" : "");
+    // slot of every bar
+    var slotOf = {};
+    s.order.forEach(function(id, slot){ if (id !== null) slotOf[id] = slot; });
+    barEls.forEach(function(b, id){
+      var v = s.vals[id], isHand = (id === s.handId);
+      var slot = isHand ? s.gap : slotOf[id];
+      b.textContent = v;
+      b.style.height = h(v) + "px";
+      b.style.left = (slot * PITCH) + "px";
+      b.style.bottom = (isHand ? RAISE : 0) + "px";
+      b.className = "bar" + (isHand ? " hand" : "") +
+        ((s.cmpId !== null && (id === s.cmpId || isHand)) ? " cmp" : "") +
+        (s.sortedIds.indexOf(id) >= 0 ? " done" : "") +
+        (id === s.flashId ? " flash" : "");
+    });
+    // the gap: a dashed outline the size of the card in hand, at the slot the card will land in
+    if (s.handId !== null){
+      gapEl.style.opacity = 1; gapEl.style.left = (s.gap * PITCH) + "px"; gapEl.style.height = h(s.vals[s.handId]) + "px";
+    } else { gapEl.style.opacity = 0; }
+    // pointers
+    list.forEach(function(_, n){
+      var tag = [];
+      if (s.index !== null && !s.finished && n === s.index) tag.push("index");
+      if (s.position !== null && s.position >= 0 && !s.finished && n === s.position) tag.push("position");
+      document.getElementById("p" + n).textContent = tag.join("/");
+    });
     vIndex.textContent = s.index === null ? "–" : s.index;
     vItem.textContent = s.item === null ? "–" : s.item;
     vPos.textContent = s.position === null ? "–" : s.position;
@@ -229,7 +255,7 @@
     statusEl.textContent = (s.hi ? "lines " + s.hi[0] + "-" + s.hi[1] : "line " + s.line) + " · step " + (k + 1) + " of " + trace.length;
   }
 
-  function delay(){ return 1300 - (+document.getElementById("speed").value) * 115; }
+  function delay(){ return 1500 - (+document.getElementById("speed").value) * 120; }
   function tick(){
     clearTimeout(timer);
     if (!playing) return;
