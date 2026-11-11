@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bubble Sort Animation</title>
+<!--
+  bubble-sort-animation.html  ·  v1.1 · 2026-11-10 (Back button, arrow keys)
+  CS 11, Algorithms 4. Steps through the exact Python on page 3 of alg-04-sorting,
+  one line at a time, on the list 7 3 9 2 6 4. Loops until stopped.
+  Written from scratch (no external libraries, no network). Open it in any browser.
+  The line numbers match the handout's Python listing.
+-->
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#1b1b1b; --muted:#555;
+    --accent:#1f4e8c; --hot:#c8301e; --ok:#2f6b2f; --card:#ffffff; --done:#555555;
+    --hilite:#ffe8a3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16181c; --panel:#1f2227; --ink:#ecebe6; --muted:#a8a8a8;
+      --accent:#7fb0ee; --hot:#ff7a66; --ok:#7fcf7f; --card:#2a2e35; --done:#6a6f78; --hilite:#5a4a14; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px}
+  h1{font-size:1.25rem;margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .panel{background:var(--panel);border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
+  /* code */
+  pre{margin:0;font:16px/1.7 ui-monospace,Menlo,Consolas,monospace}
+  .ln{display:block;padding:0 8px 0 0;border-left:5px solid transparent;white-space:pre}
+  .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:12px;color:var(--muted);font-style:normal}
+  .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
+  .kw{color:var(--accent);font-weight:700}
+  /* bars (histogram) */
+  .row{display:flex;gap:10px;justify-content:center;align-items:flex-end;flex-wrap:nowrap;margin:6px 0 4px}
+  .cell{width:68px;text-align:center}
+  .barbox{height:250px;display:flex;align-items:flex-end}
+  .bar{width:100%;border:3px solid var(--accent);border-radius:8px 8px 0 0;background:var(--accent);color:#fff;
+    display:flex;align-items:flex-start;justify-content:center;padding-top:6px;
+    font-size:1.8rem;font-weight:800;transition:height .45s ease,background .25s,border-color .25s}
+  .bar.cmp{background:var(--hot);border-color:var(--ink)}
+  .bar.done{background:var(--done);border-color:var(--done)}
+  .bar.done.cmp{background:var(--hot);border-color:var(--ink)}
+  .bar.flash{outline:4px solid var(--hilite)}
+  .idx{font-size:.8rem;color:var(--muted);margin-top:4px}
+  .ptr{height:1.1rem;font-weight:800;color:var(--accent);font-size:.9rem}
+  .vars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .var{border:2px solid #888;border-radius:8px;padding:6px 8px;text-align:center}
+  .var b{display:block;font:700 .75rem system-ui;color:var(--muted)}
+  .var span{font:800 1.3rem ui-monospace,Menlo,monospace}
+  .say{margin-top:10px;min-height:3.2em;font-weight:600}
+  .out{font:15px/1.6 ui-monospace,Menlo,monospace;margin-top:6px;min-height:6.8em;white-space:pre}
+  .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  button{font:700 1rem system-ui;padding:8px 16px;border-radius:8px;border:2px solid var(--accent);background:var(--panel);color:var(--accent);cursor:pointer}
+  button:hover{background:var(--accent);color:#fff}
+  label{font-size:.9rem;color:var(--muted)}
+  input[type=range]{vertical-align:middle}
+  .status{margin-left:auto;font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bubble sort: the Python, one line at a time</h1>
+  <div class="grid">
+    <div class="panel">
+      <p class="label">Python</p>
+      <pre id="code"></pre>
+    </div>
+    <div class="panel">
+      <p class="label">The list: items (dark grey = already in its final place, but every pass still compares it)</p>
+      <div class="row" id="ptrs"></div>
+      <div class="row" id="cards"></div>
+      <div class="row" id="idx"></div>
+      <div class="vars">
+        <div class="var"><b>pass</b><span id="v-pass">–</span></div>
+        <div class="var"><b>swapped</b><span id="v-swapped">–</span></div>
+        <div class="var"><b>i</b><span id="v-i">–</span></div>
+        <div class="var"><b>temp</b><span id="v-temp">–</span></div>
+      </div>
+      <div class="say" id="say"></div>
+      <p class="label" style="margin-top:12px">Output (print)</p>
+      <div class="out" id="out"></div>
+    </div>
+  </div>
+  <div class="ctl">
+    <button id="play">Pause</button>
+    <button id="back">Back</button>
+    <button id="step">Next</button>
+    <button id="restart">Restart</button>
+    <button id="shuffle">New list</button>
+    <label>Speed <input id="speed" type="range" min="1" max="10" value="5"></label>
+    <span class="status" id="status"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // The listing is exactly the Python on page 3 of alg-04-sorting (line numbers match).
+  var CODE = [
+    "def bubble_sort(items):",
+    "    swapped = True",
+    "    while swapped:",
+    "        swapped = False",
+    "        for i in range(len(items) - 1):",
+    "            if items[i] > items[i + 1]:",
+    "                temp = items[i]",
+    "                items[i] = items[i + 1]",
+    "                items[i + 1] = temp",
+    "                swapped = True",
+    "        print(items)",
+    "",
+    "bubble_sort(LIST)"
+  ];
+  var START = [7, 3, 9, 2, 6, 4];
+  var list = START.slice();
+
+  var codeEl = document.getElementById("code");
+  var lineEls = [];
+  function renderCode(){
+    codeEl.innerHTML = "";
+    lineEls = [];
+    CODE.forEach(function(text, k){
+      var shown = text.replace("LIST", "[" + list.join(", ") + "]");
+      var d = document.createElement("span");
+      d.className = "ln";
+      var n = document.createElement("i"); n.textContent = (k + 1);
+      d.appendChild(n);
+      d.appendChild(document.createTextNode(shown));
+      codeEl.appendChild(d);
+      lineEls.push(d);
+    });
+  }
+
+  // ---- build the whole run as a list of snapshots, one per executed line ----
+  function buildTrace(start){
+    var a = start.slice(), n = a.length, T = [];
+    var swapped = null, i = null, temp = null, pass = 0, out = [], cmp = null, tail = 0, finished = false;
+    function snap(line, note, changed, hi){
+      T.push({line: line, hi: hi || null, note: note, items: a.slice(), swapped: swapped, i: i, temp: temp,
+              pass: pass, out: out.slice(), cmp: cmp ? cmp.slice() : null, tail: tail,
+              finished: finished, changed: changed === undefined ? -1 : changed});
+    }
+    snap(1, "Python reads the file from the top. Lines 1-11 define the function bubble_sort: Python stores it so it can be called later. None of its body runs yet.", undefined, [1, 11]);
+    snap(13, "Line 13 is the first line that runs: the program calls bubble_sort with the list.");
+    snap(1, "The function starts. items is the list.");
+    swapped = true;
+    snap(2, "swapped starts as True, so the first pass can run.");
+    while (swapped){
+      snap(3, "while swapped: swapped is True, so a pass begins.");
+      swapped = false; pass++;
+      snap(4, "swapped is set to False. It becomes True again if this pass makes a swap.");
+      for (i = 0; i < n - 1; i++){
+        cmp = [i, i + 1];
+        snap(5, "for: i is " + i + ", so the pair is items[" + i + "] and items[" + (i + 1) + "].");
+        var yes = a[i] > a[i + 1];
+        snap(6, "Is " + a[i] + " > " + a[i + 1] + "?  " + (yes ? "Yes: the pair is the wrong way round." : "No: leave the pair as it is."));
+        if (yes){
+          temp = a[i];
+          snap(7, "temp holds a copy of items[" + i + "], which is " + temp + ".");
+          a[i] = a[i + 1];
+          snap(8, "items[" + i + "] takes the value " + a[i] + ". The " + temp + " is safe in temp.", i);
+          a[i + 1] = temp;
+          snap(9, "items[" + (i + 1) + "] takes the " + temp + " from temp. The pair has swapped.", i + 1);
+          swapped = true;
+          snap(10, "swapped is True: this pass has made a swap.");
+        }
+      }
+      cmp = null; i = null; temp = null;
+      snap(5, "The for loop has no more pairs: pass " + pass + " is over.");
+      tail = Math.min(pass, n - 1);
+      out.push("[" + a.join(", ") + "]");
+      snap(11, "print(items) shows the list at the end of pass " + pass + ".");
+    }
+    finished = true; tail = n;
+    snap(3, "while swapped: swapped is False, so the last pass made no swaps. The list is sorted and the function ends.");
+    return T;
+  }
+
+  var trace = [], pos = 0, timer = null, playing = true, holdAtEnd = 0;
+  var cardsEl = document.getElementById("cards"), idxEl = document.getElementById("idx"),
+      ptrEl = document.getElementById("ptrs"), sayEl = document.getElementById("say"),
+      outEl = document.getElementById("out"), statusEl = document.getElementById("status");
+  var vPass = document.getElementById("v-pass"), vSw = document.getElementById("v-swapped"),
+      vI = document.getElementById("v-i"), vTemp = document.getElementById("v-temp");
+
+  function buildCells(){
+    cardsEl.innerHTML = ""; idxEl.innerHTML = ""; ptrEl.innerHTML = "";
+    list.forEach(function(_, k){
+      var c = document.createElement("div"); c.className = "cell";
+      c.innerHTML = '<div class="barbox"><div class="bar" id="c' + k + '"></div></div>'; cardsEl.appendChild(c);
+      var x = document.createElement("div"); x.className = "cell";
+      x.innerHTML = '<div class="idx">index ' + k + '</div>'; idxEl.appendChild(x);
+      var p = document.createElement("div"); p.className = "cell";
+      p.innerHTML = '<div class="ptr" id="p' + k + '"></div>'; ptrEl.appendChild(p);
+    });
+  }
+
+  function show(k){
+    var s = trace[k];
+    lineEls.forEach(function(el, n){ el.classList.toggle("on", s.hi ? (n + 1 >= s.hi[0] && n + 1 <= s.hi[1]) : n === s.line - 1); });
+    var mx = Math.max.apply(null, list.concat(10));
+    s.items.forEach(function(v, n){
+      var c = document.getElementById("c" + n);
+      var changed = (c.textContent !== String(v));
+      c.textContent = v;
+      c.style.height = Math.max(34, Math.round(v / mx * 240)) + "px";
+      c.className = "bar" + (s.cmp && (n === s.cmp[0] || n === s.cmp[1]) ? " cmp" : "") +
+                    ((s.finished || n >= list.length - s.tail) && s.tail > 0 ? " done" : "") +
+                    (changed && n === s.changed ? " flash" : "");
+      document.getElementById("p" + n).textContent = (s.i !== null && n === s.i) ? "i" : "";
+    });
+    vPass.textContent = s.pass || "–";
+    vSw.textContent = s.swapped === null ? "–" : (s.swapped ? "True" : "False");
+    vI.textContent = s.i === null ? "–" : s.i;
+    vTemp.textContent = s.temp === null ? "–" : s.temp;
+    sayEl.textContent = s.note;
+    outEl.textContent = s.out.join("\n");
+    statusEl.textContent = (s.hi ? "lines " + s.hi[0] + "-" + s.hi[1] : "line " + s.line) + " · step " + (k + 1) + " of " + trace.length;
+  }
+
+  function delay(){ return 1300 - (+document.getElementById("speed").value) * 115; }
+
+  function tick(){
+    clearTimeout(timer);
+    if (!playing) return;
+    if (pos >= trace.length - 1){
+      // end of the run: hold on the sorted list, then loop
+      timer = setTimeout(function(){ pos = 0; show(pos); tick(); }, 3200);
+      return;
+    }
+    timer = setTimeout(function(){ pos++; show(pos); tick(); }, delay());
+  }
+
+  function load(newList){
+    list = newList.slice(); trace = buildTrace(list); pos = 0;
+    renderCode(); buildCells(); show(0); tick();
+  }
+
+  document.getElementById("play").onclick = function(){
+    playing = !playing; this.textContent = playing ? "Pause" : "Play";
+    if (playing) tick(); else clearTimeout(timer);
+  };
+  document.getElementById("step").onclick = function(){
+    playing = false; document.getElementById("play").textContent = "Play"; clearTimeout(timer);
+    pos = pos >= trace.length - 1 ? 0 : pos + 1; show(pos);
+  };
+  function pauseAt(k){
+    playing = false; document.getElementById("play").textContent = "Play"; clearTimeout(timer);
+    pos = k; show(pos);
+  }
+  document.getElementById("back").onclick = function(){ pauseAt(Math.max(0, pos - 1)); };
+  document.addEventListener("keydown", function(e){
+    if (e.key === "ArrowLeft"){ pauseAt(Math.max(0, pos - 1)); e.preventDefault(); }
+    if (e.key === "ArrowRight"){ pauseAt(pos >= trace.length - 1 ? 0 : pos + 1); e.preventDefault(); }
+    if (e.key === " "){ document.getElementById("play").click(); e.preventDefault(); }
+  });
+  document.getElementById("restart").onclick = function(){ pos = 0; show(pos); tick(); };
+  document.getElementById("shuffle").onclick = function(){
+    var a = [1,2,3,4,5,6,7,8,9,10], r = [];
+    while (r.length < 6){ r.push(a.splice(Math.floor(Math.random() * a.length), 1)[0]); }
+    load(r);
+  };
+  document.getElementById("speed").oninput = function(){ if (playing) tick(); };
+
+  load(START);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge Sort Animation</title>
+<!--
+  merge-sort-animation.html  ·  v1.0 · 2026-11-11
+  CS 11, Algorithms 4. Steps through the exact Python on page 10 of alg-04-sorting
+  (merge + merge_sort), every line that runs, on the list 7 3 9 2 6 4 8 1. Nothing is
+  skipped: each split, each call, each comparison inside merge, each return.
+  Back and Next (or the arrow keys); loops until stopped. Written from scratch:
+  no libraries, no network. The line numbers match the handout's Python listing.
+-->
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#1b1b1b; --muted:#555;
+    --accent:#1f4e8c; --hot:#c8301e; --ok:#2f6b2f; --okink:#fff; --hilite:#ffe8a3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16181c; --panel:#1f2227; --ink:#ecebe6; --muted:#a8a8a8;
+      --accent:#7fb0ee; --hot:#ff7a66; --ok:#7fcf7f; --okink:#102010; --hilite:#5a4a14; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1300px;margin:0 auto;padding:14px}
+  h1{font-size:1.2rem;margin:0 0 10px}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:14px}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+  .panel{overflow-x:auto;background:var(--panel);border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .label{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
+  pre{margin:0;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace}
+  .ln{display:block;padding:0 8px 0 0;border-left:5px solid transparent;white-space:pre}
+  .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:10px;color:var(--muted);font-style:normal}
+  .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
+  .ln.gapline{height:.7em}
+  /* main row of bars, grouped */
+  .bars{display:flex;align-items:flex-end;justify-content:center;gap:4px;min-height:182px;padding-top:4px}
+  .cut{width:20px;flex:none;align-self:stretch;position:relative}
+  .cut::after{content:"";position:absolute;left:9px;top:8px;bottom:0;border-left:2px dashed var(--muted)}
+  .bw{width:44px;flex:none;text-align:center}
+  .bar{width:100%;border:3px solid var(--accent);border-radius:7px 7px 0 0;background:var(--accent);color:#fff;
+    display:flex;align-items:flex-start;justify-content:center;padding-top:4px;
+    font-size:1.25rem;font-weight:800;transition:height .35s ease,background .25s}
+  .bar.sorted{background:var(--ok);border-color:var(--ok);color:var(--okink)}
+  .bar.act{box-shadow:0 0 0 3px var(--hilite)}
+  .bar.flash{outline:4px solid var(--hilite)}
+  .ix{font-size:.7rem;color:var(--muted);margin-top:3px}
+  /* working area */
+  .work{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;margin-top:6px}
+  .grp{display:flex;align-items:flex-end;gap:3px;min-height:118px}
+  .grp .tag{align-self:center;font:700 .75rem system-ui;color:var(--muted);margin-right:6px;width:46px}
+  .mw{width:34px;text-align:center;flex:none}
+  .mb{width:100%;border:2px solid var(--accent);border-radius:5px 5px 0 0;background:var(--accent);color:#fff;
+     display:flex;align-items:flex-start;justify-content:center;padding-top:2px;font-size:1rem;font-weight:800;transition:height .3s}
+  .mb.mgd{background:var(--ok);border-color:var(--ok);color:var(--okink)}
+  .mb.cmp{background:var(--hot);border-color:var(--ink);color:#fff}
+  .mb.used{opacity:.35}
+  .pt{height:1rem;font:800 .72rem system-ui;color:var(--accent)}
+  .dim{opacity:.35}
+  .vars{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+  .var{border:2px solid #888;border-radius:8px;padding:3px 6px;text-align:center}
+  .var b{display:block;font:700 .7rem system-ui;color:var(--muted)}
+  .var span{font:700 .95rem ui-monospace,Menlo,monospace}
+  .stack{font:12.5px/1.5 ui-monospace,Menlo,monospace;margin-top:4px;min-height:5em}
+  .stack div{white-space:pre;color:var(--muted)}
+  .stack div.top{color:var(--ink);font-weight:700}
+  .say{margin-top:8px;min-height:3.2em;font-weight:600}
+  .out{font:13px/1.5 ui-monospace,Menlo,monospace;margin-top:4px;min-height:3em;white-space:pre}
+  .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  button{font:700 1rem system-ui;padding:7px 15px;border-radius:8px;border:2px solid var(--accent);background:var(--panel);color:var(--accent);cursor:pointer}
+  button:hover{background:var(--accent);color:#fff}
+  label{font-size:.9rem;color:var(--muted)}
+  input[type=range]{vertical-align:middle}
+  .status{margin-left:auto;font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Merge sort: the Python, one line at a time</h1>
+  <div class="grid">
+    <div class="panel">
+      <p class="label">Python</p>
+      <pre id="code"></pre>
+    </div>
+    <div class="panel">
+      <p class="label">The list: items (dashed lines split it into groups; green groups are sorted)</p>
+      <div class="bars" id="bars"></div>
+      <p class="label" style="margin-top:10px" id="worklabel">Inside merge</p>
+      <div class="work" id="work"></div>
+      <div class="vars">
+        <div class="var"><b>middle</b><span id="v-mid">–</span></div>
+        <div class="var"><b>left</b><span id="v-left">–</span></div>
+        <div class="var"><b>right</b><span id="v-right">–</span></div>
+      </div>
+      <p class="label" style="margin-top:8px">Calls waiting (top = running now)</p>
+      <div class="stack" id="stack"></div>
+      <div class="say" id="say"></div>
+      <p class="label" style="margin-top:6px">Output (print)</p>
+      <div class="out" id="out"></div>
+    </div>
+  </div>
+  <div class="ctl">
+    <button id="play">Pause</button>
+    <button id="back">Back</button>
+    <button id="step">Next</button>
+    <button id="restart">Restart</button>
+    <button id="shuffle">New list</button>
+    <label>Speed <input id="speed" type="range" min="1" max="10" value="6"></label>
+    <span class="status" id="status"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // The listing is exactly the Python on page 10 of alg-04-sorting (line numbers match).
+  var CODE = [
+    "def merge(left, right):",
+    "    merged = []",
+    "    i = 0",
+    "    j = 0",
+    "    while i < len(left) and j < len(right):",
+    "        if left[i] <= right[j]:",
+    "            merged.append(left[i])",
+    "            i = i + 1",
+    "        else:",
+    "            merged.append(right[j])",
+    "            j = j + 1",
+    "    merged = merged + left[i:] + right[j:]",
+    "    return merged",
+    "",
+    "def merge_sort(items):",
+    "    if len(items) <= 1:",
+    "        return items",
+    "    middle = (len(items) + 1) // 2",
+    "    left = merge_sort(items[:middle])",
+    "    right = merge_sort(items[middle:])",
+    "    merged = merge(left, right)",
+    "    print(left, right, \"->\", merged)",
+    "    return merged",
+    "",
+    "merge_sort(LIST)"
+  ];
+  var START = [7, 3, 9, 2, 6, 4, 8, 1];
+  var list = START.slice();
+
+  function fmt(a){ return a === null ? "–" : "[" + a.join(", ") + "]"; }
+
+  var codeEl = document.getElementById("code"), lineEls = [];
+  function renderCode(){
+    codeEl.innerHTML = ""; lineEls = [];
+    CODE.forEach(function(text, k){
+      var shown = text.replace("LIST", fmt(list));
+      var d = document.createElement("span"); d.className = "ln" + (text === "" ? " gapline" : "");
+      var n = document.createElement("i"); n.textContent = (text === "" ? "" : (k + 1));
+      d.appendChild(n); d.appendChild(document.createTextNode(shown));
+      codeEl.appendChild(d); lineEls.push(d);
+    });
+  }
+
+  // ---- run the real algorithm once, recording one snapshot for every line that runs ----
+  function buildTrace(start){
+    var n = start.length, T = [];
+    var arr = start.slice(), cuts = [], sorted = [], active = [0, n], out = [], frames = [];
+    var mg = null;   // state inside merge: {left,right,merged,i,j,cl,cr}
+    var changed = [];
+    function snap(line, note, hi){
+      var top = frames.length ? frames[frames.length - 1] : null;
+      T.push({
+        line: line, hi: hi || null, note: note, arr: arr.slice(), cuts: cuts.slice(), sorted: sorted.slice(),
+        active: active.slice(), out: out.slice(), changed: changed.slice(),
+        stack: frames.map(function(f){ return fmt(f.items); }),
+        mid: top && top.middle !== null ? top.middle : null,
+        left: top ? top.left : null, right: top ? top.right : null,
+        mg: mg ? {left: mg.left.slice(), right: mg.right.slice(), merged: mg.merged.slice(),
+                  i: mg.i, j: mg.j, cl: mg.cl, cr: mg.cr, live: mg.live} : null
+      });
+      changed = [];
+    }
+
+    function merge(left, right, lo){
+      mg = {left: left.slice(), right: right.slice(), merged: [], i: null, j: null, cl: null, cr: null, live: true};
+      snap(1, "merge is called with left " + fmt(left) + " and right " + fmt(right) + ".");
+      mg.merged = [];
+      snap(2, "merged starts as an empty list.");
+      mg.i = 0; snap(3, "i = 0: i points at the first item of left.");
+      mg.j = 0; snap(4, "j = 0: j points at the first item of right.");
+      while (true){
+        var ok = mg.i < left.length && mg.j < right.length;
+        mg.cl = mg.i < left.length ? mg.i : null; mg.cr = mg.j < right.length ? mg.j : null;
+        if (!ok){
+          var why = mg.i >= left.length ? "i has reached the end of left, so left is used up" : "j has reached the end of right, so right is used up";
+          snap(5, "while: " + why + ". The loop stops.");
+          break;
+        }
+        snap(5, "while: i < " + left.length + " and j < " + right.length + " are both true, so there is a pair to compare.");
+        var smaller = left[mg.i] <= right[mg.j];
+        snap(6, "Is left[" + mg.i + "] <= right[" + mg.j + "], that is " + left[mg.i] + " <= " + right[mg.j] + "?  " +
+                (smaller ? "Yes: the left item is smaller (or equal)." : "No: the right item is smaller."));
+        if (smaller){
+          mg.merged.push(left[mg.i]);
+          snap(7, "append left[" + mg.i + "] = " + left[mg.i] + " to merged.");
+          mg.i++; mg.cl = mg.i < left.length ? mg.i : null; mg.cr = mg.j < right.length ? mg.j : null;
+          snap(8, "i moves on to " + mg.i + ".");
+        } else {
+          mg.merged.push(right[mg.j]);
+          snap(10, "append right[" + mg.j + "] = " + right[mg.j] + " to merged.");
+          mg.j++; mg.cl = mg.i < left.length ? mg.i : null; mg.cr = mg.j < right.length ? mg.j : null;
+          snap(11, "j moves on to " + mg.j + ".");
+        }
+      }
+      mg.cl = null; mg.cr = null;
+      var restL = left.slice(mg.i), restR = right.slice(mg.j);
+      mg.merged = mg.merged.concat(restL, restR);
+      snap(12, "The leftover items " + fmt(restL.concat(restR)) + " go on the end of merged. They are already in order.");
+      snap(13, "return merged: " + fmt(mg.merged) + ".");
+      var result = mg.merged.slice();
+      mg.live = false;
+      return result;
+    }
+
+    function ms(items, lo){
+      var f = {items: items.slice(), lo: lo, hi: lo + items.length, middle: null, left: null, right: null};
+      frames.push(f); active = [f.lo, f.hi];
+      snap(15, "merge_sort is called on " + fmt(items) + ".");
+      if (items.length <= 1){
+        snap(16, "len(items) <= 1?  " + items.length + " <= 1 is True: this list is already sorted.");
+        for (var k = f.lo; k < f.hi; k++) if (sorted.indexOf(k) < 0) sorted.push(k);
+        snap(17, "return items: " + fmt(items) + ". A group of one item is sorted.");
+        frames.pop(); active = frames.length ? [frames[frames.length - 1].lo, frames[frames.length - 1].hi] : [0, n];
+        return items;
+      }
+      snap(16, "len(items) <= 1?  " + items.length + " <= 1 is False: the list must be split.");
+      f.middle = Math.floor((items.length + 1) / 2);
+      cuts.push(f.lo + f.middle); cuts.sort(function(a, b){ return a - b; });
+      snap(18, "middle = (" + items.length + " + 1) // 2 = " + f.middle + ". The list splits into " +
+               fmt(items.slice(0, f.middle)) + " and " + fmt(items.slice(f.middle)) + ".");
+      snap(19, "left = merge_sort(...): sort the left half " + fmt(items.slice(0, f.middle)) + " first.");
+      f.left = ms(items.slice(0, f.middle), f.lo);
+      active = [f.lo, f.hi];
+      snap(19, "left now holds the sorted left half: " + fmt(f.left) + ".");
+      snap(20, "right = merge_sort(...): now sort the right half " + fmt(items.slice(f.middle)) + ".");
+      f.right = ms(items.slice(f.middle), f.lo + f.middle);
+      active = [f.lo, f.hi];
+      snap(20, "right now holds the sorted right half: " + fmt(f.right) + ".");
+      snap(21, "merged = merge(left, right): join " + fmt(f.left) + " and " + fmt(f.right) + ".");
+      var merged = merge(f.left, f.right, f.lo);
+      // the merged values now occupy the slots of this group; the dashed split between the halves goes
+      for (var q = 0; q < merged.length; q++){ arr[f.lo + q] = merged[q]; changed.push(f.lo + q); }
+      cuts = cuts.filter(function(c){ return c !== f.lo + f.middle; });
+      for (var k2 = f.lo; k2 < f.hi; k2++) if (sorted.indexOf(k2) < 0) sorted.push(k2);
+      f.merged = merged; active = [f.lo, f.hi];
+      snap(21, "merged holds " + fmt(merged) + ". The two halves are now one sorted group.");
+      out.push(fmt(f.left) + " " + fmt(f.right) + " -> " + fmt(merged));
+      snap(22, "print shows this merge.");
+      snap(23, "return merged: " + fmt(merged) + ".");
+      frames.pop(); active = frames.length ? [frames[frames.length - 1].lo, frames[frames.length - 1].hi] : [0, n];
+      return merged;
+    }
+
+    snap(1, "Python reads the file from the top. Lines 1-13 define the function merge: Python stores it so it can be called later. None of its body runs yet.", [1, 13]);
+    snap(15, "Lines 15-23 define the function merge_sort. It is stored too, and its body does not run yet.", [15, 23]);
+    snap(25, "Line 25 is the first line that runs: the program calls merge_sort with the list " + fmt(start) + ".");
+    ms(start.slice(), 0);
+    mg = mg ? mg : null;
+    snap(25, "merge_sort has returned the whole list, sorted.");
+    return T;
+  }
+
+  var trace = [], pos = 0, timer = null, playing = true;
+  var barsEl = document.getElementById("bars"), workEl = document.getElementById("work"),
+      stackEl = document.getElementById("stack"), sayEl = document.getElementById("say"),
+      outEl = document.getElementById("out"), statusEl = document.getElementById("status"),
+      worklabel = document.getElementById("worklabel");
+
+  function barH(v, mx, full){ return Math.max(full ? 30 : 30, Math.round(v / mx * (full ? 150 : 80))); }
+
+  function show(k){
+    var s = trace[k], mx = Math.max.apply(null, list.concat(10));
+    lineEls.forEach(function(el, n){ el.classList.toggle("on", s.hi ? (n + 1 >= s.hi[0] && n + 1 <= s.hi[1]) : n === s.line - 1); });
+
+    // main row: bars, with a dashed cut between groups
+    var html = "";
+    s.arr.forEach(function(v, n){
+      if (s.cuts.indexOf(n) >= 0) html += '<div class="cut"></div>';
+      var cls = "bar" + (s.sorted.indexOf(n) >= 0 ? " sorted" : "") +
+                (n >= s.active[0] && n < s.active[1] ? " act" : "") +
+                (s.changed.indexOf(n) >= 0 ? " flash" : "");
+      html += '<div class="bw"><div class="bar ' + cls.replace("bar ", "") + '" style="height:' + barH(v, mx, true) + 'px">' + v +
+              '</div><div class="ix">' + n + '</div></div>';
+    });
+    barsEl.innerHTML = html;
+
+    // working area: left | right, then merged
+    var mg = s.mg;
+    if (!mg){
+      worklabel.textContent = "Inside merge (not running yet)";
+      workEl.innerHTML = '<span class="dim">left, right and merged appear here while merge runs</span>';
+    } else {
+      worklabel.textContent = mg.live ? "Inside merge" : "The last merge (finished)";
+      function row(tag, arr, extra){
+        var r = '<div class="grp"><span class="tag">' + tag + '</span>';
+        if (!arr.length) r += '<span class="dim">[ ]</span>';
+        arr.forEach(function(v, n){
+          var cls = extra(n);
+          r += '<div class="mw"><div class="mb ' + cls.box + '" style="height:' + barH(v, mx, false) + 'px">' + v +
+               '</div><div class="pt">' + cls.ptr + '</div></div>';
+        });
+        return r + '</div>';
+      }
+      workEl.innerHTML =
+        row("left", mg.left, function(n){ return {box: (n < mg.i ? "used " : "") + (mg.live && n === mg.cl ? "cmp" : ""), ptr: (mg.live && n === mg.i) ? "i" : ""}; }) +
+        row("right", mg.right, function(n){ return {box: (n < mg.j ? "used " : "") + (mg.live && n === mg.cr ? "cmp" : ""), ptr: (mg.live && n === mg.j) ? "j" : ""}; }) +
+        '<div style="flex-basis:100%"></div>' +
+        row("merged", mg.merged, function(n){ return {box: "mgd", ptr: ""}; });
+    }
+
+    document.getElementById("v-mid").textContent = s.mid === null ? "–" : s.mid;
+    document.getElementById("v-left").textContent = fmt(s.left);
+    document.getElementById("v-right").textContent = fmt(s.right);
+    stackEl.innerHTML = s.stack.map(function(t, n){
+      return '<div class="' + (n === s.stack.length - 1 ? "top" : "") + '">' + "  ".repeat(n) + "merge_sort(" + t + ")</div>";
+    }).join("");
+    sayEl.textContent = s.note;
+    outEl.textContent = s.out.join("\n");
+    statusEl.textContent = (s.hi ? "lines " + s.hi[0] + "-" + s.hi[1] : "line " + s.line) + " · step " + (k + 1) + " of " + trace.length;
+  }
+
+  function delay(){ return 1300 - (+document.getElementById("speed").value) * 115; }
+  function tick(){
+    clearTimeout(timer);
+    if (!playing) return;
+    if (pos >= trace.length - 1){
+      timer = setTimeout(function(){ pos = 0; show(pos); tick(); }, 3500);
+      return;
+    }
+    timer = setTimeout(function(){ pos++; show(pos); tick(); }, delay());
+  }
+  function load(newList){
+    list = newList.slice(); trace = buildTrace(list); pos = 0;
+    renderCode(); show(0); tick();
+  }
+  function pauseAt(k){
+    playing = false; document.getElementById("play").textContent = "Play"; clearTimeout(timer);
+    pos = k; show(pos);
+  }
+
+  document.getElementById("play").onclick = function(){
+    playing = !playing; this.textContent = playing ? "Pause" : "Play";
+    if (playing) tick(); else clearTimeout(timer);
+  };
+  document.getElementById("back").onclick = function(){ pauseAt(Math.max(0, pos - 1)); };
+  document.getElementById("step").onclick = function(){ pauseAt(pos >= trace.length - 1 ? 0 : pos + 1); };
+  document.getElementById("restart").onclick = function(){ pos = 0; show(pos); tick(); };
+  document.getElementById("shuffle").onclick = function(){
+    var a = [1,2,3,4,5,6,7,8,9,10], r = [];
+    while (r.length < 8){ r.push(a.splice(Math.floor(Math.random() * a.length), 1)[0]); }
+    load(r);
+  };
+  document.getElementById("speed").oninput = function(){ if (playing) tick(); };
+  document.addEventListener("keydown", function(e){
+    if (e.key === "ArrowLeft"){ pauseAt(Math.max(0, pos - 1)); e.preventDefault(); }
+    if (e.key === "ArrowRight"){ pauseAt(pos >= trace.length - 1 ? 0 : pos + 1); e.preventDefault(); }
+    if (e.key === " "){ document.getElementById("play").click(); e.preventDefault(); }
+  });
+
+  load(START);
+})();
+</script>
+</body>
+</html>
