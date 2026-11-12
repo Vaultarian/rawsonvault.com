@@ -27,6 +27,45 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🧱', when:'12 Nov', title:'LDLC: who a block stops',
+      what:'Collision has a Type: All, Only player or Only devil.',
+      more:'Turn Collision on and a Type drop bar appears. Only player stops you but lets devils walk through. ' +
+           'Only devil does the opposite. Triggers can use Change collision in the Do list to turn Collision on or off and ' +
+           'choose the Type while you play.',
+      look:'ldlc/levels.html' },
+    { emoji:'📟', when:'12 Nov', title:'LDLC: the Device',
+      what:'A glowing circle that floats in front of you and kills devils.',
+      more:'The lights slowly fade from green to red. Pick it up and any devil that touches you dies. Turn on Devil max ' +
+           'and it can only kill that many, like 3, and then it disappears and does not come back.',
+      look:'ldlc/levels.html' },
+    { emoji:'👿', when:'12 Nov', title:'LDLC: the Devil',
+      what:'A 😈 that chases you, jumps over blocks, and laughs when it catches you.',
+      more:'The screen goes grey and then fades back while the same little devil tips back and laughs. Every devil has its own ' +
+           'Jump power and Speed. Attraction can be a type (Player, Anything, or a kind of block) or one numbered block. ' +
+           'Turn on Destroy attraction and it stands at the edge, white particles come out, and the block is destroyed after the ' +
+           'Destroying time. Movement can be Platformer or Top view, so it can fly straight at you.',
+      look:'ldlc/levels.html' },
+    { emoji:'📝', when:'12 Nov', title:'LDLC: the Text block',
+      what:'Blue for words, green for numbers, and triggers can change them.',
+      more:'Type something and the square goes away, leaving glowing words at any Size. Text shows over everything. ' +
+           'Triggers can give a new sentence with a Splash word, or set or change a number. A trigger also has a Repeat type: ' +
+           'once, each time he goes in, or while he is inside.',
+      look:'ldlc/levels.html' },
+    { emoji:'🌀', when:'12 Nov', title:'LDLC: Tilt and Visibility',
+      what:'Turn any block by any angle, and choose how see-through it is.',
+      more:'Tilt is in the block properties and also a Do for triggers, so a block can turn smoothly. In the creator you see the ' +
+           'regular block with the tilted one see-through on top. Visible has a Visibility % from 0 to 100.',
+      look:'ldlc/levels.html' },
+    { emoji:'📋', when:'12 Nov', title:'LDLC: copy and paste',
+      what:'Right-click a block to Copy it, and right-click an empty square to Paste.',
+      more:'Copy takes everything about the block. Paste is greyed out on a block so you never paste over one. Right-click a ' +
+           'trigger card, tick actions, press Done, and use Copy actions and Paste actions to give another block the same actions.',
+      look:'ldlc/levels.html' },
+    { emoji:'💚', when:'12 Nov', title:'LDLC: the Checkpoint remembers everything',
+      what:'Die and you keep your coins, triggers and moved blocks.',
+      more:'The grey checkpoint is now four broken pieces, and its lightning bolt is smaller. Movement also has Change speed, ' +
+           'with decimals, when a block has two triggers.',
+      look:'ldlc/levels.html' },
     { emoji:'💚', when:'9 Nov', title:'LDLC: the Checkpoint',
       what:'A green diamond that remembers where you got to.',
       more:'It starts as a grey cracked kite with a green glow. Touch it and a green lightning bolt comes down ' +
