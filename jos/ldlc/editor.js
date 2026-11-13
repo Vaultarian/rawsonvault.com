@@ -74,7 +74,7 @@ const DEFAULTS = {
   camera:     { visible:false, action:true },   // Jos: invisible when you play, like the trigger
   checkpoint: { collision:false, deadly:false, action:true },
   textblock:  { collision:false, deadly:false },
-  devil:      { collision:false, deadly:false, attraction:true, destroy:false },
+  devil:      { collision:false, deadly:false, attraction:true, destroy:false, triggers:false },   // Jos (13 Nov): triggers = Go through portals and use triggers
   device:     { collision:false, deadly:false, action:true, devilmax:false },   // Jos (12 Nov): Devil max starts off   // Jos (12 Nov): Attraction is on by default
   repeater:   { visible:false, action:true }    // Jos: invisible when you play, like the trigger
 };
@@ -719,7 +719,7 @@ const SWITCHES = {
   hill:       ['collision', 'visible', 'disguise'],
   checkpoint: ['visible', 'action'],
   textblock:  ['collision', 'visible'],
-  devil:      ['visible', 'attraction', 'destroy'],
+  devil:      ['visible', 'attraction', 'destroy', 'triggers'],
   device:     ['visible', 'action', 'devilmax'],
   camera:     ['visible', 'action'],          // Jos: the regular Visible and Do action, then its own camera settings
   repeater:   ['visible', 'action']             // Jos: like the trigger
@@ -2416,6 +2416,7 @@ function updateDevils(dt) {
       d.started = true; d.w = d.h = CHASER.size; d.x += (1 - CHASER.size) / 2; d.y += 1 - CHASER.size; d.vy = 0; d.ground = false;
     }
     d.look = (d.look || 0) - dt;
+    if (d.pr.triggers) ballUse(d);                 // Jos (13 Nov): Go through portals and use triggers, like a ball
     const mark = d.pr.attraction !== false ? devilTarget(d, p) : null;
     const goal = mark ? { x:mark.x + mark.w / 2, y:mark.y + mark.h / 2 } : { x:p.x + hw / 2, y:p.y + hh / 2 };
     // at the edge of its block: it stops there, and if Destroy attraction is on, the block starts to go
@@ -2695,7 +2696,8 @@ function ballUse(b) {
   const dir = out.out || 'down', d = DIRS[dir] || DIRS.down;
   b.x = out.x + (out.w - b.w) / 2 + d[0] * (out.w + b.w) / 2;
   b.y = out.y + (out.h - b.h) / 2 + d[1] * (out.h + b.h) / 2;
-  b.bvx = d[0] * (dir === 'down' ? 0 : T.portalSpit); b.bvy = d[1] * (dir === 'down' ? 0 : T.portalSpit);
+  if (b.t === 'devil') { b.vy = d[1] * (dir === 'down' ? 0 : T.portalSpit); b.ground = false; }   // Jos (13 Nov): a devil comes out of the partner portal too
+  else { b.bvx = d[0] * (dir === 'down' ? 0 : T.portalSpit); b.bvy = d[1] * (dir === 'down' ? 0 : T.portalSpit); }
   b.portalLock = out.id;
 }
 function stepBalls(dt) {                     // true if one of them killed the hero

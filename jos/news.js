@@ -27,6 +27,21 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🎶', when:'13 Nov', title:'Song Maker',
+      what:'Click squares to make your own song, add drums and press play.',
+      more:'Pick a melody sound (Marimba, Piano, Strings, Woodwind, Synth) and a beat sound (Electronic, Blocks, Kit, Conga). ' +
+           'The play button splits into two bars. Press the tick to copy a link, then download your song as .mp3, .wav or .mid. ' +
+           'Change name gives your song a name.',
+      look:'song-maker/' },
+    { emoji:'🏀', when:'13 Nov', title:'Bouncy Balls',
+      what:'A noise meter: the louder you are, the higher the balls bounce.',
+      more:'Press Start bouncing and allow the microphone. Pick your Total, a Theme (Minecraft blocks, Pizza, Bubbles, Eyeballs that look around…), ' +
+           'a Noise alert with Jos\'s own sounds, and Ball bounciness. At 100, even a tap sends them all the way to the top.',
+      look:'bouncy-balls/' },
+    { emoji:'😈', when:'13 Nov', title:'LDLC: devils use portals and triggers',
+      what:'A devil has the same switch as the ball.',
+      more:'Turn on Go through portals and use triggers and a devil sets off triggers and goes in one portal and comes out of its partner.',
+      look:'ldlc/levels.html' },
     { emoji:'🧱', when:'12 Nov', title:'LDLC: who a block stops',
       what:'Collision has a Type: All, Only player or Only devil.',
       more:'Turn Collision on and a Type drop bar appears. Only player stops you but lets devils walk through. ' +
