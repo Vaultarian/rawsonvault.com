@@ -27,6 +27,19 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'💣', when:'14 Nov', title:'Bomb Sandbox',
+      what:'Blow up the world with over 100 bombs: nuclear, black hole, mice, plague and more.',
+      more:'Click the shopkeeper to buy bombs with the blocks you break. Throw a bomb, then pick the Lighter and click it to light it. ' +
+           'Pick the Pickaxe to dig up the slope, the Nature Block to fill holes with the right ground, and walk over holes to make bridges that bend. ' +
+           'Blow open the bottom of the world and the white void sends you back to the surface. ' +
+           'Nature Bombs grow the ground back, the Flat Bomb makes the whole world flat, and the Mega Plague Bomb asks first because it destroys the whole world. ' +
+           'It has a home screen with named games that save in your browser, and a trailer.',
+      play:'bomb-sandbox/' },
+    { emoji:'🧩', when:'14 Nov', title:'Puzzle Daily',
+      what:'Three new puzzles every day: Scoot, Neon and Currents.',
+      more:'A bot makes each puzzle fresh at midnight and checks it can be done. Slide the blocks so the red one escapes in Scoot, join the dots along the tracks in Neon, ' +
+           'and draw one line through the numbers in order in Currents. Finish one and it is locked for the day. Every puzzle has a theme.',
+      play:'puzzled-daily/' },
     { emoji:'🎶', when:'13 Nov', title:'Song Maker',
       what:'Click squares to make your own song, add drums and press play.',
       more:'Pick a melody sound (Marimba, Piano, Strings, Woodwind, Synth) and a beat sound (Electronic, Blocks, Kit, Conga). ' +

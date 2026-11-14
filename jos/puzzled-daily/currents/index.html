@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../swirl.js"></script>
+<script src="../../mods.js" data-game></script><script src="../../cursors.js"></script>
+<script src="../../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jos's Currents Daily</title>
+<style>
+  :root { --bg:#0d0b1f; --panel:#17143a; --line:#2a2550; --accent:#b46bff; --ink:#f2f0ff; --dim:#9a95c9; --green:#6bff4e; --yellow:#ffe14e; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-family:'Comic Sans MS','Trebuchet MS',sans-serif; -webkit-user-select:none; user-select:none; }
+  body { display:flex; flex-direction:column; align-items:center; padding:12px 16px 28px; }
+  #back { align-self:flex-start; color:var(--dim); text-decoration:none; font-size:.95em; }
+  h1 { margin:6px 0 0; font-size:1.7em; letter-spacing:.06em; text-align:center; }
+  #date { margin:4px 0 0; color:var(--yellow); font-size:1.1em; text-align:center; }
+  #theme { margin:2px 0 10px; color:var(--accent); font-size:1.1em; text-align:center; }
+  #rules { max-width:480px; text-align:center; color:var(--dim); margin:2px 0 10px; min-height:3em; line-height:1.35; }
+  #wrap { position:relative; }
+  canvas { display:block; background:var(--bg); border-radius:14px; touch-action:none; }
+  #status { margin-top:10px; font-size:1.15em; min-height:1.5em; text-align:center; }
+  #bot { margin-top:6px; color:var(--dim); font-size:.9em; text-align:center; max-width:480px; }
+  #lock { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:10px; text-align:center;
+    background:#0d0b1fdd; border-radius:14px; font-size:1.3em; padding:20px; }
+  #lock.show { display:flex; }
+  #lock b { color:var(--green); font-size:1.6em; }
+  #btns { margin-top:10px; }
+  #btns button { background:var(--panel); border:2px solid var(--line); color:var(--ink); font:inherit; padding:6px 14px; border-radius:10px; cursor:pointer; }
+  .box { display:flex; flex-direction:column; gap:10px; align-items:center; background:var(--panel); border:3px solid var(--accent); border-radius:18px; padding:20px 26px; box-shadow:0 0 22px var(--accent); }
+</style>
+</head>
+<body>
+<a id="back" href="../index.html">← All three puzzles</a>
+<h1>🌊 Currents Daily</h1>
+<div id="date"></div>
+<div id="theme"></div>
+<div id="rules"></div>
+<div id="wrap"><canvas id="c"></canvas><div id="lock"></div></div>
+<div id="status"></div>
+<div id="btns"><button id="reset">↺ Start again</button></div>
+<div id="bonusTag" style="display:none;margin-top:8px;color:#ffe14e">⭐ Bonus puzzle</div>
+<script>window.ONLY='currents';</script>
+<script src="../gen.js?v=7"></script>
+<script src="../app.js?v=7"></script>
+</body>
+</html>
