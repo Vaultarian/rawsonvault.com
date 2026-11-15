@@ -2,6 +2,7 @@
 """Publish the P3 Particle Model applets (AQA GCSE Physics).
 
 Pages:  physics/aqa-gcse/p3-particle-model/ice-to-water/index.html
+        physics/aqa-gcse/p3-particle-model/ice-to-steam/index.html  (added 2026-11-15)
 Link:   a P3-APPLETS block on the P3 hub page, just before the Labs block.
 
 Source: ~/vault/01-Teaching/Physics - GCSE/Content/P3 - Particle Model/Animations/
@@ -25,6 +26,7 @@ REL = "physics/aqa-gcse/p3-particle-model"
 HUB = f"{REL}/index.html"
 FILES = {
     "p3-ice-to-water.html": "ice-to-water",
+    "p3-ice-to-steam.html": "ice-to-steam",
 }
 M_START, M_END = "<!-- P3-APPLETS:START -->", "<!-- P3-APPLETS:END -->"
 ANCHOR = "<!-- LAB-LINKS:START -->"
@@ -34,6 +36,7 @@ BLOCK = f"""{M_START}
 <h2>Interactive</h2>
 <ul class="linking">
 <li><a href="ice-to-water/">Ice to water</a> — ice at −5 °C warmed to water at 0 °C, in two stages: kinetic energy rises, then potential energy. Particles, heating curve and energy meters move together.</li>
+<li><a href="ice-to-steam/">Ice to steam</a> — the whole heating curve for 0.50 kg, −10 °C to 110 °C: five stages, with kinetic energy rising on the slopes and potential energy on the flats.</li>
 </ul>
 {M_END}"""
 
