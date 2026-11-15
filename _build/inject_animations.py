@@ -31,7 +31,19 @@ def demo_html(demos, esc):
             f'<ul class="linking">\n{lis}\n</ul>\n')
 
 
-def block(items, demos=()):
+def links_html(groups, esc):
+    """Link-only groups (simulations, reading, more pages): third-party material is linked, never hosted."""
+    out = ''
+    for g in groups:
+        lis = '\n'.join(
+            f'<li><a href="{esc(i["url"])}" target="_blank" rel="noopener noreferrer">{esc(i["title"])}</a>'
+            + (f' — {esc(i["text"])}' if i.get('text') else '') + '</li>' for i in g['items'])
+        out += (f'<div class="video-source-label">{esc(g["label"])}</div>\n'
+                f'<ul class="linking">\n{lis}\n</ul>\n')
+    return out
+
+
+def block(items, demos=(), links=()):
     esc = html.escape
     lis = '\n'.join(
         f'<li><a href="{esc(SRC["base"] + i["file"])}" target="_blank" rel="noopener noreferrer">'
@@ -40,7 +52,7 @@ def block(items, demos=()):
               f'<a href="{esc(SRC["licence_url"])}" target="_blank" rel="noopener noreferrer">{esc(SRC["licence"])}</a>. '
               'Shown by embedding the author\'s own page, unaltered; nothing is copied to this site. '
               'Removed on request.')
-    return (f'{A_START}\n<div class="rule--full"></div>\n<h2>Animations</h2>\n'
+    return (f'{A_START}\n<div class="rule--full"></div>\n<h2>Animations, simulations and reading</h2>\n'
             f'<div class="video-source-label">{esc(SRC["label"])}</div>\n'
             f'<p>Open the full set on <a href="{esc(SRC["page"])}" target="_blank" rel="noopener noreferrer">'
             f'{esc(SRC["author"])}\'s Wave Motion page (Penn State)</a>, or open any single animation below.</p>\n'
@@ -50,7 +62,7 @@ def block(items, demos=()):
             'loading="lazy" sandbox="" referrerpolicy="no-referrer" '
             'style="aspect-ratio:auto;height:640px;background:#fff"></iframe>'
             f'<figcaption>{credit}</figcaption></figure>\n'
-            + demo_html(demos, esc) + A_END)
+            + links_html(links, esc) + demo_html(demos, esc) + A_END)
 
 
 def upsert(content, blk):
@@ -67,7 +79,7 @@ for topic, t in DATA['topics'].items():
     rel = os.path.join(t['page'], 'index.html')
     path = os.path.join(ROOT, rel)
     content = open(path).read()
-    new = upsert(content, block(t['items'], t.get('demos', ())))
+    new = upsert(content, block(t['items'], t.get('demos', ()), t.get('links', ())))
     if new != content:
         open(path, 'w').write(new)
         changed += 1

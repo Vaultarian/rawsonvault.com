@@ -38,6 +38,51 @@
          "title": "Water surface wave (extra)",
          "text": "Particles in deep water trace circles, so a water wave is neither purely transverse nor longitudinal."}
       ],
+      "links": [
+        {"label": "Simulations and practice",
+         "items": [
+           {"title": "PhET: Wave on a String",
+            "url": "https://phet.colorado.edu/sims/html/wave-on-a-string/latest/wave-on-a-string_all.html",
+            "text": "Oscillate and Pulse modes, with rulers and a stopwatch to measure wavelength, amplitude and period, and sliders for amplitude, frequency, damping and tension."},
+           {"title": "Falstad: Ripple Tank",
+            "url": "https://www.falstad.com/ripple/",
+            "text": "Waves on a water surface."},
+           {"title": "gcse.com: Wave speed",
+            "url": "https://www.gcse.com/waves/wave_speed2.htm",
+            "text": "Wave speed."},
+           {"title": "The Physics Classroom: Simple Wave interactive",
+            "url": "https://www.physicsclassroom.com/interactive/vibrations-and-waves/simple-wave/launch",
+            "text": "Interactive."},
+           {"title": "The Physics Classroom: Longitudinal Wave animation",
+            "url": "https://www.physicsclassroom.com/multimedia/vibrations-and-sound-waves/longitudinal-wave",
+            "text": "Animation of a longitudinal wave."},
+           {"title": "Zona Land Education: Waves",
+            "url": "http://zonalandeducation.com/mstm/physics/waves/waves.html",
+            "text": "Parts of a Wave, and Transverse and Longitudinal Waves (C.2); the same page also covers the Doppler effect, interference and standing waves, for later units."}
+         ]},
+        {"label": "More from Dan Russell, Penn State",
+         "items": [
+           {"title": "Wave Motion in Time and Space",
+            "url": "https://www.acs.psu.edu/drussell/Demos/wave-x-t/wave-x-t.html",
+            "text": "Displacement against position and against time. (C.2.2)"},
+           {"title": "What is a wave?",
+            "url": "https://www.acs.psu.edu/drussell/Demos/waves-intro/waves-intro.html",
+            "text": "An introduction."}
+         ]},
+        {"label": "Reading: The Physics Classroom",
+         "items": [
+           {"title": "What is a wave?",
+            "url": "https://www.physicsclassroom.com/tutorial/vibrations-and-waves/nature-of-a-wave/what-is-a-wave"},
+           {"title": "Categories of waves",
+            "url": "https://www.physicsclassroom.com/tutorial/vibrations-and-waves/nature-of-a-wave/categories-of-waves"},
+           {"title": "Anatomy of a wave",
+            "url": "https://www.physicsclassroom.com/tutorial/vibrations-and-waves/properties-of-a-wave/anatomy-of-a-wave"},
+           {"title": "The wave equation",
+            "url": "https://www.physicsclassroom.com/tutorial/vibrations-and-waves/properties-of-a-wave/wave-equation"},
+           {"title": "Sound is a pressure wave",
+            "url": "https://www.physicsclassroom.com/tutorial/sound-waves/nature-of-sound-waves/sound-is-a-pressure-wave"}
+         ]}
+      ],
       "demos": [
         {"title": "Long slinky",
          "text": "A slinky 1 m long that stretches to about 6 m. Flick one end sideways to send a transverse pulse, then push and pull the end along its length to send a longitudinal one. In each case compare which way the coils move with which way the pulse travels. (C.2.1)"}
