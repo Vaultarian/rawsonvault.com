@@ -172,7 +172,7 @@
       c.fillStyle = '#000'; c.fillRect(0, 0, 960, 540); const v = TRL.vids[scene]; if (v && v.readyState >= 2) c.drawImage(v, 0, 0, 960, 540);       // full size and smooth, so the recordings stay sharp
       if (scene === 0) reveal('GET BOMBS', 1.7, 7.4, 52, 1.6, '#fff');
       if (scene === 1) reveal('USE BOMBS', T1 + 1.7, T1 + 6.8, 52, 1.6, '#fff');
-      if (scene === 2) reveal('DESTROY THE WORLD', T2 + 1, T3 - .6, 52, 1.5, '#ff1744', true);
+      if (scene === 2) reveal('DIG A HUGE HOLE', T2 + 1, T3 - .6, 52, 1.5, '#ff1744', true);
       c.save(); c.scale(2, 2);
       for (const [k, t0] of [[0, 7.0], [1, T2 - 1.45]]) { const u = t - t0; if (u >= 0 && u < 3.3) for (const cl of TRL.trans[k]) if (u >= cl.on && u < cl.off) { c.fillStyle = cl.col; c.fillRect(cl.x, cl.y, 16, 16); c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(cl.x + 2, cl.y + 2, 5, 5); c.fillRect(cl.x + 9, cl.y + 9, 4, 4); } }
       c.restore();

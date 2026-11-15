@@ -27,12 +27,24 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🤸', when:'15 Nov', title:'Trampoline Tramp',
+      what:'Bounce on a trampoline in a 3D yard, do jobs, buy food, and unlock a giant skill tree.',
+      more:'Walk into the yard and bounce on the trampoline. Press Space right as you land to bounce higher, and the higher you go the more coins you get. ' +
+           'Click the old computer in the garage to open the skill tree: upgrades split into two, and some join back together into one big one. ' +
+           'The computer also has jobs, like mowing the lawn, catching pests and fixing the plumbing. Jobs earn money, and money buys food. ' +
+           'Watch your stomach bar. If it runs out, you fall over and the game starts again.',
+      play:'trampoline-tramp/' },
+    { emoji:'💣', when:'15 Nov', title:'Bomb Sandbox update',
+      what:'Friendlier bomb names, a hover box that shows each bomb going off, a pixel BACK button, and prices that climb in 8 levels.',
+      more:'Hover over a bomb in the shop for half a second and a little film shows it going off. The bombs now unlock in 8 levels, with the Mega Goo Bomb at the very end. ' +
+           'The Biggest Bang Bomb and the Mega Goo Bomb are the last ones to find.',
+      play:'bomb-sandbox/' },
     { emoji:'💣', when:'14 Nov', title:'Bomb Sandbox',
-      what:'Blow up the world with over 100 bombs: nuclear, black hole, mice, plague and more.',
-      more:'Click the shopkeeper to buy bombs with the blocks you break. Throw a bomb, then pick the Lighter and click it to light it. ' +
+      what:'Dig a giant hole with over 100 bombs: big bang, black hole, mice, goo and more.',
+      more:'Click the shopkeeper to buy bombs with the blocks you break. Throw a bomb, then pick the Spark Stick and click it to set it off. ' +
            'Pick the Pickaxe to dig up the slope, the Nature Block to fill holes with the right ground, and walk over holes to make bridges that bend. ' +
-           'Blow open the bottom of the world and the white void sends you back to the surface. ' +
-           'Nature Bombs grow the ground back, the Flat Bomb makes the whole world flat, and the Mega Plague Bomb asks first because it destroys the whole world. ' +
+           'Dig through the bottom of the world and the white void sends you back to the surface. ' +
+           'Nature Bombs grow the ground back, the Flat Bomb makes the whole world flat, and the Mega Goo Bomb asks first because it changes the whole map. ' +
            'It has a home screen with named games that save in your browser, and a trailer.',
       play:'bomb-sandbox/' },
     { emoji:'🧩', when:'14 Nov', title:'Puzzle Daily',

@@ -1,4 +1,5 @@
 // Jos's Bomb Sandbox
+const DEMO = /[?&]demo/.test(location.search);       // ?demo = the tiny flat world shown inside the shop's hover box
 const TS = 8, WW = 400, WH = 150, VW = 640, VH = 360;
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 cv.width = VW; cv.height = VH;
@@ -10,7 +11,7 @@ const $ = id => document.getElementById(id);
 const OLD_SAVE = 'jos-bomb-sandbox', INDEX_KEY = 'jos-bomb-games', GAME_KEY = n => 'jos-bomb-game:' + n;
 let wallet = 0, total = 0, inv = {}, sel = 'L', currentName = null, inGame = false;
 function save() { if (inGame && currentName) saveGame(); }
-const LIGHTER = { id: 'L', name: 'Lighter', color: '#ffd54f', free: true, tool: true, label: 'lights bombs' };
+const LIGHTER = { id: 'L', name: 'Spark Stick', color: '#ffd54f', free: true, tool: true, label: 'sets off bombs' };
 const NATURE = { id: 'N', name: 'Nature Block', color: '#66bb6a', free: true, tool: true, label: 'fills holes like the ground' };
 const NATSQ = { id: 'S', name: 'Nature Square', color: '#7cb342', free: true, tool: true, label: 'click below you: 30x30 grass' };
 const PICKAXE = { id: 'P', name: 'Pickaxe', color: '#b0bec5', free: true, tool: true, label: 'digs 10 up the slope' };
@@ -126,9 +127,10 @@ const K = {
     if (p.mega) {                                          // starts where the bomb goes off and spreads outward, block by block: green, then gone
       plagueCap = 45000; let n = 0, tries = 0;
       while (n < 14 && tries++ < 400) { const tx = b.tx + Math.round(rnd(-6, 6)), ty = b.ty + Math.round(rnd(-6, 6)); if (tx >= 0 && tx < WW && ty >= 0 && ty < WH && tiles[ty*WW + tx] !== 0 && tiles[ty*WW + tx] !== 8 && tiles[ty*WW + tx] !== 9 && !infected.has(ty*WW + tx)) { infect(tx, ty, p.spread, true); n++; } }
-      boom(b.x, b.y, 4, '#33691e'); shake = 6; floatText(b.x, b.y - 30, 'The plague is spreading...'); return;
+      boom(b.x, b.y, 4, '#33691e'); shake = 6; floatText(b.x, b.y - 30, 'The goo is spreading...'); return;
     }
-    let n = 0, tries = 0; while (n < p.seeds && tries++ < 200) { const tx = b.tx + Math.round(rnd(-6, 6)), ty = b.ty + Math.round(rnd(-6, 6)); if (solid(tx, ty) && tx >= 0 && tx < WW && ty < WH && tiles[ty*WW + tx] !== 5 && tiles[ty*WW + tx] !== 8 && tiles[ty*WW + tx] !== 9 && !infected.has(ty*WW + tx)) { infect(tx, ty, p.spread || .5); n++; } }
+    const grp = { left: 30 };                              // ordinary goo stops after 30 blocks; only the Mega Goo Bomb (it warns first) goes on and on
+    let n = 0, tries = 0; while (n < p.seeds && grp.left > 0 && tries++ < 200) { const tx = b.tx + Math.round(rnd(-6, 6)), ty = b.ty + Math.round(rnd(-6, 6)); if (solid(tx, ty) && tx >= 0 && tx < WW && ty < WH && tiles[ty*WW + tx] !== 5 && tiles[ty*WW + tx] !== 8 && tiles[ty*WW + tx] !== 9 && !infected.has(ty*WW + tx)) { infect(tx, ty, p.spread || .5, false, grp); n++; } }
     boom(b.x, b.y, 2, '#9ccc65');
   },
   cluster(b, p) { for (let i = 0; i < p.n; i++) throwBomb(b.x, b.y - 6, rnd(-p.spread, p.spread), rnd(-260, -80), subDef(p.sub), rnd(.5, 1.2)); boom(b.x, b.y, 2, b.def.color); },
@@ -190,9 +192,10 @@ K.flat = function (b, p) {
 const subDef = s => ({ name: 'sub', color: '#ff9800', kind: s.kind, p: s });
 let plagueCap = 3500;
 const NEIGH8 = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, .5], [-1, 1, .5], [1, -1, .5], [-1, -1, .5]];
-function infect(tx, ty, sp, mega) {
+function infect(tx, ty, sp, mega, grp) {
+  if (grp) { if (grp.left <= 0) return; grp.left--; }                 // an ordinary goo bomb has a budget of 30 blocks, shared by everything it spreads to
   const i = ty*WW + tx; if (tiles[i] === 5) voidTiles.add(i);          // the mega plague eats the bottom of the world too
-  infected.set(i, { t: 0, sp, mega, life: rnd(1, 5), wait: rnd(.1, mega ? .9 : 1.5) }); tiles[i] = 7; if (mega) placed.add(i); drawTile(tx, ty);     // (mega-plagued blocks pay nothing, so it cannot be farmed)
+  infected.set(i, { t: 0, sp, mega, grp, life: rnd(1, 5), wait: rnd(.1, mega ? .9 : 1.5) }); tiles[i] = 7; if (mega) placed.add(i); drawTile(tx, ty);     // (mega-plagued blocks pay nothing, so it cannot be farmed)
 }
 function explodeAt(b) { K[b.def.kind](b, b.def.p, b.def); }
 
@@ -246,7 +249,7 @@ function updateAgents(dt) {
       plagueClock = 0;
       for (const [i, s] of [...infected]) {
         s.t += .12; const x = i % WW, y = (i/WW)|0;
-        if (s.t > s.wait && infected.size < plagueCap) for (const [dx, dy, w] of NEIGH8) { const nx = x + dx, ny = y + dy; if (nx >= 0 && nx < WW && ny >= 0 && ny < WH) { const j = ny*WW + nx; if (tiles[j] && (tiles[j] !== 5 || s.mega) && tiles[j] !== 8 && tiles[j] !== 9 && !infected.has(j) && Math.random() < s.sp*.12*w) infect(nx, ny, s.sp, s.mega); } }
+        if (s.t > s.wait && infected.size < plagueCap) for (const [dx, dy, w] of NEIGH8) { const nx = x + dx, ny = y + dy; if (nx >= 0 && nx < WW && ny >= 0 && ny < WH) { const j = ny*WW + nx; if (tiles[j] && (tiles[j] !== 5 || s.mega) && tiles[j] !== 8 && tiles[j] !== 9 && !infected.has(j) && Math.random() < s.sp*.12*w) infect(nx, ny, s.sp, s.mega, s.grp); } }
         if (s.t > s.life) breakTile(x, y);
       }
     }
@@ -502,7 +505,7 @@ function renderBar() {
   const list = hotbar(); if (!list.find(b => b.id === sel)) sel = 'L';
   list.forEach((b, i) => {
     const d = document.createElement('div'); d.className = 'slot' + (b.id === sel ? ' sel' : '');
-    d.innerHTML = (b.tool ? (b.id === 'L' ? '🔥' : b.id === 'N' ? '🌿' : b.id === 'S' ? '🟩' : '⛏️') : '<i style="background:' + b.color + '"></i>') + (i < 9 ? ' ' + (i + 1) + ' ' : ' ') + b.name + '<br>' + (b.tool ? b.label : b.free ? '∞' : '×' + count(b));
+    d.innerHTML = (b.tool ? (b.id === 'L' ? '✨' : b.id === 'N' ? '🌿' : b.id === 'S' ? '🟩' : '⛏️') : '<i style="background:' + b.color + '"></i>') + (i < 9 ? ' ' + (i + 1) + ' ' : ' ') + b.name + '<br>' + (b.tool ? b.label : b.free ? '∞' : '×' + count(b));
     if (b.id === 'P') pickSlot = d;
     d.onclick = () => { sel = b.id; renderBar(); }; bar.appendChild(d);
   });
@@ -517,11 +520,11 @@ function shopRender(light) {
   ORDER.forEach(b => {
     if (b.free) return;
     const unlocked = total >= b.need, left = stockLeft[b.id];
-    const d = document.createElement('div'); d.className = 'card' + (unlocked ? '' : ' locked');
+    const d = document.createElement('div'); d.className = 'card' + (unlocked ? '' : ' locked'); d.dataset.bid = b.id;
     let info;
-    if (!unlocked) info = '🔒 Break <b>' + b.need + '</b> blocks to unlock<br><span class="dim">(you have broken ' + total + ')</span>';
-    else info = '🧱 ' + b.price + ' for <b>' + b.give + '</b> bomb' + (b.give > 1 ? 's' : '') + '<br><span class="dim">' + (left === Infinity ? 'always in stock' : left > 0 ? left + ' left until the van' : 'SOLD OUT until the van') + ' · you own ' + count(b) + '</span>';
-    d.innerHTML = '<h3><i style="background:' + b.color + '"></i>' + b.name + '</h3>' + info;
+    if (!unlocked) info = '🔒 Break <b>' + b.need.toLocaleString() + '</b> blocks to unlock<br><span class="dim">(you have broken ' + total.toLocaleString() + ')<br>It will cost 🧱 ' + b.price.toLocaleString() + ' to buy</span>';
+    else info = '🧱 ' + b.price.toLocaleString() + ' for <b>' + b.give + '</b> bomb' + (b.give > 1 ? 's' : '') + '<br><span class="dim">' + (left === Infinity ? 'always in stock' : left > 0 ? left + ' left until the van' : 'SOLD OUT until the van') + ' · you own ' + count(b) + '</span>';
+    d.innerHTML = '<h3><i style="background:' + b.color + '"></i>' + b.name + '</h3>' + (b.tier ? '<div class="dim" style="font-size:.75em;margin:-2px 0 3px">' + (b.tier > 8 ? '🏁 Final bomb of Level 1' : 'Level ' + b.tier) + '</div>' : '') + info;
     if (unlocked) {
       const btn = document.createElement('button'); btn.textContent = shopClosed() ? 'Closed' : left <= 0 ? 'Sold out' : wallet < b.price ? 'Need more blocks' : 'Buy';
       btn.disabled = shopClosed() || left <= 0 || wallet < b.price;
@@ -557,15 +560,15 @@ function pixelTriangle(c, x0, y0, sc) {                // a white warning triang
   c.fillRect(x0 + (cx - 1)*sc, y0 + 11*sc, 2*sc, 2*sc);                                  // the dot of the !
 }
 let warnGo = null;
-function askWarn(go) {
-  warnGo = go; const cv2 = $('warnSign'), c = cv2.getContext('2d'), W2 = cv2.width, H2 = cv2.height;
+function drawWarn(bobY) {                      // the message stays still; only the two ! triangles bob
+  const cv2 = $('warnSign'), c = cv2.getContext('2d'), W2 = cv2.width, H2 = cv2.height;
   c.imageSmoothingEnabled = false; c.clearRect(0, 0, W2, H2);
   for (let x = 0; x < W2; x += 20) for (let y = 0; y < H2; y += 20) if (x < 20 || y < 20 || x >= W2 - 20 || y >= H2 - 20) { c.fillStyle = ((x + y)/20) % 2 ? '#d32f2f' : '#fff'; c.fillRect(x, y, 20, 20); }   // red and white border
   c.fillStyle = '#c62828'; c.fillRect(20, 20, W2 - 40, H2 - 40); c.strokeStyle = '#fff'; c.lineWidth = 4; c.strokeRect(30, 30, W2 - 60, H2 - 60);
   c.fillStyle = '#fff';
-  pixelText(c, 'WARNING:', W2/2, 56, 8); pixelTriangle(c, 42, 44, 5); pixelTriangle(c, W2 - 42 - 17*5, 44, 5); c.fillStyle = '#fff'; pixelText(c, 'THIS WILL DESTROY', W2/2, 132, 5); pixelText(c, 'THE ENTIRE WORLD.', W2/2, 178, 5); pixelText(c, 'CONTINUE?', W2/2, 236, 6);
-  $('warn').classList.add('open');
+  pixelText(c, 'WARNING:', W2/2, 56, 8); pixelTriangle(c, 42, 44 + bobY, 5); pixelTriangle(c, W2 - 42 - 17*5, 44 + bobY, 5); c.fillStyle = '#fff'; pixelText(c, 'THIS WILL CHANGE', W2/2, 132, 5); pixelText(c, 'THE WHOLE MAP.', W2/2, 178, 5); pixelText(c, 'CONTINUE?', W2/2, 236, 6);
 }
+function askWarn(go) { warnGo = go; drawWarn(0); $('warn').classList.add('open'); }
 function closeWarn() { $('warn').classList.remove('open'); warnGo = null; }
 $('warnYes').onclick = () => { const g = warnGo; closeWarn(); if (g) g(); };
 $('warnNo').onclick = closeWarn;
@@ -583,7 +586,7 @@ cv.addEventListener('pointerdown', e => {
   if ($('shop').classList.contains('open')) return;
   const r = cv.getBoundingClientRect(); mouse.x = (e.clientX - r.left)/r.width*VW; mouse.y = (e.clientY - r.top)/r.height*VH; mouse.wx = mouse.x + camX; mouse.wy = mouse.y + camY;
   if (overShop()) { openShop(); return; }
-  if (sel === 'L') {                                                    // the Lighter: click any bomb you can see to light it
+  if (sel === 'L') {                                                    // the Spark Stick: click any bomb you can see to set it off
     let best = null, bd = 22; for (const bm of bombs) if (!bm.lit) { const d = Math.hypot(bm.x - mouse.wx, bm.y - mouse.wy); if (d < bd) { bd = d; best = bm; } }
     if (best) { ignite(best); P.throwT = .3; P.face = best.x >= P.x ? 1 : -1; }
     else spark(mouse.wx, mouse.wy, 4, '#ffd740', 50, .25);
@@ -648,9 +651,9 @@ function draw() {
   ctx.drawImage(worldCv, 0, 0);
   drawBridges(ctx);
   if (voidTiles.size) { const pulse2 = .65 + .35*Math.sin(performance.now()*.004); for (const i of voidTiles) { const x = i % WW, px = x*TS; if (px < camX - 24 || px > camX + VW + 24) continue; const gr = ctx.createRadialGradient(px + 4, WH*TS, 0, px + 4, WH*TS, 26); gr.addColorStop(0, 'rgba(255,255,255,' + (.85*pulse2) + ')'); gr.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = gr; ctx.fillRect(px - 24, WH*TS - 30, 56, 30); } }
-  drawShop(ctx, overShop() && !$('shop').classList.contains('open'));
+  if (!DEMO) drawShop(ctx, overShop() && !$('shop').classList.contains('open'));
   // the player
-  drawPerson(ctx, P.x, P.y + P.sagDy + P.stepOff, P.face, P.phase, Math.abs(P.vx), P.airT > .12, P.throwT, 0, 0, P.dig ? { p: 1 - P.dig.t } : null);
+  if (!DEMO) drawPerson(ctx, P.x, P.y + P.sagDy + P.stepOff, P.face, P.phase, Math.abs(P.vx), P.airT > .12, P.throwT, 0, 0, P.dig ? { p: 1 - P.dig.t } : null);
   // bombs
   for (const b of bombs) {
     ctx.fillStyle = b.def.color; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(b.x, b.y, 4.5, 0, 7); ctx.fill(); ctx.stroke();
@@ -679,7 +682,7 @@ let last = performance.now(), accum = 0;
 function frame(now) {
   accum += Math.min(.1, (now - last)/1000); last = now;
   while (accum >= 1/60) { update(1/60); accum -= 1/60; }
-  const wn = $('warn'); if (wn.classList.contains('open')) $('warnSign').style.transform = 'translateY(' + (Math.sin(now/1000*5.2)*14).toFixed(1) + 'px)';     // the sign bobs up and down
+  const wn = $('warn'); if (wn.classList.contains('open')) drawWarn(Math.round(Math.sin(now/1000*5.2)*6));     // the sign bobs up and down
   draw(); requestAnimationFrame(frame);
 }
 
@@ -723,3 +726,73 @@ makeWorld(); respawn(); renderBar();
 camX = P.x - VW/2; camY = P.y - VH*.62;
 requestAnimationFrame(frame);
 window.__bs = { placed, voidTiles, sagMap, bridges, bombs: () => bombs, startVan, van, vanPos, vanT: () => vanT, shopY: () => shopY, keys, tileAt: (x, y) => tiles[y*WW + x], P, cam: () => [camX, camY], explodeAt, ORDER, tiles: () => tiles, WW, WH, TS, surf: () => surf, update, getWallet: () => wallet, setWallet: v => { wallet = v; } };
+
+// ---------------------------------------------------------------- hover a bomb in the shop: words, plus a little film of it going off
+if (!DEMO) {
+  const tip = document.createElement('div'); tip.id = 'btip';
+  tip.innerHTML = '<h4 id="btName"></h4><p id="btText"></p><iframe id="btFrame" scrolling="no" tabindex="-1"></iframe><div id="btNote">Watch it go off ↑</div>';
+  document.body.appendChild(tip);
+  let frameReady = false, frameLoaded = false, pending = null, shownId = null;
+  const fr = $('btFrame');
+  addEventListener('message', e => { if (e.data && e.data.demoReady) { frameReady = true; if (pending) { fr.contentWindow.postMessage({ demoBomb: pending }, '*'); } } });
+  function showBombTip(b, card, ev) {
+    if (!frameLoaded) { frameLoaded = true; fr.src = 'index.html?demo=1&v=30'; }
+    if (shownId !== b.id) {
+      shownId = b.id; $('btName').textContent = b.name; $('btText').textContent = bombInfo(b); pending = b.name;
+      if (frameReady) fr.contentWindow.postMessage({ demoBomb: b.name }, '*');
+    }
+    tip.style.display = 'block';
+    const r = card.getBoundingClientRect(), w = 348, h = tip.offsetHeight || 340;
+    let x = r.right + 10; if (x + w > innerWidth - 6) x = r.left - w - 10; if (x < 6) x = Math.max(6, Math.min(innerWidth - w - 6, ev.clientX + 16));
+    tip.style.left = x + 'px'; tip.style.top = Math.max(6, Math.min(innerHeight - h - 6, r.top - 20)) + 'px';
+  }
+  function hideBombTip() { tip.style.display = 'none'; shownId = null; }
+  const grid = $('grid');
+  // the box only appears once the mouse has rested on a bomb for half a second, so sweeping the mouse about doesn't flash boxes everywhere
+  let hoverTimer = null, hoverId = null, lastMove = 0, lastEv = null;
+  const cancelHover = () => { clearTimeout(hoverTimer); hoverTimer = null; hoverId = null; };
+  grid.addEventListener('mousemove', e => {
+    const card = e.target.closest('.card'); if (!card) { cancelHover(); hideBombTip(); return; }
+    const b = ORDER.find(x => String(x.id) === card.dataset.bid); if (!b) return;
+    lastEv = e;
+    if (shownId === b.id) { showBombTip(b, card, e); return; }           // already showing this one: keep it beside the card
+    if (hoverId !== b.id) { cancelHover(); hideBombTip(); hoverId = b.id; hoverTimer = setTimeout(() => { const c = [...grid.querySelectorAll('.card')].find(x => x.dataset.bid === String(b.id)); if (c) showBombTip(b, c, lastEv); }, 500); }
+  });
+  grid.addEventListener('mouseleave', () => { cancelHover(); hideBombTip(); });
+  setInterval(() => { if (!$('shop').classList.contains('open')) hideBombTip(); }, 250);
+}
+if (DEMO) {
+  document.body.classList.add('demo');
+  inGame = true;                                                      // (currentName stays empty, so the little film never saves anything)
+  const DX = 100, GY = 60;                                            // the bomb goes off over tile column 100, on flat ground at row 60
+  let demoName = null, demoT0 = 0;
+  updatePlayer = () => {}; updateVan = () => {};                      // nobody walks about in the little film
+  function demoWorld() {
+    tiles = new Uint8Array(WW*WH); surf = new Int16Array(WW).fill(GY);
+    for (let x = 0; x < WW; x++) for (let y = GY; y < WH; y++) tiles[y*WW + x] = y === WH-1 ? 5 : y === GY ? 1 : y < GY + 4 ? 2 : y < GY + 34 ? 3 : 4;
+    orig = tiles.slice(); origSurf = surf.slice(); skyBelow = false; indFlat = false;
+    bridges.clear(); sagMap.clear(); placed.clear(); voidTiles.clear(); infected.clear(); plagueCap = 3500;
+    bombs.length = agents.length = parts.length = texts.length = beams.length = 0; flash = 0; shake = 0;
+    wx.clearRect(0, 0, worldCv.width, worldCv.height); for (let y = 0; y < WH; y++) for (let x = 20; x < 180; x++) drawTile(x, y);
+    P.x = DX*TS; P.y = GY*TS; P.vx = P.vy = 0; camX = P.x - VW/2; camY = P.y - VH*.62;
+  }
+  function demoRun() {
+    const b = ORDER.find(x => x.name === demoName); if (!b) return;
+    demoWorld();
+    if (b.kind === 'nature' || b.kind === 'flat') carve(DX, GY, 11, circ(11));        // these mend the ground, so give them a hole to mend
+    setTimeout(() => throwBomb(DX*TS, GY*TS - 70, 0, 0, b, b.p.fuse ?? 1.2, false, true), 350);
+    demoT0 = performance.now();
+  }
+  addEventListener('message', e => { if (e.data && e.data.demoBomb) { demoName = e.data.demoBomb; demoRun(); } });
+  setInterval(() => { if (demoName && performance.now() - demoT0 > 7500) demoRun(); }, 250);     // then it plays again
+  parent.postMessage({ demoReady: true }, '*');
+}
+
+// ---------------------------------------------------------------- the pixel BACK button (goes to the Bomb Sandbox home screen)
+if (!DEMO) {
+  const bc = $('backPx'), b2 = bc.getContext('2d');
+  b2.imageSmoothingEnabled = false; b2.fillStyle = '#fff';                       // white outline with the corners cut off
+  b2.fillRect(1, 0, 38, 13); b2.fillRect(0, 1, 40, 11); b2.fillStyle = '#000'; b2.fillRect(2, 1, 36, 11); b2.fillRect(1, 2, 38, 9);
+  b2.fillStyle = '#ffd740'; ['..#..', '.#...', '#####', '.#...', '..#..'].forEach((row, y) => { for (let x = 0; x < 5; x++) if (row[x] === '#') b2.fillRect(5 + x, 4 + y, 1, 1); });
+  b2.fillStyle = '#fff'; pixelText(b2, 'BACK', 25, 3, 1);
+}

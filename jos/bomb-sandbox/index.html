@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <script src="../swirl.js"></script>
-<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
-<script src="../lang.js" data-game></script>
+<script>if (!/[?&]demo/.test(location.search)) document.write('<script src="../mods.js" data-game><\/script><script src="../cursors.js"><\/script><script src="../lang.js" data-game><\/script>');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jos's Bomb Sandbox</title>
@@ -44,13 +43,23 @@
   #warnBtns button { font-family:'Courier New',monospace; font-weight:bold; font-size:1.5em; letter-spacing:3px; text-transform:uppercase; padding:10px 26px; border:5px solid #fff; cursor:pointer; box-shadow:5px 5px 0 #000; }
   #warnYes { background:#d32f2f; color:#fff; } #warnNo { background:#fff; color:#d32f2f; border-color:#d32f2f; }
   #warnBtns button:active { transform:translate(3px,3px); box-shadow:2px 2px 0 #000; }
+  body.demo #hud, body.demo #top, body.demo #help, body.demo #bar, body.demo #shop, body.demo #warn, body.demo #toast, body.demo #home { display:none !important; }
+  body.demo canvas { width:100vw; height:100vh; aspect-ratio:auto; }
+  #btip { position:fixed; display:none; width:348px; box-sizing:border-box; background:#2b1d12; border:4px solid #ffe14e; border-radius:14px; padding:10px 12px; z-index:60; pointer-events:none; box-shadow:0 6px 24px #000c; }
+  #btip h4 { margin:0 0 4px; font-size:1.15em; color:#ffe14e; }
+  #btip p { margin:0 0 8px; font-size:.95em; line-height:1.35; }
+  #btFrame { display:block; width:320px; height:180px; border:3px solid #fff4; border-radius:8px; background:#8fd3ff; pointer-events:none; }
+  #btNote { font-size:.75em; color:#fff9; margin-top:4px; text-align:center; }
+  #top #menubtn { background:none; border:0; padding:0; }
+  #backPx { width:120px; height:39px; image-rendering:pixelated; display:block; background:none; }
+  #top #menubtn:hover #backPx { filter:brightness(1.25); } #top #menubtn:active #backPx { transform:translate(2px,2px); }
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="c"></canvas></div>
 <div id="hud"></div>
-<div id="top"><button id="menubtn">🏠 Menu</button><button id="shopbtn">🛒 Shop</button><button id="newworld">🌍 New world</button><a href="../index.html">← Jos's home</a></div>
-<div id="help">A / D walk · W jump · S drop through · hold SPACE to run<br>click a bomb slot, click to throw, then pick 🔥 and click the bomb · ⛏️ click above you to dig up</div>
+<div id="top"><button id="menubtn" title="Back to the Bomb Sandbox home screen"><canvas id="backPx" width="40" height="13"></canvas></button><button id="shopbtn">🛒 Shop</button><button id="newworld">🌍 New world</button><a href="../index.html">← Jos's home</a></div>
+<div id="help">A / D walk · W jump · S drop through · hold SPACE to run<br>click a bomb slot, click to throw, then pick ✨ and click the bomb · ⛏️ click above you to dig up</div>
 <div id="bar"></div>
 <div id="shop">
   <div id="shopHead"><h2>🛒 Bomb Shop</h2><span id="shopWallet"></span><span class="sp"></span><button id="shopClose" style="font:inherit;padding:4px 12px;border-radius:8px;border:0;cursor:pointer">✕ Close</button></div>
@@ -60,8 +69,8 @@
 <div id="toast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#b71c1c;color:#fff;padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .3s;z-index:200;pointer-events:none"></div>
 <div id="home"><canvas id="homeCv" width="480" height="270"></canvas></div>
 <div id="warn"><canvas id="warnSign" width="620" height="320"></canvas><div id="warnBtns"><button id="warnYes">Continue</button><button id="warnNo">Cancel</button></div></div>
-<script src="catalogue.js?v=22"></script>
-<script src="game.js?v=22"></script>
-<script src="home.js?v=22"></script>
+<script src="catalogue.js?v=26"></script>
+<script src="game.js?v=30"></script>
+<script>if (!/[?&]demo/.test(location.search)) document.write('<script src="home.js?v=22"><\/script>');</script>
 </body>
 </html>
