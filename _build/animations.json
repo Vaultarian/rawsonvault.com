@@ -37,6 +37,10 @@
         {"file": "Water-2016.gif",
          "title": "Water surface wave (extra)",
          "text": "Particles in deep water trace circles, so a water wave is neither purely transverse nor longitudinal."}
+      ],
+      "demos": [
+        {"title": "Long slinky",
+         "text": "A slinky 1 m long that stretches to about 6 m. Flick one end sideways to send a transverse pulse, then push and pull the end along its length to send a longitudinal one. In each case compare which way the coils move with which way the pulse travels. (C.2.1)"}
       ]
     }
   }

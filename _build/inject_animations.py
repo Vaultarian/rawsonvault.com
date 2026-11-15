@@ -22,7 +22,16 @@ V_START = '<!-- VIDEO-SUPPORT:START -->'
 FOOTER = '        <footer class="site-footer">'
 
 
-def block(items):
+def demo_html(demos, esc):
+    """Classroom demos (our own content, no third-party material): a plain list under the embed."""
+    if not demos:
+        return ''
+    lis = '\n'.join(f'<li><strong>{esc(x["title"])}</strong> — {esc(x["text"])}</li>' for x in demos)
+    return ('<div class="video-source-label">In the classroom</div>\n'
+            f'<ul class="linking">\n{lis}\n</ul>\n')
+
+
+def block(items, demos=()):
     esc = html.escape
     lis = '\n'.join(
         f'<li><a href="{esc(SRC["base"] + i["file"])}" target="_blank" rel="noopener noreferrer">'
@@ -40,7 +49,8 @@ def block(items):
             f'<iframe src="{esc(SRC["page"])}" title="Wave Motion animations, {esc(SRC["author"])}, Penn State" '
             'loading="lazy" sandbox="" referrerpolicy="no-referrer" '
             'style="aspect-ratio:auto;height:640px;background:#fff"></iframe>'
-            f'<figcaption>{credit}</figcaption></figure>\n{A_END}')
+            f'<figcaption>{credit}</figcaption></figure>\n'
+            + demo_html(demos, esc) + A_END)
 
 
 def upsert(content, blk):
@@ -57,7 +67,7 @@ for topic, t in DATA['topics'].items():
     rel = os.path.join(t['page'], 'index.html')
     path = os.path.join(ROOT, rel)
     content = open(path).read()
-    new = upsert(content, block(t['items']))
+    new = upsert(content, block(t['items'], t.get('demos', ())))
     if new != content:
         open(path, 'w').write(new)
         changed += 1
