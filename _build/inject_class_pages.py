@@ -534,8 +534,8 @@ CALENDARS = {
         "P3 Particle Model \u0026 P4 Atomic Structure, to the Christmas break"),
     "physics-12-sh": (
         VAULT / "01-Teaching/Physics - DP/Calendar"
-              / "y12sh-physics-calendar-autumn-1.pdf",
-        "Week A only \u2014 three blocks to the October break"),
+              / "y12sh-physics-calendar-autumn-2.pdf",
+        "Week A only \u2014 three blocks to the Christmas break"),
 }
 
 
