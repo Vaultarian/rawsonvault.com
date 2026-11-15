@@ -1,0 +1,43 @@
+{
+  "_note": "Verified source data for inject_animations.py. LINK-AND-EMBED ONLY: the animations stay on Penn State's server. Nothing here is copied, resized or re-encoded (CC BY-NC-ND 4.0 forbids adaptations). Re-verify before adding a topic.",
+  "source": {
+    "label": "Dan Russell, Acoustics and Vibration Animations",
+    "author": "Daniel A. Russell",
+    "affiliation": "Graduate Program in Acoustics, The Pennsylvania State University",
+    "page": "https://www.acs.psu.edu/drussell/demos/waves/wavemotion.html",
+    "base": "https://www.acs.psu.edu/drussell/demos/waves/",
+    "licence": "CC BY-NC-ND 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+  },
+  "verified": {
+    "date": "2026-11-15",
+    "page_http": 200,
+    "frame_blocking_headers": "none (no X-Frame-Options, no Content-Security-Policy)",
+    "licence_text_on_page": "Attribution-NonCommercial-NoDerivatives 4.0 International License",
+    "files_http_200": {
+      "Lwave-v8.gif": 1220845,
+      "Lwave-Red-2.gif": 2000151,
+      "Twave.gif": 44360,
+      "Water-2016.gif": 419210
+    }
+  },
+  "topics": {
+    "C2": {
+      "page": "physics/dp/theme-c/c2-wave-model",
+      "items": [
+        {"file": "Lwave-v8.gif",
+         "title": "Longitudinal pressure wave",
+         "text": "A wave moving along a tube. Follow one particle: it only moves back and forth, while the compression travels on. (C.2.1, C.2.3)"},
+        {"file": "Lwave-Red-2.gif",
+         "title": "Particle motion against propagation",
+         "text": "The same longitudinal wave with compressions and rarefactions marked, separating what each particle does from what the wave does. (C.2.1)"},
+        {"file": "Twave.gif",
+         "title": "Transverse wave",
+         "text": "The particles move up and down while the wave travels left to right. (C.2.1)"},
+        {"file": "Water-2016.gif",
+         "title": "Water surface wave (extra)",
+         "text": "Particles in deep water trace circles, so a water wave is neither purely transverse nor longitudinal."}
+      ]
+    }
+  }
+}
