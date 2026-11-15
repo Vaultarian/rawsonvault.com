@@ -27,6 +27,85 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'🤸', when:'15 Nov', title:'Trampoline Tramp',
+      what:'Bounce on a trampoline in a 3D yard, do jobs, buy food, and unlock a giant skill tree.',
+      more:'Walk into the yard and bounce on the trampoline. Press Space right as you land to bounce higher, and the higher you go the more coins you get. ' +
+           'Click the old computer in the garage to open the skill tree: upgrades split into two, and some join back together into one big one. ' +
+           'The computer also has jobs, like mowing the lawn, catching pests and fixing the plumbing. Jobs earn money, and money buys food. ' +
+           'Watch your stomach bar. If it runs out, you fall over and the game starts again.',
+      play:'trampoline-tramp/' },
+    { emoji:'💣', when:'15 Nov', title:'Bomb Sandbox update',
+      what:'Friendlier bomb names, a hover box that shows each bomb going off, a pixel BACK button, and prices that climb in 8 levels.',
+      more:'Hover over a bomb in the shop for half a second and a little film shows it going off. The bombs now unlock in 8 levels, with the Mega Goo Bomb at the very end. ' +
+           'The Biggest Bang Bomb and the Mega Goo Bomb are the last ones to find.',
+      play:'bomb-sandbox/' },
+    { emoji:'💣', when:'14 Nov', title:'Bomb Sandbox',
+      what:'Dig a giant hole with over 100 bombs: big bang, black hole, mice, goo and more.',
+      more:'Click the shopkeeper to buy bombs with the blocks you break. Throw a bomb, then pick the Spark Stick and click it to set it off. ' +
+           'Pick the Pickaxe to dig up the slope, the Nature Block to fill holes with the right ground, and walk over holes to make bridges that bend. ' +
+           'Dig through the bottom of the world and the white void sends you back to the surface. ' +
+           'Nature Bombs grow the ground back, the Flat Bomb makes the whole world flat, and the Mega Goo Bomb asks first because it changes the whole map. ' +
+           'It has a home screen with named games that save in your browser, and a trailer.',
+      play:'bomb-sandbox/' },
+    { emoji:'🧩', when:'14 Nov', title:'Puzzle Daily',
+      what:'Three new puzzles every day: Scoot, Neon and Currents.',
+      more:'A bot makes each puzzle fresh at midnight and checks it can be done. Slide the blocks so the red one escapes in Scoot, join the dots along the tracks in Neon, ' +
+           'and draw one line through the numbers in order in Currents. Finish one and it is locked for the day. Every puzzle has a theme.',
+      play:'puzzled-daily/' },
+    { emoji:'🎶', when:'13 Nov', title:'Song Maker',
+      what:'Click squares to make your own song, add drums and press play.',
+      more:'Pick a melody sound (Marimba, Piano, Strings, Woodwind, Synth) and a beat sound (Electronic, Blocks, Kit, Conga). ' +
+           'The play button splits into two bars. Press the tick to copy a link, then download your song as .mp3, .wav or .mid. ' +
+           'Change name gives your song a name.',
+      look:'song-maker/' },
+    { emoji:'🏀', when:'13 Nov', title:'Bouncy Balls',
+      what:'A noise meter: the louder you are, the higher the balls bounce.',
+      more:'Press Start bouncing and allow the microphone. Pick your Total, a Theme (Minecraft blocks, Pizza, Bubbles, Eyeballs that look around…), ' +
+           'a Noise alert with Jos\'s own sounds, and Ball bounciness. At 100, even a tap sends them all the way to the top.',
+      look:'bouncy-balls/' },
+    { emoji:'😈', when:'13 Nov', title:'LDLC: devils use portals and triggers',
+      what:'A devil has the same switch as the ball.',
+      more:'Turn on Go through portals and use triggers and a devil sets off triggers and goes in one portal and comes out of its partner.',
+      look:'ldlc/levels.html' },
+    { emoji:'🧱', when:'12 Nov', title:'LDLC: who a block stops',
+      what:'Collision has a Type: All, Only player or Only devil.',
+      more:'Turn Collision on and a Type drop bar appears. Only player stops you but lets devils walk through. ' +
+           'Only devil does the opposite. Triggers can use Change collision in the Do list to turn Collision on or off and ' +
+           'choose the Type while you play.',
+      look:'ldlc/levels.html' },
+    { emoji:'📟', when:'12 Nov', title:'LDLC: the Device',
+      what:'A glowing circle that floats in front of you and kills devils.',
+      more:'The lights slowly fade from green to red. Pick it up and any devil that touches you dies. Turn on Devil max ' +
+           'and it can only kill that many, like 3, and then it disappears and does not come back.',
+      look:'ldlc/levels.html' },
+    { emoji:'👿', when:'12 Nov', title:'LDLC: the Devil',
+      what:'A 😈 that chases you, jumps over blocks, and laughs when it catches you.',
+      more:'The screen goes grey and then fades back while the same little devil tips back and laughs. Every devil has its own ' +
+           'Jump power and Speed. Attraction can be a type (Player, Anything, or a kind of block) or one numbered block. ' +
+           'Turn on Destroy attraction and it stands at the edge, white particles come out, and the block is destroyed after the ' +
+           'Destroying time. Movement can be Platformer or Top view, so it can fly straight at you.',
+      look:'ldlc/levels.html' },
+    { emoji:'📝', when:'12 Nov', title:'LDLC: the Text block',
+      what:'Blue for words, green for numbers, and triggers can change them.',
+      more:'Type something and the square goes away, leaving glowing words at any Size. Text shows over everything. ' +
+           'Triggers can give a new sentence with a Splash word, or set or change a number. A trigger also has a Repeat type: ' +
+           'once, each time he goes in, or while he is inside.',
+      look:'ldlc/levels.html' },
+    { emoji:'🌀', when:'12 Nov', title:'LDLC: Tilt and Visibility',
+      what:'Turn any block by any angle, and choose how see-through it is.',
+      more:'Tilt is in the block properties and also a Do for triggers, so a block can turn smoothly. In the creator you see the ' +
+           'regular block with the tilted one see-through on top. Visible has a Visibility % from 0 to 100.',
+      look:'ldlc/levels.html' },
+    { emoji:'📋', when:'12 Nov', title:'LDLC: copy and paste',
+      what:'Right-click a block to Copy it, and right-click an empty square to Paste.',
+      more:'Copy takes everything about the block. Paste is greyed out on a block so you never paste over one. Right-click a ' +
+           'trigger card, tick actions, press Done, and use Copy actions and Paste actions to give another block the same actions.',
+      look:'ldlc/levels.html' },
+    { emoji:'💚', when:'12 Nov', title:'LDLC: the Checkpoint remembers everything',
+      what:'Die and you keep your coins, triggers and moved blocks.',
+      more:'The grey checkpoint is now four broken pieces, and its lightning bolt is smaller. Movement also has Change speed, ' +
+           'with decimals, when a block has two triggers.',
+      look:'ldlc/levels.html' },
     { emoji:'💚', when:'9 Nov', title:'LDLC: the Checkpoint',
       what:'A green diamond that remembers where you got to.',
       more:'It starts as a grey cracked kite with a green glow. Touch it and a green lightning bolt comes down ' +

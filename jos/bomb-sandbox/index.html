@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script>if (!/[?&]demo/.test(location.search)) document.write('<script src="../mods.js" data-game><\/script><script src="../cursors.js"><\/script><script src="../lang.js" data-game><\/script>');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jos's Bomb Sandbox</title>
+<style>
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:#111; overflow:hidden; font-family:'Comic Sans MS','Trebuchet MS',sans-serif; color:#fff; -webkit-user-select:none; user-select:none; }
+  #wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  canvas { background:#8fd3ff; width:min(100vw, 177.78vh); height:auto; aspect-ratio:16/9; image-rendering:pixelated; }
+  #hud { position:fixed; top:8px; left:10px; font-size:1.1em; text-shadow:0 2px 4px #000; pointer-events:none; line-height:1.4; }
+  #hud b { color:#ffe14e; }
+  #top { position:fixed; top:8px; right:10px; display:flex; gap:8px; }
+  #top a, #top button { background:#0009; color:#fff; border:2px solid #fff4; border-radius:10px; font:inherit; padding:4px 12px; cursor:pointer; text-decoration:none; font-size:.95em; }
+  #bar { position:fixed; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:6px; max-width:96vw; overflow-x:auto; padding:4px; }
+  .slot { min-width:78px; background:#000a; border:3px solid #fff3; border-radius:10px; padding:4px 6px; text-align:center; cursor:pointer; font-size:.8em; }
+  .slot.sel { border-color:#ffe14e; box-shadow:0 0 10px #ffe14e88; }
+  .slot i { display:inline-block; width:16px; height:16px; border-radius:50%; vertical-align:middle; margin-right:3px; border:2px solid #fff6; }
+  #help { position:fixed; bottom:84px; left:50%; transform:translateX(-50%); font-size:.85em; color:#fffc; text-shadow:0 1px 3px #000; text-align:center; pointer-events:none; }
+  #shop { position:fixed; inset:4% 6%; background:#2b1d12f2; border:4px solid #c68a4a; border-radius:18px; display:none; flex-direction:column; padding:14px 16px; box-shadow:0 0 40px #000; }
+  #shop.open { display:flex; }
+  #shopHead { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
+  #shopHead h2 { margin:0; font-size:1.4em; }
+  #shopHead .sp { flex:1; }
+  #closed { display:none; background:#b71c1c; border-radius:10px; padding:6px 12px; margin-bottom:8px; text-align:center; }
+  #grid { overflow-y:auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:8px; padding-right:6px; }
+  .card { background:#4a3220; border:2px solid #7a5532; border-radius:12px; padding:8px 10px; font-size:.85em; }
+  .card h3 { margin:0 0 3px; font-size:1.05em; }
+  .card i { display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:5px; vertical-align:middle; border:2px solid #fff6; }
+  .card.locked { opacity:.45; }
+  .card button { margin-top:6px; width:100%; background:#ffe14e; color:#222; border:0; border-radius:8px; font:inherit; padding:4px; cursor:pointer; }
+  .card button:disabled { background:#777; color:#ccc; cursor:default; }
+  .dim { color:#d7c3a8; }
+  #home { position:fixed; inset:0; background:#050814; z-index:100; display:flex; align-items:center; justify-content:center; }
+  #homeCv { width:min(100vw,177.78vh); height:auto; image-rendering:pixelated; cursor:default; }
+  #warn { position:fixed; inset:0; background:#000b; display:none; align-items:center; justify-content:center; flex-direction:column; gap:18px; z-index:50; }
+  #warn.open { display:flex; }
+  #warnSign { image-rendering:pixelated; width:min(92vw,620px); height:auto; box-shadow:0 8px 0 #0008; }
+  #warnBtns { display:flex; gap:22px; }
+  #warnBtns button { font-family:'Courier New',monospace; font-weight:bold; font-size:1.5em; letter-spacing:3px; text-transform:uppercase; padding:10px 26px; border:5px solid #fff; cursor:pointer; box-shadow:5px 5px 0 #000; }
+  #warnYes { background:#d32f2f; color:#fff; } #warnNo { background:#fff; color:#d32f2f; border-color:#d32f2f; }
+  #warnBtns button:active { transform:translate(3px,3px); box-shadow:2px 2px 0 #000; }
+  body.demo #hud, body.demo #top, body.demo #help, body.demo #bar, body.demo #shop, body.demo #warn, body.demo #toast, body.demo #home { display:none !important; }
+  body.demo canvas { width:100vw; height:100vh; aspect-ratio:auto; }
+  #btip { position:fixed; display:none; width:348px; box-sizing:border-box; background:#2b1d12; border:4px solid #ffe14e; border-radius:14px; padding:10px 12px; z-index:60; pointer-events:none; box-shadow:0 6px 24px #000c; }
+  #btip h4 { margin:0 0 4px; font-size:1.15em; color:#ffe14e; }
+  #btip p { margin:0 0 8px; font-size:.95em; line-height:1.35; }
+  #btFrame { display:block; width:320px; height:180px; border:3px solid #fff4; border-radius:8px; background:#8fd3ff; pointer-events:none; }
+  #btNote { font-size:.75em; color:#fff9; margin-top:4px; text-align:center; }
+  #top #menubtn { background:none; border:0; padding:0; }
+  #backPx { width:120px; height:39px; image-rendering:pixelated; display:block; background:none; }
+  #top #menubtn:hover #backPx { filter:brightness(1.25); } #top #menubtn:active #backPx { transform:translate(2px,2px); }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c"></canvas></div>
+<div id="hud"></div>
+<div id="top"><button id="menubtn" title="Back to the Bomb Sandbox home screen"><canvas id="backPx" width="40" height="13"></canvas></button><button id="shopbtn">🛒 Shop</button><button id="newworld">🌍 New world</button><a href="../index.html">← Jos's home</a></div>
+<div id="help">A / D walk · W jump · S drop through · hold SPACE to run<br>click a bomb slot, click to throw, then pick ✨ and click the bomb · ⛏️ click above you to dig up</div>
+<div id="bar"></div>
+<div id="shop">
+  <div id="shopHead"><h2>🛒 Bomb Shop</h2><span id="shopWallet"></span><span class="sp"></span><button id="shopClose" style="font:inherit;padding:4px 12px;border-radius:8px;border:0;cursor:pointer">✕ Close</button></div>
+  <div id="closed"></div>
+  <div id="grid"></div>
+</div>
+<div id="toast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#b71c1c;color:#fff;padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .3s;z-index:200;pointer-events:none"></div>
+<div id="home"><canvas id="homeCv" width="480" height="270"></canvas></div>
+<div id="warn"><canvas id="warnSign" width="620" height="320"></canvas><div id="warnBtns"><button id="warnYes">Continue</button><button id="warnNo">Cancel</button></div></div>
+<script src="catalogue.js?v=26"></script>
+<script src="game.js?v=30"></script>
+<script>if (!/[?&]demo/.test(location.search)) document.write('<script src="home.js?v=22"><\/script>');</script>
+</body>
+</html>

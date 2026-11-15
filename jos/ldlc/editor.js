@@ -47,6 +47,9 @@ const BLOCKS = [
   { id:'camera',     name:'Camera position', ready:true }, // Jos (8 Nov): moves the camera when the hero touches it
   { id:'repeater',   name:'Repeating trigger', ready:true }, // Jos (8 Nov): a trigger whose steps repeat over and over
   { id:'checkpoint', name:'Checkpoint',   ready:true },   // Jos (9 Nov): touch it and, if you die, you start again from here
+  { id:'devil',      name:'Devil',         ready:true },   // Jos (12 Nov): a 😈 that chases you (or any block you choose) when you test
+  { id:'device',     name:'Device',        ready:true },   // Jos (12 Nov): float it up, and any devil that touches you dies
+  { id:'textblock',  name:'Text block',    ready:true },   // Jos (12 Nov): shows a word/sentence (blue) or a number (green); triggers can change it
   { id:'startpos',   name:'Start pos',     ready:true }    // Jos: an editor command, hidden without the secret word
 ];
 const NAME = {};
@@ -70,6 +73,9 @@ const DEFAULTS = {
   hill:       { collision:true,  deadly:false },
   camera:     { visible:false, action:true },   // Jos: invisible when you play, like the trigger
   checkpoint: { collision:false, deadly:false, action:true },
+  textblock:  { collision:false, deadly:false },
+  devil:      { collision:false, deadly:false, attraction:true, destroy:false, triggers:false },   // Jos (13 Nov): triggers = Go through portals and use triggers
+  device:     { collision:false, deadly:false, action:true, devilmax:false },   // Jos (12 Nov): Devil max starts off   // Jos (12 Nov): Attraction is on by default
   repeater:   { visible:false, action:true }    // Jos: invisible when you play, like the trigger
 };
 /* the part of a deadly block that actually gets you, inside its square: x, y, width, height */
@@ -344,7 +350,6 @@ function drawRepeater(c, x, y, s) {
 function drawCheckpoint(c, x, y, s, time, age) {
   const on = age !== null && age >= 0;
   const k = on ? Math.min(1, Math.max(0, (age - .12) / .3)) : 0;               // 0 = grey, 1 = finished
-  const crack = on ? Math.max(0, 1 - (age - .08) / .25) : 1;                    // the cracks fade out
   const shape = (cx, top, hw, mid, bot) => { c.beginPath(); c.moveTo(x + s * cx, y + s * top); c.lineTo(x + s * (cx + hw), y + s * mid);
                                               c.lineTo(x + s * cx, y + s * bot); c.lineTo(x + s * (cx - hw), y + s * mid); c.closePath(); };
   c.save();
@@ -352,17 +357,24 @@ function drawCheckpoint(c, x, y, s, time, age) {
   if (k < 1) {                                                                  // the broken grey kite
     c.globalAlpha = 1 - k;
     c.shadowColor = '#3dff6a'; c.shadowBlur = s * .3;
-    c.fillStyle = '#585860'; shape(.5, .02, .27, .44, .98); c.fill();
-    c.strokeStyle = '#3dff6a'; c.lineWidth = s * .055; shape(.5, .02, .27, .44, .98); c.stroke();
+    /* Jos (12 Nov): not just cracks, the kite is split apart into 4 pieces with gaps between them. They slide back together as it turns into the diamond. */
+    const gap = s * .045 * (1 - k);
+    [[.5, .02, .46, .28, .28, .36],                                  // top left tip
+     [.28, .36, .46, .28, .54, .46, .47, .66, .5, .98, .23, .44],    // left body
+     [.5, .02, .77, .44, .54, .46, .46, .28],                        // top right
+     [.54, .46, .77, .44, .5, .98, .47, .66]                         // bottom right
+    ].forEach(p => {
+      let mx = 0, my = 0;
+      const n = p.length / 2;
+      for (let q = 0; q < p.length; q += 2) { mx += p[q] / n; my += p[q + 1] / n; }
+      const dx = mx - .5, dy = my - .5, d = Math.hypot(dx, dy) || 1, ox = x + dx / d * gap, oy = y + dy / d * gap;
+      c.beginPath(); c.moveTo(ox + s * p[0], oy + s * p[1]);
+      for (let q = 2; q < p.length; q += 2) c.lineTo(ox + s * p[q], oy + s * p[q + 1]);
+      c.closePath();
+      c.fillStyle = '#585860'; c.fill();
+      c.strokeStyle = '#3dff6a'; c.lineWidth = s * .04; c.stroke();
+    });
     c.shadowBlur = 0;
-    if (crack > 0) {
-      c.globalAlpha = (1 - k) * crack; c.strokeStyle = '#17171b'; c.lineWidth = s * .03; c.lineCap = 'round';
-      [[.5, .02, .46, .28, .54, .46, .47, .66, .52, .98], [.46, .28, .36, .36], [.54, .46, .66, .42], [.47, .66, .39, .58]].forEach(l => {
-        c.beginPath(); c.moveTo(x + s * l[0], y + s * l[1]);
-        for (let q = 2; q < l.length; q += 2) c.lineTo(x + s * l[q], y + s * l[q + 1]);
-        c.stroke();
-      });
-    }
   }
   if (k > 0) {                                                                  // the green diamond
     c.globalAlpha = k;
@@ -381,13 +393,13 @@ function drawCheckpoint(c, x, y, s, time, age) {
   if (on && age < .5 && (age < .15 || Math.floor(age * 40) % 2 === 0)) {                                       // the lightning bolt, from the ceiling (the top of the level is y = 0)
     const x0 = x + s * .5, n = Math.max(4, Math.round(y / (s * .55))), y1 = y + s * .12, pts = [];
     for (let q = 0; q <= n; q++) {
-      const f = q / n, jag = q === 0 || q === n ? 0 : (q % 2 ? 1 : -1) * s * (.1 + .08 * Math.abs(Math.sin(q * 7.3)));
+      const f = q / n, jag = q === 0 || q === n ? 0 : (q % 2 ? 1 : -1) * s * (.05 + .04 * Math.abs(Math.sin(q * 7.3)));
       pts.push([x0 + jag, y1 * f]);
     }
     const bolt = () => { c.beginPath(); pts.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](q[0], q[1])); };
     c.lineCap = 'round';
-    c.strokeStyle = '#3dff6a'; c.lineWidth = s * .16; bolt(); c.stroke();
-    c.strokeStyle = '#eaffee'; c.lineWidth = s * .06; bolt(); c.stroke();
+    c.strokeStyle = '#3dff6a'; c.lineWidth = s * .08; bolt(); c.stroke();
+    c.strokeStyle = '#eaffee'; c.lineWidth = s * .03; bolt(); c.stroke();
   }
   c.restore();
 }
@@ -597,8 +609,68 @@ function turnBox(b, r) {
   if (r === 3) return [y, 1 - x - w, h, w];
   return b;
 }
-function drawBlock(c, type, x, y, s, time, r) {
+/* Jos (12 Nov): the text block. Blue = it shows text, green = it shows a number. d = { tm:'text'|'number', tt:the text, tn:the number } */
+function drawTextBlock(c, x, y, s, d) {
+  /* Nothing typed yet: a blue (text) or green (number) square called "Text block". Once there is a word or a number,
+     the square goes away and you see only the words, at full size (Size sets how big). */
+  const num = !!d && d.tm === 'number';
+  const [light, dark, glow] = num ? ['#6bf58a', '#0c8a2c', '#3dff6a'] : ['#74b2ff', '#1a4fd0', '#4a90ff'];
+  const raw = num ? (d.tn === null || d.tn === undefined ? '' : String(Math.round(d.tn * 1000) / 1000)) : (d && d.tt ? d.tt : '');
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+  if (raw === '') {
+    const g = c.createLinearGradient(0, y, 0, y + s);
+    g.addColorStop(0, light); g.addColorStop(1, dark);
+    c.fillStyle = g; roundRect(c, x + s * .04, y + s * .04, s * .92, s * .92, s * .16); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = Math.max(1, s * .04);
+    roundRect(c, x + s * .04, y + s * .04, s * .92, s * .92, s * .16); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.2)'; roundRect(c, x + s * .1, y + s * .09, s * .8, s * .3, s * .12); c.fill();   // a shine across the top
+    c.font = s * .27 + 'px "Fredoka One", Nunito, sans-serif';
+    c.fillStyle = '#fff'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = s * .05;
+    c.fillText('Text', x + s / 2, y + s * .42); c.fillText('block', x + s / 2, y + s * .68);
+    c.shadowBlur = 0;
+  } else {
+    const fs = s * .5 * ((d.ts || 100) / 100), cx = x + s / 2, cy = y + s / 2;
+    c.font = fs + 'px "Fredoka One", Nunito, sans-serif';
+    c.shadowColor = glow; c.shadowBlur = fs * .4;                                         // a soft glow in the block's colour
+    c.strokeStyle = dark; c.lineWidth = fs * .2; c.strokeText(raw, cx, cy);                // a thick outline
+    c.shadowBlur = 0;
+    const g = c.createLinearGradient(0, cy - fs / 2, 0, cy + fs / 2);                     // white at the top, a touch of colour at the bottom
+    g.addColorStop(0, '#fff'); g.addColorStop(1, light);
+    c.fillStyle = g; c.fillText(raw, cx, cy);
+  }
+  c.textAlign = 'start'; c.textBaseline = 'alphabetic';
+}
+/* Jos (12 Nov): the device: a glowing circle with little lights that flash green and red. It bobs up and down. */
+function drawDeviceBlock(c, x, y, s, time, bob) {
+  time = time || 0;
+  const cx = x + s / 2, cy = y + s / 2 + (bob ? Math.sin(time * 3) * s * .07 : 0), r = s * .3;
+  const glow = c.createRadialGradient(cx, cy, r * .3, cx, cy, r * 2.1);
+  glow.addColorStop(0, 'rgba(110,255,255,' + (.5 + .15 * Math.sin(time * 5)) + ')'); glow.addColorStop(1, 'rgba(110,255,255,0)');
+  c.fillStyle = glow; c.beginPath(); c.arc(cx, cy, r * 2.1, 0, 7); c.fill();
+  const body = c.createRadialGradient(cx - r * .3, cy - r * .35, r * .1, cx, cy, r);
+  body.addColorStop(0, '#effcff'); body.addColorStop(.55, '#7fb8c8'); body.addColorStop(1, '#2b5566');
+  c.fillStyle = body; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fill();
+  c.strokeStyle = '#bff6ff'; c.lineWidth = Math.max(1, s * .04); c.stroke();
+  [[-.5, .05], [0, .5], [.5, .05], [0, -.45]].forEach(([lx, ly], i) => {   // the little lights slowly fade green to red and back, taking turns (no flashing)
+    const k = (Math.sin(time * 2 + i * Math.PI) + 1) / 2;                      // 0 = green, 1 = red
+    const col = 'rgb(' + Math.round(61 + (255 - 61) * k) + ',' + Math.round(255 + (59 - 255) * k) + ',' + Math.round(106 + (59 - 106) * k) + ')';
+    c.fillStyle = col; c.shadowColor = col; c.shadowBlur = s * .12;
+    c.beginPath(); c.arc(cx + lx * r, cy + ly * r, Math.max(1.2, s * .05), 0, 7); c.fill();
+  });
+  c.shadowBlur = 0;
+}
+/* Jos (12 Nov): the devil block is just a 😈 */
+function drawDevilBlock(c, x, y, s) {
+  c.font = Math.round(s * .82) + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillStyle = '#fff';
+  c.fillText('😈', x + s / 2, y + s / 2 + s * .04);
+  c.textAlign = 'start'; c.textBaseline = 'alphabetic';
+}
+function drawBlock(c, type, x, y, s, time, r, d) {
   if (r && TURNS.includes(type)) { turn(c, x, y, s, r, () => drawBlock(c, type, x, y, s, time)); return; }
+  if (type === 'textblock') { drawTextBlock(c, x, y, s, d); return; }
+  if (type === 'devil') { drawDevilBlock(c, x, y, s); return; }
+  if (type === 'device') { drawDeviceBlock(c, x, y, s, time, !!d && d.t === 'device'); return; }
   if (type === 'tile') drawTile(c, x, y, s);
   else if (type === 'spike') drawSpike(c, x, y, s);
   else if (type === 'smallspike') drawSmallSpike(c, x, y, s);
@@ -646,11 +718,14 @@ const SWITCHES = {
   ball:       ['deadly', 'gravity', 'crush', 'triggers', 'visible', 'disguise'],      // Jos (8 Nov)
   hill:       ['collision', 'visible', 'disguise'],
   checkpoint: ['visible', 'action'],
-  camera:     ['visible', 'action'],            // Jos: the regular Visible and Do action, then its own camera settings
+  textblock:  ['collision', 'visible'],
+  devil:      ['visible', 'attraction', 'destroy', 'triggers'],
+  device:     ['visible', 'action', 'devilmax'],
+  camera:     ['visible', 'action'],          // Jos: the regular Visible and Do action, then its own camera settings
   repeater:   ['visible', 'action']             // Jos: like the trigger
 };
 const LABEL = { deadly:'Deadly', collision:'Collision', disguise:'Disguise as block',
-                action:'Do action', visible:'Visible', needed:'Needed for finish',
+                action:'Do action', visible:'Visible', needed:'Needed for finish', attraction:'Attraction', destroy:'Destroy attraction', devilmax:'Devil max',
                 gravity:'Gravity', crush:'Crush deadly', triggers:'Go through portals and use triggers' };
 /* Jos: Crush deadly needs gravity, so turning it on turns Gravity on, and turning Gravity off turns it off */
 function ballHasGravity(c) {
@@ -695,6 +770,20 @@ function pickAt(x, y) {
   if (editorOn && tool === 'link') return s[editorPick === 'in' ? 1 : 0];
   const held = hover && hover.x === x && hover.y === y ? (performance.now() - hoverSince) / 1000 : 0;
   return s[Math.floor(held / T.pickSwap) % 2];
+}
+/* Jos (12 Nov): every block on the board has a number (Block 1, Block 2, ...), shown on the board while you choose what the devil is attracted to */
+let showNums = false;
+function blockNumbers() { const m = new Map(); let n = 0; allBlocks().forEach(f => { m.set(f.c.id, ++n); }); return m; }
+function drawBlockNumbers() {
+  const nums = blockNumbers();
+  allBlocks().forEach(f => {
+    const r = cell * (f.layer ? .17 : .27), cx = (f.x + (f.layer ? .78 : .5)) * cell, cy = (f.y + (f.layer ? .78 : .5)) * cell;
+    ctx.fillStyle = 'rgba(18,0,10,.88)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.round(r * 1.2) + 'px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(nums.get(f.c.id)), cx, cy + 1);
+  });
+  ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
 }
 function looksLike(c) { return props(c).disguise ? (c.as || 'tile') : c.t; }
 
@@ -913,6 +1002,7 @@ cv.addEventListener('wheel', e => {
 }, { passive:false });
 cv.addEventListener('pointerdown', e => {
   if (play || chomp) return;
+  if (e.button === 2) return;                   // Jos (12 Nov): a right click opens the Copy / Paste menu, it doesn't select or drag
   const a = cellAt(e), c = a && pickAt(a.x, a.y);
   cv.setPointerCapture(e.pointerId);
   if (camPick && !keys.Space) {                 // choosing where the camera goes
@@ -968,6 +1058,104 @@ cv.addEventListener('pointerup', () => {
   }
 });
 cv.addEventListener('pointerleave', () => { hover = null; });
+
+/* ---------- Jos (12 Nov): right-click a block (Cursor or Select blocks): Copy, Paste ----------
+   Copy takes everything about the block: its properties, its text or number, what it does when a trigger fires, which
+   triggers are connected to it and what they do to it, and the blocks it triggers. Paste makes a copy in an empty square you
+   right-click. On a block, Paste is always greyed out; on an empty square, Copy is greyed out, and so is Paste until you have copied something. */
+let blockClip = null;
+try { blockClip = JSON.parse(sessionStorage.getItem('jos-ldlc-clip')); } catch (e) {}
+const blockMenu = document.createElement('div');
+blockMenu.style.cssText = 'position:fixed;z-index:40;display:none;flex-direction:column;min-width:170px;padding:6px;background:#1c0008;' +
+                          'border:2px solid #ff2a3d;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.6)';
+document.body.append(blockMenu);
+const closeBlockMenu = () => { blockMenu.style.display = 'none'; };
+function menuButton(label, enabled, go) {
+  const b = el('button', { textContent:label, disabled:!enabled, style:'font-family:"Fredoka One",cursive;font-size:1.05rem;color:' +
+    (enabled ? '#fff' : '#ffffff55') + ';background:none;border:none;text-align:left;padding:.5rem .8rem;border-radius:8px;cursor:' + (enabled ? 'pointer' : 'default') });
+  if (enabled) {
+    b.addEventListener('mouseenter', () => { b.style.background = '#ff2a3d33'; });
+    b.addEventListener('mouseleave', () => { b.style.background = 'none'; });
+    b.addEventListener('click', () => { closeBlockMenu(); go(); });
+  }
+  return b;
+}
+function copyBlock(c) {
+  const one = JSON.parse(JSON.stringify(c));
+  delete one.id; delete one.inner; delete one.pair;                    // its own number, the block inside it, and its portal partner stay out
+  blockClip = { block:one, from:linksTo(c.id).map(f => ({ trigger:f.c.id, link:JSON.parse(JSON.stringify(f.l)) })) };
+  try { sessionStorage.setItem('jos-ldlc-clip', JSON.stringify(blockClip)); } catch (e) {}
+  say('📋 Copied ' + NAME[c.t]);
+}
+/* Jos (12 Nov): Paste only goes into an EMPTY square, and makes a new block there, so you never paste over a block. */
+function pasteAt(a) {
+  if (!blockClip || !a || stackAt(a.x, a.y).length) return;
+  const b = blockClip.block;
+  if (ONLY_ONE.includes(b.t) && find(b.t)) { say('There can only be one ' + NAME[b.t] + ' 😈'); return; }
+  if (!blockAllowed(b.t)) { say('This level can\'t have a ' + NAME[b.t]); return; }
+  const t = Object.assign(JSON.parse(JSON.stringify(b)), { id:nextId++ });
+  putIn(a.x, a.y, t);
+  blockClip.from.forEach(f => {                                  // the triggers that were connected to the copied block connect to this one too
+    const trig = byId(f.trigger);
+    if (trig) trig.c.links = (trig.c.links || []).concat([Object.assign(JSON.parse(JSON.stringify(f.link)), { id:t.id })]);
+  });
+  save();
+  say('📋 Pasted ' + NAME[t.t]);
+}
+cv.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  closeBlockMenu();
+  if (play || chomp || (tool !== 'cursor' && tool !== 'select')) return;
+  const a = cellAt(e), c = a && pickAt(a.x, a.y);
+  if (!a) return;
+  blockMenu.innerHTML = '';
+  // on a block: Copy, and Paste greyed out (you don't paste over a block). On an empty square: Copy greyed out, Paste if you have copied something.
+  blockMenu.append(menuButton('Copy', !!c, () => copyBlock(c)),
+                   menuButton('Paste', !c && !!blockClip, () => pasteAt(a)));
+  blockMenu.style.display = 'flex';
+  blockMenu.style.left = Math.min(e.clientX, innerWidth - 200) + 'px';
+  blockMenu.style.top = Math.min(e.clientY, innerHeight - 110) + 'px';
+});
+/* Jos (12 Nov): copy and paste actions. Right-click a trigger's card (or one of its actions) in the Block properties and
+   every action in it gets a tick box, with Done at the top of the screen. Done opens Copy actions / Paste actions. Copy takes
+   the ticked ones (greyed out if none are ticked). Paste adds the copied actions to the card you right-clicked, so another
+   block can do the same thing (greyed out until you have copied some). */
+let actPick = null;                      // { link, ticked:the numbers of the ticked actions }
+let actClip = null;
+try { actClip = JSON.parse(sessionStorage.getItem('jos-ldlc-actclip')); } catch (e) {}
+function startActPick(l) {
+  actPick = { link:l, ticked:new Set() };
+  closeBlockMenu();
+  banner('Tick the actions you want', [['Done', finishActPick], ['Cancel', endActPick]]);
+  renderPanel();
+}
+function endActPick() { actPick = null; closeBlockMenu(); hideBanner(); if (panel.classList.contains('open')) renderPanel(); }
+function finishActPick() {
+  const p = actPick;
+  if (!p) return;
+  const r = bannerEl.getBoundingClientRect();
+  blockMenu.innerHTML = '';
+  blockMenu.append(
+    menuButton('Copy actions', p.ticked.size > 0, () => {
+      const acts = p.link.actions || [];
+      actClip = [...p.ticked].sort((a, b) => a - b).map(j => JSON.parse(JSON.stringify(acts[j])));
+      try { sessionStorage.setItem('jos-ldlc-actclip', JSON.stringify(actClip)); } catch (e) {}
+      say('📋 Copied ' + actClip.length + (actClip.length === 1 ? ' action' : ' actions'));
+      endActPick();
+    }),
+    menuButton('Paste actions', !!(actClip && actClip.length), () => {
+      p.link.actions = (p.link.actions || []).concat(JSON.parse(JSON.stringify(actClip)));
+      save();
+      say('📋 Pasted ' + actClip.length + (actClip.length === 1 ? ' action' : ' actions'));
+      endActPick();
+    }));
+  blockMenu.style.display = 'flex';
+  blockMenu.style.left = Math.max(8, r.left + r.width / 2 - 90) + 'px';
+  blockMenu.style.top = (r.bottom + 8) + 'px';
+}
+addEventListener('pointerdown', e => { if (!blockMenu.contains(e.target)) closeBlockMenu(); });
+addEventListener('keydown', e => { if (e.code === 'Escape') { if (actPick) endActPick(); else closeBlockMenu(); } });
+addEventListener('blur', closeBlockMenu);
 
 /* ---------- Select blocks: drag a dotted box, then move or delete what's in it ---------- */
 const sel = new Set();
@@ -1238,12 +1426,36 @@ function renderPanel() {
       });
       save(); renderPanel();
     }));
+    if (k === 'visible' && on === true) {                    // Jos (12 Nov): Visibility = ___ %, you choose how see-through it is
+      panel.append(row('Visibility =', number(common(cells.map(x => x.vis === undefined ? 100 : x.vis)), 0, 100, 5,
+                                              v => { cells.forEach(x => { x.vis = v; }); save(); }),
+                       el('span', { className:'p-or', textContent:'%' })));
+    }
+    if (k === 'collision' && on === true) {                   // Jos (12 Nov): Collision Type: All, Only player, Only devil
+      panel.append(row('Type', pick([['all', 'All'], ['player', 'Only player'], ['devil', 'Only devil']], common(cells.map(x => x.ctype || 'all')),
+                                    v => { cells.forEach(x => { x.ctype = v === 'all' ? undefined : v; }); save(); })));
+    }
+    if (k === 'attraction' && on === true) attractionSection(cells);
+    if (k === 'destroy' && on === true) {                    // Jos (12 Nov): Destroying time = how long a block takes to go
+      panel.append(row('Destroying time =', number(common(cells.map(x => x.dtime === undefined ? 2 : x.dtime)), .1, 120, .1,
+                                                   v => { cells.forEach(x => { x.dtime = v; }); save(); }),
+                       el('span', { className:'p-or', textContent:'seconds' })));
+    }
+    if (k === 'devilmax' && on === true) {                   // Jos (12 Nov): Devil max = how many devils it can kill, then it disappears
+      panel.append(row('Devil max =', number(common(cells.map(x => x.dmax === undefined ? 3 : x.dmax)), 1, 99, 1,
+                                             v => { cells.forEach(x => { x.dmax = v; }); save(); })));
+    }
     if (k === 'disguise' && on === true) {
       panel.append(row('Block', pick(disguises(), common(cells.map(x => x.as || 'tile')),
                                      v => { cells.forEach(x => { x.as = v; }); save(); renderPanel(); })));
     }
   });
 
+  /* Jos (12 Nov): Tilt: any angle, in degrees. + turns it clockwise, - anticlockwise. Every block has it except the Hero. */
+  if (cells.every(x => x.t !== 'hero' && x.t !== 'startpos')) {
+    panel.append(row('Tilt', number(common(cells.map(x => x.tilt || 0)), -720, 720, 5, v => { cells.forEach(x => { x.tilt = v; }); save(); }),
+                     el('span', { className:'p-or', textContent:'degrees' })));
+  }
   /* Jos (9 Nov): a ball that uses triggers and portals needs Gravity on, or a connected trigger that turns it on */
   if (cells.some(x => x.t === 'ball' && props(x).triggers && !ballHasGravity(x))) {
     panel.append(el('p', { className:'p-note', textContent:'Gravity must be on, or a trigger must turn it on (Change properties, Gravity).' }));
@@ -1273,9 +1485,14 @@ function renderPanel() {
   if (many) {
     panel.append(el('p', { className:'p-note', textContent:'Changing a switch changes all ' + cells.length + ' blocks.' }));
     if (cells.every(x => x.t === 'camera')) cameraSection(cells);
+    if (cells.every(x => x.t === 'textblock')) textSection(cells);
+    if (cells.every(x => x.t === 'devil')) devilSection(cells);
     manyTriggersSection(cells);
   } else {
     if (c.t === 'controls') controlsSection(c);
+    if (c.t === 'textblock') textSection([c]);
+    if (c.t === 'devil') devilSection([c]);
+    if (c.t === 'trigger') repeatSection(c);
     if (c.t === 'camera') cameraSection([c]);
     if (c.t === 'hero') heroSection(c);
     if (LINKERS.includes(c.t)) linksSection(c);
@@ -1330,6 +1547,55 @@ function controlsDo(c, a, j) {
 /* Jos (8 Nov): the Camera position block. Camera position has a Choose button: it takes the panel away and you click
    the spot the camera should go to. Moving is a switch: it says Camera moving, with a way (up, left, down, right) and a
    speed, and under that a switch: if the hero is off the screen, he dies. */
+/* Jos (12 Nov): the Text block. One switch with Text on one side and Number on the other: left = blue = text, right = green = number.
+   You can type both a text and a number; the one that shows is the one the switch is on. Letters in the number box do nothing. */
+function textInput(value, change) {
+  const i = el('input', { type:'text', value:value === null ? '' : value, maxLength:60 });
+  if (value === null) i.placeholder = 'Mixed';
+  i.addEventListener('input', () => change(i.value));
+  return i;
+}
+function textSection(cells) {
+  const mode = common(cells.map(x => x.tm || 'text')), isNum = mode === 'number';
+  panel.append(el('div', { className:'p-sub', textContent:'Text or number' }));
+  const knob = el('span', { style:'position:absolute;top:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s;left:' +
+                                  (mode === null ? '19px' : isNum ? '36px' : '2px') });
+  const sw = el('button', { type:'button', title:isNum ? 'Number' : 'Text',
+    style:'position:relative;flex:none;width:64px;height:30px;box-sizing:border-box;border-radius:15px;border:2px solid #fff;cursor:pointer;padding:0;background:' +
+          (mode === null ? '#888' : isNum ? '#25c24a' : '#2f7bff'),
+    onclick:() => { const to = isNum ? 'text' : 'number'; cells.forEach(x => { x.tm = to; }); save(); renderPanel(); } }, [knob]);
+  panel.append(el('div', { className:'p-row', style:'align-items:center;gap:10px' }, [
+    el('span', { textContent:'Text', style:'font-weight:800;color:#6fa8ff' }), sw,
+    el('span', { textContent:'Number', style:'font-weight:800;color:#4be06e' })]));
+  // only the one that is switched on shows: Text when it is on text, Number when it is on number (both if the blocks are mixed)
+  if (mode !== 'number') panel.append(row('Text', textInput(common(cells.map(x => x.tt || '')), v => { cells.forEach(x => { x.tt = v; }); save(); })));
+  if (mode !== 'text') {
+    const n = number(common(cells.map(x => x.tn === undefined || x.tn === null ? '' : x.tn)) === '' ? null
+                     : common(cells.map(x => x.tn)), -999999, 999999, 'any', v => { cells.forEach(x => { x.tn = v; }); save(); });
+    if (common(cells.map(x => x.tn === undefined || x.tn === null)) === true) n.placeholder = '';
+    panel.append(row('Number', n));
+  }
+  panel.append(row('Size', number(common(cells.map(x => x.ts || 100)), 20, 500, 10, v => { cells.forEach(x => { x.ts = v; }); save(); }),
+                   el('span', { className:'p-or', textContent:'%' })));   // Jos (12 Nov): how big the words are
+  panel.append(el('p', { className:'p-note', textContent:'Type something and the blue (or green) square goes away.' }));
+}
+/* Jos (12 Nov): a trigger's Repeat type.
+   Once: it goes off the first time he touches it, and that's it.
+   Each time he goes in: it plays once when he goes in; go out and in again and it plays once more.
+   While he is inside: it plays over and over, every Interval seconds, and stops when he goes out. */
+function repeatSection(c) {
+  panel.append(el('div', { className:'p-sub', textContent:'Repeat type' }));
+  panel.append(row('Repeat', pick([['once', 'Once'], ['enter', 'Each time he goes in'], ['inside', 'While he is inside']], c.rep || 'once',
+    v => { c.rep = v; if (v === 'inside' && !c.repEvery) c.repEvery = 1; save(); renderPanel(); })));
+  if (c.rep === 'inside') {
+    panel.append(row('Interval', number(c.repEvery || 1, .1, 30, .1, v => { c.repEvery = v; save(); }),
+                     el('span', { className:'p-or', textContent:'seconds' })));
+    panel.append(el('p', { className:'p-note', textContent:'It plays straight away, then again every interval, until he goes out.' }));
+  }
+  if (c.rep === 'enter') {
+    panel.append(el('p', { className:'p-note', textContent:'Go in: plays once. Go out and in again: plays once more.' }));
+  }
+}
 let camPick = null;                              // the block whose spot is being chosen
 function cameraSection(cells) {                   // Jos (9 Nov): works for one camera block or lots selected together
   cells = [].concat(cells);
@@ -1366,6 +1632,41 @@ function endCamPick(open) {
 
 /* Jos (8 Nov): the hero has Jump power and Speed too, so you can set them right from the start.
    An Edit controls block changes them later in the level. */
+/* Jos (12 Nov): a devil has a Jump power and a Speed, like the hero. They start at 3 blocks and regular speed (100). */
+/* Jos (12 Nov): Attraction has two ways: Attraction type (Player, Anything, or a kind of block) and Attraction block (one block, by its number). */
+function attractionSection(cells) {
+  const how = common(cells.map(x => x.attm || (x.att !== undefined ? 'block' : 'type')));
+  panel.append(row('Attraction', pick([['type', 'Attraction type'], ['block', 'Attraction block']], how,
+                                      v => { cells.forEach(x => { x.attm = v; }); save(); renderPanel(); })));
+  if (how === 'type') {
+    const kinds = BLOCKS.filter(b => !['hero', 'startpos', 'devil'].includes(b.id) && blockAllowed(b.id)).map(b => [b.id, b.name]);
+    panel.append(row('Attraction type =', pick([['player', 'Player'], ['anything', 'Anything']].concat(kinds),
+                                               common(cells.map(x => x.atype || 'player')),
+                                               v => { cells.forEach(x => { x.atype = v; }); save(); })));
+    if (cells.some(x => x.atype === 'anything')) {
+      panel.append(el('p', { className:'p-note', textContent:'Anything: it goes for the nearest block. With Destroy attraction on, it slowly destroys the board.' }));
+    }
+  } else if (how === 'block') {
+    const nums = blockNumbers(), mine = new Set(cells.map(x => x.id));
+    const opts = [['', 'Choose a block']];
+    allBlocks().forEach(f => { if (!mine.has(f.c.id)) opts.push([String(f.c.id), 'Block ' + nums.get(f.c.id)]); });
+    const sel = pick(opts, common(cells.map(x => x.att === undefined ? '' : String(x.att))),
+                     v => { cells.forEach(x => { x.att = v === '' ? undefined : Number(v); }); showNums = false; save(); renderPanel(); });
+    sel.addEventListener('focus', () => { showNums = true; });          // every block shows its number while you choose
+    sel.addEventListener('blur', () => { showNums = false; });
+    panel.append(row('Attraction block =', sel));
+  }
+}
+function devilSection(cells) {
+  panel.append(el('div', { className:'p-sub', textContent:'Movement' }));
+  const view = common(cells.map(x => x.view || 'platformer'));
+  panel.append(row('Movement', pick([['platformer', 'Platformer'], ['top', 'Top view']], view,
+                                    v => { cells.forEach(x => { x.view = v === 'platformer' ? undefined : v; }); save(); renderPanel(); })));
+  if (view !== 'top') panel.append(row('Jump power', number(common(cells.map(x => x.jumpH === undefined ? 3 : x.jumpH)), .5, 20, .5, v => { cells.forEach(x => { x.jumpH = v; }); save(); }),
+                                       el('span', { className:'p-or', textContent:'blocks high' })));
+  panel.append(row('Speed', number(common(cells.map(x => x.speed === undefined ? 100 : x.speed)), 10, 300, 10, v => { cells.forEach(x => { x.speed = v; }); save(); }),
+                   el('span', { className:'p-or', textContent:'% (100 = regular)' })));
+}
 function heroSection(c) {
   panel.append(el('div', { className:'p-sub', textContent:'Running and jumping' }));
   panel.append(row('Jump power', number(c.jumpH === undefined ? JUMP_H : c.jumpH, .5, 20, .5, v => { c.jumpH = v; save(); }),
@@ -1409,6 +1710,8 @@ function triggersSection(c) {
   from.forEach(f => {
     const l = f.l;
     const card = el('div', { className:'p-card' });
+    const picking = actPick && actPick.link === l;
+    card.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); startActPick(l); });   // Jos (12 Nov): right-click: tick actions to copy or paste
     card.addEventListener('mouseenter', () => { hoverLink = f.c.id; });
     card.addEventListener('mouseleave', () => { hoverLink = null; });
     card.append(el('div', { className:'p-card-top' }, [
@@ -1422,7 +1725,16 @@ function triggersSection(c) {
     l.actions = l.actions || [];
     const steps = f.c.t === 'repeater';          // a repeating trigger's actions are steps: numbered, and you drag them into order
     if (steps) card.append(el('p', { className:'p-note', textContent:'Steps: they go one after another, then start again, over and over. Drag ⠿ to change the order.' }));
-    l.actions.forEach((a, j) => card.append(actionBox(l, a, j, c, save, steps)));
+    l.actions.forEach((a, j) => {
+      const box = actionBox(l, a, j, c, save, steps);
+      if (picking) {                                       // tick boxes while Copy / Paste actions is on
+        const tick = el('input', { type:'checkbox', checked:actPick.ticked.has(j) });
+        tick.addEventListener('change', () => { if (tick.checked) actPick.ticked.add(j); else actPick.ticked.delete(j); });
+        box.prepend(el('label', { className:'p-row', style:'gap:8px;align-items:center;cursor:pointer;font-weight:800' },
+                       [tick, el('span', { textContent:'Copy this one' })]));
+      }
+      card.append(box);
+    });
     card.append(el('button', { className:'p-add', textContent:'+ Add',
                                onclick:() => { l.actions.push({ do:'' }); save(); renderPanel(); } }));
     // Jos's editor command: choose which other triggers connected to this block do what this one does
@@ -1555,9 +1867,16 @@ function actionBox(link, a, j, target, saved = save, steps = false) {
       dragStep = null; saved(); renderPanel();
     });
   }
-  box.append(row(steps ? 'Step ' + (j + 1) : 'Do', pick([['', '—'], ['size', 'Change size'], ['move', 'Movement'], ['props', 'Change properties']],
+  const doList = [['', '—'], ['size', 'Change size'], ['move', 'Movement'], ['props', 'Change properties']];
+  if (target.t === 'textblock') doList.push(['text', 'Change text/number']);   // Jos (12 Nov)
+  if (target.t !== 'hero') doList.push(['tilt', 'Tilt']);                     // Jos (12 Nov): turn the block by an angle
+  if (target.t !== 'hero') doList.push(['collision', 'Change collision']);    // Jos (12 Nov): turn Collision on or off, and who it stops
+  box.append(row(steps ? 'Step ' + (j + 1) : 'Do', pick(doList,
     a.do, v => {
       a.do = v;
+      if (v === 'text' && a.nmode === undefined) a.nmode = 'set';
+      if (v === 'tilt' && a.tmode === undefined) { a.tmode = 'to'; a.deg = 90; a.secs = .5; }
+      if (v === 'collision' && a.col === undefined) { a.col = true; a.ctype = 'all'; }
       if (v === 'size' && a.size === undefined) a.size = 2;
       if (v === 'move') { a.dir = a.dir || 'up'; a.n = a.n || 1; a.speed = a.speed || 1; }   // Jos: starts on up, 1, speed 1
       if (v === 'props' && !a.props) {
@@ -1581,8 +1900,42 @@ function actionBox(link, a, j, target, saved = save, steps = false) {
   if (a.do === 'move') {
     box.append(row('Go', pick([['left', 'Left'], ['right', 'Right'], ['up', 'Up'], ['down', 'Down']], a.dir,
                               v => { a.dir = v; saved(); })));
-    box.append(row('How many blocks', number(a.n, 1, 31, 1, v => { a.n = v; saved(); })));
+    box.append(row('How many blocks', number(a.n, a.chSpeed ? 0 : 1, 31, 1, v => { a.n = v; saved(); })));
     box.append(row('Speed', number(a.speed, 1, 50, 1, v => { a.speed = v; saved(); })));
+    /* Jos (12 Nov): when another trigger is also connected to this block, its Movement can Change speed: the block speeds up
+       (or slows down) by this much, decimals too. The ordinary Go / How many blocks / Speed still work beside it. */
+    if (linksTo(target.id).length > 1 || a.chSpeed) {
+      box.append(toggle('Change speed', a.chSpeed, v => {
+        a.chSpeed = v;
+        if (v && a.speedBy === undefined) a.speedBy = 1;
+        saved(); renderPanel();
+      }));
+      if (a.chSpeed) {
+        box.append(row('Change speed by', number(a.speedBy === undefined ? 1 : a.speedBy, -50, 50, .1, v => { a.speedBy = v; saved(); }),
+                       el('span', { className:'p-or', textContent:'blocks' })));
+        box.append(el('p', { className:'p-note', textContent:'Put How many blocks on 0 to only change the speed.' }));
+      }
+    }
+  }
+  if (a.do === 'collision') {
+    box.append(toggle('Collision', a.col, v => { a.col = v; saved(); renderPanel(); }));
+    if (a.col) box.append(row('Type', pick([['all', 'All'], ['player', 'Only player'], ['devil', 'Only devil']], a.ctype || 'all', v => { a.ctype = v; saved(); })));
+  }
+  if (a.do === 'tilt') {
+    box.append(row('Do', pick([['to', 'Tilt to'], ['by', 'Tilt by']], a.tmode || 'to', v => { a.tmode = v; saved(); })));
+    box.append(row(a.tmode === 'by' ? 'By' : 'To', number(a.deg === undefined ? 90 : a.deg, -720, 720, 5, v => { a.deg = v; saved(); }),
+                   el('span', { className:'p-or', textContent:'degrees' })));
+    box.append(row('Takes', number(a.secs === undefined ? .5 : a.secs, 0, 30, .1, v => { a.secs = v; saved(); }),
+                   el('span', { className:'p-or', textContent:'seconds' })));
+  }
+  if (a.do === 'text') {
+    if (target.tm === 'number') {                // a number block: set it, or change it by some
+      box.append(row('Do', pick([['set', 'Set number to'], ['add', 'Change number by']], a.nmode || 'set', v => { a.nmode = v; saved(); })));
+      box.append(row(a.nmode === 'add' ? 'By' : 'To', number(a.num === undefined ? 0 : a.num, -999999, 999999, 'any', v => { a.num = v; saved(); })));
+    } else {                                     // a text block: a new sentence, and a splash word
+      box.append(row('New sentence', textInput(a.sentence === undefined ? '' : a.sentence, v => { a.sentence = v; saved(); })));
+      box.append(toggle('Splash word', a.splash, v => { a.splash = v; saved(); }));
+    }
   }
   if (a.do === 'props') {
     box.append(el('div', { className:'p-mini', textContent:'New properties' }));
@@ -1663,7 +2016,7 @@ showEditor();
 /* ---------- TEST: play your own level ---------- */
 const testBtn = document.getElementById('testBtn');
 const deathsEl = document.getElementById('deaths');
-let play = null, deaths = 0, bits = [];
+let play = null, deaths = 0, bits = [], splashes = [];   // splashes: Jos (12 Nov) a word that pops up over a text block
 
 testBtn.addEventListener('click', () => { play ? stopTest() : startTest(); testBtn.blur(); });
 
@@ -1714,6 +2067,7 @@ function makeThings() {
         const pr = props(c);
         list.push({ id:c.id, t:c.t, x, y, w:1, h:1, pr, as:pr.disguise ? (c.as || 'tile') : null,
                     cam:c.cam, cmoving:c.cmoving, cdir:c.cdir, cspeed:c.cspeed, coff:c.coff,
+                    tm:c.tm || 'text', tt:c.tt || '', tn:c.tn === undefined ? null : c.tn, ts:c.ts || 100, ctype:c.ctype, att:c.att, attm:c.attm, atype:c.atype, dtime:c.dtime === undefined ? 2 : c.dtime, view:c.view || 'platformer', djump:c.jumpH === undefined ? 3 : c.jumpH, dspeed:c.speed === undefined ? 100 : c.speed, dmax:c.dmax === undefined ? 3 : c.dmax, tilt:c.tilt || 0, vis:c.vis === undefined ? 100 : c.vis, rep:c.rep || 'once', repEvery:c.repEvery || 1,
                     links:c.links || [], does:c.does || (c.controls ? [Object.assign({ do:'controls' }, c.controls)] : []), pair:c.pair, r:c.r || 0, out:c.out || '',
                     dx:0, dy:0 });
       });
@@ -1728,20 +2082,40 @@ function heroState(cell, at) {
   const py = gd === 'up' ? at.y : gd === 'down' ? at.y + 1 - bh : at.y + (1 - bh) / 2;
   return { hidden:!props(cell).visible, needed:!!props(cell).needed, inDoor:null, x:px, y:py, vx:0, vy:0, kx:0, ky:0, gdir:gd, ctlHere:new Set(),
            ground:false, face:1, walkT:0, on:null,
-           jumpH:cell.jumpH === undefined ? JUMP_H : cell.jumpH, speedPct:cell.speed === undefined ? 100 : cell.speed };
+           jumpH:cell.jumpH === undefined ? JUMP_H : cell.jumpH, speedPct:cell.speed === undefined ? 100 : cell.speed,
+           vis:cell.vis === undefined ? 100 : cell.vis };
 }
 /* Jos (9 Nov): a checkpoint. Once the hero has touched it, every time he dies he starts again from it (until he touches another,
    or presses Restart, or stops the test). A new try builds everything fresh, so the checkpoint is told it is already green. */
 let cpRespawn = null;                        // { level, id }
 function activateCheckpoint(t) {
   t.on = true; t.struckAt = performance.now() / 1000;
-  cpRespawn = { level:levelId, id:t.id };
+  cpRespawn = { level:levelId, id:t.id, save:takeCheckpointSave() };
   for (let k = 0; k < 14; k++) {
     bits.push({ x:t.x + .5, y:t.y + .5, vx:(Math.random() - .5) * 8, vy:-2 - Math.random() * 6, life:.7, col:'#3dff6a' });
   }
 }
+/* Jos (12 Nov): a checkpoint saves ALL your progress: the coins you got, the triggers that went off, blocks that moved or grew,
+   the other heroes, the hero's own gravity and controls. When you die you come back to exactly that, not a fresh level.
+   Cloned together in one go, so things that point at each other (a hero waiting in a door) still point at the right copy. */
+function takeCheckpointSave() {
+  try {
+    const p = play;
+    return structuredClone({ things:p.things, later:p.later, coins:p.coins, others:p.others, devil:p.devil || null, device:p.device || null,
+                             hero:{ gdir:p.gdir, controls:p.controls, jumpH:p.jumpH, speedPct:p.speedPct, face:p.face } });
+  } catch (e) { console.warn('checkpoint could not save everything', e); return null; }
+}
+function loadCheckpointSave(s) {
+  const d = structuredClone(s);
+  d.things.forEach(t => { t.dx = 0; t.dy = 0; });
+  play.things = d.things; play.later = d.later; play.coins = d.coins; play.others = d.others;
+  if (d.devil) play.devil = d.devil;
+  play.device = d.device;
+  setGravity(play, d.hero.gdir);
+  play.controls = d.hero.controls; play.jumpH = d.hero.jumpH; play.speedPct = d.hero.speedPct; play.face = d.hero.face;
+}
 function spawn() {
-  // every try starts fresh: coins come back, traps reset
+  // every try starts fresh: coins come back, traps reset (unless a checkpoint saved them)
   const h = find('hero'), at = !playAll && editorOn && startPos ? startPos : h;   // Jos: the Start pos wins (not in PLAY)
   // the first hero is `play` itself (his numbers sit beside the level's own); any others are in play.others
   const cpf = cpRespawn && cpRespawn.level === levelId ? byId(cpRespawn.id) : null, cpAt = cpf && cpf.c.t === 'checkpoint' ? cpf : null;
@@ -1749,6 +2123,7 @@ function spawn() {
          { fromHero:at === h, state:'play', timer:0, coins:0, things:makeThings(), later:[], cam:{ x:0, y:0, z:1, snap:3 } });
   play.others = allBlocks().filter(f => f.c.t === 'hero' && f.c.id !== h.c.id).map(f => heroState(f.c, f));
   { const [cw, ch] = heroBox(play); play.cam.x = play.x + cw / 2 - viewW / 2; play.cam.y = play.y + ch / 2 - viewH / 2; clampCam(play.cam); }
+  if (cpAt && cpRespawn.save) loadCheckpointSave(cpRespawn.save);     // Jos: the checkpoint remembers everything
   play.byId = {};
   play.things.forEach(t => { play.byId[t.id] = t; });
   if (cpAt && play.byId[cpAt.c.id]) { const t = play.byId[cpAt.c.id]; t.on = true; t.struckAt = -1e9; }   // already fixed
@@ -1762,7 +2137,7 @@ function stopTest() {
   if (chomp) return;
   // and the same on the way back: he closes over the level and opens onto the creator
   startChomp(() => {
-    play = null; bits = [];
+    play = null; bits = []; splashes = [];
     deathsEl.textContent = '';
     document.body.classList.remove('testing');
     fit();
@@ -2001,8 +2376,155 @@ function touching(x, y, w, h, fn) {
   for (const t of play.things) if (!t.gone && boxesTouch(x, y, w, h, t.x, t.y, t.w, t.h)) fn(t);
 }
 function fire(t) {
-  if (t.fired) return;            // a trigger goes off once per try
+  if (t.fired) return;            // a trigger goes off once per try (a trigger's Repeat type can let it go off again)
   t.fired = true;
+  fireLinks(t);
+}
+/* Jos (12 Nov): Repeat type, once a frame. t.hit = the hero was in the trigger last frame.
+   Each time he goes in / While he is inside: when he goes out it is ready again. While he is inside: it plays every Interval. */
+/* Jos (12 Nov): the devil. No real AI: each frame it walks toward what it is attracted to (you, or the block you chose).
+   If a block is in its way it jumps. When it touches you, the screen goes grey and it laughs, and then you start again. */
+const CHASER = { size:.8, speed:2.8, jump:3, caught:2.8 };      // a tiny bit slower than before; Jos (12 Nov): it jumps 3 blocks high
+/* Jos (12 Nov): Collision has a Type: All, Only player or Only devil. A block with Collision on stops whoever its Type lets it stop. */
+function blocks(t, who) { return !!t.pr.collision && (!t.ctype || t.ctype === 'all' || t.ctype === who); }
+function solidHit(x, y, w, h) { return play.things.some(t => !t.gone && blocks(t, 'devil') && boxesTouch(x, y, w, h, t.x, t.y, t.w, t.h)); }
+/* What the devil is going after right now: a block (a thing in the level) or, with null, the player.
+   Attraction type: Player, Anything, or a kind of block (it goes for the nearest one). Attraction block: one block you chose. */
+function devilTarget(d, p) {
+  const how = d.attm || (d.att !== undefined ? 'block' : 'type');
+  if (how === 'block') { const m = d.att !== undefined ? p.byId[d.att] : null; return m && !m.gone ? m : null; }
+  const type = d.atype || 'player';
+  if (type === 'player') return null;
+  const cur = d.goalId !== undefined ? p.byId[d.goalId] : null;
+  if (cur && !cur.gone && d.look > 0) return cur;                    // it looks for the nearest one a few times a second, not every frame
+  let best = null, far = 1e9;
+  const cx = d.x + d.w / 2, cy = d.y + d.h / 2;
+  for (const t of p.things) {
+    if (t.gone || t.t === 'devil' || !t.pr.visible) continue;
+    if (type !== 'anything' && t.t !== type && (t.as || t.t) !== type) continue;
+    const dist = Math.hypot(t.x + t.w / 2 - cx, t.y + t.h / 2 - cy);
+    if (dist < far) { far = dist; best = t; }
+  }
+  d.goalId = best ? best.id : undefined; d.look = .3;
+  return best;
+}
+function updateDevils(dt) {
+  const p = play, [hw, hh] = heroBox(p);
+  for (const d of p.things) {
+    if (d.t !== 'devil' || d.gone) continue;
+    if (!d.started) {                           // a little smaller than its square, standing on the floor of it
+      d.started = true; d.w = d.h = CHASER.size; d.x += (1 - CHASER.size) / 2; d.y += 1 - CHASER.size; d.vy = 0; d.ground = false;
+    }
+    d.look = (d.look || 0) - dt;
+    if (d.pr.triggers) ballUse(d);                 // Jos (13 Nov): Go through portals and use triggers, like a ball
+    const mark = d.pr.attraction !== false ? devilTarget(d, p) : null;
+    const goal = mark ? { x:mark.x + mark.w / 2, y:mark.y + mark.h / 2 } : { x:p.x + hw / 2, y:p.y + hh / 2 };
+    // at the edge of its block: it stops there, and if Destroy attraction is on, the block starts to go
+    const atEdge = !!mark && boxesTouch(d.x - .1, d.y - .1, d.w + .2, d.h + .2, mark.x, mark.y, mark.w, mark.h);
+    if (atEdge && d.pr.destroy) {
+      const g = d.destroying && d.destroying.id === mark.id ? d.destroying : (d.destroying = { id:mark.id, t:0, puff:0 });
+      g.t += dt; g.puff += dt;
+      while (g.puff > .03) {                    // white particles coming out of the block while it is being destroyed
+        g.puff -= .03;
+        bits.push({ x:mark.x + Math.random() * mark.w, y:mark.y + Math.random() * mark.h, vx:(Math.random() - .5) * 3, vy:-1 - Math.random() * 3, life:.45, col:'#fff' });
+      }
+      if (g.t >= (d.dtime === undefined ? 2 : d.dtime)) {    // destroyed: the same white burst as when you die
+        mark.gone = true; d.destroying = null; d.goalId = undefined; d.look = 0;
+        for (let k = 0; k < 12; k++) bits.push({ x:mark.x + mark.w / 2, y:mark.y + mark.h / 2, vx:(Math.random() - .5) * 10, vy:-4 - Math.random() * 8, life:.9, col:'#fff' });
+      }
+    } else d.destroying = null;
+    const spd = CHASER.speed * ((d.dspeed === undefined ? 100 : d.dspeed) / 100);
+    const attracted = d.pr.attraction !== false && !atEdge;
+    if (d.view === 'top') {                     // Top view: no gravity, it goes straight at its goal, even through the air
+      const gx = goal.x - (d.x + d.w / 2), gy = goal.y - (d.y + d.h / 2), dist = Math.hypot(gx, gy), step = spd * dt;
+      let nx = d.x, ny = d.y;
+      if (attracted && dist > .15) { nx += gx / dist * step; ny += gy / dist * step; }
+      nx = Math.max(0, Math.min(T.cols - d.w, nx)); ny = Math.max(0, Math.min(T.rows - d.h, ny));
+      if (solidHit(nx, d.y, d.w, d.h)) nx = d.x;
+      if (solidHit(d.x, ny, d.w, d.h)) ny = d.y;
+      d.x = nx; d.y = ny; d.vy = 0;
+    } else {                                    // Platformer: gravity, walks along blocks and jumps
+      let dir = 0;
+      if (attracted) { const dx = goal.x - (d.x + d.w / 2); dir = Math.abs(dx) < .15 ? 0 : Math.sign(dx); }
+      d.vy = Math.min(T.maxFall, d.vy + T.gravity * dt);
+      let nx = Math.max(0, Math.min(T.cols - d.w, d.x + dir * spd * dt)), blocked = false;
+      if (solidHit(nx, d.y, d.w, d.h)) { nx = d.x; blocked = true; }
+      d.x = nx;
+      const above = goal.y < d.y - 1.2 && Math.abs(goal.x - (d.x + d.w / 2)) < 2;
+      if (d.ground && dir !== 0 && (blocked || above)) { d.vy = -Math.sqrt(2 * T.gravity * (d.djump === undefined ? CHASER.jump : d.djump)); d.ground = false; }
+      const ny = d.y + d.vy * dt;
+      if (solidHit(d.x, ny, d.w, d.h)) { d.ground = d.vy > 0; d.vy = 0; } else { d.y = ny; d.ground = false; }
+    }
+    const dv = p.device;                                         // holding the device: a devil that touches you dies instantly
+    if (dv && p.state === 'play' && !p.hidden &&
+        (boxesTouch(p.x, p.y, hw, hh, d.x + .1, d.y + .1, d.w - .2, d.h - .2) ||
+         boxesTouch(p.x + hw / 2 + p.face * .55 - .25, p.y + hh * .45 - .25, .5, .5, d.x, d.y, d.w, d.h))) {
+      d.gone = true; dv.used++;
+      for (let k = 0; k < 14; k++) bits.push({ x:d.x + d.w / 2, y:d.y + d.h / 2, vx:(Math.random() - .5) * 9, vy:-3 - Math.random() * 6, life:.7, col:k % 2 ? '#ff3b3b' : '#fff' });
+      if (dv.max !== null && dv.used >= dv.max) p.device = null;      // it can only kill so many, then it disappears and does not come back
+      continue;
+    }
+    if (p.state === 'play' && !p.hidden && boxesTouch(p.x, p.y, hw, hh, d.x + .1, d.y + .1, d.w - .2, d.h - .2)) {
+      p.state = 'caught'; p.caught = { t:0, d }; p.vx = p.vy = p.kx = p.ky = 0;       // gotcha
+    }
+  }
+}
+/* Jos (12 Nov): when the devil catches you the screen goes grey, and then the grey fades away again. The devil that got you is not grey: the same
+   little guy tips back and looks up, with jagged lines out of his mouth and little Ha's, right where he stands. */
+function caughtGrey(k) {                                            // how grey the screen is: 0 to 1, in and then out
+  const t = k.t, end = CHASER.caught;
+  return Math.min(1, t / .25) * Math.min(1, Math.max(0, (end - t) / 1.1));
+}
+function drawGrey(k) {
+  const g = caughtGrey(k);
+  if (g <= 0) return;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.filter = 'grayscale(' + g + ') brightness(' + (1 - .3 * g) + ')'; ctx.drawImage(cv, 0, 0); ctx.filter = 'none';
+  ctx.restore();
+}
+function drawLaughingDevil(k) {                                     // in level space, so it is the same little guy, same size, same place
+  const d = k.d, t = k.t, S = d.w * cell, cx = (d.x + d.w / 2) * cell, cy = (d.y + d.h / 2) * cell;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-.5 * Math.min(1, t / .2) + Math.sin(t * 22) * .05);   // tipped back, looking up, shaking with laughter
+  ctx.font = Math.round(S * .82) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
+  ctx.fillText('😈', 0, S * .04);
+  ctx.strokeStyle = '#ffe14a'; ctx.lineWidth = Math.max(2, S * .07); ctx.lineJoin = 'miter'; ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {                                     // jagged lines out of his mouth
+    const a = -.5 + i * .5 + Math.sin(t * 14 + i) * .08, len = S * (.75 + .25 * ((Math.floor(t * 12) + i) % 3));
+    ctx.beginPath(); ctx.moveTo(S * .08, S * .18);
+    for (let q = 1; q <= 5; q++) ctx.lineTo(S * .08 + Math.cos(a) * len * q / 5 - (q % 2 ? 1 : -1) * S * .08 * Math.sin(a), S * .18 + Math.sin(a) * len * q / 5 + (q % 2 ? 1 : -1) * S * .08 * Math.cos(a));
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save();
+  ['Ha!', 'ha', 'HA!', 'ha ha'].forEach((w, i) => {                // little Ha's float up and away from him
+    const ph = (t * 1.3 + i * .27) % 1, x = cx + S * (.9 + i * .55) , y = cy - S * .5 - ph * S * 1.8;
+    ctx.globalAlpha = Math.max(0, Math.min(1, (1 - ph) * 2)) * Math.min(1, t * 4);
+    ctx.font = Math.round(S * (.5 + .12 * (i % 2))) + 'px "Fredoka One", Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = S * .1; ctx.lineJoin = 'round'; ctx.strokeStyle = '#12000a'; ctx.strokeText(w, x, y);
+    ctx.fillStyle = '#fff'; ctx.fillText(w, x, y);
+  });
+  ctx.restore();
+}
+function triggerPass(dt) {
+  play.things.forEach(t => {
+    if (t.t !== 'trigger') return;
+    if (t.hit) {
+      t.wasIn = true;
+      if (t.rep === 'inside') {
+        t.acc = (t.acc || 0) + dt;
+        if (t.acc >= (t.repEvery || 1)) { t.acc -= t.repEvery || 1; fireLinks(t); }
+      }
+    } else if (t.wasIn) {
+      t.wasIn = false; t.acc = 0;
+      if (t.rep === 'enter' || t.rep === 'inside') t.fired = false;
+    }
+    t.hit = false;
+  });
+}
+function fireLinks(t) {
   t.links.forEach(l => {
     // Jos: a delay, so a trap can go off a bit after you cross the trigger
     if (l.delay > 0) play.later.push({ left:l.delay, l });
@@ -2014,9 +2536,31 @@ function applyAction(g, a) {
   if (a.do === 'move') {
     // a distance to travel, not a spot to reach, so it still works if it grows too
     const d = DIRS[a.dir || 'up'];
-    g.move = { dx:d[0], dy:d[1], left:a.n || 1, v:(a.speed || 1) * T.moveSpeed };
+    if (a.chSpeed) {                                          // Jos (12 Nov): Change speed. The block keeps the new speed for later moves too
+      const by = Number(a.speedBy) || 0;
+      g.spd = (g.spd || 0) + by;
+      if (g.move) g.move.v = Math.max(.05, g.move.v / T.moveSpeed + by) * T.moveSpeed;   // already moving: it speeds up right now
+    }
+    const n = a.n === undefined ? 1 : a.n;
+    if (!a.chSpeed || n > 0) g.move = { dx:d[0], dy:d[1], left:n || 1, v:Math.max(.05, (a.speed || 1) + (g.spd || 0)) * T.moveSpeed };
   }
   if (a.do === 'props') g.pr = Object.assign({}, g.pr, a.props || {});
+  if (a.do === 'collision') {                                  // Jos (12 Nov): Change collision: on or off, and who it stops
+    g.pr = Object.assign({}, g.pr, { collision:!!a.col });
+    if (a.col) g.ctype = a.ctype || 'all';
+  }
+  if (a.do === 'tilt') {                                       // Jos (12 Nov): it turns smoothly, to an angle or by an angle
+    const from = g.tilt || 0, deg = a.deg === undefined ? 90 : Number(a.deg) || 0;
+    g.tilting = { from, to:a.tmode === 'by' ? from + deg : deg, t:0, d:Math.max(.01, a.secs === undefined ? .5 : Number(a.secs) || 0) };
+  }
+  if (a.do === 'text') {                                       // Jos (12 Nov): a word on a text block, a number on a number block; the wrong kind does nothing
+    if (g.tm === 'number') {
+      if (a.num !== undefined || a.nmode === 'add') g.tn = a.nmode === 'add' ? (g.tn || 0) + (Number(a.num) || 0) : (Number(a.num) || 0);
+    } else if (a.sentence !== undefined && a.sentence !== '') {
+      g.tt = a.sentence;
+      if (a.splash) splashes.push({ text:a.sentence, x:g.x + g.w / 2, y:g.y, life:1.3 });
+    }
+  }
 }
 function doLink(l) {
   const g = play.byId[l.id];
@@ -2044,7 +2588,7 @@ function nextStep(g) {
   const L = g.loop, a = L.steps[L.i];
   L.i = (L.i + 1) % L.steps.length;
   applyAction(g, a);
-  L.wait = (a.do === 'props' ? .5 : 0) + (a.wait || 0);   // Jos (9 Nov): each step can Wait before the next one starts
+  L.wait = (a.do === 'props' || a.do === 'collision' || a.do === 'text' ? .5 : 0) + (a.wait || 0);   // Jos (9 Nov): each step can Wait before the next one starts
 }
 function moveThings(dt) {
   play.things.forEach(t => {
@@ -2056,13 +2600,19 @@ function moveThings(dt) {
       t.w = t.h = s; t.x = mid - s / 2; t.y = bottom - s;
       if (k >= 1) t.grow = null;
     }
+    if (t.tilting) {
+      t.tilting.t += dt;
+      const k = Math.min(1, t.tilting.t / t.tilting.d), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;   // slow, fast, slow
+      t.tilt = t.tilting.from + (t.tilting.to - t.tilting.from) * e;
+      if (k >= 1) { t.tilt = t.tilting.to; t.tilting = null; }
+    }
     if (t.move) {
       const go = Math.min(t.move.left, t.move.v * dt);
       t.x += t.move.dx * go; t.y += t.move.dy * go;
       t.move.left -= go;
       if (t.move.left <= 0) t.move = null;
     }
-    if (t.loop && !t.move && !t.grow) { if (t.loop.wait > 0) t.loop.wait -= dt; else nextStep(t); }   // the wait only counts once the step has finished   // the next step of a repeating trigger
+    if (t.loop && !t.move && !t.grow && !t.tilting) { if (t.loop.wait > 0) t.loop.wait -= dt; else nextStep(t); }   // the wait only counts once the step has finished   // the next step of a repeating trigger
     t.dx = t.x - ox; t.dy = t.y - oy;
     if (t.ext !== undefined) { t.ext += dt; if (t.ext > .5) t.ext = undefined; }
     if (t.wait) { t.wait.t += dt; if (t.wait.t > DOOR_WAIT_END) t.wait = null; }
@@ -2146,7 +2696,8 @@ function ballUse(b) {
   const dir = out.out || 'down', d = DIRS[dir] || DIRS.down;
   b.x = out.x + (out.w - b.w) / 2 + d[0] * (out.w + b.w) / 2;
   b.y = out.y + (out.h - b.h) / 2 + d[1] * (out.h + b.h) / 2;
-  b.bvx = d[0] * (dir === 'down' ? 0 : T.portalSpit); b.bvy = d[1] * (dir === 'down' ? 0 : T.portalSpit);
+  if (b.t === 'devil') { b.vy = d[1] * (dir === 'down' ? 0 : T.portalSpit); b.ground = false; }   // Jos (13 Nov): a devil comes out of the partner portal too
+  else { b.bvx = d[0] * (dir === 'down' ? 0 : T.portalSpit); b.bvy = d[1] * (dir === 'down' ? 0 : T.portalSpit); }
   b.portalLock = out.id;
 }
 function stepBalls(dt) {                     // true if one of them killed the hero
@@ -2161,7 +2712,7 @@ function stepBalls(dt) {                     // true if one of them killed the h
     b.bvx = b.bvx || 0; b.bvy = b.bvy || 0;
     const r = BALL_R * b.w;
     let cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-    const shapes = p.things.filter(t => t !== b && !t.gone && t.pr.collision && t.t !== 'ball')
+    const shapes = p.things.filter(t => t !== b && !t.gone && blocks(t, 'ball') && t.t !== 'ball')
                            .map(t => t.t === 'hill' ? hillPoly(t) : rectPoly(t.x, t.y, t.w, t.h));
     const STEPS = 4, h = dt / STEPS;
     const bounce = vn => -vn > 2 ? BALL_BOUNCE : 0;                    // a gentle landing doesn't bounce
@@ -2270,14 +2821,21 @@ function step(dt) {
     if (p.timer <= 0) spawn();
     return;
   }
+  if (p.state === 'caught') {                         // Jos (12 Nov): the devil caught you: everything waits while he laughs
+    p.caught.t += dt;
+    if (p.caught.t > CHASER.caught) { p.state = 'play'; die(); }
+    return;
+  }
   if (p.state === 'won') {
     p.wonT += dt;
     if (p.wonT > DOOR.shut + DOOR.sink + 0.3) playAll ? nextPlay() : stopTest();   // Jos: no LEVEL COMPLETE message
     return;
   }
 
+  updateDevils(dt);
+  triggerPass(dt);
   // delayed connections go off when their time is up
-  p.later = p.later.filter(d => { d.left -= dt; if (d.left > 0) return true; if (d.loop) startLoop(d.l); else doLink(d.l); return false; });
+  p.later =p.later.filter(d => { d.left -= dt; if (d.left > 0) return true; if (d.loop) startLoop(d.l); else doLink(d.l); return false; });
   // Jos: the door goes down at the start, and comes up again when the Needed coins are collected
   const locked = p.things.some(t => t.t === 'coin' && t.pr.needed && !t.gone);
   p.things.forEach(t => {
@@ -2295,7 +2853,7 @@ function heroStep(p, dt) {
   const G = GDIRS[p.gdir], [W, H] = heroBox(p);
   // Jos's hill is a slope when gravity pulls down. Any other way (or a hill turned onto the ceiling), it is a plain block.
   const slopes = G[0] === 0 && G[1] > 0;
-  const solid = t => t.pr.collision && !(slopes && t.t === 'hill' && (t.r || 0) < 2);
+  const solid = t => blocks(t, 'player') && !(slopes && t.t === 'hill' && (t.r || 0) < 2);
   // ride along on whatever you're standing on
   if (p.on && p.ground) { p.x += p.on.dx; p.y += p.on.dy; }
   // a moving block that runs into you pushes you out of the way
@@ -2371,7 +2929,7 @@ function heroStep(p, dt) {
   });
   // the straight side of a hill is a wall (the slope itself is walked up in the y part below)
   if (slopes) touching(p.x, p.y, W, H, t => {
-    if (t.t !== 'hill' || !t.pr.collision || (t.r || 0) > 1) return;
+    if (t.t !== 'hill' || !blocks(t, 'player') || (t.r || 0) > 1) return;
     if (p.y + H <= t.y + .02 || p.y >= t.y + t.h) return;
     if (!t.r && mx < 0) { const wall = t.x + t.w; if (oldX >= wall - .01 && p.x < wall) p.x = wall; }
     if (t.r === 1 && mx > 0) { if (oldX + W <= t.x + .01 && p.x + W > t.x) p.x = t.x - W; }
@@ -2403,7 +2961,7 @@ function heroStep(p, dt) {
   });
   // Jos's hill: he walks up and down it. He keeps hold of the slope going downhill, and not when he jumps.
   if (slopes) touching(p.x, p.y, W, H, t => {
-    if (t.t !== 'hill' || !t.pr.collision || (t.r || 0) > 1) return;
+    if (t.t !== 'hill' || !blocks(t, 'player') || (t.r || 0) > 1) return;
     const high = !t.r;                                           // turned 0: high on the right. Turned 1: high on the left
     const foot = high ? Math.min(p.x + W, t.x + t.w) : Math.max(p.x, t.x);   // the foot nearest the high side
     const k = (high ? foot - t.x : t.x + t.w - foot) / t.w;
@@ -2477,6 +3035,13 @@ function heroStep(p, dt) {
                     vy:-3 - Math.random() * 4, life:.5, col:COL.gold });
       }
     }
+    if (t.t === 'device' && pr.action && !t.gone &&                  // Jos (12 Nov): pick it up and it floats in front of you
+        boxesTouch(p.x, p.y, W, H, t.x + .15 * t.w, t.y + .15 * t.h, .7 * t.w, .7 * t.h)) {
+      t.gone = true;
+      playCoin();
+      play.device = { max:pr.devilmax ? Math.max(1, Math.round(t.dmax || 3)) : null, used:0 };   // max = null: it never runs out
+      for (let k = 0; k < 10; k++) bits.push({ x:t.x + t.w / 2, y:t.y + t.h / 2, vx:(Math.random() - .5) * 6, vy:-3 - Math.random() * 4, life:.5, col:'#7ff6ff' });
+    }
     if (t.t === 'controls' && pr.action) {
       if (!p.ctlHere.has(t.id)) applyDoes(p, t.does || []);      // Jos: once, when he touches it
       p.ctlNow.add(t.id);
@@ -2490,7 +3055,7 @@ function heroStep(p, dt) {
         boxesTouch(p.x, p.y, W, H, t.x + .1 * t.w, t.y + .1 * t.h, .8 * t.w, .8 * t.h)) {
       p.dash = FACING[facing(t)]; p.ground = false;
     }
-    if (t.t === 'trigger' && pr.action) fire(t);
+    if (t.t === 'trigger' && pr.action) { t.hit = true; fire(t); }
     if (t.t === 'repeater' && pr.action) fireRepeat(t);
     if (t.t === 'checkpoint' && pr.action && !t.on) activateCheckpoint(t);
     const pb = t.t === 'button' && turnBox([.14, .5, .72, .5], t.r);
@@ -2534,7 +3099,7 @@ function heroStep(p, dt) {
 const G_HORIZ = p => p.gdir === 'left' || p.gdir === 'right';
 function comeOut(p, out) {
   const [W, H] = heroBox(p);
-  const solid = (x, y) => play.things.some(t => !t.gone && t.pr.collision &&
+  const solid = (x, y) => play.things.some(t => !t.gone && blocks(t, 'player') &&
                                            boxesTouch(x + .1, y + .1, .8, .8, t.x, t.y, t.w, t.h));
   let dir = out.out;
   if (!dir) {
@@ -2574,6 +3139,7 @@ function heroNow(p = play) {
   const [bw, bh] = heroBox(p);
   // turned round the middle of his box; he faces the way he runs, and turning upside down mirrors that
   ctx.save();
+  ctx.globalAlpha = (p.vis === undefined ? 100 : p.vis) / 100;           // Jos (12 Nov): Visibility
   ctx.translate((p.x + bw / 2) * cell, (p.y + bh / 2) * cell);
   ctx.rotate(GANGLE[p.gdir]);
   drawHero(ctx, -T.heroW * cell / 2, -T.heroH * cell / 2, h, (p.gdir === 'up' || p.gdir === 'right') ? -p.face : p.face, frame);
@@ -2599,35 +3165,71 @@ function render(time) {
   ctx.scale(cz, cz);
   ctx.translate(-cam.x * cell, -cam.y * cell);              // from here on, everything is drawn where it is in the level
   ctx.fillStyle = '#12000a'; ctx.fillRect(0, 0, cell * T.cols, cell * T.rows);
-  if (play) renderPlay(time); else renderEditor(time);
+  if (play) renderPlay(time); else { renderEditor(time); if (showNums) drawBlockNumbers(); }
   bits.forEach(b => {
     ctx.fillStyle = b.col || '#fff';
     ctx.globalAlpha = Math.max(0, b.life);
     ctx.fillRect(b.x * cell - cell * .08, b.y * cell - cell * .08, cell * .16, cell * .16);
   });
   ctx.globalAlpha = 1;
+  splashes.forEach(s => {                        // the splash word floats up and fades
+    const k = 1.3 - s.life;
+    ctx.globalAlpha = Math.min(1, s.life / .5);
+    ctx.font = '800 ' + Math.round(cell * .7) + 'px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = cell * .12; ctx.strokeStyle = '#12000a'; ctx.lineJoin = 'round';
+    ctx.strokeText(s.text, s.x * cell, (s.y - .4 - k * 1.2) * cell);
+    ctx.fillStyle = '#fff'; ctx.fillText(s.text, s.x * cell, (s.y - .4 - k * 1.2) * cell);
+  });
+  ctx.globalAlpha = 1; ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
   ctx.restore();
+  if (play && play.state === 'caught') {
+    drawGrey(play.caught);
+    ctx.save(); ctx.scale(cz, cz); ctx.translate(-cam.x * cell, -cam.y * cell); drawLaughingDevil(play.caught); ctx.restore();
+  }
   if (play && play.devil) drawDevil(ctx, play.devil);
 }
 
-function renderPlay(time) {
-  for (const t of play.things) {
-    if (t.gone || !t.pr.visible) continue;       // triggers can't be seen when you play
+function drawThing(t, time) {
     const X = t.x * cell, Y = t.y * cell, S = t.w * cell;
     if (play.state === 'won' && play.door === t) {
-      drawDoorClosing(ctx, X, Y, S, play.wonT, play.wonHero.hidden ? () => {} : () => heroNow(play.wonHero)); continue;
+      drawDoorClosing(ctx, X, Y, S, play.wonT, play.wonHero.hidden ? () => {} : () => heroNow(play.wonHero)); return;
     }
-    if (!t.as && t.t === 'spring') { turn(ctx, X, Y, S, t.r, () => drawSpring(ctx, X, Y, S, springExt(t.ext))); continue; }
-    if (!t.as && t.t === 'button') { turn(ctx, X, Y, S, t.r, () => drawButton(ctx, X, Y, S, t.pressed)); continue; }
-    if (!t.as && t.t === 'checkpoint') { drawCheckpoint(ctx, X, Y, S, time, t.on ? performance.now() / 1000 - t.struckAt : null); continue; }
-    if (t.t === 'door' && t.wait && !t.sink && !t.as) { drawDoorWaiting(ctx, X, Y, S, t.wait.t); continue; }
-    if (t.t === 'door' && t.sink) { drawSunk(ctx, X, Y, S, t.sink, () => drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r)); continue; }
-    drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r);
+    if (!t.as && t.t === 'spring') { turn(ctx, X, Y, S, t.r, () => drawSpring(ctx, X, Y, S, springExt(t.ext))); return; }
+    if (!t.as && t.t === 'button') { turn(ctx, X, Y, S, t.r, () => drawButton(ctx, X, Y, S, t.pressed)); return; }
+    if (!t.as && t.t === 'checkpoint') { drawCheckpoint(ctx, X, Y, S, time, t.on ? performance.now() / 1000 - t.struckAt : null); return; }
+    if (t.t === 'door' && t.wait && !t.sink && !t.as) { drawDoorWaiting(ctx, X, Y, S, t.wait.t); return; }
+    if (t.t === 'door' && t.sink) { drawSunk(ctx, X, Y, S, t.sink, () => drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r)); return; }
+    drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r, t);
     if (t.t === 'coin' && t.pr.needed && !t.as) drawNeededRing(ctx, X, Y, S, time);
-  }
+}
+function renderPlay(time) {
+  const drawOne = t => {
+    if (play.state === 'caught' && play.caught && play.caught.d === t) return;      // it is drawn laughing, on top of the grey
+    ctx.globalAlpha = (t.vis === undefined ? 100 : t.vis) / 100;           // Jos (12 Nov): Visibility
+    if (t.tilt) {                                 // Jos (12 Nov): Tilt turns it round its middle, by any angle (how it looks; it still hits like a square)
+      const cx = (t.x + t.w / 2) * cell, cy = (t.y + t.h / 2) * cell;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t.tilt * Math.PI / 180); ctx.translate(-cx, -cy);
+      drawThing(t, time);
+      ctx.restore();
+    } else drawThing(t, time);
+    ctx.globalAlpha = 1;
+  };
+  const seen = play.things.filter(t => !t.gone && t.pr.visible);      // triggers can't be seen when you play
+  seen.filter(t => t.t !== 'textblock').forEach(drawOne);
   const heroes = [play].concat(play.others || []);
   if (play.state === 'play' || play.state === 'intro') heroes.forEach(h => { if (!h.hidden && !h.inDoor) heroNow(h); });
   else if (play.state === 'won') heroes.forEach(h => { if (h !== play.wonHero && !h.hidden && !h.inDoor) heroNow(h); });
+  if (play.device && (play.state === 'play' || play.state === 'intro' || play.state === 'caught')) {     // Jos (12 Nov): the device floats in front of you
+    const [hw, hh] = heroBox(play), s = cell * .55, cx = (play.x + hw / 2 + play.face * .55) * cell, cy = (play.y + hh * .45) * cell + Math.sin(time * 4) * cell * .05;
+    drawDeviceBlock(ctx, cx - s / 2, cy - s / 2, s, time, false);
+    if (play.device.max !== null) {
+      ctx.font = '800 ' + Math.round(cell * .38) + 'px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = cell * .08; ctx.strokeStyle = '#12000a'; ctx.strokeText('×' + (play.device.max - play.device.used), cx, cy - s * .75);
+      ctx.fillStyle = '#7ff6ff'; ctx.fillText('×' + (play.device.max - play.device.used), cx, cy - s * .75);
+      ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+    }
+  }
+  seen.filter(t => t.t === 'textblock').forEach(drawOne);              // Jos (12 Nov): text goes over everything, even the hero
 }
 
 function renderEditor(time) {
@@ -2657,6 +3259,8 @@ function renderEditor(time) {
       outline(d.x, d.y, '#5dc8ff');
     }
   });
+  lateText.forEach(([c, x, y]) => drawCell(c, x, y, time, true));     // Jos (12 Nov): text goes over everything
+  lateText.length = 0;
 
   if (boxDrag) {                                 // Jos: a dotted box
     ctx.setLineDash([6, 4]); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
@@ -2733,13 +3337,25 @@ function drawStack(s, x, y, time) {
     drawBlock(ctx, looksLike(s[1]), X, Y, S, time, s[1].r);
   }
 }
-function drawCell(c, x, y, time) {
+const lateText = [];
+function drawCell(c, x, y, time, late) {
+  if (c.t === 'textblock' && !late) { lateText.push([c, x, y]); return; }   // Jos (12 Nov): text goes over everything, so it is drawn last
   // a block with Visible off is see-through in the creator, so you can still find it
   // (triggers and Edit controls always look normal here: they start invisible)
   const faded = !props(c).visible && (DEFAULTS[c.t] || {}).visible !== false;
-  if (faded) ctx.globalAlpha = .35;
-  drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time, c.r);
-  if (c.t === 'coin' && props(c).needed && !props(c).disguise) drawNeededRing(ctx, x * cell, y * cell, cell, time);
+  const al = faded ? .35 : (c.vis === undefined ? 1 : c.vis / 100);        // Jos (12 Nov): Visibility = how see-through it is
+  const paint = () => {
+    drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time, c.r, { tm:c.tm, tt:c.tt, tn:c.tn === undefined ? null : c.tn, ts:c.ts });
+    if (c.t === 'coin' && props(c).needed && !props(c).disguise) drawNeededRing(ctx, x * cell, y * cell, cell, time);
+  };
+  ctx.globalAlpha = al;
+  paint();                                                                  // the regular block, as it is
+  if (c.tilt) {                                                             // Jos (12 Nov): Tilt: the tilted version is see-through on top of it
+    const cx = (x + .5) * cell, cy = (y + .5) * cell;
+    ctx.globalAlpha = al * .4; ctx.save(); ctx.translate(cx, cy); ctx.rotate(c.tilt * Math.PI / 180); ctx.translate(-cx, -cy);
+    paint();
+    ctx.restore();
+  }
   ctx.globalAlpha = 1;
   if (c.t === 'portal' && c.out) drawOutput(c.out, x, y);
   if (props(c).disguise) {                       // a little mask, so you know it's in disguise
@@ -2869,6 +3485,7 @@ function loop(now) {
       b.life -= dt; b.vy += T.gravity * .6 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
       return b.life > 0;
     });
+    splashes = splashes.filter(s => { s.life -= dt; return s.life > 0; });
   }
   const time = clock;             // spinning and glowing stop too
   render(time);

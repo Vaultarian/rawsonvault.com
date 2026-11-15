@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trampoline Tramp</title>
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; background:#87ceeb; font-family:'Trebuchet MS',Arial,sans-serif; user-select:none; }
+  canvas#gl { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  #hud { position:fixed; top:14px; left:16px; color:#fff; font-size:22px; font-weight:bold; text-shadow:0 2px 0 #0007; pointer-events:none; line-height:1.4; }
+  #hud small { font-size:15px; font-weight:normal; opacity:.95; }
+  #stom { display:flex; align-items:center; gap:8px; margin-top:4px; }
+  #stom .bar { width:150px; height:16px; border-radius:9px; background:#0006; border:2px solid #fff; overflow:hidden; }
+  #stom .fill { height:100%; background:#43a047; transition:background .3s; }
+  #hungry { position:fixed; inset:0; pointer-events:none; opacity:0; background:radial-gradient(ellipse at center, #f000 40%, #d50000dd 100%); }
+  #cross { position:fixed; left:50%; top:50%; width:8px; height:8px; margin:-4px 0 0 -4px; border-radius:50%; background:#fff; border:2px solid #0006; pointer-events:none; }
+  #hint { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); color:#fff; font-size:20px; font-weight:bold; text-shadow:0 2px 0 #000a; pointer-events:none; transition:opacity .2s; opacity:0; background:#0005; padding:6px 16px; border-radius:20px; }
+  #msg { position:fixed; left:50%; top:30%; transform:translate(-50%,0); font-size:44px; font-weight:bold; color:#fff; text-shadow:0 3px 0 #000a; pointer-events:none; opacity:0; text-align:center; }
+  #msg.go { animation:msgpop .9s ease-out; }
+  @keyframes msgpop { 0% { opacity:1; transform:translate(-50%,10px) scale(.7); } 15% { transform:translate(-50%,0) scale(1.1); } 70% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-30px) scale(1); } }
+  #menu { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; color:#fff; text-align:center; gap:14px; z-index:5; }
+  #menu.home { background:linear-gradient(#0006,#000a); }
+  #menu.pause { background:#000b; }
+  #menu h1 { font-size:68px; margin:0; letter-spacing:3px; text-shadow:0 5px 0 #000a; }
+  #menu h2 { font-size:46px; margin:0; letter-spacing:2px; }
+  #menu p { font-size:19px; margin:0; max-width:560px; line-height:1.5; }
+  #menu b.k { background:#fff; color:#000; padding:2px 10px; border-radius:6px; }
+  .mbtn { font-family:inherit; font-size:28px; font-weight:bold; padding:12px 44px; border-radius:16px; border:5px solid #fff; background:#2f7bff; color:#fff; cursor:pointer; box-shadow:0 6px 0 #0007; min-width:280px; }
+  .mbtn.alt { background:#555; font-size:20px; min-width:0; padding:8px 28px; }
+  .mbtn:hover { filter:brightness(1.15); } .mbtn:active { transform:translateY(4px); box-shadow:0 2px 0 #0007; }
+  #dead { position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; font-size:46px; font-weight:bold; text-shadow:0 3px 0 #000; z-index:4; pointer-events:none; text-align:center; }
+  #dead small { font-size:24px; }
+
+  #tree { position:fixed; inset:0; background:#031a45; display:none; z-index:10; overflow:hidden; }
+  #tree.open { display:block; }
+  #tabs { position:fixed; top:12px; left:50%; transform:translateX(-50%); display:flex; gap:10px; z-index:12; }
+  .tab { font-family:inherit; font-size:22px; font-weight:bold; padding:8px 22px; border-radius:12px; border:4px solid #fff; background:#244; color:#fff; cursor:pointer; }
+  .tab.on { background:#2f7bff; }
+  #stage { position:absolute; left:50%; top:50%; width:0; height:0; transform-origin:0 0; }
+  #vhelp { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); color:#9bb; font-size:16px; pointer-events:none; }
+  .node.merge { border-radius:22px; }
+  .node.merge.bought { background:#27ae60; }
+  #stage svg { position:absolute; left:0; top:0; overflow:visible; pointer-events:none; }
+  .line { stroke:#8fb8ff; stroke-width:4; fill:none; stroke-linecap:round; transition:stroke .3s; }
+  .line.off { stroke:#556; }
+  .node { position:absolute; width:76px; height:76px; margin:-38px 0 0 -38px; border-radius:50%; background:#2f7bff; border:5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:34px; cursor:pointer; box-shadow:0 4px 0 #0006; opacity:0; transform:scale(.2); transition:opacity .6s, transform .6s cubic-bezier(.2,1.6,.4,1), background .3s, filter .3s; }
+  .node.show { opacity:1; transform:scale(1); }
+  .node.grey { background:#777; border-color:#bbb; filter:grayscale(1) brightness(.85); cursor:not-allowed; }
+  .node.bought { background:#27ae60; border-color:#d9ffe3; cursor:default; }
+  .node:not(.grey):not(.bought):hover { transform:scale(1.12); }
+  .node.pulse { animation:pulse .5s; }
+  @keyframes pulse { 50% { transform:scale(1.35); } }
+  #center { position:absolute; width:200px; height:200px; margin:-100px 0 0 -100px; }
+  #tip { position:fixed; display:none; z-index:20; background:#fff; color:#111; padding:10px 14px; border-radius:12px; max-width:250px; font-size:17px; pointer-events:none; box-shadow:0 4px 0 #0005; line-height:1.35; }
+  #tip b { display:block; font-size:19px; margin-bottom:2px; }
+  #tip .cost { color:#b8860b; font-weight:bold; margin-top:4px; }
+  #tcoins { position:fixed; top:14px; left:20px; color:#ffd54f; font-size:26px; font-weight:bold; z-index:12; text-shadow:0 2px 0 #000a; line-height:1.3; }
+  #tcoins span { color:#9be7a0; }
+  #close { position:fixed; top:14px; right:20px; z-index:12; font-family:inherit; font-size:22px; font-weight:bold; padding:8px 20px; border-radius:12px; border:4px solid #fff; background:#e53935; color:#fff; cursor:pointer; }
+  .panel { position:absolute; inset:80px 20px 20px; display:none; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; padding-top:10px; gap:16px; color:#fff; text-align:center; }
+  .panel.on { display:flex; }
+  .card { background:#0e3a7a; border:4px solid #fff; border-radius:18px; padding:16px 22px; min-width:210px; }
+  .cards { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; }
+  .card .big { font-size:56px; } .card h3 { margin:4px 0; font-size:24px; } .card p { margin:2px 0 10px; font-size:17px; }
+  .card button { font-family:inherit; font-size:20px; font-weight:bold; padding:8px 20px; border-radius:12px; border:4px solid #fff; background:#27ae60; color:#fff; cursor:pointer; }
+  .card button:disabled { background:#666; border-color:#aaa; cursor:not-allowed; }
+  #jstage { position:relative; display:flex; justify-content:center; }
+  #jstage canvas { border:5px solid #fff; border-radius:14px; background:#222; touch-action:none; }
+  .jcard { width:200px; } .jcard .pay { color:#9be7a0; font-weight:bold; font-size:20px; margin-bottom:8px; }
+  .hole { width:96px; height:96px; border-radius:50%; background:#3e2b1a; border:5px solid #6d4c41; font-size:54px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .holes { display:grid; grid-template-columns:repeat(3,110px); gap:14px; }
+  .pbtn { font-size:42px; width:84px; height:84px; border-radius:18px; border:4px solid #fff; background:#2f7bff; cursor:pointer; }
+  .pbtn.lit { background:#ffd54f; transform:scale(1.15); }
+  .bin { font-family:inherit; font-size:20px; font-weight:bold; padding:12px 14px; border-radius:14px; border:4px solid #fff; color:#fff; cursor:pointer; min-width:120px; }
+  .big-emoji { font-size:90px; line-height:1; }
+  .jresult { font-size:40px; font-weight:bold; text-align:center; }
+  #jbox { font-size:48px; font-weight:bold; min-height:60px; letter-spacing:4px; }
+  #jin { font-family:inherit; font-size:34px; padding:8px 14px; border-radius:12px; border:4px solid #fff; background:#fff; color:#111; text-align:center; width:340px; }
+  #jin.bad { animation:shake .3s; border-color:#e53935; }
+  @keyframes shake { 25% { transform:translateX(-10px); } 75% { transform:translateX(10px); } }
+  .bigbar { width:360px; height:26px; border-radius:14px; background:#0006; border:3px solid #fff; overflow:hidden; }
+  .bigbar div { height:100%; background:#43a047; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="hungry"></div>
+<div id="hud"></div>
+<div id="cross"></div>
+<div id="hint"></div>
+<div id="msg"></div>
+<div id="dead"></div>
+<div id="menu"></div>
+<div id="tree">
+  <div id="tcoins"></div><button id="close">Back to the yard</button>
+  <div id="tabs"><button class="tab on" data-t="skill">Skill tree</button><button class="tab" data-t="jobs">Jobs</button><button class="tab" data-t="food">Food</button></div>
+  <div id="stage"></div><div id="vhelp">Drag to move around · scroll to zoom</div>
+  <div class="panel" id="p-jobs">
+    <div id="jlist" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+      <h2 style="margin:0;font-size:38px">Jobs</h2>
+      <p style="margin:0;font-size:19px">Jobs pay <b>money</b>. You need money to buy food. Your stomach keeps emptying while you work.</p>
+      <div class="cards" id="jcards"></div>
+    </div>
+    <div id="jgame" style="display:none;flex-direction:column;align-items:center;gap:10px">
+      <div id="jtitle" style="font-size:30px;font-weight:bold"></div>
+      <div id="jinfo" style="font-size:20px;min-height:26px"></div>
+      <div id="jstage"></div>
+      <button id="jcancel" class="mbtn alt">Quit this job</button>
+    </div>
+  </div>
+  <div class="panel" id="p-food">
+    <h2 style="margin:0;font-size:38px">Food</h2>
+    <div class="bigbar"><div id="fbar"></div></div>
+    <div id="ftxt" style="font-size:20px"></div>
+    <div class="cards" id="fcards"></div>
+  </div>
+</div>
+<div id="tip"></div>
+
+<script src="lib/three.min.js"></script>
+<script>
+// ====================== UPGRADES ======================
+// A node: [id, parents, angle, ring, icon, name, text, cost, effects]. Angle and ring place it around the middle (0 = right, 90 = down).
+// One parent bought makes it appear; a node with several parents needs ALL of them before you can buy it.
+const RING = i => 140 + 95*i;
+const RAW = [
+  // gravity (left): splits at the third ring, joins back at the fifth
+  ['g1',['root'],180,0,'🌍','-0.1 gravity','Gravity pulls you down a tiny bit less.',25,{grav:.1}],
+  ['g2',['g1'],180,1,'🌍','-0.2 gravity','Gravity pulls you down less.',60,{grav:.2}],
+  ['g3',['g2'],163,2,'🪶','-0.5 gravity','You float for longer.',140,{grav:.5}],
+  ['h3',['g2'],197,2,'🎈','Balloon shoes','-0.4 gravity.',130,{grav:.4}],
+  ['g4',['g3'],163,3,'🪶','-0.8 gravity','You are feeling light.',280,{grav:.8}],
+  ['h4',['h3'],197,3,'🎈','Helium lungs','-0.8 gravity.',280,{grav:.8}],
+  ['g5',['g4','h4'],180,4,'☁️','Cloud jumper','Both paths joined. -2 gravity.',650,{grav:2}],
+  ['g6',['g5'],180,5,'🌙','Moon boots','-3 gravity. Nearly floating.',1200,{grav:3}],
+  // boost (right)
+  ['b1',['root'],0,0,'⚡','+10% boost chance','You go higher than usual more often.',40,{boost:.1}],
+  ['b2',['b1'],0,1,'⚡','+10% boost chance','You go higher than usual more often.',150,{boost:.1}],
+  ['b3',['b2'],-17,2,'🍀','Lucky bounce','+10% boost chance.',300,{boost:.1}],
+  ['k3',['b2'],17,2,'⏱️','Good timing','Landing timing gets 0.03 s more forgiving.',300,{win:.03}],
+  ['b4',['b3'],-17,3,'🍀','Luckier bounce','+15% boost chance.',600,{boost:.15}],
+  ['k4',['k3'],17,3,'⏱️','Great timing','Landing timing gets 0.03 s more forgiving.',600,{win:.03}],
+  ['b5',['b4','k4'],0,4,'💥','Big boost','Both paths joined. Every boost is much stronger.',1100,{bpow:1.4,boost:.1}],
+  ['b6',['b5'],0,5,'🔥','Boost master','+20% boost chance.',2000,{boost:.2}],
+  // springs (top)
+  ['p1',['root'],-90,0,'🔼','Springy mat','Your bounce gets a little more push.',30,{kick:.15}],
+  ['p2',['p1'],-90,1,'🔼','Springier mat','More push on every bounce.',100,{kick:.2}],
+  ['p3',['p2'],-107,2,'🧲','Strong springs','More push on every bounce.',250,{kick:.3}],
+  ['r3',['p2'],-73,2,'🌀','Bouncy mat','You keep more of your speed when you land.',250,{rest:.03}],
+  ['p4',['p3'],-107,3,'🧲','Stronger springs','More push on every bounce.',500,{kick:.4}],
+  ['r4',['r3'],-73,3,'🌀','Bouncier mat','You keep more of your speed when you land.',500,{rest:.03}],
+  ['p5',['p4','r4'],-90,4,'🦘','Kangaroo mat','Both paths joined. Lots more push, and you keep more speed.',950,{kick:.5,rest:.03}],
+  ['p6',['p5'],-90,5,'🚀','Rocket springs','Huge push on every bounce.',1800,{kick:.8}],
+  // coins (bottom)
+  ['c1',['root'],90,0,'🪙','More coins','You earn 50% more coins.',50,{coin:.5}],
+  ['c2',['c1'],90,1,'💰','Even more coins','You earn 50% more coins.',200,{coin:.5}],
+  ['c3',['c2'],73,2,'🪙','Coin pouch','You earn 50% more coins.',400,{coin:.5}],
+  ['d3',['c2'],107,2,'🧲','Coin magnet','You earn 50% more coins.',400,{coin:.5}],
+  ['c4',['c3'],73,3,'💰','Coin bag','You earn 75% more coins.',800,{coin:.75}],
+  ['d4',['d3'],107,3,'🧲','Super magnet','You earn 75% more coins.',800,{coin:.75}],
+  ['c5',['c4','d4'],90,4,'💎','Coin rain','Both paths joined. You earn double coins.',1500,{coin:1}],
+  ['c6',['c5'],90,5,'👑','Coin king','You earn double coins again.',2800,{coin:1}],
+  // crossings between branches
+  ['m1',['b2','p2'],-45,2,'🏎️','Tune-up','Boost and springs working together.',350,{kick:.2,boost:.1}],
+  ['m2',['b2','c2'],45,2,'🎰','Lucky coins','Boost and coins working together.',350,{coin:.5,boost:.1}],
+  ['m3',['g2','c2'],135,2,'🎐','Floaty coins','Gravity and coins working together.',350,{grav:.3,coin:.5}],
+  ['m4',['g2','p2'],-135,2,'🌥️','Soft springs','Gravity and springs working together.',350,{grav:.3,kick:.2}],
+  // the big merged upgrades
+  ['X1',['m1','k3','r3'],-45,4,'🏁','TURBO TRAMPOLINE','Three paths came together. Big push and big boosts.',2200,{kick:.8,boost:.2,win:.02}],
+  ['X2',['m2','b3','c3'],45,4,'🏆','JACKPOT','Three paths came together. Lots of coins and boosts.',2200,{coin:1.5,boost:.15}],
+  ['X3',['m3','g3','d3'],135,4,'🎆','FEATHER COINS','Three paths came together. Very light, and lots of coins.',2400,{grav:1.2,coin:1}],
+  ['X4',['m4','h3','p3'],-135,4,'☄️','CLOUD SPRINGS','Three paths came together. Very light, with big springs.',2400,{grav:1.2,kick:.6}],
+  // the last one
+  ['zg',['g6','X3','X4'],180,6,'🚀','ZERO GRAVITY!','Every light path came together. No gravity at all. You never come down.',9000,{zero:true}],
+];
+const UP = RAW.map(r => ({ id: r[0], parents: r[1], a: r[2], ring: r[3], i: r[4], n: r[5], t: r[6], cost: r[7], fx: r[8] }));
+const FOODS = [
+  {i:'🍎',n:'Apple',     price:2,  add:15, t:'A small snack.'},
+  {i:'🥪',n:'Sandwich',  price:5,  add:40, t:'A proper snack.'},
+  {i:'🍕',n:'Pizza',     price:10, add:80, t:'A big meal.'},
+];
+const SAVE = 'trampolineTramp.v2';
+const START = { coins: 0, money: 10, food: 100 };
+let coins = 0, bought = {}, money = 10, food = 100;
+try { const s = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (s && s.food > 0) { coins = s.coins || 0; bought = s.bought || {}; money = (s.money === undefined ? 10 : s.money); food = s.food; } } catch (e) {}
+function save() { try { localStorage.setItem(SAVE, JSON.stringify({ coins: Math.floor(coins), bought, money, food })); } catch (e) {} }
+
+function stats() {
+  const s = { grav: 9.8, kick: .8, boost: 0, coin: 1, zero: false, win: 0, bpow: 1.6, rest: 0 };
+  for (const u of UP) if (bought[u.id]) {
+    const f = u.fx;
+    if (f.grav) s.grav -= f.grav; if (f.kick) s.kick += f.kick; if (f.boost) s.boost += f.boost;
+    if (f.coin) s.coin += f.coin; if (f.zero) s.zero = true;
+    if (f.win) s.win += f.win; if (f.bpow) s.bpow += f.bpow; if (f.rest) s.rest += f.rest;
+  }
+  if (s.zero) s.grav = 0; else s.grav = Math.max(.3, s.grav);
+  return s;
+}
+let S = stats();
+
+// ====================== 3D WORLD ======================
+const cv = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 60, 400);
+const camera = new THREE.PerspectiveCamera(70, 1, .05, 1200);
+scene.add(camera);
+function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x6a8f4a, .85));
+const sun = new THREE.DirectionalLight(0xffffff, .7); sun.position.set(20, 40, 25); scene.add(sun);
+
+const M = (c, o) => new THREE.MeshLambertMaterial(Object.assign({ color: c }, o || {}));
+function box(w, h, d, c, x, y, z, parent) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), M(c)); m.position.set(x, y, z); (parent || scene).add(m); return m; }
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1500, 1500), M(0x5fae3e)); ground.rotation.x = -Math.PI/2; scene.add(ground);
+for (let i = 0; i < 40; i++) {
+  const p = new THREE.Mesh(new THREE.CircleGeometry(1 + Math.random()*3, 14), M(Math.random() < .5 ? 0x6bbb48 : 0x54a037));
+  p.rotation.x = -Math.PI/2; p.position.set(Math.random()*34 - 17, .01, Math.random()*26 - 8); scene.add(p);
+}
+for (let x = -18; x <= 18; x += 1.5) { box(.2, 1.4, .2, 0xcaa472, x, .7, 14); }
+for (let z = -10; z <= 14; z += 1.5) { box(.2, 1.4, .2, 0xcaa472, -18, .7, z); box(.2, 1.4, .2, 0xcaa472, 18, .7, z); }
+box(36, .15, .1, 0xcaa472, 0, 1.1, 14); box(.1, .15, 24, 0xcaa472, -18, 1.1, 2); box(.1, .15, 24, 0xcaa472, 18, 1.1, 2);
+for (const [tx, tz] of [[-26, 6], [27, 3], [-24, -4], [24, 14], [-30, 20]]) { box(.8, 4, .8, 0x7a5230, tx, 2, tz); const l = new THREE.Mesh(new THREE.SphereGeometry(3, 12, 10), M(0x2e7d32)); l.position.set(tx, 6, tz); scene.add(l); }
+
+box(16, 6, 8, 0xe8d9b5, -9, 3, -15);
+box(17, .6, 9, 0x8d3b2e, -9, 6.3, -15);
+box(1.6, 3, .15, 0x6d4c41, -9, 1.5, -10.95);
+for (const wx of [-14, -4]) box(2, 1.6, .15, 0x9ad4f5, wx, 3.4, -10.95);
+const GX0 = 6, GX1 = 14, GZ0 = -18, GZ1 = -9, GH = 4.5;
+box(GX1 - GX0, GH, .3, 0xd9cfae, 10, GH/2, GZ0);
+box(.3, GH, GZ1 - GZ0, 0xd9cfae, GX0, GH/2, (GZ0 + GZ1)/2);
+box(.3, GH, GZ1 - GZ0, 0xd9cfae, GX1, GH/2, (GZ0 + GZ1)/2);
+box(GX1 - GX0 + .6, .4, GZ1 - GZ0 + .6, 0x8d3b2e, 10, GH + .2, (GZ0 + GZ1)/2);
+box(GX1 - GX0, .1, GZ1 - GZ0, 0x9e9e9e, 10, .05, (GZ0 + GZ1)/2);
+box(GX1 - GX0, .8, .35, 0xf0f0f0, 10, GH - .3, GZ1);
+const gl = new THREE.PointLight(0xfff2cc, .9, 14); gl.position.set(10, 3.8, -13.5); scene.add(gl);
+box(.8, 1.6, 3, 0x8d6e63, 13.4, .8, -15.5); box(2, 1.2, .8, 0xb0bec5, 7.2, .6, -17.5);
+
+// ---- the old computer ----
+box(3.4, .1, 1.5, 0x8d6e63, 10, 1.05, -16.9);
+for (const dx of [-1.5, 1.5]) for (const dz of [-.6, .6]) box(.1, 1, .1, 0x5d4037, 10 + dx, .5, -16.9 + dz);
+const comp = new THREE.Group(); comp.position.set(10, 1.1, -16.9); scene.add(comp);
+const mon = new THREE.Mesh(new THREE.BoxGeometry(1.1, .9, .8), M(0xd7ccb4)); mon.position.y = .55; comp.add(mon);
+const scr = new THREE.Mesh(new THREE.PlaneGeometry(.85, .62), new THREE.MeshBasicMaterial({ color: 0x1565ff })); scr.position.set(0, .58, .401); comp.add(scr);
+const base = new THREE.Mesh(new THREE.BoxGeometry(1.3, .18, .9), M(0xcfc4aa)); base.position.y = .09; comp.add(base);
+const kb = new THREE.Mesh(new THREE.BoxGeometry(.95, .06, .3), M(0xbfb59b)); kb.position.set(0, .03, .85); comp.add(kb);
+const outline = new THREE.Group();
+const ob = new THREE.Mesh(new THREE.BoxGeometry(1.1, .9, .8), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide })); ob.position.y = .55; ob.scale.set(1.09, 1.11, 1.12); outline.add(ob);
+const ob2 = new THREE.Mesh(new THREE.BoxGeometry(1.3, .18, .9), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide })); ob2.position.y = .09; ob2.scale.set(1.07, 1.3, 1.1); outline.add(ob2);
+outline.visible = false; comp.add(outline);
+const hitBox = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.2), new THREE.MeshBasicMaterial({ visible: false })); hitBox.position.y = .6; comp.add(hitBox);
+
+// ---- the trampoline ----
+const TR = { x: -4, z: 4, r: 2.3, h: 1.05 };
+const tramp = new THREE.Group(); tramp.position.set(TR.x, 0, TR.z); scene.add(tramp);
+const matM = new THREE.Mesh(new THREE.CylinderGeometry(TR.r - .15, TR.r - .15, .06, 40), M(0x222222)); matM.position.y = TR.h; tramp.add(matM);
+const ring = new THREE.Mesh(new THREE.TorusGeometry(TR.r, .1, 10, 40), M(0x1e88e5)); ring.rotation.x = Math.PI/2; ring.position.y = TR.h; tramp.add(ring);
+const padRing = new THREE.Mesh(new THREE.TorusGeometry(TR.r - .02, .17, 8, 40), M(0x2e7d32)); padRing.rotation.x = Math.PI/2; padRing.position.y = TR.h + .03; tramp.add(padRing);
+for (let i = 0; i < 6; i++) { const a = i/6*Math.PI*2; const l = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, TR.h, 6), M(0x777777)); l.position.set(Math.cos(a)*TR.r, TR.h/2, Math.sin(a)*TR.r); tramp.add(l); }
+const target = new THREE.Mesh(new THREE.RingGeometry(.35, .5, 24), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })); target.rotation.x = -Math.PI/2; target.position.y = TR.h + .04; tramp.add(target);
+
+// ---- your arms and hands: forearm, palm, four fingers and a thumb, each finger in three bendy parts ----
+const SKIN = 0xf1c27d, SLEEVE = 0x2f7bff;
+const armsG = new THREE.Group(); camera.add(armsG);
+function seg(len, r0, r1, col) {                    // a tapered cylinder that points along -z, starting at the origin
+  const g = new THREE.CylinderGeometry(r1, r0, len, 10); g.rotateX(-Math.PI/2); g.translate(0, 0, -len/2);
+  return new THREE.Mesh(g, M(col));
+}
+function ball(r, col) { return new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), M(col)); }
+function makeFinger(len, r, spreadY) {
+  const root = new THREE.Group(), joints = [];
+  let parent = root; const lens = [len*.46, len*.32, len*.22];
+  for (let i = 0; i < 3; i++) {
+    const j = new THREE.Group(); parent.add(j); joints.push(j);
+    const rr = r*(1 - i*.1);
+    j.add(ball(rr*1.05, SKIN)); j.add(seg(lens[i], rr, rr*.92, SKIN));
+    const nxt = new THREE.Group(); nxt.position.z = -lens[i]; j.add(nxt); parent = nxt;
+  }
+  root.rotation.y = spreadY; root.userData.joints = joints; return root;
+}
+function makeHand(side) {
+  const hand = new THREE.Group(), fingers = [];
+  const palm = new THREE.Mesh(new THREE.BoxGeometry(.085, .026, .09), M(SKIN)); palm.position.z = -.045; hand.add(palm);
+  const defs = [[-.034, .056], [-.011, .066], [.012, .062], [.034, .05]];       // index, middle, ring, little: x position, length
+  defs.forEach((d, k) => { const f = makeFinger(d[1], .0098 - k*.0004, side*(k - 1.2)*.045); f.position.set(-side*d[0], 0, -.09); hand.add(f); fingers.push(f); });
+  const th = makeFinger(.05, .011, side*.75); th.position.set(side*.045, -.004, -.03); hand.add(th); fingers.push(th);
+  hand.userData.fingers = fingers; return hand;
+}
+function makeArm(side) {
+  const g = new THREE.Group(); g.position.set(side*.24, -.2, -.36);
+  const sleeve = seg(.30, .05, .045, SLEEVE); sleeve.position.z = .22; g.add(sleeve);          // sleeve, then bare forearm, then the hand
+  const cuff = ball(.047, SLEEVE); cuff.position.z = -.08; cuff.scale.z = .5; g.add(cuff);
+  const wrist = seg(.12, .033, .029, SKIN); wrist.position.z = -.08; g.add(wrist);
+  const hand = makeHand(side); hand.position.z = -.2; g.add(hand);
+  armsG.add(g); g.userData.hand = hand; return g;
+}
+const armL = makeArm(-1), armR = makeArm(1);
+function curlHand(arm, c) {          // 0 = open, 1 = fist
+  arm.userData.hand.userData.fingers.forEach((f, i) => { const th = i === 4; f.userData.joints.forEach((j, n) => { j.rotation.x = -(th ? c*[.2, .45, .5][n] : c*[.55, 1.0, .8][n]); }); });
+}
+
+// ====================== PLAYER ======================
+const P = { x: 2, z: 9, y: 0, vy: 0, yaw: 0, pitch: 0, base: 0, air: false, onMat: false, bouncing: false, maxH: 0, boosted: 0, sq: null, dead: null };
+const EYE = 1.65;
+const keys = {};
+let G = 0, lastPress = -9;                       // game clock (stops when paused) and the time Space was last pressed
+let locked = false, treeOpen = false, started = false, menuMode = 'home';
+const $ = id => document.getElementById(id);
+addEventListener('keydown', e => {
+  const typing = treeOpen;
+  if (!typing && (e.code === 'Space' || e.code.startsWith('Arrow'))) e.preventDefault();
+  keys[e.code] = true;
+  if (!typing && e.code === 'Space' && !e.repeat && !menuMode && !P.dead) lastPress = G;
+  if (e.code === 'Escape' && treeOpen) closeTree();
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+addEventListener('mousemove', e => {
+  if (!locked || P.dead) return;
+  P.yaw -= e.movementX*.0024; P.pitch = Math.max(-1.45, Math.min(1.45, P.pitch - e.movementY*.0024));
+});
+
+// ---- home screen and pause screen ----
+function showMenu(mode) {
+  menuMode = mode; const m = $('menu'); m.className = mode; m.style.display = 'flex';
+  const help = '<p><b class="k">W A S D</b> walk · <b class="k">mouse</b> look · <b class="k">Space</b> jump, or bounce on the trampoline<br>Press Space <b>right as you land</b> to bounce higher.</p>';
+  if (mode === 'home') {
+    m.innerHTML = '<h1>TRAMPOLINE TRAMP</h1>' + help + '<p>Bounce for coins. Do jobs for money, and buy food so you don't get too hungry!</p>' +
+      '<button class="mbtn" id="bPlay">' + (coins || Object.keys(bought).length ? 'Continue' : 'Play') + '</button>' +
+      '<button class="mbtn alt" id="bNew">Start over</button>' +
+      '<a class="mbtn alt" href="../index.html" style="text-decoration:none">← Jos\'s home page</a>';
+    $('bPlay').onclick = () => { started = true; cv.requestPointerLock(); };
+    $('bNew').onclick = () => { if (confirm('Start over? You will lose your coins, upgrades, money and food.')) { resetGame(); showMenu('home'); } };
+  } else {
+    m.innerHTML = '<h2>PAUSED</h2><button class="mbtn" id="bRes">Resume</button><button class="mbtn alt" id="bHome">Home screen</button><a class="mbtn alt" href="../index.html" style="text-decoration:none" onclick="save()">← Jos\'s home page</a>';
+    $('bRes').onclick = () => cv.requestPointerLock();
+    $('bHome').onclick = () => { save(); showMenu('home'); };
+  }
+}
+function hideMenu() { menuMode = null; $('menu').style.display = 'none'; }
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === cv;
+  if (locked) hideMenu();
+  else if (started && !treeOpen && !P.dead && !menuMode) showMenu('pause');
+});
+document.addEventListener('pointerlockerror', () => { if (!treeOpen && !menuMode && !P.dead) showMenu('pause'); });
+
+function resetGame() {
+  coins = START.coins; bought = {}; money = START.money; food = START.food; S = stats(); save();
+  Object.assign(P, { x: 2, z: 9, y: 0, vy: 0, yaw: 0, pitch: 0, base: 0, air: false, onMat: false, bouncing: false, maxH: 0, boosted: 0, sq: null, dead: null });
+  lastPress = -9; resetTree(); $('dead').style.display = 'none';
+}
+
+function collide() {
+  const R = .4;
+  P.x = Math.max(-17.4, Math.min(17.4, P.x)); P.z = Math.min(13.4, P.z);
+  if (P.z < GZ1 + R) {
+    if (P.x > GX0 + R && P.x < GX1 - R) P.z = Math.max(P.z, GZ0 + .7);
+    else {
+      if (P.x >= GX0 - R && P.x <= GX1 + R) P.x = P.x < (GX0 + GX1)/2 ? GX0 - R : GX1 + R;
+      P.z = Math.max(P.z, -10.3);
+    }
+  }
+}
+
+// ====================== UPDATE ======================
+let last = performance.now(), coinFrac = 0;
+function surfaceY() { return Math.hypot(P.x - TR.x, P.z - TR.z) < TR.r - .25 ? TR.h + .03 : 0; }
+function say(text, col) { const m = $('msg'); m.textContent = text; m.style.color = col || '#fff'; m.classList.remove('go'); void m.offsetWidth; m.classList.add('go'); }
+
+// what happens when you land on the mat. type: perfect | good | early | plain
+function rebound(vin, type) {
+  let v, chance = S.boost;
+  if (type === 'perfect')    { v = vin*(.85 + S.rest) + S.kick;     chance += .7; say('PERFECT!', '#ffee58'); }
+  else if (type === 'good')  { v = vin*(.85 + S.rest) + S.kick*.7;  chance += .5; say('Almost!', '#fff'); }
+  else if (type === 'early') { v = vin*.6; chance = 0; say('Too early', '#ff8a80'); }
+  else                       { v = vin*(.85 + S.rest); }
+  if (Math.random() < Math.min(.95, chance)) { v += S.bpow; P.boosted = 1; say('BOOST! ⚡', '#4fc3f7'); }
+  P.y = TR.h + .03; P.base = P.y;
+  if (v < 3.2 && type !== 'perfect' && type !== 'good') { P.air = false; P.vy = 0; P.bouncing = false; return; }
+  P.vy = v; P.air = true;
+}
+
+function update(dt) {
+  if (P.dead) { starve(dt); return; }
+  G += dt;
+  food = Math.max(0, food - dt*(P.bouncing ? .24 : .16));
+  if (food <= 0) { startStarve(); return; }
+  let mx = 0, mz = 0;
+  if (!treeOpen) {
+    if (keys.KeyW || keys.ArrowUp) mz -= 1; if (keys.KeyS || keys.ArrowDown) mz += 1;
+    if (keys.KeyA) mx -= 1; if (keys.KeyD) mx += 1;
+    if (keys.ArrowLeft) P.yaw += 1.9*dt; if (keys.ArrowRight) P.yaw -= 1.9*dt;
+  }
+  const sp = P.air ? 3 : 4.2;
+  if ((mx || mz) && !P.sq) {
+    const l = Math.hypot(mx, mz); mx /= l; mz /= l;
+    const sn = Math.sin(P.yaw), cs = Math.cos(P.yaw);
+    P.x += (mx*cs + mz*sn)*sp*dt; P.z += (-mx*sn + mz*cs)*sp*dt;
+  }
+  collide();
+  const sy = surfaceY(), wantJump = !treeOpen && lastPress > 0 && (G - lastPress) < .12;
+  if (P.sq) {                                                   // you have landed: the mat squashes for a moment, waiting to see when you press Space
+    const s = P.sq; s.t += dt;
+    P.y = TR.h + .03 - .28*Math.sin(Math.min(1, s.t/.3)*Math.PI);
+    if (lastPress >= s.t0) { const d = lastPress - s.t0; P.sq = null; lastPress = -9; rebound(s.vin, d <= .12 + S.win ? 'perfect' : 'good'); }
+    else if (s.t >= .3) { P.sq = null; rebound(s.vin, 'plain'); }
+  } else if (!P.air) {
+    P.base += (sy - P.base)*Math.min(1, dt*12);
+    P.y = P.base; P.onMat = sy > 0;
+    if (wantJump) {
+      lastPress = -9;
+      if (P.onMat) { P.air = true; P.vy = 6 + S.kick*2; P.bouncing = true; P.maxH = 0; say('Bounce!', '#fff'); }
+      else { P.air = true; P.vy = 5.2; P.bouncing = false; }     // an ordinary jump: no bounce, no coins
+    }
+  } else {
+    P.vy -= (P.bouncing ? S.grav : 9.8)*dt; P.y += P.vy*dt;
+    if (S.zero && P.bouncing && P.y > 450) { P.y = 450; P.vy = -Math.abs(P.vy); }
+    const nearMat = surfaceY() > 0, floor = nearMat ? TR.h + .03 : 0;
+    if (P.y <= floor && P.vy < 0) {
+      if (nearMat && P.bouncing) {
+        const vin = -P.vy, e = G - lastPress;
+        if (lastPress > 0 && e >= 0 && e <= .8) {               // you pressed Space before landing
+          lastPress = -9; rebound(vin, e <= .12 + S.win ? 'perfect' : e <= .3 + S.win*2 ? 'good' : 'early');
+        } else { P.sq = { t: 0, t0: G, vin }; P.vy = 0; P.y = floor; }
+      } else { P.air = false; P.y = floor; P.vy = 0; P.base = floor; P.bouncing = false; }
+    }
+    if (P.bouncing) {                                           // coins: the higher you are above the mat, the faster they come
+      const h = Math.max(0, P.y - TR.h);
+      if (h > P.maxH) P.maxH = h;
+      coinFrac += h*.6*S.coin*dt; const w = Math.floor(coinFrac); if (w) { coins += w; coinFrac -= w; }
+    }
+  }
+  P.boosted = Math.max(0, P.boosted - dt*2.5);
+  placeCamera();
+  const hint = $('hint'); outline.visible = false; let msg = '';
+  if (!treeOpen && locked && !P.air) {
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 6);
+    ray.setFromCamera({ x: 0, y: 0 }, camera);
+    if (ray.intersectObject(hitBox).length) { outline.visible = true; msg = 'Click the computer'; }
+  }
+  if (!msg && !P.air && !P.sq && P.onMat && !P.bouncing) msg = 'Press Space to bounce. Press it again right as you land!';
+  hint.textContent = msg; hint.style.opacity = msg ? 1 : 0;
+  hud();
+}
+function placeCamera() {
+  camera.position.set(P.x, P.y + EYE, P.z);
+  camera.rotation.set(P.pitch, P.yaw, 0, 'YXZ');
+  const up = P.air ? Math.max(-1, Math.min(1, P.vy/10)) : 0;
+  const t = performance.now()/1000, mv = keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD, walk = (!P.air && mv) ? Math.sin(t*9)*.06 : 0;
+  armL.rotation.x = .2 + up*.8 + walk; armR.rotation.x = .2 + up*.8 - walk;
+  armL.rotation.z = .12 + up*.35; armR.rotation.z = -.12 - up*.35;
+  const c = .3 + (P.air ? .25 + Math.max(0, -up)*.3 : 0); curlHand(armL, c); curlHand(armR, c);
+  camera.fov = 70 + P.boosted*10 + Math.min(10, Math.max(0, (P.y - TR.h))*.05); camera.updateProjectionMatrix();
+}
+function hud() {
+  const h = Math.max(0, P.y - TR.h);
+  $('hud').innerHTML = '🪙 ' + Math.floor(coins).toLocaleString() + ' &nbsp; 💵 $' + money +
+    '<div id="stom"><svg width="30" height="30" viewBox="0 0 30 30"><path d="M12 3 C12 8 9 9 8 13 C5 17 6 25 14 26 C23 27 26 21 24 16 C22 12 16 13 15 9 C14 6 17 3 12 3 Z" fill="#ef9a9a" stroke="#fff" stroke-width="2"/></svg><div class="bar"><div class="fill" style="width:' + food + '%;background:' + (food < 25 ? '#e53935' : food < 50 ? '#fbc02d' : '#43a047') + '"></div></div></div>' +
+    '<small>Height ' + h.toFixed(1) + ' m · Best this bounce ' + P.maxH.toFixed(1) + ' m<br>Gravity ' + (S.zero ? '0 (zero!)' : S.grav.toFixed(1)) + (S.boost ? ' · Boost ' + Math.round(S.boost*100) + '%' : '') + '</small>';
+  const low = food < 30 ? (1 - food/30) : 0; $('hungry').style.opacity = Math.min(1, low*(.75 + .25*Math.sin(performance.now()/260)));
+}
+
+// ---- running out of food ----
+function startStarve() {
+  P.dead = { t: 0 }; P.air = false; P.sq = null; P.bouncing = false;
+  if (treeOpen) { treeOpen = false; $('tree').classList.remove('open'); $('tip').style.display = 'none'; }
+  $('hungry').style.opacity = 1; $('hint').style.opacity = 0;
+}
+function starve(dt) {
+  const d = P.dead; d.t += dt;
+  const k = Math.min(1, d.t/1.2), e = 1 - Math.pow(1 - k, 3);
+  camera.position.set(P.x, P.y + EYE - e*(EYE - .25), P.z);
+  camera.rotation.set(P.pitch*(1 - e), P.yaw, e*Math.PI/2, 'YXZ');          // you fall sideways
+  $('hungry').style.opacity = 1;
+  if (d.t > 1.2) { $('dead').style.display = 'flex'; $('dead').innerHTML = 'You ran out of food.<br><small>The game is starting over...</small>'; }
+  if (d.t > 4) { document.exitPointerLock(); resetGame(); showMenu('home'); }
+}
+
+let homeT = 0;
+function frame(now) {
+  const dt = Math.min(.05, (now - last)/1000); last = now;
+  if (menuMode === 'home') {                                  // the home screen: the camera drifts round the yard
+    homeT += dt*.15; armsG.visible = false;
+    camera.position.set(Math.sin(homeT)*26, 7 + Math.sin(homeT*.7)*1.5, 6 + Math.cos(homeT)*20);
+    camera.rotation.set(0, 0, 0); camera.lookAt(0, 2, -3); camera.fov = 60; camera.updateProjectionMatrix();
+  } else {
+    armsG.visible = true;
+    if (!menuMode) update(dt);
+  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+showMenu('home');
+requestAnimationFrame(frame);
+setInterval(() => { if (!P.dead) save(); }, 4000); addEventListener('beforeunload', () => { if (!P.dead) save(); });
+
+addEventListener('mousedown', () => {
+  if (!locked || treeOpen || P.air || P.dead || menuMode) return;
+  const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 6);
+  ray.setFromCamera({ x: 0, y: 0 }, camera);
+  if (ray.intersectObject(hitBox).length) openTree();
+});
+
+// ====================== THE COMPUTER: SKILL TREE, JOBS, FOOD ======================
+const treeEl = $('tree'), stage = $('stage'), tip = $('tip');
+const pos = { root: { x: 0, y: 0 } };
+for (const u of UP) { const r = u.a*Math.PI/180, d = RING(u.ring); pos[u.id] = { x: Math.cos(r)*d, y: Math.sin(r)*d }; }
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('width', 1); svg.setAttribute('height', 1); stage.appendChild(svg);
+const center = document.createElement('div'); center.id = 'center'; center.style.left = '0px'; center.style.top = '0px';
+center.innerHTML = '<svg viewBox="0 0 200 200" width="200" height="200" style="left:0;top:0">' +
+  '<ellipse cx="100" cy="168" rx="82" ry="14" fill="#1e88e5"/><ellipse cx="100" cy="162" rx="76" ry="10" fill="#222"/>' +
+  '<line x1="38" y1="170" x2="34" y2="196" stroke="#999" stroke-width="5"/><line x1="162" y1="170" x2="166" y2="196" stroke="#999" stroke-width="5"/>' +
+  '<g stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="100" cy="44" r="14" fill="#fff"/><line x1="100" y1="58" x2="100" y2="102"/>' +
+  '<polyline points="100,68 76,82 60,66"/><polyline points="100,68 124,82 140,66"/>' +
+  '<polyline points="100,102 82,126 88,154"/><polyline points="100,102 118,126 112,154"/></g></svg>';
+stage.appendChild(center);
+const els = {}, edges = [];                         // edges: one line for every parent -> child link
+for (const u of UP) {
+  const q = pos[u.id];
+  for (const pid of u.parents) {
+    const p0 = pos[pid], dl = Math.hypot(q.x - p0.x, q.y - p0.y), off = pid === 'root' ? 105 : 0;
+    const x1 = p0.x + (q.x - p0.x)/dl*off, y1 = p0.y + (q.y - p0.y)/dl*off;
+    const ln = document.createElementNS(NS, 'line'); ln.setAttribute('class', 'line');
+    ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', q.x); ln.setAttribute('y2', q.y);
+    const len = Math.hypot(q.x - x1, q.y - y1); ln.style.strokeDasharray = len; ln.style.strokeDashoffset = len; ln.dataset.len = len;
+    svg.appendChild(ln); edges.push({ ln, from: pid, to: u.id, drawn: false });
+  }
+}
+for (const u of UP) {
+  const q = pos[u.id], n = document.createElement('div'); n.className = 'node'; n.textContent = u.i; n.style.left = q.x + 'px'; n.style.top = q.y + 'px';
+  if (u.parents.length > 1) n.classList.add('merge');
+  stage.appendChild(n); els[u.id] = n;
+  n.onmouseenter = e => showTip(u, e); n.onmousemove = moveTip; n.onmouseleave = () => tip.style.display = 'none';
+  n.onclick = () => buy(u);
+}
+const have = id => id === 'root' || !!bought[id];
+const canBuy = u => !bought[u.id] && u.parents.every(have) && coins >= u.cost;
+let shown = {};
+function refresh(animate) {
+  for (const u of UP) {
+    const n = els[u.id], open = u.parents.some(have);              // appears as soon as ONE parent is bought
+    if (open && !shown[u.id]) { shown[u.id] = true; if (animate) setTimeout(() => n.classList.add('show'), 450); else n.classList.add('show'); }
+    n.classList.toggle('bought', !!bought[u.id]);
+    n.classList.toggle('grey', !bought[u.id] && !canBuy(u));
+  }
+  for (const e of edges) {
+    if (have(e.from) && !e.drawn) {                                  // a line draws itself out of every parent you own
+      e.drawn = true; e.ln.style.transition = animate ? 'stroke-dashoffset .6s ease-out' : 'none';
+      requestAnimationFrame(() => { e.ln.style.strokeDashoffset = 0; });
+    }
+    e.ln.classList.toggle('off', !bought[e.to] && !canBuy(UP.find(u => u.id === e.to)));
+  }
+  $('tcoins').innerHTML = '🪙 ' + Math.floor(coins).toLocaleString() + '<br><span>💵 $' + money + '</span>';
+  $('fbar').style.width = food + '%'; $('fbar').style.background = food < 25 ? '#e53935' : food < 50 ? '#fbc02d' : '#43a047';
+  $('ftxt').textContent = 'Stomach: ' + Math.round(food) + '%  ·  You have $' + money;
+  document.querySelectorAll('#fcards button').forEach((b, i) => b.disabled = money < FOODS[i].price || food >= 99.5);
+}
+function resetTree() {
+  shown = {};
+  for (const u of UP) els[u.id].classList.remove('show', 'bought');
+  for (const e of edges) { e.drawn = false; e.ln.style.transition = 'none'; e.ln.style.strokeDashoffset = e.ln.dataset.len; }
+}
+function showTip(u, e) {
+  const need = u.parents.filter(p => !have(p)).map(p => UP.find(x => x.id === p).n);
+  tip.innerHTML = '<b>' + u.n + '</b>' + u.t + (need.length ? '<div style="color:#c62828;margin-top:4px">Needs first: ' + need.join(', ') + '</div>' : '') +
+    '<div class="cost">' + (bought[u.id] ? 'You have this ✔' : '🪙 ' + u.cost.toLocaleString()) + '</div>';
+  tip.style.display = 'block'; moveTip(e);
+}
+function moveTip(e) { tip.style.left = Math.min(innerWidth - 270, e.clientX + 18) + 'px'; tip.style.top = Math.min(innerHeight - 140, e.clientY + 18) + 'px'; }
+function buy(u) {
+  if (!canBuy(u)) return;
+  coins -= u.cost; bought[u.id] = true; S = stats(); save();
+  els[u.id].classList.add('pulse'); setTimeout(() => els[u.id].classList.remove('pulse'), 500);
+  refresh(true); showTip(u, { clientX: parseInt(tip.style.left) - 18, clientY: parseInt(tip.style.top) - 18 });
+}
+// moving around the big tree: drag to pan, scroll to zoom
+const view = { x: 0, y: 0, z: .7 };
+function applyView() { stage.style.transform = 'translate(' + view.x + 'px,' + (view.y + 30) + 'px) scale(' + view.z + ')'; }
+function fit() { view.x = 0; view.y = 0; view.z = Math.max(.45, Math.min(.9, Math.min(innerWidth/1300, innerHeight/1500))); applyView(); }
+let drag = null;
+treeEl.addEventListener('pointerdown', e => { if (e.target.closest('.node,button,input,.panel,#tabs')) return; drag = { x: e.clientX - view.x, y: e.clientY - view.y }; });
+addEventListener('pointermove', e => { if (drag) { view.x = e.clientX - drag.x; view.y = e.clientY - drag.y; applyView(); } });
+addEventListener('pointerup', () => { drag = null; });
+treeEl.addEventListener('wheel', e => { e.preventDefault(); view.z = Math.max(.3, Math.min(1.6, view.z*(e.deltaY < 0 ? 1.1 : .9))); applyView(); }, { passive: false });
+addEventListener('resize', fit);
+
+function openTab(t) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  stage.style.display = t === 'skill' ? 'block' : 'none'; $('vhelp').style.display = t === 'skill' ? 'block' : 'none';
+  $('p-jobs').classList.toggle('on', t === 'jobs'); $('p-food').classList.toggle('on', t === 'food');
+  tip.style.display = 'none'; refresh(false);
+}
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => openTab(b.dataset.t));
+
+FOODS.forEach(f => {
+  const c = document.createElement('div'); c.className = 'card';
+  c.innerHTML = '<div class="big">' + f.i + '</div><h3>' + f.n + '</h3><p>' + f.t + '<br>Fills ' + f.add + '% of your stomach</p><button>Buy · $' + f.price + '</button>';
+  c.querySelector('button').onclick = () => { if (money >= f.price && food < 99.5) { money -= f.price; food = Math.min(100, food + f.add); save(); refresh(false); } };
+  $('fcards').appendChild(c);
+});
+
+// ====================== JOBS ======================
+const JOBS = [
+  { id:'mow',   i:'🌱', n:'Mow the lawn',       pay:8,  t:'Hold the mouse button and push the mower over the long grass. Steer round the flowers.' },
+  { id:'pest',  i:'🐀', n:'Catch the pests',    pay:6,  t:'Pests pop out of the holes. Click them fast. Leave the cats alone.' },
+  { id:'plumb', i:'🔧', n:'Fix the plumbing',   pay:10, t:'Click the pipes to turn them until water runs from the pump to the tap.' },
+  { id:'pan',   i:'🥞', n:'Cook the pancakes',  pay:7,  t:'Flip each pancake when it is golden. Not too early. Not too late.' },
+  { id:'pizza', i:'🍕', n:'Take pizza orders',  pay:9,  t:'Remember each order, then tap the toppings in the same order.' },
+  { id:'rec',   i:'♻️', n:'Sort the recycling', pay:7,  t:'Send every item to the right bin.' },
+];
+let job = null;
+const jstage = $('jstage');
+function cancelJob() { if (job) { if (job.stop) job.stop(); job = null; } jstage.innerHTML = ''; $('jgame').style.display = 'none'; $('jlist').style.display = 'flex'; }
+function finishJob(win, text, payOverride) {
+  if (!job) return; if (job.stop) job.stop();
+  const pay = win ? (payOverride ?? job.def.pay) : 0; if (pay) { money += pay; save(); }
+  jstage.innerHTML = '<div class="jresult">' + (win ? '✅ Job done!<br>You earned $' + pay : '❌ Job failed') + '<br><span style="font-size:22px;font-weight:normal">' + text + '</span><br><br><button class="mbtn ok" id="jback">Back to the jobs</button></div>';
+  $('jback').onclick = cancelJob; $('jinfo').textContent = ''; refresh(false);
+}
+JOBS.forEach(d => {
+  const c = document.createElement('div'); c.className = 'card jcard';
+  c.innerHTML = '<div class="big">' + d.i + '</div><h3>' + d.n + '</h3><p>' + d.t + '</p><div class="pay">$' + d.pay + '</div><button>Start</button>';
+  c.querySelector('button').onclick = () => startJob(d);
+  $('jcards').appendChild(c);
+});
+function startJob(def) {
+  $('jlist').style.display = 'none'; $('jgame').style.display = 'flex'; $('jtitle').textContent = def.i + ' ' + def.n; jstage.innerHTML = '';
+  job = { def, stop: null }; GAMES[def.id](def);
+}
+$('jcancel').onclick = cancelJob;
+const rnd = (a, b) => a + Math.random()*(b - a), pick = a => a[Math.floor(Math.random()*a.length)];
+function raf(fn) { let on = true, t0 = performance.now(); const loop = now => { if (!on) return; const dt = Math.min(.05, (now - t0)/1000); t0 = now; fn(dt); requestAnimationFrame(loop); }; requestAnimationFrame(loop); return () => { on = false; }; }
+function mkCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; jstage.appendChild(c); return c; }
+
+const GAMES = {
+  // ---- mow the lawn: a mower you push with the mouse; the flowers must not be run over ----
+  mow(def) {
+    const W = 640, H = 352, C = 16, cols = W/C, rows = H/C, cv2 = mkCanvas(W, H), g = cv2.getContext('2d');
+    const tall = new Array(cols*rows).fill(true), flowers = [];
+    for (let i = 0; i < 4; i++) flowers.push({ x: rnd(60, W - 60), y: rnd(50, H - 50), hit: false });
+    let mx = -99, my = -99, down = false, left = 45, hits = 0, cut = 0;
+    const pt = e => { const r = cv2.getBoundingClientRect(); mx = (e.clientX - r.left)*W/r.width; my = (e.clientY - r.top)*H/r.height; };
+    cv2.onpointerdown = e => { down = true; pt(e); }; cv2.onpointermove = pt; addEventListener('pointerup', up); function up() { down = false; }
+    job.stop = raf(dt => {
+      left -= dt;
+      if (down) {
+        for (let y = Math.max(0, Math.floor((my - 24)/C)); y <= Math.min(rows - 1, Math.floor((my + 24)/C)); y++)
+          for (let x = Math.max(0, Math.floor((mx - 24)/C)); x <= Math.min(cols - 1, Math.floor((mx + 24)/C)); x++)
+            if (Math.hypot(x*C + 8 - mx, y*C + 8 - my) < 24) tall[y*cols + x] = false;
+        for (const f of flowers) if (!f.hit && Math.hypot(f.x - mx, f.y - my) < 24) { f.hit = true; hits++; }
+      }
+      cut = tall.filter(t => !t).length/tall.length;
+      g.fillStyle = '#2e7d32'; g.fillRect(0, 0, W, H);
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+        if (tall[y*cols + x]) { g.fillStyle = (x + y) % 2 ? '#1b5e20' : '#236b27'; g.fillRect(x*C, y*C, C, C); g.strokeStyle = '#4caf50'; g.beginPath(); g.moveTo(x*C + 4, y*C + 14); g.lineTo(x*C + 2, y*C + 3); g.moveTo(x*C + 10, y*C + 14); g.lineTo(x*C + 12, y*C + 4); g.stroke(); }
+        else { g.fillStyle = (x % 2) ? '#9ccc65' : '#8bc34a'; g.fillRect(x*C, y*C, C, C); }
+      }
+      g.font = '30px serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (const f of flowers) g.fillText(f.hit ? '🥀' : '🌷', f.x, f.y);
+      if (mx > 0) g.fillText('🚜', mx, my);
+      $('jinfo').textContent = 'Cut ' + Math.round(cut*100) + '%  ·  Flowers squashed ' + hits + '  ·  ' + Math.max(0, Math.ceil(left)) + ' s';
+      if (cut >= .93) finishJob(true, hits ? hits + ' flowers were squashed, so the pay is lower.' : 'Not one flower squashed. A perfect lawn!', Math.max(4, def.pay - hits*1.5 | 0));
+      else if (left <= 0) finishJob(false, 'Time ran out with ' + Math.round(cut*100) + '% cut.');
+    });
+  },
+  // ---- catch the pests ----
+  pest(def) {
+    const wrap = document.createElement('div'); wrap.className = 'holes'; jstage.appendChild(wrap);
+    const holes = []; for (let i = 0; i < 9; i++) { const h = document.createElement('div'); h.className = 'hole'; wrap.appendChild(h); holes.push({ el: h, what: null, t: 0 }); h.onpointerdown = () => hit(i); }
+    let left = 30, caught = 0, mistakes = 0, spawn = 0;
+    function hit(i) { const h = holes[i]; if (!h.what) return; if (h.what === '🐱') { mistakes++; h.el.textContent = '😾'; } else { caught++; h.el.textContent = '💥'; } h.what = null; h.t = .25; }
+    job.stop = raf(dt => {
+      left -= dt; spawn -= dt;
+      if (spawn <= 0) { const free = holes.filter(h => !h.what && h.t <= 0); if (free.length) { const h = pick(free); h.what = Math.random() < .2 ? '🐱' : pick(['🐀', '🪳', '🦟', '🐁']); h.t = rnd(.8, 1.3); h.el.textContent = h.what; } spawn = rnd(.35, .7); }
+      for (const h of holes) { h.t -= dt; if (h.t <= 0) { h.what = null; h.el.textContent = ''; } }
+      $('jinfo').textContent = 'Caught ' + caught + ' of 12  ·  Cats poked ' + mistakes + '  ·  ' + Math.max(0, Math.ceil(left)) + ' s';
+      if (caught >= 12) finishJob(true, 'The house is pest free.', Math.max(3, def.pay - mistakes));
+      else if (left <= 0) finishJob(false, 'You caught ' + caught + '. You needed 12.');
+    });
+  },
+  // ---- fix the plumbing: turn the pipes until the water reaches the tap ----
+  plumb(def) {
+    const COLS = 5, ROWS = 4, T = 96, cv2 = mkCanvas(COLS*T + 80, ROWS*T), g = cv2.getContext('2d');
+    // directions: 0 up, 1 right, 2 down, 3 left. A piece is a list of open sides.
+    const r0 = Math.floor(Math.random()*ROWS), r1 = Math.floor(Math.random()*ROWS);
+    const path = []; let row = r0;
+    for (let c = 0; c < COLS; c++) { const target = c === COLS - 1 ? r1 : Math.floor(Math.random()*ROWS); const step = target >= row ? 1 : -1; for (; ; row += step) { path.push([c, row]); if (row === target) break; } }
+    const grid = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => ({ s: pick([[1, 3], [0, 2], [0, 1], [1, 2], [2, 3], [3, 0], [0, 1, 3]]), rot: 0 })));
+    for (let i = 0; i < path.length; i++) {
+      const [c, r] = path[i], prev = i ? path[i - 1] : [-1, r], next = i < path.length - 1 ? path[i + 1] : [COLS, r];
+      const dirOf = (a, b) => b[0] > a[0] ? 1 : b[0] < a[0] ? 3 : b[1] > a[1] ? 2 : 0;
+      grid[r][c].s = [dirOf([c, r], prev), dirOf([c, r], next)];
+    }
+    grid.forEach(rw => rw.forEach(t => { t.rot = Math.floor(Math.random()*4); }));
+    const sides = t => t.s.map(d => (d + t.rot) % 4);
+    const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];
+    function flow() {
+      const wet = new Set(), q = []; const start = grid[r0][0];
+      if (sides(start).includes(3)) { q.push([0, r0]); wet.add(r0*COLS); }
+      let reach = false;
+      while (q.length) { const [c, r] = q.pop(); for (const d of sides(grid[r][c])) { const nc = c + DX[d], nr = r + DY[d]; if (nc === COLS && nr === r1 && r === r1) { reach = true; continue; } if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) continue; if (wet.has(nr*COLS + nc)) continue; if (sides(grid[nr][nc]).includes((d + 2) % 4)) { wet.add(nr*COLS + nc); q.push([nc, nr]); } } }
+      return { wet, reach };
+    }
+    let fin = false, moves = 0;
+    function draw() {
+      const { wet, reach } = flow();
+      g.fillStyle = '#37474f'; g.fillRect(0, 0, cv2.width, cv2.height);
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        const x = c*T + 40 + T/2, y = r*T + T/2, w = wet.has(r*COLS + c);
+        g.fillStyle = '#455a64'; g.fillRect(c*T + 44, r*T + 4, T - 8, T - 8);
+        g.strokeStyle = w ? '#29b6f6' : '#b0bec5'; g.lineWidth = 16; g.lineCap = 'butt';
+        for (const d of sides(grid[r][c])) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + DX[d]*(T/2 - 4), y + DY[d]*(T/2 - 4)); g.stroke(); }
+        g.fillStyle = w ? '#29b6f6' : '#b0bec5'; g.beginPath(); g.arc(x, y, 9, 0, 7); g.fill();
+      }
+      g.font = '40px serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('⛽', 20, r0*T + T/2); g.fillText('🚰', COLS*T + 62, r1*T + T/2);
+      g.strokeStyle = wet.has(r0*COLS) ? '#29b6f6' : '#b0bec5'; g.lineWidth = 16; g.beginPath(); g.moveTo(36, r0*T + T/2); g.lineTo(44, r0*T + T/2); g.stroke();
+      $('jinfo').textContent = reach ? 'Water is flowing!' : 'Turn the pipes · Turns: ' + moves;
+      if (reach && !fin) { fin = true; setTimeout(() => finishJob(true, 'No more leaks. Turns used: ' + moves + '.', Math.max(6, def.pay - Math.max(0, moves - 14)*0 | 0)), 700); }
+    }
+    cv2.onpointerdown = e => { if (fin) return; const r = cv2.getBoundingClientRect(), x = (e.clientX - r.left)*cv2.width/r.width - 40, y = (e.clientY - r.top)*cv2.height/r.height; const c = Math.floor(x/T), rw = Math.floor(y/T); if (c >= 0 && c < COLS && rw >= 0 && rw < ROWS) { grid[rw][c].rot = (grid[rw][c].rot + 1) % 4; moves++; draw(); } };
+    job.stop = () => { fin = true; }; draw();
+  },
+  // ---- cook the pancakes: flip when golden ----
+  pan(def) {
+    const cv2 = mkCanvas(640, 300), g = cv2.getContext('2d');
+    let n = 0, golden = 0, p = 0, speed = rnd(.34, .45), msg = '', msgT = 0, wait = .6;
+    cv2.onpointerdown = () => { if (wait > 0) return; const ok = p >= .52 && p <= .78; if (ok) golden++; msg = ok ? 'Golden! 😋' : p < .52 ? 'Still raw! 🤢' : 'Burnt! 🔥'; msgT = 1; next(); };
+    function next() { n++; p = 0; wait = .9; speed = rnd(.34, .5); if (n >= 5) { finishJob(golden >= 4, golden + ' of 5 pancakes were golden. You needed 4.', golden === 5 ? def.pay + 2 : def.pay); } }
+    job.stop = raf(dt => {
+      if (!job || n >= 5) return; msgT -= dt;
+      if (wait > 0) wait -= dt; else { p += speed*dt; if (p >= 1) { msg = 'Burnt! 🔥'; msgT = 1; next(); } }
+      g.fillStyle = '#4e342e'; g.fillRect(0, 0, 640, 300);
+      g.fillStyle = '#212121'; g.beginPath(); g.arc(320, 130, 100, 0, 7); g.fill();
+      const col = p < .52 ? [255, 238, 190] : p <= .78 ? [233, 168, 60] : [74, 40, 20]; const k = p < .52 ? p/.52 : 1;
+      const cc = p < .52 ? [255 - k*22, 238 - k*60, 190 - k*90] : col;
+      g.fillStyle = 'rgb(' + cc.map(Math.round) + ')'; g.beginPath(); g.ellipse(320, 130, 80, 70, 0, 0, 7); g.fill();
+      g.fillStyle = '#111'; g.fillRect(120, 250, 400, 22); g.fillStyle = '#e53935'; g.fillRect(120 + 400*.52, 250, 400*(.78 - .52), 22);
+      g.fillStyle = '#ffd54f'; g.fillRect(120 + 400*.52, 250, 400*(.78 - .52), 22); g.fillStyle = '#fff'; g.fillRect(120 + 400*p - 3, 244, 6, 34);
+      g.fillStyle = '#fff'; g.font = '22px Arial'; g.textAlign = 'center'; g.fillText('Click the pan when the white line is in the gold part', 320, 292);
+      if (msgT > 0) { g.font = 'bold 36px Arial'; g.fillText(msg, 320, 40); }
+      $('jinfo').textContent = 'Pancake ' + Math.min(5, n + 1) + ' of 5  ·  Golden so far ' + golden;
+    });
+  },
+  // ---- take pizza orders: a memory game ----
+  pizza(def) {
+    const TOP = ['🍄', '🧀', '🍅', '🫑', '🌶️', '🍍'];
+    const box = document.createElement('div'); box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:18px;min-width:560px'; jstage.appendChild(box);
+    const show = document.createElement('div'); show.className = 'big-emoji'; show.style.minHeight = '100px'; box.appendChild(show);
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:12px'; box.appendChild(row);
+    const btns = TOP.map((t, i) => { const b = document.createElement('button'); b.className = 'pbtn'; b.textContent = t; b.disabled = true; row.appendChild(b); return b; });
+    let round = 0, ok = 0, seq = [], idx = 0, timers = [];
+    const later = (f, ms) => timers.push(setTimeout(f, ms)); job.stop = () => timers.forEach(clearTimeout);
+    function start() {
+      if (round >= 3) { finishJob(ok >= 2, ok + ' of 3 orders were right. You needed 2.', ok === 3 ? def.pay + 2 : def.pay); return; }
+      seq = Array.from({ length: 3 + round }, () => Math.floor(Math.random()*TOP.length)); idx = 0; btns.forEach(b => b.disabled = true);
+      $('jinfo').textContent = 'Order ' + (round + 1) + ' of 3: remember it!'; show.textContent = '';
+      seq.forEach((t, i) => { later(() => { show.textContent = TOP[t]; }, 700 + i*800); later(() => { show.textContent = ''; }, 700 + i*800 + 600); });
+      later(() => { $('jinfo').textContent = 'Your turn: tap the toppings in order'; show.textContent = '❓'; btns.forEach(b => b.disabled = false); }, 700 + seq.length*800);
+    }
+    btns.forEach((b, i) => b.onclick = () => {
+      if (i === seq[idx]) { idx++; b.classList.add('lit'); setTimeout(() => b.classList.remove('lit'), 200); if (idx >= seq.length) { ok++; show.textContent = '🍕😋'; round++; btns.forEach(x => x.disabled = true); later(start, 900); } }
+      else { show.textContent = '😬'; round++; btns.forEach(x => x.disabled = true); later(start, 1000); }
+    });
+    start();
+  },
+  // ---- sort the recycling ----
+  rec(def) {
+    const ITEMS = [['🗞️', 'Newspaper', 'paper'], ['📦', 'Cardboard box', 'paper'], ['📄', 'Old letter', 'paper'], ['🥤', 'Plastic cup', 'plastic'], ['🧴', 'Shampoo bottle', 'plastic'], ['🥛', 'Milk bottle', 'plastic'], ['🍾', 'Glass bottle', 'glass'], ['🫙', 'Jam jar', 'glass'], ['🍎', 'Apple core', 'food'], ['🍌', 'Banana peel', 'food'], ['🥔', 'Potato peel', 'food'], ['🥫', 'Metal can', 'metal']];
+    const BINS = [['paper', '📘 Paper', '#1565c0'], ['plastic', '🟡 Plastic', '#f9a825'], ['glass', '🟢 Glass', '#2e7d32'], ['food', '🟤 Food waste', '#6d4c41'], ['metal', '⚪ Metal', '#607d8b']];
+    const list = ITEMS.slice().sort(() => Math.random() - .5).slice(0, 8);
+    const box = document.createElement('div'); box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:14px;min-width:620px'; jstage.appendChild(box);
+    const it = document.createElement('div'); it.style.textAlign = 'center'; box.appendChild(it);
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:center'; box.appendChild(row);
+    let i = 0, right = 0, locked = false;
+    function show() { $('jinfo').textContent = 'Item ' + (i + 1) + ' of 8  ·  Right so far ' + right; it.innerHTML = '<div class="big-emoji">' + list[i][0] + '</div><div style="font-size:26px;font-weight:bold">' + list[i][1] + '</div>'; }
+    BINS.forEach(b => { const bt = document.createElement('button'); bt.className = 'bin'; bt.textContent = b[1]; bt.style.background = b[2]; row.appendChild(bt);
+      bt.onclick = () => { if (locked) return; const ok = list[i][2] === b[0]; if (ok) right++; locked = true; it.innerHTML += '<div style="font-size:30px">' + (ok ? '✅' : '❌ It goes in ' + BINS.find(x => x[0] === list[i][2])[1]) + '</div>'; setTimeout(() => { locked = false; i++; if (i >= 8) finishJob(right >= 7, right + ' of 8 were right. You needed 7.', right === 8 ? def.pay + 2 : def.pay); else show(); }, ok ? 450 : 1100); }; });
+    show();
+  },
+};
+
+function openTree() {
+  treeOpen = true; document.exitPointerLock(); treeEl.classList.add('open'); fit();
+  openTab('skill');
+}
+function closeTree() {
+  treeOpen = false; treeEl.classList.remove('open'); tip.style.display = 'none'; save();
+  cancelJob();
+  cv.requestPointerLock();
+}
+$('close').onclick = closeTree;
+setInterval(() => { if (treeOpen) refresh(true); }, 500);
+</script>
+</body>
+</html>

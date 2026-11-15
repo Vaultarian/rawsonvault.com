@@ -79,8 +79,8 @@ const LDLC = (() => {
      a link or in Dad's Google Form. Coming back in, a code is only ever read as blocks: anything that
      isn't a known block, switch or number is thrown away, and nothing in it is ever run. */
   const KINDS = ['tile', 'hero', 'door', 'spike', 'smallspike', 'sawblade', 'spring', 'coin', 'oneway',
-                 'portal', 'trigger', 'button', 'controls', 'dashorb', 'ball', 'hill', 'camera', 'repeater', 'checkpoint'];
-  const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed', 'gravity', 'crush', 'triggers'];
+                 'portal', 'trigger', 'button', 'controls', 'dashorb', 'ball', 'hill', 'camera', 'repeater', 'checkpoint', 'textblock', 'devil', 'device'];
+  const SWITCH = ['collision', 'deadly', 'visible', 'action', 'disguise', 'needed', 'gravity', 'crush', 'triggers', 'attraction', 'devilmax', 'destroy'];
   const WAYS = ['up', 'down', 'left', 'right'];
   const num = (v, lo, hi, d) => typeof v === 'number' && isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d;
   const text = (v, most) => typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').trim().slice(0, most) : '';
@@ -88,10 +88,20 @@ const LDLC = (() => {
 
   function cleanAction(a) {
     if (!a || typeof a !== 'object') return null;
-    const out = { do:['', 'size', 'move', 'props'].includes(a.do) ? a.do : '' };
+    const out = { do:['', 'size', 'move', 'props', 'text', 'tilt', 'collision'].includes(a.do) ? a.do : '' };
     if (a.size !== undefined) out.size = num(a.size, .5, 6, 2);
     if (WAYS.includes(a.dir)) out.dir = a.dir;
-    if (a.n !== undefined) out.n = num(a.n, 1, 31, 1);
+    if (a.n !== undefined) out.n = num(a.n, 0, 31, 1);
+    if (a.chSpeed === true) { out.chSpeed = true; out.speedBy = num(a.speedBy, -50, 50, 1); }      // Movement: Change speed
+    if (['set', 'add'].includes(a.nmode)) out.nmode = a.nmode;                                        // Change text/number
+    if (a.num !== undefined) out.num = num(a.num, -999999, 999999, 0);
+    if (a.sentence !== undefined) out.sentence = text(a.sentence, 60);
+    if (a.splash === true) out.splash = true;
+    if (typeof a.col === 'boolean') out.col = a.col;                                                  // Change collision
+    if (['all', 'player', 'devil'].includes(a.ctype)) out.ctype = a.ctype;
+    if (['to', 'by'].includes(a.tmode)) out.tmode = a.tmode;                                          // Tilt
+    if (a.deg !== undefined) out.deg = num(a.deg, -720, 720, 90);
+    if (a.secs !== undefined) out.secs = num(a.secs, 0, 30, .5);
     if (a.speed !== undefined) out.speed = num(a.speed, 1, 50, 1);
     if (a.wait !== undefined) out.wait = num(a.wait, 0, 30, 0);
     if (a.props && typeof a.props === 'object') {
@@ -110,6 +120,29 @@ const LDLC = (() => {
     }
     if (KINDS.includes(c.as) || c.as === 'neededcoin') out.as = c.as;
     if (c.r !== undefined) out.r = Math.round(num(c.r, 0, 3, 0));
+    if (c.tilt !== undefined) out.tilt = num(c.tilt, -720, 720, 0);                                   // Tilt
+    if (['player', 'devil'].includes(c.ctype)) out.ctype = c.ctype;                                   // Collision type: only player / only devil
+    if (c.vis !== undefined) out.vis = num(c.vis, 0, 100, 100);                                       // Visibility %
+    if (c.t === 'textblock') {                                                                         // Text block
+      if (['text', 'number'].includes(c.tm)) out.tm = c.tm;
+      if (c.tt !== undefined) out.tt = text(c.tt, 60);
+      if (typeof c.tn === 'number') out.tn = num(c.tn, -999999, 999999, 0);
+      if (c.ts !== undefined) out.ts = num(c.ts, 20, 500, 100);
+    }
+    if (c.t === 'trigger') {                                                                           // Repeat type
+      if (['once', 'enter', 'inside'].includes(c.rep)) out.rep = c.rep;
+      if (c.repEvery !== undefined) out.repEvery = num(c.repEvery, .1, 30, 1);
+    }
+    if (c.t === 'device' && c.dmax !== undefined) out.dmax = num(c.dmax, 1, 99, 3);
+    if (c.t === 'devil') {                                                                              // Devil: Attraction, Destroying time, Movement
+      if (['type', 'block'].includes(c.attm)) out.attm = c.attm;
+      if (typeof c.atype === 'string' && (c.atype === 'player' || c.atype === 'anything' || KINDS.includes(c.atype))) out.atype = c.atype;
+      if (c.dtime !== undefined) out.dtime = num(c.dtime, .1, 120, 2);
+      if (['platformer', 'top'].includes(c.view)) out.view = c.view;
+      if (c.jumpH !== undefined) out.jumpH = num(c.jumpH, .5, 20, 3);
+      if (c.speed !== undefined) out.speed = num(c.speed, 10, 300, 100);
+    }
+    if (c.t === 'devil' && c.att != null) out.att = Math.round(num(c.att, 1, 1e6, 1));                 // Attraction = Block n
     if (WAYS.includes(c.out)) out.out = c.out;
     if (c.pair != null) out.pair = Math.round(num(c.pair, 1, 1e6, 1));
     if (Array.isArray(c.links)) out.links = c.links.slice(0, 300).filter(l => l && typeof l === 'object').map(l => ({

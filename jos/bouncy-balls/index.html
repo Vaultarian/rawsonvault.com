@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../swirl.js"></script>
+<script src="../mods.js" data-game></script><script src="../cursors.js"></script>
+<script src="../lang.js" data-game></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jos's Bouncy Balls</title>
+<style>
+  :root { --pink:#ff4ec7; --blue:#4edcff; --green:#6bff4e; --yellow:#ffe14e; --red:#ff4e4e; --dark:#0d0d1a; --panel:#1c1c33; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; overflow:hidden; background:var(--dark); color:#fff;
+    font-family:'Comic Sans MS','Trebuchet MS',sans-serif; }
+  canvas { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  #panel { position:fixed; top:62px; left:14px; z-index:10; width:280px; max-height:calc(100vh - 76px); overflow-y:auto;
+    background:rgba(28,28,51,.94); border:3px solid var(--blue); border-radius:18px; padding:14px; }
+  #panel h2 { margin:0 0 10px; font-size:1.25em; color:var(--green); }
+  .row { margin-bottom:11px; }
+  .row label { display:block; font-size:.85em; color:#bbb; margin-bottom:3px; }
+  select, input[type=range] { width:100%; }
+  select { font-family:inherit; font-size:1em; padding:6px; border-radius:10px; border:2px solid var(--pink); background:#0d0d1a; color:#fff; }
+  input[type=range] { accent-color:var(--pink); }
+  button { font-family:inherit; font-size:1em; padding:9px 14px; border:none; border-radius:11px; cursor:pointer;
+    background:var(--blue); color:#000; font-weight:bold; }
+  button:hover { filter:brightness(1.15); }
+  #back { background:var(--yellow); }
+  #mic { position:relative; width:52px; height:52px; padding:0; border-radius:50%; font-size:1.7em; background:var(--blue); }
+  #mic svg { position:absolute; inset:6px; width:40px; height:40px; pointer-events:none; }
+  #mic line { stroke:var(--red); stroke-width:5; stroke-linecap:round; }
+  .chk { width:30px; height:30px; padding:0; border-radius:50%; background:transparent; border:3px solid var(--green); color:var(--green); font-size:1.1em; line-height:1; }
+  .chk.on { background:var(--green); color:#000; }
+  .chk:not(.on) { border-color:#777; color:transparent; }
+  #menu { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  #card { pointer-events:auto; text-align:center; padding:26px 34px; border-radius:26px; background:rgba(13,13,26,.88);
+    border:4px solid var(--pink); box-shadow:0 0 40px rgba(255,78,199,.5); max-width:90vw; }
+  #card h1 { margin:0; font-size:clamp(2em,6vw,4em); color:var(--yellow); line-height:1.05; }
+  #card h2 { margin:6px 0 18px; font-size:clamp(1.1em,3vw,1.8em); color:var(--blue); }
+  #start { font-size:1.5em; padding:14px 28px; background:var(--green); }
+  #msg { margin-top:12px; color:#ff9; min-height:1.2em; }
+  .hide { display:none !important; }
+  #meter { height:14px; border-radius:8px; background:#000; overflow:hidden; border:2px solid #444; }
+  #meterfill { height:100%; width:0; background:var(--green); }
+  #status { position:fixed; top:62px; right:14px; z-index:10; font-size:2em; font-weight:bold; padding:8px 18px;
+    border-radius:16px; background:rgba(0,0,0,.55); }
+  #hint { font-size:.8em; color:#999; margin-top:8px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="menu"><div id="card"><h1>🏀 Bouncy Balls</h1><h2>Rawson Vault Edition</h2>
+  <button id="start">🎤 Start bouncing</button><div id="msg">It will ask to use your microphone. Press Allow.</div></div></div>
+<div id="status" class="hide" style="color:#6bff4e">Quiet!</div>
+<div id="panel" class="hide">
+  <h2>🏀 Bouncy Balls</h2>
+  <div class="row"><button id="back">← Back</button></div>
+  <div class="row"><button id="mic" title="Click to stop listening" aria-label="Microphone on"><span id="micicon">🎤</span><svg id="micx" viewBox="0 0 40 40" class="hide"><line x1="5" y1="5" x2="35" y2="35"/></svg></button></div>
+  <div class="row"><label>How loud right now</label><div id="meter"><div id="meterfill"></div></div></div>
+  <div class="row"><label>Sensitivity <span id="sensv"></span></label><input type="range" id="sens" min="1" max="100" value="50"></div>
+  <div class="row"><label>Ball bounciness <span id="bouncev"></span></label><input type="range" id="bounce" min="1" max="100" value="60"></div>
+  <div class="row"><label>Total balls <span id="totv"></span></label><input type="range" id="tot" min="5" max="300" value="100"><div id="count" style="font-size:.85em;color:#ffe14e;margin-top:3px"></div></div>
+  <div class="row"><label>Theme</label><select id="theme"></select></div>
+  <div class="row"><label>Noise alert</label><select id="alert"></select>
+    <div style="margin-top:7px;display:flex;align-items:center;gap:8px"><button id="alerton" class="chk on" aria-label="Noise alert on">✓</button><span id="alerttxt" style="font-size:.85em;color:#bbb">Alert is on</span></div></div>
+  <div class="row"><button id="clear">🧹 Clear the balls</button></div>
+</div>
+<script>
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W, H, dpr = 1;
+  function resize() { dpr = window.devicePixelRatio || 1; W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  addEventListener('resize', resize); resize();
+
+  /* ---------- themes ---------- */
+  var EMOJI = function (list) { return { kind:'emoji', list:list }; };
+  var THEMES = {
+    'Plastic':       { kind:'plastic' },
+    'Emoji':         EMOJI(['😀','😂','😎','🤩','😜','🥳','😮','🤪']),
+    'Numbers':       { kind:'number' },
+    'Bubbles':       { kind:'bubble' },
+    'Eyeballs':      { kind:'eye' },
+    'Minecraft blocks': { kind:'block' },
+    'Planets':       EMOJI(['🌍','🌕','🪐','🌞','🌑','☄️','🌎','⭐']),
+    'Pizza':         EMOJI(['🍕','🍕','🧀','🍅','🍄']),
+    'Sports balls':  EMOJI(['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱']),
+    'Fruit':         EMOJI(['🍎','🍌','🍇','🍉','🍓','🍊','🍍','🥝']),
+    'Devils and Devices': EMOJI(['😈','👿','📟','😈','💀']),
+    'Rainbow':       { kind:'rainbow' },
+    'Cats':          EMOJI(['🐱','😺','😹','🐈','😻']),
+    'Fire and ice':  EMOJI(['🔥','🧊','❄️','🔥','⚡'])
+  };
+  var themeSel = document.getElementById('theme');
+  Object.keys(THEMES).forEach(function (n) { var o = document.createElement('option'); o.textContent = n; themeSel.appendChild(o); });
+  themeSel.value = 'Plastic';
+  themeSel.onchange = function () { if (mode === 'play') balls.forEach(function (b) { b.leave = true; }); else balls.forEach(setLook); };
+  var COLS = ['#ff4ec7','#4edcff','#6bff4e','#ffe14e','#ff8c3a','#a66bff','#ff4e4e'];
+  var BLOCKS = ['#5d9c3f','#8b5a2b','#7f7f7f','#d8c36a','#3ec3d9','#b04a4a','#5a5a5a'];
+
+  /* ---------- noise alerts (all made with WebAudio, no files) ---------- */
+  var AC = null;
+  function ac() { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; }
+  function tone(f, d, type, vol, slide) {
+    var a = ac(), o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d);
+    g.gain.setValueAtTime(vol || .25, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d);
+  }
+  function noise(d, lo, hi, vol) {
+    var a = ac(), n = a.sampleRate * d, buf = a.createBuffer(1, n, a.sampleRate), data = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
+    var s = a.createBufferSource(); s.buffer = buf;
+    var f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = (lo + hi) / 2; f.Q.value = .8;
+    var g = a.createGain(), t = a.currentTime;
+    g.gain.setValueAtTime(0.001, t); g.gain.linearRampToValueAtTime(vol || .5, t + d * .3); g.gain.linearRampToValueAtTime(.001, t + d);
+    s.connect(f); f.connect(g); g.connect(a.destination); s.start();
+  }
+  function play(file) { try { var a = new Audio('sounds/' + file); a.play(); } catch (e) {} }
+  function times(n, gap, fn) { for (var i = 0; i < n; i++) setTimeout(fn, i * gap); }
+  var ALERTS = {
+    'No sound':      function () {},
+    'Beep':          function () { times(4, 330, function () { tone(880, .2, 'square', .15); }); },
+    'Shush':         function () { play('shush.mp3'); },
+    'Bell':          function () { play('bell.mp3'); },
+    'Siren':         function () { play('siren.mp3'); },
+    'Laser':         function () { times(3, 300, function () { tone(1800, .25, 'sawtooth', .2, 150); }); },
+    'Duck quack':    function () { times(2, 450, function () { play('duck.mp3'); }); },
+    'Drum roll':     function () { play('drumroll.mp3'); },
+    'Minecraft oof': function () { play('oof.mp3'); },
+    'Trombone sad':  function () { play('trombone.mp3'); },
+    'Devil laugh':   function () { play('devil.mp3'); },
+    'Say QUIET':     function () { try { var u = new SpeechSynthesisUtterance('Quiet please!'); speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {} }
+  };
+  var alertSel = document.getElementById('alert');
+  Object.keys(ALERTS).forEach(function (n) { var o = document.createElement('option'); o.textContent = n; alertSel.appendChild(o); });
+  alertSel.value = 'Beep';
+  alertSel.onchange = function () { ac(); ALERTS[alertSel.value](); };   // click it to hear it
+
+  /* ---------- microphone ---------- */
+  var analyser = null, buf = null, level = 0, micOn = false, mode = 'menu', stream = null, menuT = 0;
+  var menuEl = document.getElementById('menu'), panelEl = document.getElementById('panel'), statusEl = document.getElementById('status'), msgEl = document.getElementById('msg');
+  document.getElementById('start').onclick = function () {
+    ac(); msgEl.textContent = 'Waiting for your microphone… press Allow.';
+    navigator.mediaDevices.getUserMedia({ audio:true }).then(function (st) {
+      stream = st; var src = AC.createMediaStreamSource(st); analyser = AC.createAnalyser(); analyser.fftSize = 1024;
+      src.connect(analyser); buf = new Uint8Array(analyser.fftSize); micOn = true;
+      mode = 'play'; balls.length = 0; bits.length = 0; level = 0;
+      menuEl.classList.add('hide'); panelEl.classList.remove('hide'); statusEl.classList.remove('hide');
+      for (var i = 0; i < balls.length; i++) setLook(balls[i]);
+    }).catch(function () { msgEl.textContent = '🚫 I could not use the microphone. Allow it and press Start bouncing again.'; });
+  };
+  document.getElementById('back').onclick = function () {
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; micOn = false;
+    mode = 'menu'; balls.length = 0; bits.length = 0; level = 0; if (micMuted) micBtn.onclick();
+    menuEl.classList.remove('hide'); panelEl.classList.add('hide'); statusEl.classList.add('hide');
+    msgEl.textContent = 'It will ask to use your microphone. Press Allow.';
+  };
+  var bnc = document.getElementById('bounce'), bncv = document.getElementById('bouncev');
+  bnc.oninput = function () { bncv.textContent = bnc.value; }; bnc.oninput();
+  var micMuted = false, micBtn = document.getElementById('mic');
+  micBtn.onclick = function () {
+    micMuted = !micMuted; document.getElementById('micx').classList.toggle('hide', !micMuted);
+    micBtn.title = micMuted ? 'Click to listen again' : 'Click to stop listening'; micBtn.setAttribute('aria-label', micMuted ? 'Microphone off' : 'Microphone on');
+  };
+  var alertOn = true, alertBtn = document.getElementById('alerton');
+  alertBtn.onclick = function () { alertOn = !alertOn; alertBtn.classList.toggle('on', alertOn); document.getElementById('alerttxt').textContent = alertOn ? 'Alert is on' : 'Alert is off'; };
+  var tot = document.getElementById('tot'), totv = document.getElementById('totv');
+  tot.oninput = function () { totv.textContent = tot.value; };
+  var sens = document.getElementById('sens'), sensv = document.getElementById('sensv');
+  sens.oninput = function () { sensv.textContent = sens.value; }; sens.oninput(); tot.oninput();
+
+  function readLevel() {
+    var v = 0;
+    if (micOn && !micMuted) { analyser.getByteTimeDomainData(buf); var s = 0;
+      for (var i = 0; i < buf.length; i++) { var x = (buf[i] - 128) / 128; s += x * x; }
+      v = Math.sqrt(s / buf.length) * (2 + sens.value / 8); }
+    return Math.min(1, v);
+  }
+
+  /* ---------- balls ---------- */
+  var balls = [], bits = [], REST = .8, VMAX = 30;
+  var themeNames = Object.keys(THEMES);
+  function setLook(b) {
+    b.th = mode === 'menu' ? themeNames[(Math.random() * themeNames.length) | 0] : themeSel.value;
+    var th = THEMES[b.th]; b.e = th.list ? th.list[(Math.random() * th.list.length) | 0] : '';
+  }
+  function addBall() {
+    var r = (mode === 'menu' ? 18 : 14) + Math.random() * 22;
+    var b = { x:r + Math.random() * (W - 2 * r), y:-r, vx:(Math.random() - .5) * 4, vy:Math.random() * 2, r:r,
+              c:COLS[(Math.random() * COLS.length) | 0], n:1 + ((Math.random() * 99) | 0),
+              e:'', th:'Plastic', die:0, leave:false, up:false, in:false, bc:BLOCKS[(Math.random() * BLOCKS.length) | 0], a:Math.random() * 6.3, hue:Math.random() * 360 };
+    setLook(b); balls.push(b);
+  }
+  function addBatch(n) {                    // a neat grid just above the screen, so none overlap and they all drop together
+    var cols = Math.max(1, Math.floor(W / 80)), gap = W / cols;
+    for (var i = 0; i < n; i++) {
+      addBall(); var b = balls[balls.length - 1];
+      b.up = mode === 'play' && b.th === 'Bubbles';           // bubbles float up to the top of the screen
+      b.r = Math.min(b.r, 36); b.x = ((i % cols) + .5) * gap; b.vx = (Math.random() - .5) * 2;
+      if (b.up) { b.y = H + 40 + Math.floor(i / cols) * 80; b.vy = -2; } else { b.y = -40 - Math.floor(i / cols) * 80; b.vy = 2; }
+    }
+  }
+  document.getElementById('clear').onclick = function () { balls.length = 0; };
+
+  var EYEDIRS = [[-1,0],[1,0],[0,-1],[0,1],[-.7,-.7],[.7,-.7],[-.7,.7],[.7,.7],[0,0]];   // left, right, up, down, the diagonals, middle
+  function drawBall(b) {
+    var th = THEMES[b.th], x = b.x, y = b.y, r = b.r;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(th.kind === 'eye' ? 0 : b.a + b.die * 3); if (b.die) { ctx.globalAlpha = 1 - b.die; ctx.scale(1 - b.die * .6, 1 - b.die * .6); }
+    if (th.kind === 'emoji') { ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 6; ctx.font = (r * 2.1) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.e, 0, r * .08); ctx.shadowBlur = 0; }
+    else if (th.kind === 'block') { ctx.fillStyle = b.bc; ctx.fillRect(-r, -r, 2 * r, 2 * r); ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 3; ctx.strokeRect(-r, -r, 2 * r, 2 * r);
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(-r * .5, -r * .5, r * .5, r * .5); ctx.fillRect(0, 0, r * .5, r * .5); }
+    else {
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283);
+      if (th.kind === 'bubble') { ctx.fillStyle = 'rgba(110,200,255,.6)'; ctx.fill(); ctx.strokeStyle = 'rgba(200,240,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(-r * .35, -r * .35, r * .22, 0, 6.283); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fill(); }
+      else if (th.kind === 'eye') {
+        var tn = performance.now();
+        if (!b.nl || tn > b.nl) { var dd = EYEDIRS[(Math.random() * EYEDIRS.length) | 0]; b.tx = dd[0]; b.ty = dd[1]; b.nl = tn + 500 + Math.random() * 1800; }
+        b.gx = (b.gx || 0) + (b.tx - (b.gx || 0)) * .18; b.gy = (b.gy || 0) + (b.ty - (b.gy || 0)) * .18;
+        ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(b.gx * r * .34, b.gy * r * .34, r * .5, 0, 6.283); ctx.fillStyle = b.c; ctx.fill();
+        ctx.beginPath(); ctx.arc(b.gx * r * .44, b.gy * r * .44, r * .25, 0, 6.283); ctx.fillStyle = '#000'; ctx.fill(); }
+      else if (th.kind === 'rainbow') { ctx.fillStyle = 'hsl(' + ((b.hue + performance.now() / 8) % 360) + ',90%,60%)'; ctx.fill(); }
+      else { var g = ctx.createRadialGradient(-r * .35, -r * .35, r * .1, 0, 0, r); g.addColorStop(0, '#fff'); g.addColorStop(.25, b.c); g.addColorStop(1, '#000');
+        ctx.fillStyle = g; ctx.fill();
+        if (th.kind === 'number') { ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (r * 1.0) + 'px Comic Sans MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.n, 0, 0); } }
+    }
+    ctx.restore();
+  }
+
+  /* ---------- balls bump into each other (a grid, so lots of balls stay fast) ---------- */
+  function collide() {
+    var CS = 100, grid = {}, n = balls.length, i, j, k, a, b;
+    for (i = 0; i < n; i++) { a = balls[i]; var key = ((a.x / CS) | 0) + ',' + ((a.y / CS) | 0); (grid[key] = grid[key] || []).push(i); }
+    for (var pass = 0; pass < 40; pass++) {
+      for (i = 0; i < n; i++) {
+        a = balls[i]; var gx = (a.x / CS) | 0, gy = (a.y / CS) | 0;
+        for (var ox = -1; ox <= 1; ox++) for (var oy = -1; oy <= 1; oy++) {
+          var cell = grid[(gx + ox) + ',' + (gy + oy)]; if (!cell) continue;
+          for (k = 0; k < cell.length; k++) {
+            j = cell[k]; if (j <= i) continue; b = balls[j]; if (a.die || b.die || a.leave || b.leave) continue;
+            var dx = b.x - a.x, dy = b.y - a.y, d = Math.sqrt(dx * dx + dy * dy), min = a.r + b.r;
+            if (d >= min || d === 0) continue;
+            var nx = dx / d, ny = dy / d, ma = a.r * a.r, mb = b.r * b.r, push = (min - d + .01) / (ma + mb);
+            a.x -= nx * push * mb; a.y -= ny * push * mb; b.x += nx * push * ma; b.y += ny * push * ma;
+            var vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+            if (vn < 0) { var imp = -(1 + REST) * vn / (1 / ma + 1 / mb);
+              a.vx -= imp * nx / ma; a.vy -= imp * ny / ma; b.vx += imp * nx / mb; b.vy += imp * ny / mb; }
+          }
+        }
+      }
+      for (i = 0; i < n; i++) { a = balls[i]; if (a.leave) continue; if (a.x < a.r) a.x = a.r; if (a.x > W - a.r) a.x = W - a.r;
+        if (a.in && !a.up && a.y < a.r) { a.y = a.r; if (a.vy < 0) a.vy = a.vy < -1.5 ? -a.vy * REST : 0; }
+        if (a.in && a.up && a.y > H - a.r) { a.y = H - a.r; if (a.vy > 0) a.vy = a.vy > 1.5 ? -a.vy * REST : 0; }
+        if (!a.up && a.y > H - a.r) { a.y = H - a.r; if (a.vy > 0) a.vy = a.vy > 1.5 ? -a.vy * REST : 0; }
+        if (a.up && a.y < a.r) { a.y = a.r; if (a.vy < 0) a.vy = a.vy < -1.5 ? -a.vy * REST : 0; } }
+    }
+  }
+
+  /* ---------- loop ---------- */
+  var meterFill = document.getElementById('meterfill');
+  var state = 0, lastAlert = 0, lastLaunch = 0, spawnAcc = 0, last = performance.now();
+  function frame(now) {
+    var dt = Math.min(2, (now - last) / 16.67); last = now;
+    menuT += dt;
+    if (mode === 'menu') { var pulse = Math.max(0, Math.sin(menuT / 40)) * .6; level = level * .8 + pulse * .2; }
+    else level = level * .8 + readLevel() * .2;
+    meterFill.style.width = (level * 100) + '%';
+    meterFill.style.background = level < .35 ? '#6bff4e' : level < .65 ? '#ffe14e' : '#ff4e4e';
+    var s = level < .35 ? 0 : level < .65 ? 1 : 2;
+    if (s !== state) { state = s; statusEl.textContent = ['Quiet!', 'Too noisy!', 'Shhhh!'][s]; statusEl.style.color = ['#6bff4e', '#ffe14e', '#ff4e4e'][s]; }
+    if (mode === 'play' && alertOn && s === 2 && now - lastAlert > 2500) { lastAlert = now; ALERTS[alertSel.value](); }
+
+    // balls come out of the top of the screen until there are as many as the Total
+    var live = 0; balls.forEach(function (b) { if (!b.die && !b.leave) live++; });
+    var want = mode === 'menu' ? 45 : +tot.value;
+    if (live < want) { addBatch(want - live); live = want; }      // all the new ones fall at the same moment
+    if (live > want) { var extra = live - want;           // fewer than there are: the newest ones start to disintegrate
+      for (var q = balls.length - 1; q >= 0 && extra > 0; q--) if (!balls[q].die && !balls[q].leave) { balls[q].die = .001; extra--;
+        for (var z = 0; z < 8; z++) bits.push({ x:balls[q].x, y:balls[q].y, vx:(Math.random() - .5) * 6, vy:-Math.random() * 5, life:1, c:balls[q].c }); } }
+
+    ctx.clearRect(0, 0, W, H);
+    document.getElementById('count').textContent = live + ' of ' + tot.value + ' balls';
+    var bn = +bnc.value, rest = .5 + bn / 100 * .47; REST = rest; VMAX = Math.sqrt(2 * .45 * H * 1.1);
+    // a noise = a launch. Bounciness 1 = a tiny hop. Bounciness 100 = even a tap sends them all the way to the top of the screen.
+    var thr = .22 - .12 * bn / 100, power = Math.pow(bn / 100, 1.5) * Math.min(1, level / (.75 - .65 * bn / 100));
+    if (mode === 'menu' && now - lastLaunch > 2200) { lastLaunch = now; balls.forEach(function (b) { if (!b.die) b.vy = -Math.sqrt(2 * .45 * H * .55) * (.6 + Math.random() * .4); }); }
+    if (mode === 'play' && level > thr && now - lastLaunch > 300) {
+      lastLaunch = now;
+      var hgt = H * 1.05 * power + 6, v0 = Math.sqrt(2 * .45 * hgt);
+      balls.forEach(function (b) { if (!b.leave && !b.die) b.vy = (b.up ? 1 : -1) * v0 * (.8 + Math.random() * .2); });
+    }
+    for (var i = 0; i < balls.length; i++) {
+      var b = balls[i], sg = b.leave ? 1 : (b.up ? -1 : 1);
+      b.vy += .45 * dt * sg;
+      b.x += b.vx * dt; b.y += b.vy * dt; b.a += b.vx * .02 * dt;
+      if (b.leave) continue;                                         // leaving balls fall straight out of the bottom
+      if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); }
+      if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx); }
+      if (!b.in && (sg === 1 ? b.y >= b.r : b.y <= H - b.r)) b.in = true;       // once a ball has come on screen it stays on screen
+      if (b.in && sg === 1 && b.y < b.r) { b.y = b.r; if (b.vy < 0) b.vy = -b.vy * rest; }
+      if (b.in && sg === -1 && b.y > H - b.r) { b.y = H - b.r; if (b.vy > 0) b.vy = -b.vy * rest; }
+      if (b.vy > VMAX) b.vy = VMAX; if (b.vy < -VMAX) b.vy = -VMAX;
+      if (sg === 1 && b.y > H - b.r) { b.y = H - b.r; b.vy = -Math.abs(b.vy) * rest; b.vx *= .99; if (Math.abs(b.vy) < 1) b.vy = 0; }
+      if (sg === -1 && b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) * rest; b.vx *= .99; if (Math.abs(b.vy) < 1) b.vy = 0; }
+    }
+    balls.forEach(function (b) { if (b.die) b.die += .02 * dt; });
+    balls = balls.filter(function (b) { return b.die < 1 && !(b.leave && b.y > H + b.r + 60); });
+    collide();
+    bits.forEach(function (t) { t.x += t.vx * dt; t.y += t.vy * dt; t.vy += .3 * dt; t.life -= .025 * dt; });
+    bits = bits.filter(function (t) { return t.life > 0; });
+    bits.forEach(function (t) { ctx.globalAlpha = Math.max(0, t.life); ctx.fillStyle = t.c; ctx.fillRect(t.x - 3, t.y - 3, 6, 6); }); ctx.globalAlpha = 1;
+    for (var i = 0; i < balls.length; i++) drawBall(balls[i]);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
