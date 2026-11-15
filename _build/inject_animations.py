@@ -43,7 +43,26 @@ def links_html(groups, esc):
     return out
 
 
-def block(items, demos=(), links=()):
+def media_html(media, esc):
+    """Hosted media under a CC licence (verbatim files in the page's img/ folder, credit under each)."""
+    if not media:
+        return ''
+    cells = ''
+    for i in media['items']:
+        credit = (f'{esc(i["title"])}. {esc(media["author"])}, '
+                  f'<a href="{esc(i["page"])}" target="_blank" rel="noopener noreferrer">{esc(media["source"])}</a>, '
+                  f'<a href="{esc(media["licence_url"])}" target="_blank" rel="noopener noreferrer">{esc(media["licence"])}</a>. '
+                  'Shown unmodified.')
+        cells += ('<figure class="video-cell">'
+                  f'<img src="{esc(i["file"])}" alt="{esc(i["alt"])}" width="{i["width"]}" height="{i["height"]}" '
+                  'loading="lazy" style="width:100%;max-width:301px;height:auto;background:#fff;display:block;'
+                  'border:1px solid var(--gray-light);border-radius:var(--radius)">'
+                  f'<figcaption>{credit}</figcaption></figure>\n')
+    return (f'<div class="video-source-label">{esc(media["label"])}</div>\n'
+            f'<div class="video-grid">\n{cells}</div>\n')
+
+
+def block(items, demos=(), links=(), media=None):
     esc = html.escape
     lis = '\n'.join(
         f'<li><a href="{esc(SRC["base"] + i["file"])}" target="_blank" rel="noopener noreferrer">'
@@ -62,7 +81,7 @@ def block(items, demos=(), links=()):
             'loading="lazy" sandbox="" referrerpolicy="no-referrer" '
             'style="aspect-ratio:auto;height:640px;background:#fff"></iframe>'
             f'<figcaption>{credit}</figcaption></figure>\n'
-            + links_html(links, esc) + demo_html(demos, esc) + A_END)
+            + media_html(media, esc) + links_html(links, esc) + demo_html(demos, esc) + A_END)
 
 
 def upsert(content, blk):
@@ -79,9 +98,11 @@ for topic, t in DATA['topics'].items():
     rel = os.path.join(t['page'], 'index.html')
     path = os.path.join(ROOT, rel)
     content = open(path).read()
-    new = upsert(content, block(t['items'], t.get('demos', ()), t.get('links', ())))
+    new = upsert(content, block(t['items'], t.get('demos', ()), t.get('links', ()), t.get('media')))
     if new != content:
         open(path, 'w').write(new)
         changed += 1
     print(f'PUBLISH: {rel}')
+    for m in (t.get('media') or {}).get('items', []):   # hosted files must be declared too (Tim's scoped commit)
+        print('PUBLISH: ' + os.path.join(t['page'], m['file']))
 print(f'updated {changed} topic page(s)')

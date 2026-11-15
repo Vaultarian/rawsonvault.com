@@ -83,6 +83,24 @@
             "url": "https://www.physicsclassroom.com/tutorial/sound-waves/nature-of-sound-waves/sound-is-a-pressure-wave"}
          ]}
       ],
+      "media": {
+        "label": "Electromagnetic wave propagation",
+        "author": "Lookang",
+        "source": "Wikimedia Commons",
+        "licence": "CC BY-SA 3.0",
+        "licence_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "verified": "2026-11-15: author, licence and byte sizes matched the Wikimedia Commons API; files are the unmodified originals (hosted under CC BY-SA 3.0, verbatim, never adapted)",
+        "items": [
+          {"file": "img/Electromagneticwave3D.gif", "width": 301, "height": 299,
+           "title": "An electromagnetic wave in 3D",
+           "alt": "Animation of an electromagnetic wave in three dimensions: two sets of field vectors in perpendicular planes, both perpendicular to the direction of travel.",
+           "page": "https://commons.wikimedia.org/wiki/File:Electromagneticwave3D.gif"},
+          {"file": "img/Electromagneticwave3Dfromside.gif", "width": 301, "height": 299,
+           "title": "The same wave, from the side",
+           "alt": "Animation of an electromagnetic wave seen from the side: the electric and magnetic fields oscillating as the wave travels from left to right.",
+           "page": "https://commons.wikimedia.org/wiki/File:Electromagneticwave3Dfromside.gif"}
+        ]
+      },
       "demos": [
         {"title": "Long slinky",
          "text": "A slinky 1 m long that stretches to about 6 m. Flick one end sideways to send a transverse pulse, then push and pull the end along its length to send a longitudinal one. In each case compare which way the coils move with which way the pulse travels. (C.2.1)"}
