@@ -1,0 +1,23 @@
+{
+  "_note": "Verified source data for inject_geogebra.py. EMBED ONLY: each simulation runs from geogebra.org in an iframe, unaltered, with the author credited. Nothing is copied to this site. Re-verify (API title + creator, embed URL HTTP 200, frame-ancestors) before adding one.",
+  "verified": {
+    "date": "2026-11-16",
+    "embed_form": "https://www.geogebra.org/material/iframe/id/<id>/width/W/height/H/... (applet only, no consent wall). curl gets HTTP 410 (bot block); verified loading in headless Chrome. /m/<id>?embed also frames (frame-ancestors *) but carries GeoGebra page chrome and, top-level, a cookie wall",
+    "frame_headers": "Content-Security-Policy frame-ancestors * ; no X-Frame-Options",
+    "metadata_source": "https://api.geogebra.org/v1.0/materials/<id> and /v1.0/users/<creator_id>",
+    "licence_posture": "Public GeoGebra material (visibility O), embedded through GeoGebra's own embed route, nothing hosted: AGENTS.md ground 2, credit + removed on request."
+  },
+  "topics": {
+    "C5": {
+      "page": "physics/dp/theme-c/c5-doppler",
+      "items": [
+        {"id": "MhXH3vcu",
+         "title": "Doppler Effect",
+         "author": "Chris Hamper",
+         "author_url": "https://www.geogebra.org/u/chrishamper",
+         "width": 577, "height": 440,
+         "text": "A ripple tank simulation of the Doppler effect. Set the source moving and watch the wavefronts bunch up ahead of it and spread out behind it. (C.5.2)"}
+      ]
+    }
+  }
+}
