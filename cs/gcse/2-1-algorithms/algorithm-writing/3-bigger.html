@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shape 3: The Bigger One</title>
+<!--
+  3-bigger.html  ·  v1.0 · 2026-11-17
+  CS 11 · Algorithm Writing Revision, Question 3 (based on an OCR ExamBuilder question, Paper 2 style).
+  One of six pages, one per shape of "write an algorithm" question. Copied from the
+  template, 1-repeat-until.html: only (1) the DATA object, (2) the flowchart <svg>,
+  (3) <title>, <h1> and the shape strip's "on" class differ.
+  The task is restated in plain words, never copied from the OCR paper: the paper is
+  licensed for use within the centre, this page is public.
+  The code was RUN (Python 3) on the trace-table inputs before it was written here.
+  No libraries, no network, no cookies, no student data.
+-->
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#1b1b1b; --muted:#555;
+    --accent:#1f4e8c; --hot:#c8301e; --hilite:#ffe8a3; --line:#d9d5cc; --code:#f3f1ea;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16181c; --panel:#1f2227; --ink:#ecebe6; --muted:#a8a8a8;
+      --accent:#7fb0ee; --hot:#ff7a66; --hilite:#5a4a14; --line:#3a3e45; --code:#262a30; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .shapes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:.8rem}
+  .shapes a{padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;background:var(--panel)}
+  .shapes a.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  h1{font-size:1.35rem;margin:0 0 10px}
+  .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
+  .task ul{margin:4px 0 0;padding-left:22px}
+  .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--accent);transition:transform .2s;display:inline-block}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary small{font-weight:400;color:var(--muted);font-size:.85rem}
+  .body{padding:0 16px 16px}
+  code,pre,.mono,.lbl td.c,.tt td{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+  /* line by line */
+  table{border-collapse:collapse;width:100%}
+  .lbl td{border-top:1px solid var(--line);padding:10px 8px;vertical-align:top}
+  .lbl td.n{width:2.2em;color:var(--muted);text-align:right;font-size:.85rem;padding-top:12px}
+  .lbl td.c{width:46%;white-space:pre;font-size:.95rem;background:var(--code)}
+  .lbl td.w{font-size:.95rem}
+  .lbl td.w b{color:var(--hot)}
+  .pattern{margin:14px 0 0;padding:10px 12px;border-left:5px solid var(--accent);background:var(--code);border-radius:4px;font-size:.95rem}
+  .erl{margin:12px 0 0;font-size:.9rem}
+  .erl pre{margin:6px 0 0;padding:10px 12px;background:var(--code);border-radius:6px;white-space:pre;overflow-x:auto}
+  @media (max-width:700px){ .lbl td.c{white-space:pre-wrap;width:auto} .lbl tr{display:grid;grid-template-columns:2em 1fr} .lbl td.w{grid-column:2} }
+  /* flowchart */
+  .fc{display:block;margin:0 auto;max-width:460px;width:100%;height:auto}
+  .fc .box{fill:var(--panel);stroke:var(--ink);stroke-width:2}
+  .fc text{fill:var(--ink);font:15px system-ui,sans-serif;text-anchor:middle;dominant-baseline:middle}
+  .fc .yn{font-weight:700;font-size:14px}
+  .fc .ar{stroke:var(--ink);stroke-width:2;fill:none;marker-end:url(#ah)}
+  .fc #ah path{fill:var(--ink)}
+  .key{font-size:.85rem;color:var(--muted);text-align:center;margin:8px 0 0}
+  /* trace */
+  .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+  @media (max-width:800px){ .tgrid{grid-template-columns:1fr} }
+  .listing{margin:0;font-size:.9rem;line-height:1.8;background:var(--code);border-radius:6px;padding:8px 0;overflow-x:auto}
+  .ln{display:block;padding:0 10px 0 3.6em;text-indent:-3.6em;border-left:5px solid transparent;white-space:pre-wrap;overflow-wrap:anywhere}
+  .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:12px;color:var(--muted);font-style:normal}
+  .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
+  .tt th,.tt td{border:1px solid var(--muted);padding:6px 8px;text-align:center;font-size:.95rem}
+  .tt th{background:var(--code)}
+  .tt tr.future td{color:transparent}
+  .tt tr.now td{background:var(--hilite);font-weight:700}
+  .say{min-height:3em;margin:10px 0 0;font-size:.95rem}
+  .inputs{font-size:.9rem;color:var(--muted);margin:0 0 8px}
+  .ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
+  button{font:inherit;font-size:.9rem;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+  button.ghost{background:transparent;color:var(--accent)}
+  .status{font-size:.85rem;color:var(--muted)}
+  footer{font-size:.8rem;color:var(--muted);margin:18px 0 0}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="shapes" aria-label="The six shapes">
+    <a href="1-repeat-until.html">1 · Repeat until</a>
+    <a href="2-validation.html">2 · Validation</a>
+    <a class="on" href="3-bigger.html">3 · The bigger one</a>
+    <a href="4-function.html">4 · Function</a>
+    <a href="5-counting.html">5 · Counting</a>
+    <a href="6-random.html">6 · Random</a>
+  </nav>
+
+  <h1>Shape 3: Compare two values and output the bigger one</h1>
+
+  <div class="panel task">
+    <p class="label">The task</p>
+    <div id="task"></div>
+    <p class="src" id="src"></p>
+  </div>
+
+  <details>
+    <summary>Flowchart <small>the algorithm as a picture</small></summary>
+    <div class="body">
+      <!-- FLOWCHART: hand-drawn SVG. OCR shapes: rounded box = start/stop,
+           parallelogram = input/output, rectangle = process, diamond = decision. -->
+      <svg class="fc" viewBox="0 0 520 640" role="img" aria-label="Flowchart for the bigger one algorithm">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+        <!-- Start -->
+        <rect class="box" x="200" y="10" width="120" height="40" rx="20"/><text x="260" y="30">Start</text>
+        <line class="ar" x1="260" y1="50" x2="260" y2="78"/>
+        <!-- Input bears -->
+        <polygon class="box" points="180,80 360,80 340,124 160,124"/><text x="260" y="102">Input bears</text>
+        <line class="ar" x1="260" y1="124" x2="260" y2="148"/>
+        <!-- Input hours -->
+        <polygon class="box" points="180,150 360,150 340,194 160,194"/><text x="260" y="172">Input hours</text>
+        <line class="ar" x1="260" y1="194" x2="260" y2="218"/>
+        <!-- Process: bear pay -->
+        <rect class="box" x="160" y="220" width="200" height="40"/><text x="260" y="240">bearpay = bears × 2</text>
+        <line class="ar" x1="260" y1="260" x2="260" y2="283"/>
+        <!-- Process: hour pay -->
+        <rect class="box" x="160" y="285" width="200" height="40"/><text x="260" y="305">hourpay = hours × 5</text>
+        <line class="ar" x1="260" y1="325" x2="260" y2="348"/>
+        <!-- Decision -->
+        <polygon class="box" points="260,350 380,395 260,440 140,395"/><text x="260" y="395">bearpay &gt; hourpay ?</text>
+        <!-- Yes branch -->
+        <text class="yn" x="118" y="381">Yes</text>
+        <polyline class="ar" points="140,395 100,395 100,478"/>
+        <polygon class="box" points="30,480 190,480 170,524 10,524"/><text x="100" y="502">Output bearpay</text>
+        <!-- No branch -->
+        <text class="yn" x="402" y="381">No</text>
+        <polyline class="ar" points="380,395 420,395 420,478"/>
+        <polygon class="box" points="350,480 510,480 490,524 330,524"/><text x="420" y="502">Output hourpay</text>
+        <!-- the two branches rejoin -->
+        <polyline class="ar" style="marker-end:none" points="100,524 100,560 420,560 420,524"/>
+        <line class="ar" x1="260" y1="560" x2="260" y2="588"/>
+        <!-- Stop -->
+        <rect class="box" x="200" y="590" width="120" height="40" rx="20"/><text x="260" y="610">Stop</text>
+      </svg>
+      <p class="key">Rounded box: start or stop · Rectangle: a process · Parallelogram: input or output · Diamond: a decision</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Trace table <small>run it by hand, one line at a time</small></summary>
+    <div class="body">
+      <p class="inputs" id="inputs"></p>
+      <div class="tgrid">
+        <pre class="listing" id="listing"></pre>
+        <div>
+          <table class="tt" id="tt"></table>
+          <div class="say" id="say"></div>
+        </div>
+      </div>
+      <div class="ctl">
+        <button id="back" class="ghost">Back</button>
+        <button id="next">Next</button>
+        <button id="all" class="ghost">Fill it all in</button>
+        <button id="reset" class="ghost">Start again</button>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Line by line <small>each line, and why it is there</small></summary>
+    <div class="body">
+      <table class="lbl" id="lbl"></table>
+      <div class="pattern" id="pattern"></div>
+      <div class="erl"><b>The same algorithm in OCR Exam Reference Language</b><pre id="erl"></pre></div>
+    </div>
+  </details>
+
+  <footer>
+    Practice sheet: <i>Algorithm Writing Revision</i>, Question <span id="qnum"></span>.
+    Back to <a href="../index.html">2.1 Algorithms</a>.
+  </footer>
+</div>
+
+<script>
+/* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
+const DATA = {
+  qnum: 3,
+  task: `<p style="margin:0 0 4px">Workers in a teddy bear factory are paid either £2 for every teddy bear they make or £5 for every hour they work, whichever is more.</p>
+  <ul>
+    <li>Ask for the number of teddy bears made and the number of hours worked.</li>
+    <li>Work out both pays.</li>
+    <li>Output the bigger one.</li>
+  </ul>`,
+  src: "Based on an OCR ExamBuilder question (Paper 2 style), restated in plain words.",
+  /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
+  code: [
+    { c: 'bears = int(input("Enter teddy bears made: "))',
+      why: '<b>"Ask for the number of teddy bears"</b> = <code>input()</code>. <code>int()</code> turns what they type into a whole number, so it can be multiplied.' },
+    { c: 'hours = int(input("Enter hours worked: "))',
+      why: '<b>"and the number of hours"</b> = a second <code>input()</code>. One input for each value, each stored in its own variable.' },
+    { c: 'bearpay = bears * 2',
+      why: '<b>"£2 for every teddy bear"</b> = <code>bears * 2</code>. The answer gets its own variable, <code>bearpay</code>, so it can be compared later. The mark scheme gives a mark for each calculation.' },
+    { c: 'hourpay = hours * 5',
+      why: '<b>"£5 for every hour"</b> = <code>hours * 5</code>, stored in <code>hourpay</code>. Now both pays are worked out and ready to compare.' },
+    { c: 'if bearpay > hourpay:',
+      why: '<b>"whichever is more"</b> = compare the two pays with <code>&gt;</code>, which means "is greater than". The answer is either True or False.' },
+    { c: '    print(bearpay)',
+      why: '<b>"Output the bigger one"</b> = <code>print(bearpay)</code>. This line runs only when the check is True, so <code>bearpay</code> is the bigger pay.' },
+    { c: 'else:',
+      why: '<b>"either … or"</b> = <code>if</code> with <code>else</code>. Exactly one of the two branches runs, so exactly one pay is printed every time.' },
+    { c: '    print(hourpay)',
+      why: '<b>"Output the bigger one"</b> = <code>print(hourpay)</code> when the check is False. If the two pays are equal, this branch runs and prints the same amount, so either one is correct.' }
+  ],
+  pattern: '<b>The pattern.</b> Every "output the bigger one" answer has the same four parts: <b>input both</b> values · <b>calculate both</b> · <b>if</b> first &gt; second, <b>output the first</b> · <b>else output the second</b>.',
+  erl: 'bears = int(input("Enter teddy bears made: "))\nhours = int(input("Enter hours worked: "))\nbearpay = bears * 2\nhourpay = hours * 5\nif bearpay > hourpay then\n    print(bearpay)\nelse\n    print(hourpay)\nendif',
+  inputs: "The user types 30 teddy bears, then 10 hours.",
+  cols: ["Line", "bears", "hours", "bearpay", "hourpay", "Check", "Output"],
+  /* one step per line executed. vals fills the columns after "Line"; "" = blank cell. */
+  steps: [
+    { line: 1, vals: ["30", "", "", "", "", ""],              say: "The user types 30. It is stored in <code>bears</code>." },
+    { line: 2, vals: ["", "10", "", "", "", ""],              say: "The user types 10. It is stored in <code>hours</code>." },
+    { line: 3, vals: ["", "", "60", "", "", ""],              say: "30 bears at £2 each is 60, so <code>bearpay</code> is 60." },
+    { line: 4, vals: ["", "", "", "50", "", ""],              say: "10 hours at £5 each is 50, so <code>hourpay</code> is 50." },
+    { line: 5, vals: ["", "", "", "", "60 > 50 is True", ""], say: "60 is greater than 50, so the check is True. The program takes the <code>if</code> branch." },
+    { line: 6, vals: ["", "", "", "", "", "60"],              say: "<code>bearpay</code> is printed: 60. Lines 7 and 8 are skipped, because only one branch runs. The program ends." }
+  ]
+};
+
+/* ===== PAGE CODE: identical on all six pages ===== */
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("task").innerHTML = DATA.task;
+$("src").textContent = DATA.src;
+$("qnum").textContent = DATA.qnum;
+$("pattern").innerHTML = DATA.pattern;
+$("erl").textContent = DATA.erl;
+$("inputs").textContent = DATA.inputs;
+
+$("lbl").innerHTML = DATA.code.map((l, i) =>
+  `<tr><td class="n">${i + 1}</td><td class="c">${esc(l.c)}</td><td class="w">${l.why}</td></tr>`).join("");
+
+$("listing").innerHTML = DATA.code.map((l, i) =>
+  `<span class="ln" id="L${i + 1}"><i>${i + 1}</i>${esc(l.c)}</span>`).join("");
+
+$("tt").innerHTML = `<tr>${DATA.cols.map(c => `<th>${c}</th>`).join("")}</tr>` +
+  DATA.steps.map((s, i) => `<tr id="R${i}"><td>${s.line}</td>${s.vals.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+
+let k = -1;                       // -1 = nothing run yet
+function show() {
+  DATA.steps.forEach((s, i) => {
+    const r = $("R" + i);
+    r.className = i > k ? "future" : (i === k ? "now" : "");
+  });
+  document.querySelectorAll(".ln").forEach(e => e.classList.remove("on"));
+  if (k >= 0) $("L" + DATA.steps[k].line).classList.add("on");
+  $("say").innerHTML = k < 0 ? "Press <b>Next</b> to run the first line." : DATA.steps[k].say;
+  $("status").textContent = `Step ${Math.max(k + 1, 0)} of ${DATA.steps.length}`;
+}
+$("next").onclick  = () => { if (k < DATA.steps.length - 1) k++; show(); };
+$("back").onclick  = () => { if (k > -1) k--; show(); };
+$("all").onclick   = () => { k = DATA.steps.length - 1; show(); };
+$("reset").onclick = () => { k = -1; show(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft")  $("back").click();
+});
+show();
+</script>
+</body>
+</html>

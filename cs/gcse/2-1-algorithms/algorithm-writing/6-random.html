@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shape 6: Random Numbers</title>
+<!--
+  6-random.html  ·  v1.0 · 2026-11-17
+  CS 11 · Algorithm Writing Revision, Question 6 (Isaac Computer Science, "Guess the
+  Number", isaaccomputerscience.org/questions/whileloops_medium).
+  One of six pages, one per shape of "write an algorithm" question. 1-repeat-until.html
+  IS THE TEMPLATE: this page copies it and changes only (1) the DATA object, (2) the
+  flowchart <svg>, (3) <title>, <h1> and the shape strip's "on" class.
+  The task is restated in plain words, never copied from the source: this page is public.
+  The code was RUN (Python 3) on the trace-table inputs before it was written here.
+  No libraries, no network, no cookies, no student data.
+-->
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#1b1b1b; --muted:#555;
+    --accent:#1f4e8c; --hot:#c8301e; --hilite:#ffe8a3; --line:#d9d5cc; --code:#f3f1ea;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16181c; --panel:#1f2227; --ink:#ecebe6; --muted:#a8a8a8;
+      --accent:#7fb0ee; --hot:#ff7a66; --hilite:#5a4a14; --line:#3a3e45; --code:#262a30; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .shapes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:.8rem}
+  .shapes a{padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;background:var(--panel)}
+  .shapes a.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  h1{font-size:1.35rem;margin:0 0 10px}
+  .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
+  .task ul{margin:4px 0 0;padding-left:22px}
+  .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--accent);transition:transform .2s;display:inline-block}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary small{font-weight:400;color:var(--muted);font-size:.85rem}
+  .body{padding:0 16px 16px}
+  code,pre,.mono,.lbl td.c,.tt td{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+  /* line by line */
+  table{border-collapse:collapse;width:100%}
+  .lbl td{border-top:1px solid var(--line);padding:10px 8px;vertical-align:top}
+  .lbl td.n{width:2.2em;color:var(--muted);text-align:right;font-size:.85rem;padding-top:12px}
+  .lbl td.c{width:46%;white-space:pre;font-size:.95rem;background:var(--code)}
+  .lbl td.w{font-size:.95rem}
+  .lbl td.w b{color:var(--hot)}
+  .pattern{margin:14px 0 0;padding:10px 12px;border-left:5px solid var(--accent);background:var(--code);border-radius:4px;font-size:.95rem}
+  .erl{margin:12px 0 0;font-size:.9rem}
+  .erl pre{margin:6px 0 0;padding:10px 12px;background:var(--code);border-radius:6px;white-space:pre;overflow-x:auto}
+  @media (max-width:700px){ .lbl td.c{white-space:pre-wrap;width:auto} .lbl tr{display:grid;grid-template-columns:2em 1fr} .lbl td.w{grid-column:2} }
+  /* flowchart */
+  .fc{display:block;margin:0 auto;max-width:460px;width:100%;height:auto}
+  .fc .box{fill:var(--panel);stroke:var(--ink);stroke-width:2}
+  .fc text{fill:var(--ink);font:15px system-ui,sans-serif;text-anchor:middle;dominant-baseline:middle}
+  .fc .yn{font-weight:700;font-size:14px}
+  .fc .ar{stroke:var(--ink);stroke-width:2;fill:none;marker-end:url(#ah)}
+  .fc #ah path{fill:var(--ink)}
+  .key{font-size:.85rem;color:var(--muted);text-align:center;margin:8px 0 0}
+  /* trace */
+  .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+  @media (max-width:800px){ .tgrid{grid-template-columns:1fr} }
+  .listing{margin:0;font-size:.9rem;line-height:1.8;background:var(--code);border-radius:6px;padding:8px 0;overflow-x:auto}
+  .ln{display:block;padding:0 10px 0 3.6em;text-indent:-3.6em;border-left:5px solid transparent;white-space:pre-wrap;overflow-wrap:anywhere}
+  .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:12px;color:var(--muted);font-style:normal}
+  .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
+  .tt th,.tt td{border:1px solid var(--muted);padding:6px 8px;text-align:center;font-size:.95rem}
+  .tt th{background:var(--code)}
+  .tt tr.future td{color:transparent}
+  .tt tr.now td{background:var(--hilite);font-weight:700}
+  .say{min-height:3em;margin:10px 0 0;font-size:.95rem}
+  .inputs{font-size:.9rem;color:var(--muted);margin:0 0 8px}
+  .ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
+  button{font:inherit;font-size:.9rem;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+  button.ghost{background:transparent;color:var(--accent)}
+  .status{font-size:.85rem;color:var(--muted)}
+  footer{font-size:.8rem;color:var(--muted);margin:18px 0 0}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="shapes" aria-label="The six shapes">
+    <a href="1-repeat-until.html">1 · Repeat until</a>
+    <a href="2-validation.html">2 · Validation</a>
+    <a href="3-bigger.html">3 · The bigger one</a>
+    <a href="4-function.html">4 · Function</a>
+    <a href="5-counting.html">5 · Counting</a>
+    <a class="on" href="6-random.html">6 · Random</a>
+  </nav>
+
+  <h1>Shape 6: Random numbers</h1>
+
+  <div class="panel task">
+    <p class="label">The task</p>
+    <div id="task"></div>
+    <p class="src" id="src"></p>
+  </div>
+
+  <details>
+    <summary>Flowchart <small>the algorithm as a picture</small></summary>
+    <div class="body">
+      <!-- FLOWCHART: hand-drawn SVG. OCR shapes: rounded box = start/stop,
+           parallelogram = input/output, rectangle = process, diamond = decision. -->
+      <svg class="fc" style="max-width:720px" viewBox="0 0 760 840" role="img" aria-label="Flowchart for the guess the number algorithm">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+        <!-- Start -->
+        <rect class="box" x="200" y="10" width="120" height="40" rx="20"/><text x="260" y="30">Start</text>
+        <line class="ar" x1="260" y1="50" x2="260" y2="78"/>
+        <!-- Process: pick the secret number -->
+        <rect class="box" x="140" y="80" width="240" height="44"/><text x="260" y="102">secret = random 1 to 100</text>
+        <line class="ar" x1="260" y1="124" x2="260" y2="152"/>
+        <!-- Process: guess = 0 -->
+        <rect class="box" x="140" y="154" width="240" height="44"/><text x="260" y="176">guess = 0</text>
+        <line class="ar" x1="260" y1="198" x2="260" y2="223"/>
+        <!-- Decision 1: the loop check -->
+        <polygon class="box" points="260,225 370,270 260,315 150,270"/><text x="260" y="270">guess ≠ secret ?</text>
+        <text class="yn" x="278" y="331">Yes</text>
+        <line class="ar" x1="260" y1="315" x2="260" y2="348"/>
+        <!-- Input guess -->
+        <polygon class="box" points="180,350 360,350 340,394 160,394"/><text x="260" y="372">Input guess</text>
+        <line class="ar" x1="260" y1="394" x2="260" y2="423"/>
+        <!-- Decision 2: too high? -->
+        <polygon class="box" points="260,425 370,470 260,515 150,470"/><text x="260" y="470">guess &gt; secret ?</text>
+        <text class="yn" x="400" y="456">Yes</text>
+        <line class="ar" x1="370" y1="470" x2="468" y2="470"/>
+        <polygon class="box" points="480,448 660,448 640,492 460,492"/><text x="560" y="470">Output "Too high"</text>
+        <text class="yn" x="276" y="530">No</text>
+        <line class="ar" x1="260" y1="515" x2="260" y2="543"/>
+        <!-- Decision 3: too low? -->
+        <polygon class="box" points="260,545 370,590 260,635 150,590"/><text x="260" y="590">guess &lt; secret ?</text>
+        <text class="yn" x="400" y="576">Yes</text>
+        <line class="ar" x1="370" y1="590" x2="468" y2="590"/>
+        <polygon class="box" points="480,568 660,568 640,612 460,612"/><text x="560" y="590">Output "Too low"</text>
+        <text class="yn" x="276" y="651">No</text>
+        <line class="ar" x1="260" y1="635" x2="260" y2="666"/>
+        <!-- Output Correct! -->
+        <polygon class="box" points="180,668 360,668 340,712 160,712"/><text x="260" y="690">Output "Correct!"</text>
+        <!-- all three outputs rejoin and loop back to the first decision -->
+        <polyline class="ar" points="650,470 690,470 690,745 60,745 60,270 148,270"/>
+        <line class="ar" x1="650" y1="590" x2="689" y2="590"/>
+        <line class="ar" x1="260" y1="712" x2="260" y2="744"/>
+        <!-- No branch of the loop check -->
+        <text class="yn" x="392" y="256">No</text>
+        <polyline class="ar" points="370,270 735,270 735,800 322,800"/>
+        <!-- Stop -->
+        <rect class="box" x="200" y="780" width="120" height="40" rx="20"/><text x="260" y="800">Stop</text>
+      </svg>
+      <p class="key">Rounded box: start or stop · Rectangle: a process · Parallelogram: input or output · Diamond: a decision</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Trace table <small>run it by hand, one line at a time</small></summary>
+    <div class="body">
+      <p class="inputs" id="inputs"></p>
+      <div class="tgrid">
+        <pre class="listing" id="listing"></pre>
+        <div>
+          <table class="tt" id="tt"></table>
+          <div class="say" id="say"></div>
+        </div>
+      </div>
+      <div class="ctl">
+        <button id="back" class="ghost">Back</button>
+        <button id="next">Next</button>
+        <button id="all" class="ghost">Fill it all in</button>
+        <button id="reset" class="ghost">Start again</button>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Line by line <small>each line, and why it is there</small></summary>
+    <div class="body">
+      <table class="lbl" id="lbl"></table>
+      <div class="pattern" id="pattern"></div>
+      <div class="erl"><b>The same algorithm in OCR Exam Reference Language</b><pre id="erl"></pre></div>
+    </div>
+  </details>
+
+  <footer>
+    Practice sheet: <i>Algorithm Writing Revision</i>, Question <span id="qnum"></span>.
+    Back to <a href="../index.html">2.1 Algorithms</a>.
+  </footer>
+</div>
+
+<script>
+/* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
+const DATA = {
+  qnum: 6,
+  task: `<ul>
+    <li>The program picks a random number from 1 to 100.</li>
+    <li>The user guesses the number.</li>
+    <li>After each guess the program says too high, too low, or correct.</li>
+    <li>It keeps going until the guess is right.</li>
+  </ul>`,
+  src: "From Isaac Computer Science, \"Guess the Number\" (isaaccomputerscience.org/questions/whileloops_medium). Not an exam question.",
+  /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
+  code: [
+    { c: 'import random',
+      why: '<b>"picks a random number"</b> = Python needs its <code>random</code> tools first. Import them once, on the first line of the program.' },
+    { c: 'secret = random.randint(1, 100)',
+      why: '<b>"a random number from 1 to 100"</b> = <code>random.randint(1, 100)</code>. It gives a whole number, and <i>both</i> ends are included: 1 can come up and so can 100. This line is before the loop, so the number is picked once and stays the same.' },
+    { c: 'guess = 0',
+      why: '<b>"The user guesses"</b> = a variable called <code>guess</code>. It starts at 0 so the <code>while</code> check has something to compare the first time. The secret is 1 or more, so 0 is never the secret and the loop always starts.' },
+    { c: 'while guess != secret:',
+      why: '<b>"keeps going until the guess is right"</b> = keep going <i>while</i> the guess is <i>not equal to</i> the secret. <code>!=</code> means "not equal to". The check happens at the top, before every pass.' },
+    { c: '    guess = int(input("Guess the number: "))',
+      why: '<b>"The user guesses the number"</b> = <code>input()</code>, inside the loop, so the user gets a new guess on every pass. <code>int()</code> turns what they type into a whole number, so it can be compared with the secret.' },
+    { c: '    if guess > secret:',
+      why: '<b>"says too high"</b> = first question: is the guess bigger than the secret?' },
+    { c: '        print("Too high")',
+      why: '<b>"too high"</b> = <code>print("Too high")</code>. This runs only when the first question is True.' },
+    { c: '    elif guess < secret:',
+      why: '<b>"too low"</b> = second question, asked only when the first answer was False: is the guess smaller than the secret?' },
+    { c: '        print("Too low")',
+      why: '<b>"too low"</b> = <code>print("Too low")</code>. This runs only when the second question is True.' },
+    { c: '    else:',
+      why: '<b>"or correct"</b> = <code>else</code>. The guess is not bigger and not smaller, so it is equal to the secret. <code>if</code> / <code>elif</code> / <code>else</code> gives exactly one message for each guess.' },
+    { c: '        print("Correct! The number was", secret)',
+      why: '<b>"correct"</b> = print the message and the number. The program then goes back up to the <code>while</code> check. Now <code>guess != secret</code> is False, so the loop stops and the program ends.' }
+  ],
+  pattern: '<b>The pattern.</b> Every "random number" answer has the same four parts: <b>import random</b> at the top · <b>pick the number once</b>, before the loop · <b>loop until</b> it is guessed · <b>compare each guess</b> with the number.',
+  erl: 'secret = random(1, 100)\nguess = 0\nwhile guess != secret\n    guess = int(input("Guess the number: "))\n    if guess > secret then\n        print("Too high")\n    elseif guess < secret then\n        print("Too low")\n    else\n        print("Correct! The number was " + str(secret))\n    endif\nendwhile',
+  inputs: "Suppose the computer picks 42. The user guesses 50, then 25, then 42.",
+  cols: ["Line", "secret", "guess", "Check", "Output"],
+  /* one step per line executed. vals fills the columns after "Line"; "" = blank cell. */
+  steps: [
+    { line: 1,  vals: ["", "", "", ""],                    say: "The random tools are loaded. Nothing is stored or printed yet." },
+    { line: 2,  vals: ["42", "", "", ""],                  say: "The computer picks a number from 1 to 100. Suppose it is 42. It is stored in <code>secret</code>." },
+    { line: 3,  vals: ["", "0", "", ""],                   say: "<code>guess</code> starts at 0, ready for the first check." },
+    { line: 4,  vals: ["", "", "0 != 42 is True", ""],     say: "0 is not equal to 42, so the program goes into the loop." },
+    { line: 5,  vals: ["", "50", "", ""],                  say: "The user types 50. The old value of <code>guess</code> is replaced." },
+    { line: 6,  vals: ["", "", "50 > 42 is True", ""],     say: "50 is bigger than 42, so the next line runs." },
+    { line: 7,  vals: ["", "", "", "Too high"],            say: "Too high is printed. The <code>elif</code> and <code>else</code> parts are skipped." },
+    { line: 4,  vals: ["", "", "50 != 42 is True", ""],    say: "Back to the top: 50 is not equal to 42, so round again." },
+    { line: 5,  vals: ["", "25", "", ""],                  say: "The user types 25." },
+    { line: 6,  vals: ["", "", "25 > 42 is False", ""],    say: "25 is not bigger than 42, so the program moves on to the <code>elif</code>." },
+    { line: 8,  vals: ["", "", "25 < 42 is True", ""],     say: "25 is smaller than 42, so the next line runs." },
+    { line: 9,  vals: ["", "", "", "Too low"],             say: "Too low is printed. The <code>else</code> part is skipped." },
+    { line: 4,  vals: ["", "", "25 != 42 is True", ""],    say: "Back to the top: 25 is not equal to 42, so round again." },
+    { line: 5,  vals: ["", "42", "", ""],                  say: "The user types 42." },
+    { line: 6,  vals: ["", "", "42 > 42 is False", ""],    say: "42 is not bigger than 42, so the program moves on to the <code>elif</code>." },
+    { line: 8,  vals: ["", "", "42 < 42 is False", ""],    say: "42 is not smaller than 42 either, so the <code>else</code> part runs." },
+    { line: 11, vals: ["", "", "", "Correct! The number was 42"], say: "The message is printed with the value of <code>secret</code>." },
+    { line: 4,  vals: ["", "", "42 != 42 is False", ""],   say: "Back to the top: 42 is equal to 42, so the loop stops. The program ends." }
+  ]
+};
+
+/* ===== PAGE CODE: identical on all six pages ===== */
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("task").innerHTML = DATA.task;
+$("src").textContent = DATA.src;
+$("qnum").textContent = DATA.qnum;
+$("pattern").innerHTML = DATA.pattern;
+$("erl").textContent = DATA.erl;
+$("inputs").textContent = DATA.inputs;
+
+$("lbl").innerHTML = DATA.code.map((l, i) =>
+  `<tr><td class="n">${i + 1}</td><td class="c">${esc(l.c)}</td><td class="w">${l.why}</td></tr>`).join("");
+
+$("listing").innerHTML = DATA.code.map((l, i) =>
+  `<span class="ln" id="L${i + 1}"><i>${i + 1}</i>${esc(l.c)}</span>`).join("");
+
+$("tt").innerHTML = `<tr>${DATA.cols.map(c => `<th>${c}</th>`).join("")}</tr>` +
+  DATA.steps.map((s, i) => `<tr id="R${i}"><td>${s.line}</td>${s.vals.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+
+let k = -1;                       // -1 = nothing run yet
+function show() {
+  DATA.steps.forEach((s, i) => {
+    const r = $("R" + i);
+    r.className = i > k ? "future" : (i === k ? "now" : "");
+  });
+  document.querySelectorAll(".ln").forEach(e => e.classList.remove("on"));
+  if (k >= 0) $("L" + DATA.steps[k].line).classList.add("on");
+  $("say").innerHTML = k < 0 ? "Press <b>Next</b> to run the first line." : DATA.steps[k].say;
+  $("status").textContent = `Step ${Math.max(k + 1, 0)} of ${DATA.steps.length}`;
+}
+$("next").onclick  = () => { if (k < DATA.steps.length - 1) k++; show(); };
+$("back").onclick  = () => { if (k > -1) k--; show(); };
+$("all").onclick   = () => { k = DATA.steps.length - 1; show(); };
+$("reset").onclick = () => { k = -1; show(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft")  $("back").click();
+});
+show();
+</script>
+</body>
+</html>

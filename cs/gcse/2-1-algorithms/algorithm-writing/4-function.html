@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shape 4: A Function</title>
+<!--
+  4-function.html  ·  v1.0 · 2026-11-17
+  CS 11 · Algorithm Writing Revision, Question 4 (OCR J276/02 June 2019 Q6(a)(i)).
+  One of six pages, one per shape of "write an algorithm" question. 1-repeat-until.html
+  IS THE TEMPLATE: the other five copy it and change only (1) the DATA object, (2) the
+  flowchart <svg>, (3) <title>, <h1> and the shape strip's "on" class.
+  The task is restated in plain words, never copied from the OCR paper: the paper is
+  licensed for use within the centre, this page is public.
+  The code was RUN (Python 3) on the trace-table inputs before it was written here.
+  No libraries, no network, no cookies, no student data.
+-->
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#1b1b1b; --muted:#555;
+    --accent:#1f4e8c; --hot:#c8301e; --hilite:#ffe8a3; --line:#d9d5cc; --code:#f3f1ea;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16181c; --panel:#1f2227; --ink:#ecebe6; --muted:#a8a8a8;
+      --accent:#7fb0ee; --hot:#ff7a66; --hilite:#5a4a14; --line:#3a3e45; --code:#262a30; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .shapes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:.8rem}
+  .shapes a{padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;background:var(--panel)}
+  .shapes a.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  h1{font-size:1.35rem;margin:0 0 10px}
+  .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
+  .task ul{margin:4px 0 0;padding-left:22px}
+  .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--accent);transition:transform .2s;display:inline-block}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary small{font-weight:400;color:var(--muted);font-size:.85rem}
+  .body{padding:0 16px 16px}
+  code,pre,.mono,.lbl td.c,.tt td{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+  /* line by line */
+  table{border-collapse:collapse;width:100%}
+  .lbl td{border-top:1px solid var(--line);padding:10px 8px;vertical-align:top}
+  .lbl td.n{width:2.2em;color:var(--muted);text-align:right;font-size:.85rem;padding-top:12px}
+  .lbl td.c{width:46%;white-space:pre;font-size:.95rem;background:var(--code)}
+  .lbl td.w{font-size:.95rem}
+  .lbl td.w b{color:var(--hot)}
+  .pattern{margin:14px 0 0;padding:10px 12px;border-left:5px solid var(--accent);background:var(--code);border-radius:4px;font-size:.95rem}
+  .erl{margin:12px 0 0;font-size:.9rem}
+  .erl pre{margin:6px 0 0;padding:10px 12px;background:var(--code);border-radius:6px;white-space:pre;overflow-x:auto}
+  @media (max-width:700px){ .lbl td.c{white-space:pre-wrap;width:auto} .lbl tr{display:grid;grid-template-columns:2em 1fr} .lbl td.w{grid-column:2} }
+  /* flowchart */
+  .fc{display:block;margin:0 auto;max-width:460px;width:100%;height:auto}
+  .fc .box{fill:var(--panel);stroke:var(--ink);stroke-width:2}
+  .fc text{fill:var(--ink);font:15px system-ui,sans-serif;text-anchor:middle;dominant-baseline:middle}
+  .fc .yn{font-weight:700;font-size:14px}
+  .fc .ar{stroke:var(--ink);stroke-width:2;fill:none;marker-end:url(#ah)}
+  .fc #ah path{fill:var(--ink)}
+  .key{font-size:.85rem;color:var(--muted);text-align:center;margin:8px 0 0}
+  /* trace */
+  .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+  @media (max-width:800px){ .tgrid{grid-template-columns:1fr} }
+  .listing{margin:0;font-size:.9rem;line-height:1.8;background:var(--code);border-radius:6px;padding:8px 0;overflow-x:auto}
+  .ln{display:block;padding:0 10px 0 3.6em;text-indent:-3.6em;border-left:5px solid transparent;white-space:pre-wrap;overflow-wrap:anywhere}
+  .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:12px;color:var(--muted);font-style:normal}
+  .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
+  .tt th,.tt td{border:1px solid var(--muted);padding:6px 8px;text-align:center;font-size:.95rem}
+  .tt th{background:var(--code)}
+  .tt tr.future td{color:transparent}
+  .tt tr.now td{background:var(--hilite);font-weight:700}
+  .say{min-height:3em;margin:10px 0 0;font-size:.95rem}
+  .inputs{font-size:.9rem;color:var(--muted);margin:0 0 8px}
+  .ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
+  button{font:inherit;font-size:.9rem;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+  button.ghost{background:transparent;color:var(--accent)}
+  .status{font-size:.85rem;color:var(--muted)}
+  footer{font-size:.8rem;color:var(--muted);margin:18px 0 0}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="shapes" aria-label="The six shapes">
+    <a href="1-repeat-until.html">1 · Repeat until</a>
+    <a href="2-validation.html">2 · Validation</a>
+    <a href="3-bigger.html">3 · The bigger one</a>
+    <a class="on" href="4-function.html">4 · Function</a>
+    <a href="5-counting.html">5 · Counting</a>
+    <a href="6-random.html">6 · Random</a>
+  </nav>
+
+  <h1>Shape 4: A function: parameters in, one value returned</h1>
+
+  <div class="panel task">
+    <p class="label">The task</p>
+    <div id="task"></div>
+    <p class="src" id="src"></p>
+  </div>
+
+  <details>
+    <summary>Flowchart <small>the algorithm as a picture</small></summary>
+    <div class="body">
+      <!-- FLOWCHART: hand-drawn SVG. OCR shapes: rounded box = start/stop,
+           parallelogram = input/output, rectangle = process, diamond = decision. -->
+      <svg class="fc" viewBox="0 0 440 250" role="img" aria-label="Flowchart for the ticketprice function">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+        <!-- Start: the function's name and parameters -->
+        <rect class="box" x="90" y="10" width="260" height="40" rx="20"/><text x="220" y="30">ticketprice(adults, children)</text>
+        <line class="ar" x1="220" y1="50" x2="220" y2="88"/>
+        <!-- Process: the calculation -->
+        <rect class="box" x="20" y="90" width="400" height="50"/><text x="220" y="115">price = adults × 19.99 + children × 8.99 + 2.50</text>
+        <line class="ar" x1="220" y1="140" x2="220" y2="178"/>
+        <!-- Stop: return the answer -->
+        <rect class="box" x="140" y="180" width="160" height="40" rx="20"/><text x="220" y="200">Return price</text>
+      </svg>
+      <p class="key">Rounded box: start or stop · Rectangle: a process · Parallelogram: input or output · Diamond: a decision</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Trace table <small>run it by hand, one line at a time</small></summary>
+    <div class="body">
+      <p class="inputs" id="inputs"></p>
+      <div class="tgrid">
+        <pre class="listing" id="listing"></pre>
+        <div>
+          <table class="tt" id="tt"></table>
+          <div class="say" id="say"></div>
+        </div>
+      </div>
+      <div class="ctl">
+        <button id="back" class="ghost">Back</button>
+        <button id="next">Next</button>
+        <button id="all" class="ghost">Fill it all in</button>
+        <button id="reset" class="ghost">Start again</button>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Line by line <small>each line, and why it is there</small></summary>
+    <div class="body">
+      <table class="lbl" id="lbl"></table>
+      <div class="pattern" id="pattern"></div>
+      <div class="erl"><b>The same algorithm in OCR Exam Reference Language</b><pre id="erl"></pre></div>
+    </div>
+  </details>
+
+  <footer>
+    Practice sheet: <i>Algorithm Writing Revision</i>, Question <span id="qnum"></span>.
+    Back to <a href="../index.html">2.1 Algorithms</a>.
+  </footer>
+</div>
+
+<script>
+/* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
+const DATA = {
+  qnum: 4,
+  task: `<ul>
+    <li>A theme park sells adult tickets at £19.99 each and child tickets at £8.99 each.</li>
+    <li>Every order also pays a £2.50 booking fee.</li>
+    <li>Write a function <code>ticketprice()</code> that is given the number of adult tickets and the number of child tickets, works out the total price, and returns it.</li>
+  </ul>`,
+  src: "Based on an OCR GCSE question (J276 Paper 2, June 2019, Question 6(a)(i)), restated in plain words.",
+  /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
+  code: [
+    { c: 'def ticketprice(adults, children):',
+      why: '<b>"a function ticketprice() that is given the number of adult tickets and the number of child tickets"</b> = <code>def</code>, the name, then the two parameters in brackets. <code>def</code> defines the function. The parameters <i>are</i> the two given numbers: whoever calls the function supplies them, so they arrive through the brackets and the function needs no <code>input()</code> of its own.' },
+    { c: '    price = adults * 19.99 + children * 8.99 + 2.50',
+      why: '<b>"works out the total price"</b> = one line does the whole sum. Each number of tickets is multiplied by its own price, and the <b>"£2.50 booking fee"</b> is added once at the end, because it is paid once per order.' },
+    { c: '    return price',
+      why: '<b>"and returns it"</b> = <code>return</code>. It hands the answer back to the line that called the function, which can then store it or print it. The whole answer is three lines, and that is normal for a 6-mark function question.' }
+  ],
+  pattern: '<b>The pattern.</b> Every function answer has the same three parts: <b>def name(parameters)</b> · <b>calculate</b> using the parameters · <b>return</b> the answer.',
+  erl: 'function ticketprice(adults, children)\n    price = adults * 19.99 + children * 8.99 + 2.50\n    return price\nendfunction',
+  inputs: "The function is called as ticketprice(2, 3): 2 adults and 3 children.",
+  cols: ["Line", "adults", "children", "price", "Returned"],
+  /* one step per line executed. vals fills the columns after "Line"; "" = blank cell. */
+  steps: [
+    { line: 1, vals: ["2", "3", "", ""],      say: "The call <code>ticketprice(2, 3)</code> sends two values in. The first, 2, arrives in <code>adults</code>. The second, 3, arrives in <code>children</code>." },
+    { line: 2, vals: ["", "", "69.45", ""],   say: "2 × 19.99 = 39.98, 3 × 8.99 = 26.97, and 39.98 + 26.97 + 2.50 = 69.45, which is stored in <code>price</code>." },
+    { line: 3, vals: ["", "", "", "69.45"],   say: "The value of <code>price</code> is handed back to the line that called the function. Python itself shows 69.44999999999999 here, because computers store most decimals only approximately; <code>round(price, 2)</code> gives 69.45." }
+  ]
+};
+
+/* ===== PAGE CODE: identical on all six pages ===== */
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("task").innerHTML = DATA.task;
+$("src").textContent = DATA.src;
+$("qnum").textContent = DATA.qnum;
+$("pattern").innerHTML = DATA.pattern;
+$("erl").textContent = DATA.erl;
+$("inputs").textContent = DATA.inputs;
+
+$("lbl").innerHTML = DATA.code.map((l, i) =>
+  `<tr><td class="n">${i + 1}</td><td class="c">${esc(l.c)}</td><td class="w">${l.why}</td></tr>`).join("");
+
+$("listing").innerHTML = DATA.code.map((l, i) =>
+  `<span class="ln" id="L${i + 1}"><i>${i + 1}</i>${esc(l.c)}</span>`).join("");
+
+$("tt").innerHTML = `<tr>${DATA.cols.map(c => `<th>${c}</th>`).join("")}</tr>` +
+  DATA.steps.map((s, i) => `<tr id="R${i}"><td>${s.line}</td>${s.vals.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+
+let k = -1;                       // -1 = nothing run yet
+function show() {
+  DATA.steps.forEach((s, i) => {
+    const r = $("R" + i);
+    r.className = i > k ? "future" : (i === k ? "now" : "");
+  });
+  document.querySelectorAll(".ln").forEach(e => e.classList.remove("on"));
+  if (k >= 0) $("L" + DATA.steps[k].line).classList.add("on");
+  $("say").innerHTML = k < 0 ? "Press <b>Next</b> to run the first line." : DATA.steps[k].say;
+  $("status").textContent = `Step ${Math.max(k + 1, 0)} of ${DATA.steps.length}`;
+}
+$("next").onclick  = () => { if (k < DATA.steps.length - 1) k++; show(); };
+$("back").onclick  = () => { if (k > -1) k--; show(); };
+$("all").onclick   = () => { k = DATA.steps.length - 1; show(); };
+$("reset").onclick = () => { k = -1; show(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft")  $("back").click();
+});
+show();
+</script>
+</body>
+</html>

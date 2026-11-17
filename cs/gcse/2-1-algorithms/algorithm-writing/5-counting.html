@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shape 5: Counting in a Loop</title>
+<!--
+  5-counting.html  ·  v1.0 · 2026-11-17
+  CS 11 · Algorithm Writing Revision, Question 5 (OCR J276/02 June 2018 Q8).
+  One of six pages, one per shape of "write an algorithm" question. Copied from the
+  TEMPLATE, 1-repeat-until.html: it changes only (1) the DATA object, (2) the
+  flowchart <svg>, (3) <title>, <h1> and the shape strip's "on" class.
+  The task is restated in plain words, never copied from the OCR paper: the paper is
+  licensed for use within the centre, this page is public.
+  The code was RUN (Python 3) on the trace-table inputs before it was written here.
+  No libraries, no network, no cookies, no student data.
+-->
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#1b1b1b; --muted:#555;
+    --accent:#1f4e8c; --hot:#c8301e; --hilite:#ffe8a3; --line:#d9d5cc; --code:#f3f1ea;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16181c; --panel:#1f2227; --ink:#ecebe6; --muted:#a8a8a8;
+      --accent:#7fb0ee; --hot:#ff7a66; --hilite:#5a4a14; --line:#3a3e45; --code:#262a30; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .shapes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:.8rem}
+  .shapes a{padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;background:var(--panel)}
+  .shapes a.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  h1{font-size:1.35rem;margin:0 0 10px}
+  .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
+  .task ul{margin:4px 0 0;padding-left:22px}
+  .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
+  summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--accent);transition:transform .2s;display:inline-block}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary small{font-weight:400;color:var(--muted);font-size:.85rem}
+  .body{padding:0 16px 16px}
+  code,pre,.mono,.lbl td.c,.tt td{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+  /* line by line */
+  table{border-collapse:collapse;width:100%}
+  .lbl td{border-top:1px solid var(--line);padding:10px 8px;vertical-align:top}
+  .lbl td.n{width:2.2em;color:var(--muted);text-align:right;font-size:.85rem;padding-top:12px}
+  .lbl td.c{width:46%;white-space:pre;font-size:.95rem;background:var(--code)}
+  .lbl td.w{font-size:.95rem}
+  .lbl td.w b{color:var(--hot)}
+  .pattern{margin:14px 0 0;padding:10px 12px;border-left:5px solid var(--accent);background:var(--code);border-radius:4px;font-size:.95rem}
+  .erl{margin:12px 0 0;font-size:.9rem}
+  .erl pre{margin:6px 0 0;padding:10px 12px;background:var(--code);border-radius:6px;white-space:pre;overflow-x:auto}
+  @media (max-width:700px){ .lbl td.c{white-space:pre-wrap;width:auto} .lbl tr{display:grid;grid-template-columns:2em 1fr} .lbl td.w{grid-column:2} }
+  /* flowchart */
+  .fc{display:block;margin:0 auto;max-width:460px;width:100%;height:auto}
+  .fc .box{fill:var(--panel);stroke:var(--ink);stroke-width:2}
+  .fc text{fill:var(--ink);font:15px system-ui,sans-serif;text-anchor:middle;dominant-baseline:middle}
+  .fc .yn{font-weight:700;font-size:14px}
+  .fc .ar{stroke:var(--ink);stroke-width:2;fill:none;marker-end:url(#ah)}
+  .fc #ah path{fill:var(--ink)}
+  .key{font-size:.85rem;color:var(--muted);text-align:center;margin:8px 0 0}
+  /* trace */
+  .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+  @media (max-width:800px){ .tgrid{grid-template-columns:1fr} }
+  .listing{margin:0;font-size:.9rem;line-height:1.8;background:var(--code);border-radius:6px;padding:8px 0;overflow-x:auto}
+  .ln{display:block;padding:0 10px 0 3.6em;text-indent:-3.6em;border-left:5px solid transparent;white-space:pre-wrap;overflow-wrap:anywhere}
+  .ln i{display:inline-block;width:2.2em;text-align:right;margin-right:12px;color:var(--muted);font-style:normal}
+  .ln.on{background:var(--hilite);border-left-color:var(--hot);font-weight:700}
+  .tt th,.tt td{border:1px solid var(--muted);padding:6px 8px;text-align:center;font-size:.95rem}
+  .tt th{background:var(--code)}
+  .tt tr.future td{color:transparent}
+  .tt tr.now td{background:var(--hilite);font-weight:700}
+  .say{min-height:3em;margin:10px 0 0;font-size:.95rem}
+  .inputs{font-size:.9rem;color:var(--muted);margin:0 0 8px}
+  .ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
+  button{font:inherit;font-size:.9rem;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+  button.ghost{background:transparent;color:var(--accent)}
+  .status{font-size:.85rem;color:var(--muted)}
+  footer{font-size:.8rem;color:var(--muted);margin:18px 0 0}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="shapes" aria-label="The six shapes">
+    <a href="1-repeat-until.html">1 · Repeat until</a>
+    <a href="2-validation.html">2 · Validation</a>
+    <a href="3-bigger.html">3 · The bigger one</a>
+    <a href="4-function.html">4 · Function</a>
+    <a class="on" href="5-counting.html">5 · Counting</a>
+    <a href="6-random.html">6 · Random</a>
+  </nav>
+
+  <h1>Shape 5: Count inside a loop, stop on END</h1>
+
+  <div class="panel task">
+    <p class="label">The task</p>
+    <div id="task"></div>
+    <p class="src" id="src"></p>
+  </div>
+
+  <details>
+    <summary>Flowchart <small>the algorithm as a picture</small></summary>
+    <div class="body">
+      <!-- FLOWCHART: hand-drawn SVG. OCR shapes: rounded box = start/stop,
+           parallelogram = input/output, rectangle = process, diamond = decision. -->
+      <svg class="fc" style="max-width:620px" viewBox="0 0 650 960" role="img" aria-label="Flowchart for the vote counting algorithm">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+        <!-- Start -->
+        <rect class="box" x="150" y="10" width="120" height="40" rx="20"/><text x="210" y="30">Start</text>
+        <line class="ar" x1="210" y1="50" x2="210" y2="76"/>
+        <!-- Set the counts to 0 -->
+        <rect class="box" x="70" y="78" width="280" height="44"/><text x="210" y="100">a = 0, b = 0, c = 0, vote = ""</text>
+        <line class="ar" x1="210" y1="122" x2="210" y2="168"/>
+        <!-- Loop decision -->
+        <polygon class="box" points="210,170 325,215 210,260 95,215"/><text x="210" y="215">vote ≠ "END" ?</text>
+        <text class="yn" x="230" y="276">Yes</text>
+        <line class="ar" x1="210" y1="260" x2="210" y2="298"/>
+        <!-- Input vote -->
+        <polygon class="box" points="130,300 310,300 290,344 110,344"/><text x="210" y="322">Input vote</text>
+        <line class="ar" x1="210" y1="344" x2="210" y2="368"/>
+        <!-- vote = A ? -->
+        <polygon class="box" points="210,370 315,415 210,460 105,415"/><text x="210" y="415">vote = "A" ?</text>
+        <text class="yn" x="345" y="401">Yes</text>
+        <line class="ar" x1="315" y1="415" x2="398" y2="415"/>
+        <rect class="box" x="400" y="393" width="130" height="44"/><text x="465" y="415">a = a + 1</text>
+        <line class="ar" x1="530" y1="415" x2="608" y2="415"/>
+        <text class="yn" x="228" y="475">No</text>
+        <line class="ar" x1="210" y1="460" x2="210" y2="488"/>
+        <!-- vote = B ? -->
+        <polygon class="box" points="210,490 315,535 210,580 105,535"/><text x="210" y="535">vote = "B" ?</text>
+        <text class="yn" x="345" y="521">Yes</text>
+        <line class="ar" x1="315" y1="535" x2="398" y2="535"/>
+        <rect class="box" x="400" y="513" width="130" height="44"/><text x="465" y="535">b = b + 1</text>
+        <line class="ar" x1="530" y1="535" x2="608" y2="535"/>
+        <text class="yn" x="228" y="595">No</text>
+        <line class="ar" x1="210" y1="580" x2="210" y2="608"/>
+        <!-- vote = C ? -->
+        <polygon class="box" points="210,610 315,655 210,700 105,655"/><text x="210" y="655">vote = "C" ?</text>
+        <text class="yn" x="345" y="641">Yes</text>
+        <line class="ar" x1="315" y1="655" x2="398" y2="655"/>
+        <rect class="box" x="400" y="633" width="130" height="44"/><text x="465" y="655">c = c + 1</text>
+        <line class="ar" x1="530" y1="655" x2="608" y2="655"/>
+        <text class="yn" x="228" y="716">No</text>
+        <!-- every path joins this line, which loops back to the first decision -->
+        <polyline class="ar" points="210,700 210,732 610,732 610,145 212,145"/>
+        <!-- No branch of the loop decision: the loop has ended -->
+        <text class="yn" x="72" y="201">No</text>
+        <polyline class="ar" points="95,215 30,215 30,792 118,792"/>
+        <!-- Output the counts -->
+        <polygon class="box" points="130,770 310,770 290,814 110,814"/><text x="210" y="792">Output a, b, c</text>
+        <line class="ar" x1="210" y1="814" x2="210" y2="838"/>
+        <!-- Output the total -->
+        <polygon class="box" points="130,840 310,840 290,884 110,884"/><text x="210" y="862">Output a + b + c</text>
+        <line class="ar" x1="210" y1="884" x2="210" y2="908"/>
+        <!-- Stop -->
+        <rect class="box" x="150" y="910" width="120" height="40" rx="20"/><text x="210" y="930">Stop</text>
+      </svg>
+      <p class="key">Rounded box: start or stop · Rectangle: a process · Parallelogram: input or output · Diamond: a decision</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Trace table <small>run it by hand, one line at a time</small></summary>
+    <div class="body">
+      <p class="inputs" id="inputs"></p>
+      <div class="tgrid">
+        <pre class="listing" id="listing"></pre>
+        <div>
+          <table class="tt" id="tt"></table>
+          <div class="say" id="say"></div>
+        </div>
+      </div>
+      <div class="ctl">
+        <button id="back" class="ghost">Back</button>
+        <button id="next">Next</button>
+        <button id="all" class="ghost">Fill it all in</button>
+        <button id="reset" class="ghost">Start again</button>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Line by line <small>each line, and why it is there</small></summary>
+    <div class="body">
+      <table class="lbl" id="lbl"></table>
+      <div class="pattern" id="pattern"></div>
+      <div class="erl"><b>The same algorithm in OCR Exam Reference Language</b><pre id="erl"></pre></div>
+    </div>
+  </details>
+
+  <footer>
+    Practice sheet: <i>Algorithm Writing Revision</i>, Question <span id="qnum"></span>.
+    Back to <a href="../index.html">2.1 Algorithms</a>.
+  </footer>
+</div>
+
+<script>
+/* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
+const DATA = {
+  qnum: 5,
+  task: `<ul>
+    <li>An election has three candidates: A, B and C.</li>
+    <li>Let the voters type A, B or C, one after another.</li>
+    <li>Keep a count for each candidate.</li>
+    <li>When the official types END, print each candidate's count and the total number of votes.</li>
+  </ul>`,
+  src: "Based on an OCR GCSE question (J276 Paper 2, June 2018, Question 8), restated in plain words.",
+  /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
+  code: [
+    { c: 'a = 0',
+      why: '<b>"Keep a count for each candidate"</b> = one variable for each candidate. Every count starts at 0, <i>before</i> the loop, because nobody has voted yet.' },
+    { c: 'b = 0',
+      why: '<b>"Keep a count for each candidate"</b> = <code>b</code> is the count for candidate B. It starts at 0 too.' },
+    { c: 'c = 0',
+      why: '<b>"Keep a count for each candidate"</b> = <code>c</code> is the count for candidate C. Three candidates, three counts.' },
+    { c: 'vote = ""',
+      why: '<b>"Let the voters type"</b> = a variable to hold what is typed. It starts as an empty string, so the <code>while</code> check on the next line has something to test the first time.' },
+    { c: 'while vote != "END":',
+      why: '<b>"When the official types END"</b> = keep going <i>while</i> the vote is not END. <code>!=</code> means "is not equal to". This is how "until END" is written.' },
+    { c: '    vote = input("Enter A, B or C: ")',
+      why: '<b>"type A, B or C, one after another"</b> = <code>input()</code> <i>inside</i> the loop, so it asks again on every pass. No <code>int()</code> here: a vote is a letter, so it stays a string.' },
+    { c: '    if vote == "A":',
+      why: '<b>"Keep a count for each candidate"</b> = first find out who the vote is for. <code>"A"</code> is in quotes because it is a string. The mark scheme gives the mark for <code>"A"</code> in quotes; <code>A</code> on its own would be a variable.' },
+    { c: '        a = a + 1',
+      why: '<b>"Keep a count"</b> = <code>a = a + 1</code>: take the count, add one, store it back in <code>a</code>. This is "add one to the count".' },
+    { c: '    elif vote == "B":',
+      why: '<b>"A, B or C"</b> = <code>elif</code> means "otherwise, if". Each vote matches one branch, so one count goes up for each vote.' },
+    { c: '        b = b + 1',
+      why: '<b>"Keep a count"</b> = add one to the count for B.' },
+    { c: '    elif vote == "C":',
+      why: '<b>"A, B or C"</b> = the last candidate. END matches none of A, B or C, so when END is typed no count goes up.' },
+    { c: '        c = c + 1',
+      why: '<b>"Keep a count"</b> = add one to the count for C. This is the last line of the loop, so the program goes back up to the <code>while</code> check.' },
+    { c: 'print(a, b, c)',
+      why: '<b>"print each candidate\'s count"</b> = <code>print(a, b, c)</code>. It is <i>not</i> indented, so it runs once, after the loop has ended.' },
+    { c: 'print(a + b + c)',
+      why: '<b>"and the total number of votes"</b> = <code>a + b + c</code>, worked out at the end. The three counts already hold the answer, so the total needs no variable of its own.' }
+  ],
+  pattern: '<b>The pattern.</b> Every "count inside a loop" answer has the same five parts: <b>set each counter to 0</b> · <b>loop</b> until the stop value · <b>input inside</b> the loop · <b>if it matches, add 1</b> · <b>print the counts</b> after the loop.',
+  erl: 'a = 0\nb = 0\nc = 0\nvote = ""\nwhile vote != "END"\n    vote = input("Enter A, B or C: ")\n    if vote == "A" then\n        a = a + 1\n    elseif vote == "B" then\n        b = b + 1\n    elseif vote == "C" then\n        c = c + 1\n    endif\nendwhile\nprint(a)\nprint(b)\nprint(c)\nprint(a + b + c)',
+  inputs: "The voters type A, B, A, then the official types END.",
+  cols: ["Line", "vote", "a", "b", "c", "Check", "Output"],
+  /* one step per line executed. vals fills the columns after "Line"; "" = blank cell. */
+  steps: [
+    { line: 1,  vals: ["", "0", "", "", "", ""],                    say: "The count for A starts at 0." },
+    { line: 2,  vals: ["", "", "0", "", "", ""],                    say: "The count for B starts at 0." },
+    { line: 3,  vals: ["", "", "", "0", "", ""],                    say: "The count for C starts at 0." },
+    { line: 4,  vals: ['""', "", "", "", "", ""],                   say: "<code>vote</code> starts as an empty string: nothing has been typed yet." },
+    { line: 5,  vals: ["", "", "", "", '"" != END is True', ""],    say: "An empty string is not END, so the program goes into the loop." },
+    { line: 6,  vals: ["A", "", "", "", "", ""],                    say: "The first voter types A. It is stored in <code>vote</code>." },
+    { line: 7,  vals: ["", "", "", "", "A == A is True", ""],       say: "The vote is A, so the program runs the line underneath." },
+    { line: 8,  vals: ["", "1", "", "", "", ""],                    say: "0 + 1 is 1. A now has 1 vote. The <code>elif</code> lines are skipped." },
+    { line: 5,  vals: ["", "", "", "", "A != END is True", ""],     say: "Back to the top: A is not END, so round again." },
+    { line: 6,  vals: ["B", "", "", "", "", ""],                    say: "The second voter types B. The old value of <code>vote</code> is replaced." },
+    { line: 7,  vals: ["", "", "", "", "B == A is False", ""],      say: "The vote is not A, so the program moves on to the first <code>elif</code>." },
+    { line: 9,  vals: ["", "", "", "", "B == B is True", ""],       say: "The vote is B, so the program runs the line underneath." },
+    { line: 10, vals: ["", "", "1", "", "", ""],                    say: "0 + 1 is 1. B now has 1 vote." },
+    { line: 5,  vals: ["", "", "", "", "B != END is True", ""],     say: "Back to the top: B is not END, so round again." },
+    { line: 6,  vals: ["A", "", "", "", "", ""],                    say: "The third voter types A." },
+    { line: 7,  vals: ["", "", "", "", "A == A is True", ""],       say: "The vote is A again." },
+    { line: 8,  vals: ["", "2", "", "", "", ""],                    say: "1 + 1 is 2. A now has 2 votes." },
+    { line: 5,  vals: ["", "", "", "", "A != END is True", ""],     say: "Back to the top: A is not END, so round again." },
+    { line: 6,  vals: ["END", "", "", "", "", ""],                  say: "The official types END. The program is still inside the loop, so it carries on down." },
+    { line: 7,  vals: ["", "", "", "", "END == A is False", ""],    say: "END is not A." },
+    { line: 9,  vals: ["", "", "", "", "END == B is False", ""],    say: "END is not B." },
+    { line: 11, vals: ["", "", "", "", "END == C is False", ""],    say: "END is not C either, so no count goes up for END." },
+    { line: 5,  vals: ["", "", "", "", "END != END is False", ""],  say: "Back to the top: this time <code>vote</code> is END, so the loop stops." },
+    { line: 13, vals: ["", "", "", "", "", "2 1 0"],                say: "The three counts are printed: 2 for A, 1 for B, 0 for C." },
+    { line: 14, vals: ["", "", "", "", "", "3"],                    say: "2 + 1 + 0 is 3, so 3 is printed. The program ends." }
+  ]
+};
+
+/* ===== PAGE CODE: identical on all six pages ===== */
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("task").innerHTML = DATA.task;
+$("src").textContent = DATA.src;
+$("qnum").textContent = DATA.qnum;
+$("pattern").innerHTML = DATA.pattern;
+$("erl").textContent = DATA.erl;
+$("inputs").textContent = DATA.inputs;
+
+$("lbl").innerHTML = DATA.code.map((l, i) =>
+  `<tr><td class="n">${i + 1}</td><td class="c">${esc(l.c)}</td><td class="w">${l.why}</td></tr>`).join("");
+
+$("listing").innerHTML = DATA.code.map((l, i) =>
+  `<span class="ln" id="L${i + 1}"><i>${i + 1}</i>${esc(l.c)}</span>`).join("");
+
+$("tt").innerHTML = `<tr>${DATA.cols.map(c => `<th>${c}</th>`).join("")}</tr>` +
+  DATA.steps.map((s, i) => `<tr id="R${i}"><td>${s.line}</td>${s.vals.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+
+let k = -1;                       // -1 = nothing run yet
+function show() {
+  DATA.steps.forEach((s, i) => {
+    const r = $("R" + i);
+    r.className = i > k ? "future" : (i === k ? "now" : "");
+  });
+  document.querySelectorAll(".ln").forEach(e => e.classList.remove("on"));
+  if (k >= 0) $("L" + DATA.steps[k].line).classList.add("on");
+  $("say").innerHTML = k < 0 ? "Press <b>Next</b> to run the first line." : DATA.steps[k].say;
+  $("status").textContent = `Step ${Math.max(k + 1, 0)} of ${DATA.steps.length}`;
+}
+$("next").onclick  = () => { if (k < DATA.steps.length - 1) k++; show(); };
+$("back").onclick  = () => { if (k > -1) k--; show(); };
+$("all").onclick   = () => { k = DATA.steps.length - 1; show(); };
+$("reset").onclick = () => { k = -1; show(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft")  $("back").click();
+});
+show();
+</script>
+</body>
+</html>
