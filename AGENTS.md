@@ -243,24 +243,33 @@ actually commit. Never hand-edit a generated page; change the Class Log and re-r
 Both injectors run together in the 05:30 job, because they read the same logs and would
 otherwise drift out of step with each other.
 
-## Document icons — four exist, reuse them
+## Document icons — seven exist, reuse them
 
-Every class-page doc-row icon is inline SVG defined in `_build/inject_class_pages.py`
-(`ICON_SHEET`, `ICON_KEY`, `ICON_VIDEO`, `ICON_SLIDES`) — there is no separate icon-image
-folder for these. **When something new is published — a worksheet, an answer key, a video, or
-a slide deck — it gets one of these four icons. Do not invent a fifth.**
+Every class-page doc-row icon is defined inline in `_build/inject_class_pages.py` (SVG, or a
+base64 PNG data URI for the two that are another site's own mark) — there is no separate
+icon-image folder for these, so no asset has to be carried. **When something new is published
+it gets one of these seven icons. Add an eighth only when Alex asks for one**, as he did for
+PhET on 2026-11-17.
 
 | Icon | For | How it's selected |
 |---|---|---|
-| `ICON_SHEET` | Worksheet (student writes on it) | Filename/label doesn't match `REFERENCE` (expectations, overview, syllabus, reference, guide, glossary, vocab, …) |
-| `ICON_DOC` | Reference document (read, not written on) | Filename/label matches `REFERENCE` |
-| `ICON_KEY` | Answer key | Filename ends `-answers` or `-answers-web`, paired to its sheet by stem |
-| `ICON_VIDEO` | YouTube/Vimeo link | `VIDEO_URL` auto-detects the URL — no filename convention needed |
+| `ICON_SHEET` | Worksheet (student writes on it) | Filename/label doesn't match `REFERENCE` (expectations, overview, syllabus, reference, guide, glossary, vocab, …). Also every school-Drive link whose label is not a key |
+| `ICON_KEY` | Answer key | Filename ends `-answers` or `-answers-web`, paired to its sheet by stem; for Drive links, a label ending `--- answer key` or `--- mark scheme` (`DRIVE_KEY_SUFFIX`) |
+| `ICON_DOC` | Reference document, the plain PDF icon (read, not written on) | Filename/label matches `REFERENCE` |
 | `ICON_SLIDES` | Slide deck | Filename ends `-slides` (`SLIDES_SUFFIX`) |
+| `ICON_VIDEO` | YouTube/Vimeo link | `VIDEO_URL` auto-detects the URL — no filename convention needed |
+| `ICON_VAULT` | A page on rawsonvault.com itself — the Möbius mark | `INTERNAL_URL` auto-detects `rawsonvault.com/` links |
+| `ICON_PHET` | PhET simulation — PhET's own favicon | `PHET_URL` auto-detects `phet.colorado.edu` links. Class Log form: `- [PhET: Circuit Construction Kit DC](https://phet.colorado.edu/en/simulations/circuit-construction-kit-dc)` |
 
-`ICON_VIDEO` and `ICON_SLIDES` render **unwrapped** — no folder-tag badge — on purpose: the
-other two are Vault documents wearing a tag, these are an external platform, and looking
-different says so.
+Any other external link still renders as a plain text pill under the icon rows.
+
+`ICON_VIDEO`, `ICON_SLIDES`, `ICON_VAULT` and `ICON_PHET` render **unwrapped** — no
+folder-tag badge — on purpose: the sheet, key and document icons are Vault documents wearing a
+tag, while these point at a platform or a page, and looking different says so.
+
+**Strip icons are a separate set.** `ICON_CALENDAR`, `ICON_SUMMATIVE`, `ICON_ONENOTE` and
+`ICON_BOOK` belong to the standing strips under a class page's header (Calendar, Upcoming
+summative, Class notes, Holiday homework), not to lesson rows. Don't reuse them in a doc row.
 
 **One `Publish:` entry, one row, potentially several icons.** Since 2026-09-20, items that
 share the *exact same label text* — docs and video links alike — merge onto a single
@@ -301,6 +310,8 @@ touches the data layer (Matrix, Mrs. L, CHIPP). Repo-level sole-write boundary p
 `03-permission-model.md` in the Startup Documents.
 
 ---
+
+*v1.8 — 2026-11-17. **Document icons: seven, not four.** The section said four icons existed and forbade a fifth, while the injector already carried `ICON_DOC` and `ICON_VAULT` (the Möbius mark for rawsonvault.com links). Alex asked for PhET's favicon on PhET simulation links tonight, so `ICON_PHET` was added (inlined PNG data URI, auto-detected by `PHET_URL`). The table now lists all seven doc-row icons, the Drive-link selection rule, and the four strip icons kept separate.*
 
 *v1.7 — 2026-09-20. **Canon Check.** Added a rule to the Daily Print section: **never run
 an injector script directly**, always through `publisher.py`'s `publish()`. Found tonight
