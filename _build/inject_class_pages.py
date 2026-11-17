@@ -532,11 +532,11 @@ CALENDARS = {
         "Oscillations and Waves, to the October break"),
     "physics-10-p": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
-              / "y10p-physics-calendar-autumn-2.pdf",
+              / "y10p-physics-calendar-autumn-2-v1.1.pdf",
         "Forces 2, to the Christmas break"),
     "physics-10-r": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
-              / "y10r-physics-calendar-autumn-2.pdf",
+              / "y10r-physics-calendar-autumn-2-v1.1.pdf",
         "Forces 2, to the Christmas break"),
     "physics-11-q": (
         VAULT / "01-Teaching/Physics - GCSE/Calendar"
