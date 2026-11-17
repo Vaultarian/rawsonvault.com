@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Falling Hailstone — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · question page · v1.0 · 2026-11-17
+  Sheet: p3-l05-specific-latent-heat.tex (3.5 Specific Latent Heat), Question 11 (.tex line 525), Higher.
+  Macro -> micro chain: E_p = m g h of the hailstone, then m = E / L, then the percentage that melts.
+  Spec: AQA Trilogy 8464, 6.3.2.3 (aP3-13 to aP3-19)
+  Values: m = 4.0 g = 0.0040 kg, h = 2500 m, g = 9.8 N/kg; L fusion (water) = 334 000 J/kg (sheet table).
+  Key: E_p = 98 J; m = 0.000 29 kg = 0.29 g; 0.29 / 4.0 × 100 = 7.3 %.
+  Stem is verbatim from the sheet (id="qtext"); every number follows the sheet's key.
+  Language matches p3-l04 / p3-l05 (E_k / E_p, bonds, macro -> micro).
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/latent-heat-q11/index.html
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+
+/* ── Additions for the question pages ─────────────── */
+.tier{display:inline-block;font-family:var(--font-ui);font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--white);background:var(--bronze-dark);border-radius:999px;padding:.12rem .7rem;margin-bottom:.55rem}
+.scenario p{color:var(--ink-black);font-size:1.02rem}
+.scenario p+p{margin-top:.7rem}
+.stage-pill[data-stage="1"] .tag{background:var(--ep)}
+.stage-pill[data-stage="2"] .tag{background:var(--ek)}
+.stage-pill.on[data-stage="1"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="2"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.explain.s1{border-color:var(--ep);background:var(--ep-soft)}
+.explain.s2{border-color:var(--ek);background:var(--ek-soft)}
+.card.s1{border-top-color:var(--ep)} .card.s2{border-top-color:var(--ek)} .card.mac{border-top-color:var(--bronze-core)}
+.fill.mac{background:var(--bronze-core)}
+.m{color:var(--bronze-dark);font-weight:700;font-style:normal}
+.sliders{display:grid;gap:.55rem;margin:.9rem 0 .7rem}
+.slider{display:grid;grid-template-columns:11.5rem 1fr 5.5rem;align-items:center;gap:.7rem;font-size:.88rem;font-weight:500}
+.slider input[type=range]{min-width:0;width:100%}
+.slider output{font-family:var(--font-heading);font-size:1rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.steps{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem}
+.steps ol{list-style:none;margin-bottom:.4rem}
+.steps li{display:none;font-family:var(--font-body);font-size:1rem;line-height:1.6;padding:.45rem 0;border-bottom:1px solid #f3eee6}
+.steps li.on{display:grid;grid-template-columns:7.5rem 1fr;gap:.6rem}
+.steps li .lab{font-family:var(--font-ui);font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bronze-dark);padding-top:.25rem}
+.steps li .eq{white-space:normal}
+.steps li.final .eq{font-weight:700;font-style:normal;color:var(--ink-black)}
+.steps .controls{margin-top:.7rem}
+button.ctl:disabled{opacity:.45;cursor:default}
+.readout .lbl .nt{text-transform:none;letter-spacing:0}
+.tablewrap{overflow-x:auto}
+table.data{max-width:34rem}
+table.data td.num,table.data th.num{text-align:right}
+
+@media (max-width:760px){
+  .slider{grid-template-columns:1fr auto;row-gap:.1rem}
+  .slider input[type=range]{grid-column:1/-1;grid-row:2}
+  .steps li.on{grid-template-columns:1fr;gap:.1rem}
+  table.calc{font-size:.84rem}
+  table.calc th,table.calc td{padding:.4rem .45rem}
+  button.ctl{min-width:0}
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    The Falling Hailstone
+  </nav>
+  <span class="eyebrow">3.5 Specific Latent Heat · Question 11</span>
+  <h1>The Falling Hailstone</h1>
+  <p class="subtitle">The hailstone's gravitational potential energy becomes potential energy of its particles, and part of it melts.</p>
+  <div class="rule"></div>
+
+  <div class="scenario">
+    <span class="tier">Higher · one energy chain, written as one equation</span>
+    <div id="qtext"><strong>Calculate</strong> the percentage of a 4.0&nbsp;g hailstone at 0&nbsp;°C that melts when it falls 2500&nbsp;m. Assume all of its gravitational potential energy is used to melt it. <span class="eq">g</span> = 9.8&nbsp;N/kg.</div>
+  </div>
+  <p class="chainintro">A moving or falling object that stops can turn its E<sub>k</sub> or E<sub>p</sub> (macro) into internal energy (micro). Write the chain as <strong>one equation</strong>, e.g. <span class="eq">m g h = m L</span>: the whole object's mass on the left, the mass that melts on the right.</p>
+  <p style="margin-top:.7rem">This page opens on the finished answer. Press <b>Play</b> to drop the hailstone again and watch the energy move from the <span class="m">hailstone's gravitational potential energy store</span> into the <span class="p">potential energy of the particles</span>. Move the sliders to see how height and mass change the result.</p>
+
+  <div class="applet" id="applet">
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">Macro · the hailstone</div>
+        <canvas id="scene" width="360" height="290" aria-label="A hailstone falling from a cloud to the ground"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Micro · the particles</div>
+        <canvas id="parts" width="360" height="290" aria-label="Particles of ice with bonds; some bonds break as ice melts"></canvas>
+      </div>
+    </div>
+
+    <div class="meters" style="margin-top:.9rem">
+      <div class="meter">
+        <div class="name">Gravitational potential energy <small>of the whole hailstone · macro</small></div>
+        <div class="track"><div class="fill mac" id="mMac"></div></div>
+        <div class="status up" id="sMac"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Potential energy <small>E<sub>p</sub> of the particles · bonds break</small></div>
+        <div class="track"><div class="fill ep" id="mMic"></div></div>
+        <div class="status up" id="sMic"></div>
+      </div>
+    </div>
+
+    <div class="sliders">
+      <label class="slider">Height fallen
+        <input type="range" id="h" min="500" max="5000" step="100" value="2500"><output id="o_h"></output></label>
+      <label class="slider">Mass of hailstone
+        <input type="range" id="m" min="1" max="10" step="0.5" value="4"><output id="o_m"></output></label>
+    </div>
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Energy <span class="nt">E<sub>p</sub> = m g h</span></div><div class="val" id="r0">98 J</div></div>
+      <div class="readout"><div class="lbl">Mass that melts</div><div class="val" id="r1">0.29 g</div></div>
+      <div class="readout"><div class="lbl">Percentage melted</div><div class="val" id="r2">7.3 %</div></div>
+    </div>
+    <div class="controls">
+      <button class="ctl" id="play">▶ Play</button>
+      <button class="ctl ghost" id="reset">↺ Reset to the question's values</button>
+    </div>
+
+    <div class="explain" id="explain"></div>
+  </div>
+
+  <h2>The values this question uses</h2>
+  <p>The question gives g = 9.8&nbsp;N/kg. The sheet's table gives the specific latent heat. Ice melting is solid → liquid, so use <b>fusion</b> for water: 334&nbsp;000&nbsp;J/kg.</p>
+  <div class="tablewrap"><table class="calc data">
+    <tr><th>Substance</th><th class="num">Fusion<br>J/kg</th><th class="num">Vaporisation<br>J/kg</th></tr>
+    <tr><td>Water</td><td class="num">334&nbsp;000</td><td class="num">2&nbsp;260&nbsp;000</td></tr>
+    <tr><td>Ethanol</td><td class="num">108&nbsp;000</td><td class="num">840&nbsp;000</td></tr>
+    <tr><td>Lead</td><td class="num">23&nbsp;000</td><td class="num">870&nbsp;000</td></tr>
+    <tr><td>Aluminium</td><td class="num">400&nbsp;000</td><td class="num">10&nbsp;500&nbsp;000</td></tr>
+  </table></div>
+
+  <h2>One chain, three links</h2>
+  <div class="two">
+    <div class="card mac">
+      <h3><span class="m">Macro</span> · the whole hailstone</h3>
+      <ul>
+        <li>The hailstone starts 2500&nbsp;m up, so it has gravitational potential energy.</li>
+        <li>Use the mass of the <b>whole hailstone</b>, in kg: 4.0&nbsp;g = 0.0040&nbsp;kg.</li>
+        <li>Energy: <span class="eq">E<sub>p</sub> = m g h</span></li>
+      </ul>
+    </div>
+    <div class="card s1">
+      <h3><span class="p">Micro</span> · the particles</h3>
+      <ul>
+        <li>The ice is at 0&nbsp;°C and stays at 0&nbsp;°C.</li>
+        <li>The energy breaks bonds, so the particles' <span class="p">potential energy increases</span>.</li>
+        <li>Here m is the <b>mass that melts</b>: <span class="eq">m = E ÷ L</span></li>
+        <li>Percentage = mass that melts ÷ mass of hailstone × 100</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Working, one step at a time</h2>
+  <p>These steps use the question's own values. Try each line on paper, then reveal it.</p>
+  <div class="steps" id="steps">
+    <ol>
+      <li><span class="lab">Chain</span><span class="eq">m g h = m L &nbsp; (whole hailstone on the left, mass that melts on the right)</span></li>
+      <li><span class="lab">Convert</span><span class="eq">4.0 g = 4.0 ÷ 1000 = 0.0040 kg</span></li>
+      <li><span class="lab">Equation</span><span class="eq">E<sub>p</sub> = m g h</span></li>
+      <li><span class="lab">Substitute</span><span class="eq">E<sub>p</sub> = 0.0040 × 9.8 × 2500</span></li>
+      <li><span class="lab">Answer</span><span class="eq">E<sub>p</sub> = 98 J</span></li>
+      <li><span class="lab">Rearrange</span><span class="eq">E = m L, so &nbsp;m = E ÷ L</span></li>
+      <li><span class="lab">Substitute</span><span class="eq">m = 98 ÷ 334&nbsp;000</span></li>
+      <li><span class="lab">Answer</span><span class="eq">m = 0.000&nbsp;29 kg = 0.29 g</span></li>
+      <li><span class="lab">Percentage</span><span class="eq">0.29 ÷ 4.0 × 100</span></li>
+      <li class="final"><span class="lab">Answer</span><span class="eq">7.3 % of the hailstone melts</span></li>
+    </ol>
+    <div class="controls">
+      <button class="ctl" id="next">Show next step</button>
+      <button class="ctl ghost" id="hide">Hide all steps</button>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <div class="tablewrap"><table class="calc">
+        <tr><th>Link</th><th>Equation</th><th>Working</th><th>Result</th></tr>
+        <tr><td><span class="m">Macro</span> gravitational potential energy of the hailstone</td><td class="eq">E<sub>p</sub> = m g h</td><td class="num">0.0040 × 9.8 × 2500</td><td class="num">98 J</td></tr>
+        <tr><td><span class="p">Micro</span> mass of ice that melts</td><td class="eq">m = E ÷ L</td><td class="num">98 ÷ 334&nbsp;000</td><td class="num">0.000&nbsp;29 kg = 0.29 g</td></tr>
+        <tr><td><b>Percentage</b></td><td></td><td class="num">0.29 ÷ 4.0 × 100</td><td class="num"><b>7.3 %</b></td></tr>
+      </table></div>
+      <p class="sum"><b>7.3&nbsp;%</b> of the hailstone melts. E<sub>p</sub> = m g h and E = m L are both on the AQA equation sheet.</p>
+    </details>
+  </div>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+  // ── Shared helpers ─────────────────────────────────
+  const $ = id => document.getElementById(id);
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ep: css('--ep'), ink: css('--ink-black'), gray: css('--gray-mid'),
+                bronze: css('--bronze-core'), fill: '#9cc6ea', stroke: '#1f4e79' };
+  const NB = ' ';
+  const sp = n => Math.round(n).toLocaleString('en-GB').replace(/,/g, NB);
+  const fmtJ = E => E < 1000 ? String(+E.toFixed(1)) : sp(E);            // 87.5, 98, 240 000
+  const sig2 = v => { if (!(v > 0)) return '0'; const s = v.toPrecision(2);
+                      return (v >= 10 || /e/.test(s)) ? String(Number(s)) : s; };
+  const grp = s => s.replace(/\.(\d{3})(\d+)/, '.$1' + NB + '$2');       // 0.00026 -> 0.000 26
+  // Step-reveal working
+  const stepEls = [...document.querySelectorAll('#steps li')]; let nShown = 0;
+  function updSteps() { $('next').disabled = nShown >= stepEls.length; }
+  $('next').onclick = () => { if (nShown < stepEls.length) stepEls[nShown++].classList.add('on'); updSteps(); };
+  $('hide').onclick = () => { stepEls.forEach(s => s.classList.remove('on')); nShown = 0; updSteps(); };
+  updSteps();
+
+  const L_F = 334000, G = 9.8;
+  const outFmt = { h: x => x + ' m', m: x => x.toFixed(1) + ' g' };
+  const compute = v => { const E = (v.m / 1000) * G * v.h, mk = E / L_F;
+                         return { E, mk, frac: mk / (v.m / 1000) }; };
+  const transfer = p => p;                                        // E_p falls steadily with height
+  const pct = r => sig2(r.frac * 100);
+  const readouts = r => [fmtJ(r.E) + NB + 'J', sig2(r.mk * 1000) + NB + 'g', pct(r) + NB + '%'];
+  const textGo = (v, r) => `<b>The hailstone is falling.</b> At the top its gravitational potential energy store holds <b>${fmtJ(r.E)}&nbsp;J</b>: <span class="eq">E<sub>p</sub> = m g h</span>, with the mass of the whole hailstone in kg. As it falls, that energy goes into the particles and breaks bonds.`;
+  const textDone = (v, r) => `<b>The hailstone has fallen ${v.h}&nbsp;m.</b> All of its gravitational potential energy, <b>${fmtJ(r.E)}&nbsp;J</b>, has broken bonds between particles of ice. The temperature stays at 0&nbsp;°C, so it is the particles' <span class="p">potential energy</span> that increases. Mass that melts = E ÷ L = ${sig2(r.mk * 1000)}&nbsp;g, which is <b>${pct(r)}&nbsp;%</b> of the ${v.m.toFixed(1)}&nbsp;g hailstone. The mass slider leaves the percentage the same, because m is on both sides of <span class="eq">m g h = m L</span>.`;
+  const partLabel = (f) => f <= 0 ? 'Ice at 0 °C: every bond intact' : f < 1 ? 'Bonds breaking: ice melts at 0 °C' : 'Part of the ice has melted, still at 0 °C';
+  const partCaption = (f, v, r) => 'schematic: ' + pct(r) + ' % of the particles break free';
+  function drawScene(ctx, W, H, p, f, v, r, t) {
+    ctx.clearRect(0, 0, W, H);
+    const TOP = 70, GY = 250;
+    const g = ctx.createLinearGradient(0, 30, 0, GY); g.addColorStop(0, '#dfeaf4'); g.addColorStop(1, '#f6f1e8');
+    ctx.fillStyle = g; ctx.fillRect(0, 30, W, GY - 30);
+    ctx.fillStyle = '#9aa58c'; ctx.fillRect(0, GY, W, 5);
+    // cloud
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#b9c6d3'; ctx.lineWidth = 1.2;
+    for (const [cx, cy, cr] of [[150, 58, 20], [180, 50, 26], [215, 56, 22], [243, 62, 15]]) { ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill(); }
+    // height scale
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.2; ctx.fillStyle = COL.ink; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right';
+    ctx.beginPath(); ctx.moveTo(74, TOP); ctx.lineTo(74, GY); ctx.stroke();
+    for (const [fr, lab] of [[0, v.h + ' m'], [0.5, (v.h / 2) + ' m'], [1, '0 m']]) {
+      const y = TOP + fr * (GY - TOP); ctx.beginPath(); ctx.moveTo(69, y); ctx.lineTo(74, y); ctx.stroke(); ctx.fillText(lab, 65, y + 4);
+    }
+    const rad = 11 * Math.cbrt(v.m / 4), x = 196, y = TOP + p * (GY - TOP - rad);
+    // meltwater trail
+    ctx.fillStyle = COL.fill;
+    for (let i = 1; i <= 3; i++) { const ty = y - rad - i * 13; if (ty > TOP && f > 0.05) { ctx.globalAlpha = 0.75 - i * 0.2; ctx.beginPath(); ctx.arc(x + (i % 2 ? 4 : -4), ty, 2.4, 0, Math.PI * 2); ctx.fill(); } }
+    ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fillStyle = '#f6f9fc'; ctx.fill();
+    ctx.strokeStyle = '#8aa4bd'; ctx.lineWidth = 1.4; ctx.stroke();
+    if (f > 0) { ctx.beginPath(); ctx.arc(x, y, rad + 1.5, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(47,111,174,' + (0.25 + 0.6 * f) + ')'; ctx.lineWidth = 1 + 3 * f; ctx.stroke(); }
+    ctx.fillStyle = COL.ink; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('height ' + Math.round(v.h * (1 - p)) + ' m', x + rad + 12, y + 1);
+    ctx.fillStyle = COL.ep; ctx.fillText(sig2(r.frac * 100 * f) + ' % melted', x + rad + 12, y + 15);
+    ctx.font = '600 12px Inter, sans-serif'; ctx.fillStyle = COL.ink;
+    ctx.fillText(p >= 1 ? 'Landed: ' + pct(r) + ' % of the hailstone has melted' : p <= 0 ? 'Hailstone: ' + v.m.toFixed(1) + ' g at ' + v.h + ' m' : 'Falling: energy goes into the particles', 14, 22);
+    ctx.font = '500 11px Inter, sans-serif'; ctx.fillStyle = COL.gray; ctx.textAlign = 'center';
+    ctx.fillText('hailstone at 0 °C · g = 9.8 N/kg', W / 2, H - 12);
+  }
+  // ── Engine: macro store -> particles' store ───────
+  const DEF = { h: 2500, m: 4 };
+  const ids = Object.keys(DEF);
+  let p = 1, playing = false; const DURATION = 5200;
+  const vals = () => { const v = {}; for (const k of ids) v[k] = +$(k).value; return v; };
+  const sc = setup('scene'), pt = setup('parts');
+  const MODE = 'melt';                      // 'melt' (E_p, bonds break) or 'heat' (E_k, faster vibration)
+
+  // ── Particle lattice ───────────────────────────────
+  const NC = 8, NR = 6, S = 30, R = 9, P = [];
+  for (let r = 0; r < NR; r++) for (let c = 0; c < NC; c++) {
+    P.push({ c, r, lx: 180 - (NC - 1) * S / 2 + c * S, ly: 74 + r * S, x: 0, y: 0, melted: false,
+             px: Math.random() * 6.3, py: Math.random() * 6.3,
+             wa: 0.85 + Math.random() * 0.3, wb: 0.85 + Math.random() * 0.3,
+             key: (NC - 1 - c) + r + Math.random() * 0.8 });
+  }
+  P.forEach(q => { q.x = q.lx; q.y = q.ly; });
+  [...P].sort((a, b) => a.key - b.key).forEach((q, i) => q.rank = i);
+  const idx = (c, r) => (c < 0 || r < 0 || c >= NC || r >= NR) ? null : P[r * NC + c];
+  const snaps = [];
+  function drawParts(t, f, v, res) {
+    const { ctx, W, H } = pt;
+    ctx.clearRect(0, 0, W, H);
+    let amp = 1.6, w = 15, nMelt = 0;
+    if (MODE === 'melt') {
+      const target = Math.max(1, Math.min(P.length, Math.round(res.frac * P.length)));
+      nMelt = Math.round(f * target);
+    } else {
+      const hot = Math.min(1, f * res.rise / 300);
+      amp = 1.2 + 4.6 * hot; w = 12 + 12 * hot;
+    }
+    for (const q of P) {
+      const should = q.rank < nMelt;
+      if (should && !q.melted) {
+        q.melted = true;
+        for (const [dc, dr] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+          const n = idx(q.c + dc, q.r + dr);
+          if (n && !n.melted) snaps.push({ x: (q.x + n.x) / 2, y: (q.y + n.y) / 2, ang: Math.atan2(n.y - q.y, n.x - q.x), t0: t });
+        }
+      } else if (!should && q.melted) q.melted = false;
+      let tx, ty;
+      if (q.melted) {   // free of the lattice: slides about beside it, same speed as before
+        tx = q.lx + 15 + 9 * Math.sin(t / 520 * q.wa + q.px);
+        ty = q.ly - 13 + 8 * Math.cos(t / 610 * q.wb + q.py);
+      } else {
+        tx = q.lx + amp * Math.sin(w * q.wa * t / 1000 + q.px);
+        ty = q.ly + amp * Math.sin(w * q.wb * t / 1000 + q.py);
+      }
+      q.x += (tx - q.x) * 0.3; q.y += (ty - q.y) * 0.3;
+    }
+    ctx.strokeStyle = COL.ep; ctx.lineWidth = 2;
+    for (const q of P) {
+      if (q.melted) continue;
+      for (const [dc, dr] of [[1, 0], [0, 1]]) {
+        const n = idx(q.c + dc, q.r + dr);
+        if (n && !n.melted) { ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(n.x, n.y); ctx.stroke(); }
+      }
+    }
+    for (let i = snaps.length - 1; i >= 0; i--) {
+      const s = snaps[i], age = (t - s.t0) / 800;
+      if (age > 1 || age < 0) { snaps.splice(i, 1); continue; }
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.ang);
+      ctx.strokeStyle = `rgba(47,111,174,${1 - age})`; ctx.lineWidth = 2.2;
+      const g = 2 + age * 7;
+      ctx.beginPath(); ctx.moveTo(-9 - g, 0); ctx.lineTo(-g, -3 - age * 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(9 + g, 0); ctx.lineTo(g, 3 + age * 4); ctx.stroke();
+      ctx.restore();
+    }
+    for (const q of P) {
+      ctx.beginPath(); ctx.arc(q.x, q.y, R, 0, Math.PI * 2);
+      ctx.fillStyle = MODE === 'heat' ? '#c9c4bc' : COL.fill; ctx.fill();
+      ctx.strokeStyle = MODE === 'heat' ? '#5c554c' : COL.stroke; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(partLabel(f, v, res), 14, 22);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(partCaption(f, v, res), W / 2, H - 14);
+  }
+
+  // ── HTML ───────────────────────────────────────────
+  let lastKey = null;
+  function updateHTML(f, v, res) {
+    $('mMac').style.width = ((1 - f) * 100) + '%';
+    $('mMic').style.width = (f * 100) + '%';
+    $('sMac').textContent = fmtJ(res.E * (1 - f)) + NB + 'J';
+    $('sMic').textContent = fmtJ(res.E * f) + NB + 'J';
+    const key = (p >= 1 ? 'done' : p <= 0 ? 'start' : 'go') + '|' + ids.map(k => v[k]).join('|');
+    if (key === lastKey) return;
+    lastKey = key;
+    for (const k of ids) $('o_' + k).textContent = outFmt[k](v[k]);
+    readouts(res).forEach((s, i) => { $('r' + i).textContent = s; });
+    $('explain').innerHTML = p >= 1 ? textDone(v, res) : textGo(v, res);
+    $('explain').className = 'explain ' + (p >= 1 ? 'done' : '');
+  }
+
+  // ── Controls ───────────────────────────────────────
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : (p >= 1 ? '▶ Play' : '▶ Resume'); };
+  $('play').onclick = () => { if (p >= 1) p = 0; setPlaying(!playing); };
+  $('reset').onclick = () => { for (const k of ids) $(k).value = DEF[k]; p = 1; setPlaying(false); };
+  const h = location.hash.match(/p=([\d.]+)/);
+  if (h) p = Math.max(0, Math.min(1, parseFloat(h[1])));
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) { p = Math.min(1, p + dt * 1000 / DURATION); if (p >= 1) setPlaying(false); }
+    const v = vals(), res = compute(v), f = transfer(p);
+    drawScene(sc.ctx, sc.W, sc.H, p, f, v, res, now);
+    drawParts(now, f, v, res);
+    updateHTML(f, v, res);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

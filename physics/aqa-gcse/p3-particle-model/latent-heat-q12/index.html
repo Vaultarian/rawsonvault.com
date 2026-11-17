@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hot Brake Discs — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · question page · v1.0 · 2026-11-17
+  Sheet: p3-l05-specific-latent-heat.tex (3.5 Specific Latent Heat), Question 12 (.tex line 534), Higher.
+  Macro -> micro chain: E_k = ½ m v² of the car, then Δθ = ΔE / (m c) for the iron brake discs.
+  Spec: AQA Trilogy 8464, 6.3.2.3 (aP3-13 to aP3-19)
+  Values: car 1200 kg, 20 m/s; discs 6.0 kg; c iron = 450 J/kg °C (given in the question).
+  Key: E_k = 240 000 J; Δθ = 240 000 / (6.0 × 450) = 89 °C (to 2 s.f.).
+  Stem is verbatim from the sheet (id="qtext"); every number follows the sheet's key.
+  Language matches p3-l04 / p3-l05 (E_k / E_p, bonds, macro -> micro).
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/latent-heat-q12/index.html
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+
+/* ── Additions for the question pages ─────────────── */
+.tier{display:inline-block;font-family:var(--font-ui);font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--white);background:var(--bronze-dark);border-radius:999px;padding:.12rem .7rem;margin-bottom:.55rem}
+.scenario p{color:var(--ink-black);font-size:1.02rem}
+.scenario p+p{margin-top:.7rem}
+.stage-pill[data-stage="1"] .tag{background:var(--ep)}
+.stage-pill[data-stage="2"] .tag{background:var(--ek)}
+.stage-pill.on[data-stage="1"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="2"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.explain.s1{border-color:var(--ep);background:var(--ep-soft)}
+.explain.s2{border-color:var(--ek);background:var(--ek-soft)}
+.card.s1{border-top-color:var(--ep)} .card.s2{border-top-color:var(--ek)} .card.mac{border-top-color:var(--bronze-core)}
+.fill.mac{background:var(--bronze-core)}
+.m{color:var(--bronze-dark);font-weight:700;font-style:normal}
+.sliders{display:grid;gap:.55rem;margin:.9rem 0 .7rem}
+.slider{display:grid;grid-template-columns:11.5rem 1fr 5.5rem;align-items:center;gap:.7rem;font-size:.88rem;font-weight:500}
+.slider input[type=range]{min-width:0;width:100%}
+.slider output{font-family:var(--font-heading);font-size:1rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.steps{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem}
+.steps ol{list-style:none;margin-bottom:.4rem}
+.steps li{display:none;font-family:var(--font-body);font-size:1rem;line-height:1.6;padding:.45rem 0;border-bottom:1px solid #f3eee6}
+.steps li.on{display:grid;grid-template-columns:7.5rem 1fr;gap:.6rem}
+.steps li .lab{font-family:var(--font-ui);font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bronze-dark);padding-top:.25rem}
+.steps li .eq{white-space:normal}
+.steps li.final .eq{font-weight:700;font-style:normal;color:var(--ink-black)}
+.steps .controls{margin-top:.7rem}
+button.ctl:disabled{opacity:.45;cursor:default}
+.readout .lbl .nt{text-transform:none;letter-spacing:0}
+.tablewrap{overflow-x:auto}
+table.data{max-width:34rem}
+table.data td.num,table.data th.num{text-align:right}
+
+@media (max-width:760px){
+  .slider{grid-template-columns:1fr auto;row-gap:.1rem}
+  .slider input[type=range]{grid-column:1/-1;grid-row:2}
+  .steps li.on{grid-template-columns:1fr;gap:.1rem}
+  table.calc{font-size:.84rem}
+  table.calc th,table.calc td{padding:.4rem .45rem}
+  button.ctl{min-width:0}
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    Hot Brake Discs
+  </nav>
+  <span class="eyebrow">3.5 Specific Latent Heat · Question 12</span>
+  <h1>Hot Brake Discs</h1>
+  <p class="subtitle">The car's kinetic energy becomes kinetic energy of the particles in its iron brake discs.</p>
+  <div class="rule"></div>
+
+  <div class="scenario">
+    <span class="tier">Higher · one energy chain, written as one equation</span>
+    <div id="qtext"><strong>Calculate</strong> the temperature rise of a car's brake discs when the car, of mass 1200&nbsp;kg, brakes from 20&nbsp;m/s to a stop. All of its kinetic energy is transferred to the iron brake discs, of total mass 6.0&nbsp;kg. <span class="eq">c</span> of iron = 450&nbsp;J/kg&nbsp;°C.</div>
+  </div>
+  <p class="chainintro">A moving or falling object that stops can turn its E<sub>k</sub> or E<sub>p</sub> (macro) into internal energy (micro). Write the chain as <strong>one equation</strong>, e.g. <span class="eq">½ m v² = m c Δθ</span>: the car's mass on the left, the brake discs' mass on the right.</p>
+  <p style="margin-top:.7rem">This page opens on the finished answer. Press <b>Play</b> to brake again and watch the energy move from the <span class="m">car's kinetic energy store</span> into the <span class="k">kinetic energy of the particles</span> in the iron discs. Move the sliders to see how mass and speed change the result.</p>
+
+  <div class="applet" id="applet">
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">Macro · the car</div>
+        <canvas id="scene" width="360" height="290" aria-label="A car braking to a stop; its brake discs glow as they heat up"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Micro · the particles</div>
+        <canvas id="parts" width="360" height="290" aria-label="Particles of iron with bonds, vibrating faster as the discs heat up"></canvas>
+      </div>
+    </div>
+
+    <div class="meters" style="margin-top:.9rem">
+      <div class="meter">
+        <div class="name">Kinetic energy <small>of the whole car · macro</small></div>
+        <div class="track"><div class="fill mac" id="mMac"></div></div>
+        <div class="status up" id="sMac"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Kinetic energy <small>E<sub>k</sub> of the particles · iron discs</small></div>
+        <div class="track"><div class="fill ek" id="mMic"></div></div>
+        <div class="status up" id="sMic"></div>
+      </div>
+    </div>
+
+    <div class="sliders">
+      <label class="slider">Mass of car
+        <input type="range" id="M" min="800" max="2000" step="50" value="1200"><output id="o_M"></output></label>
+      <label class="slider">Speed before braking
+        <input type="range" id="v" min="5" max="40" step="1" value="20"><output id="o_v"></output></label>
+      <label class="slider">Total mass of discs
+        <input type="range" id="d" min="4" max="12" step="0.5" value="6"><output id="o_d"></output></label>
+    </div>
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Kinetic energy of car</div><div class="val" id="r0">240&nbsp;000 J</div></div>
+      <div class="readout"><div class="lbl">Energy to the discs</div><div class="val" id="r1">240&nbsp;000 J</div></div>
+      <div class="readout"><div class="lbl">Temperature rise <span class="nt">Δθ</span></div><div class="val" id="r2">89 °C</div></div>
+    </div>
+    <div class="controls">
+      <button class="ctl" id="play">▶ Play</button>
+      <button class="ctl ghost" id="reset">↺ Reset to the question's values</button>
+    </div>
+
+    <div class="explain" id="explain"></div>
+  </div>
+
+  <h2>One chain, two links</h2>
+  <div class="two">
+    <div class="card mac">
+      <h3><span class="m">Macro</span> · the whole car</h3>
+      <ul>
+        <li>The car moves at 20&nbsp;m/s, so it has kinetic energy.</li>
+        <li>Use the mass of the <b>car</b>: 1200&nbsp;kg.</li>
+        <li>Energy: <span class="eq">E<sub>k</sub> = ½ m v²</span></li>
+      </ul>
+    </div>
+    <div class="card s2">
+      <h3><span class="k">Micro</span> · the particles in the discs</h3>
+      <ul>
+        <li>The iron stays solid: every bond intact.</li>
+        <li>The particles vibrate faster, so their <span class="k">kinetic energy increases</span> and the temperature rises.</li>
+        <li>Use the mass of the <b>discs</b>, 6.0&nbsp;kg: <span class="eq">ΔE = m c Δθ</span>, so <span class="eq">Δθ = ΔE ÷ (m c)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Working, one step at a time</h2>
+  <p>These steps use the question's own values. Try each line on paper, then reveal it.</p>
+  <div class="steps" id="steps">
+    <ol>
+      <li><span class="lab">Chain</span><span class="eq">½ m v² = m c Δθ &nbsp; (the car on the left, the brake discs on the right)</span></li>
+      <li><span class="lab">Equation</span><span class="eq">E<sub>k</sub> = ½ m v²</span></li>
+      <li><span class="lab">Substitute</span><span class="eq">E<sub>k</sub> = ½ × 1200 × 20²</span></li>
+      <li><span class="lab">Answer</span><span class="eq">E<sub>k</sub> = 240&nbsp;000 J</span></li>
+      <li><span class="lab">Rearrange</span><span class="eq">ΔE = m c Δθ, so &nbsp;Δθ = ΔE ÷ (m c)</span></li>
+      <li><span class="lab">Substitute</span><span class="eq">Δθ = 240&nbsp;000 ÷ (6.0 × 450)</span></li>
+      <li class="final"><span class="lab">Answer</span><span class="eq">Δθ = 89 °C (to 2 s.f.)</span></li>
+    </ol>
+    <div class="controls">
+      <button class="ctl" id="next">Show next step</button>
+      <button class="ctl ghost" id="hide">Hide all steps</button>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <div class="tablewrap"><table class="calc">
+        <tr><th>Link</th><th>Equation</th><th>Working</th><th>Result</th></tr>
+        <tr><td><span class="m">Macro</span> kinetic energy of the car</td><td class="eq">E<sub>k</sub> = ½ m v²</td><td class="num">½ × 1200 × 20²</td><td class="num">240&nbsp;000 J</td></tr>
+        <tr><td><span class="k">Micro</span> temperature rise of the discs</td><td class="eq">Δθ = ΔE ÷ (m c)</td><td class="num">240&nbsp;000 ÷ (6.0 × 450)</td><td class="num"><b>89 °C</b> (to 2 s.f.)</td></tr>
+      </table></div>
+      <p class="sum">The brake discs' temperature rises by <b>89&nbsp;°C</b> (to 2 s.f.). E<sub>k</sub> = ½ m v² and ΔE = m c Δθ are both on the AQA equation sheet.</p>
+    </details>
+  </div>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+  // ── Shared helpers ─────────────────────────────────
+  const $ = id => document.getElementById(id);
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ep: css('--ep'), ink: css('--ink-black'), gray: css('--gray-mid'),
+                bronze: css('--bronze-core'), fill: '#9cc6ea', stroke: '#1f4e79' };
+  const NB = ' ';
+  const sp = n => Math.round(n).toLocaleString('en-GB').replace(/,/g, NB);
+  const fmtJ = E => E < 1000 ? String(+E.toFixed(1)) : sp(E);            // 87.5, 98, 240 000
+  const sig2 = v => { if (!(v > 0)) return '0'; const s = v.toPrecision(2);
+                      return (v >= 10 || /e/.test(s)) ? String(Number(s)) : s; };
+  const grp = s => s.replace(/\.(\d{3})(\d+)/, '.$1' + NB + '$2');       // 0.00026 -> 0.000 26
+  // Step-reveal working
+  const stepEls = [...document.querySelectorAll('#steps li')]; let nShown = 0;
+  function updSteps() { $('next').disabled = nShown >= stepEls.length; }
+  $('next').onclick = () => { if (nShown < stepEls.length) stepEls[nShown++].classList.add('on'); updSteps(); };
+  $('hide').onclick = () => { stepEls.forEach(s => s.classList.remove('on')); nShown = 0; updSteps(); };
+  updSteps();
+
+  const C_IRON = 450;
+  const outFmt = { M: x => x + ' kg', v: x => x + ' m/s', d: x => x.toFixed(1) + ' kg' };
+  const compute = v => { const E = 0.5 * v.M * v.v * v.v; return { E, rise: E / (v.d * C_IRON) }; };
+  const transfer = p => 1 - (1 - p) * (1 - p);                    // E_k ∝ v², speed falls steadily
+  const readouts = r => [fmtJ(r.E) + NB + 'J', fmtJ(r.E) + NB + 'J', sig2(r.rise) + NB + '°C'];
+  const textGo = (v, r) => `<b>The car is braking.</b> Its kinetic energy store held <b>${fmtJ(r.E)}&nbsp;J</b> at ${v.v}&nbsp;m/s: <span class="eq">E<sub>k</sub> = ½ m v²</span>, with the mass of the car. As it slows, that energy goes into the iron brake discs and their particles vibrate faster.`;
+  const textDone = (v, r) => `<b>The car has stopped.</b> All of its kinetic energy, <b>${fmtJ(r.E)}&nbsp;J</b>, has been transferred to the iron brake discs. The iron stays solid, so its particles vibrate faster: their <span class="k">kinetic energy</span> increases and the temperature rises. Δθ = ΔE ÷ (m c) = ${fmtJ(r.E)} ÷ (${v.d.toFixed(1)} × 450) = <b>${sig2(r.rise)}&nbsp;°C</b> (to 2 s.f.).`;
+  const partLabel = (f) => f <= 0 ? 'Iron disc: bonds intact, particles vibrate' : f < 1 ? 'Heating up: particles vibrate faster' : 'Hotter iron: faster vibration, bonds intact';
+  const partCaption = (f, v, r) => 'temperature rise so far: ' + sig2(r.rise * f) + ' °C';
+  const lerp = (a, b, k) => Math.round(a + (b - a) * k);
+  function drawScene(ctx, W, H, p, f, v, r, t) {
+    ctx.clearRect(0, 0, W, H);
+    const GY = 226, travel = 178, s = 1 - (1 - p) * (1 - p), x = 22 + travel * s, speed = v.v * (1 - p);
+    ctx.fillStyle = '#b9b2a8'; ctx.fillRect(0, GY, W, 3);
+    ctx.strokeStyle = '#d6cfc4'; ctx.lineWidth = 2; ctx.setLineDash([14, 12]);
+    ctx.beginPath(); ctx.moveTo(0, GY + 14); ctx.lineTo(W, GY + 14); ctx.stroke(); ctx.setLineDash([]);
+    const hot = Math.min(1, f * r.rise / 350);
+    const disc = `rgb(${lerp(150, 232, hot)},${lerp(150, 92, hot)},${lerp(150, 40, hot)})`;
+    // body
+    ctx.fillStyle = '#5f7f9c'; ctx.strokeStyle = '#34495c'; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(x, 203); ctx.lineTo(x, 180); ctx.lineTo(x + 26, 176); ctx.lineTo(x + 44, 154);
+    ctx.lineTo(x + 92, 154); ctx.lineTo(x + 110, 177); ctx.lineTo(x + 134, 182); ctx.lineTo(x + 134, 203); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#dfeaf4'; ctx.beginPath(); ctx.moveTo(x + 33, 176); ctx.lineTo(x + 47, 159); ctx.lineTo(x + 66, 159); ctx.lineTo(x + 66, 176); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + 71, 176); ctx.lineTo(x + 71, 159); ctx.lineTo(x + 89, 159); ctx.lineTo(x + 102, 176); ctx.closePath(); ctx.fill(); ctx.stroke();
+    // wheels with brake discs
+    const ang = (travel * s) / 18;
+    for (const wx of [x + 30, x + 104]) {
+      ctx.beginPath(); ctx.arc(wx, 207, 18, 0, Math.PI * 2); ctx.fillStyle = '#2b2b2b'; ctx.fill();
+      ctx.beginPath(); ctx.arc(wx, 207, 11.5, 0, Math.PI * 2); ctx.fillStyle = disc; ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1.2;
+      for (let k = 0; k < 4; k++) { const a = ang + k * Math.PI / 2; ctx.beginPath(); ctx.moveTo(wx, 207); ctx.lineTo(wx + 11 * Math.cos(a), 207 + 11 * Math.sin(a)); ctx.stroke(); }
+      if (hot > 0.05) {           // energy spreading from the hot disc
+        ctx.strokeStyle = `rgba(224,119,58,${0.25 + 0.5 * hot})`; ctx.lineWidth = 1.6;
+        for (let k = -1; k <= 1; k++) { const ph = (t / 300 + k) % 1, gx = wx + k * 9;
+          ctx.beginPath(); ctx.moveTo(gx, 186); ctx.quadraticCurveTo(gx + 5, 180 - ph * 5, gx, 174 - ph * 5); ctx.stroke(); }
+      }
+    }
+    // speed arrow
+    ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    const ay = 134, al = speed * 2.4;
+    if (al > 2) { ctx.strokeStyle = COL.bronze; ctx.fillStyle = COL.bronze; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(x + 67 - al / 2, ay); ctx.lineTo(x + 67 + al / 2, ay); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 67 + al / 2 + 7, ay); ctx.lineTo(x + 67 + al / 2, ay - 4.5); ctx.lineTo(x + 67 + al / 2, ay + 4.5); ctx.fill(); }
+    ctx.fillStyle = COL.ink; ctx.fillText('v = ' + (+speed.toFixed(1)) + ' m/s', x + 67, ay - 9);
+    ctx.fillStyle = COL.ek; ctx.fillText('discs +' + sig2(r.rise * f) + ' °C', x + 67, 104);
+    ctx.font = '600 12px Inter, sans-serif'; ctx.fillStyle = COL.ink; ctx.textAlign = 'left';
+    ctx.fillText(p >= 1 ? 'Stopped: the discs are ' + sig2(r.rise) + ' °C hotter' : p <= 0 ? 'Car: ' + v.M + ' kg, moving at ' + v.v + ' m/s' : 'Braking: energy goes into the discs', 14, 22);
+    ctx.font = '500 11px Inter, sans-serif'; ctx.fillStyle = COL.gray; ctx.textAlign = 'center';
+    ctx.fillText('iron brake discs, total mass ' + v.d.toFixed(1) + ' kg · c = 450 J/kg °C', W / 2, H - 14);
+  }
+  // ── Engine: macro store -> particles' store ───────
+  const DEF = { M: 1200, v: 20, d: 6 };
+  const ids = Object.keys(DEF);
+  let p = 1, playing = false; const DURATION = 5200;
+  const vals = () => { const v = {}; for (const k of ids) v[k] = +$(k).value; return v; };
+  const sc = setup('scene'), pt = setup('parts');
+  const MODE = 'heat';                      // 'melt' (E_p, bonds break) or 'heat' (E_k, faster vibration)
+
+  // ── Particle lattice ───────────────────────────────
+  const NC = 8, NR = 6, S = 30, R = 9, P = [];
+  for (let r = 0; r < NR; r++) for (let c = 0; c < NC; c++) {
+    P.push({ c, r, lx: 180 - (NC - 1) * S / 2 + c * S, ly: 74 + r * S, x: 0, y: 0, melted: false,
+             px: Math.random() * 6.3, py: Math.random() * 6.3,
+             wa: 0.85 + Math.random() * 0.3, wb: 0.85 + Math.random() * 0.3,
+             key: (NC - 1 - c) + r + Math.random() * 0.8 });
+  }
+  P.forEach(q => { q.x = q.lx; q.y = q.ly; });
+  [...P].sort((a, b) => a.key - b.key).forEach((q, i) => q.rank = i);
+  const idx = (c, r) => (c < 0 || r < 0 || c >= NC || r >= NR) ? null : P[r * NC + c];
+  const snaps = [];
+  function drawParts(t, f, v, res) {
+    const { ctx, W, H } = pt;
+    ctx.clearRect(0, 0, W, H);
+    let amp = 1.6, w = 15, nMelt = 0;
+    if (MODE === 'melt') {
+      const target = Math.max(1, Math.min(P.length, Math.round(res.frac * P.length)));
+      nMelt = Math.round(f * target);
+    } else {
+      const hot = Math.min(1, f * res.rise / 300);
+      amp = 1.2 + 4.6 * hot; w = 12 + 12 * hot;
+    }
+    for (const q of P) {
+      const should = q.rank < nMelt;
+      if (should && !q.melted) {
+        q.melted = true;
+        for (const [dc, dr] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+          const n = idx(q.c + dc, q.r + dr);
+          if (n && !n.melted) snaps.push({ x: (q.x + n.x) / 2, y: (q.y + n.y) / 2, ang: Math.atan2(n.y - q.y, n.x - q.x), t0: t });
+        }
+      } else if (!should && q.melted) q.melted = false;
+      let tx, ty;
+      if (q.melted) {   // free of the lattice: slides about beside it, same speed as before
+        tx = q.lx + 15 + 9 * Math.sin(t / 520 * q.wa + q.px);
+        ty = q.ly - 13 + 8 * Math.cos(t / 610 * q.wb + q.py);
+      } else {
+        tx = q.lx + amp * Math.sin(w * q.wa * t / 1000 + q.px);
+        ty = q.ly + amp * Math.sin(w * q.wb * t / 1000 + q.py);
+      }
+      q.x += (tx - q.x) * 0.3; q.y += (ty - q.y) * 0.3;
+    }
+    ctx.strokeStyle = COL.ep; ctx.lineWidth = 2;
+    for (const q of P) {
+      if (q.melted) continue;
+      for (const [dc, dr] of [[1, 0], [0, 1]]) {
+        const n = idx(q.c + dc, q.r + dr);
+        if (n && !n.melted) { ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(n.x, n.y); ctx.stroke(); }
+      }
+    }
+    for (let i = snaps.length - 1; i >= 0; i--) {
+      const s = snaps[i], age = (t - s.t0) / 800;
+      if (age > 1 || age < 0) { snaps.splice(i, 1); continue; }
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.ang);
+      ctx.strokeStyle = `rgba(47,111,174,${1 - age})`; ctx.lineWidth = 2.2;
+      const g = 2 + age * 7;
+      ctx.beginPath(); ctx.moveTo(-9 - g, 0); ctx.lineTo(-g, -3 - age * 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(9 + g, 0); ctx.lineTo(g, 3 + age * 4); ctx.stroke();
+      ctx.restore();
+    }
+    for (const q of P) {
+      ctx.beginPath(); ctx.arc(q.x, q.y, R, 0, Math.PI * 2);
+      ctx.fillStyle = MODE === 'heat' ? '#c9c4bc' : COL.fill; ctx.fill();
+      ctx.strokeStyle = MODE === 'heat' ? '#5c554c' : COL.stroke; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(partLabel(f, v, res), 14, 22);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(partCaption(f, v, res), W / 2, H - 14);
+  }
+
+  // ── HTML ───────────────────────────────────────────
+  let lastKey = null;
+  function updateHTML(f, v, res) {
+    $('mMac').style.width = ((1 - f) * 100) + '%';
+    $('mMic').style.width = (f * 100) + '%';
+    $('sMac').textContent = fmtJ(res.E * (1 - f)) + NB + 'J';
+    $('sMic').textContent = fmtJ(res.E * f) + NB + 'J';
+    const key = (p >= 1 ? 'done' : p <= 0 ? 'start' : 'go') + '|' + ids.map(k => v[k]).join('|');
+    if (key === lastKey) return;
+    lastKey = key;
+    for (const k of ids) $('o_' + k).textContent = outFmt[k](v[k]);
+    readouts(res).forEach((s, i) => { $('r' + i).textContent = s; });
+    $('explain').innerHTML = p >= 1 ? textDone(v, res) : textGo(v, res);
+    $('explain').className = 'explain ' + (p >= 1 ? 'done' : '');
+  }
+
+  // ── Controls ───────────────────────────────────────
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : (p >= 1 ? '▶ Play' : '▶ Resume'); };
+  $('play').onclick = () => { if (p >= 1) p = 0; setPlaying(!playing); };
+  $('reset').onclick = () => { for (const k of ids) $(k).value = DEF[k]; p = 1; setPlaying(false); };
+  const h = location.hash.match(/p=([\d.]+)/);
+  if (h) p = Math.max(0, Math.min(1, parseFloat(h[1])));
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) { p = Math.min(1, p + dt * 1000 / DURATION); if (p >= 1) setPlaying(false); }
+    const v = vals(), res = compute(v), f = transfer(p);
+    drawScene(sc.ctx, sc.W, sc.H, p, f, v, res, now);
+    drawParts(now, f, v, res);
+    updateHTML(f, v, res);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

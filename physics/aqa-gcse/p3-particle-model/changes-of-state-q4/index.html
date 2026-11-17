@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water to Steam — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · question page · v1.0 · 2026-11-17
+  Sheet: p3-l03-changes-of-state.tex (3.3 Changes of State), Question 4, stem verbatim.
+  Spec: aP3-5 (mass is conserved in a change of state), aP3-1 (rho = m / V, recalled).
+  Values: m = 0.50 kg, density of steam = 0.60 kg/m3. Key: V = 0.50 / 0.60 = 0.83 m3 (0.833...);
+    as water 0.00050 m3, about 1700 times the volume.
+  Same number of particles = same mass; the steam box area scales with V.
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/changes-of-state-q4/index.html
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+
+/* ── Additions for the question pages ─────────────── */
+.sliders{display:grid;gap:.55rem;margin:.9rem 0 .4rem}
+.srow{display:grid;grid-template-columns:11rem 1fr 7rem;align-items:center;gap:.7rem}
+.srow>*{min-width:0}
+.srow label{font-size:.88rem;font-weight:500}
+.srow label small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.srow input[type=range]{width:100%;min-width:0}
+.srow output{font-family:var(--font-heading);font-size:1.05rem;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.note{font-family:var(--font-ui);font-size:.8rem;color:var(--gray-mid);margin-top:.5rem;line-height:1.5}
+.steps{list-style:none;counter-reset:st;margin:.4rem 0 .2rem;padding-left:0}
+.answer .steps{padding-left:0}
+.steps li{counter-increment:st;display:none;font-family:var(--font-body);font-size:1rem;line-height:1.7;color:var(--ink-black);padding:.55rem .8rem .55rem 2.6rem;position:relative;border-bottom:1px solid #f3eee6;margin:0}
+.steps li.shown{display:block}
+.steps li::before{content:counter(st);position:absolute;left:.6rem;top:.6rem;width:1.45rem;height:1.45rem;line-height:1.45rem;text-align:center;border-radius:50%;background:var(--bronze-core);color:var(--white);font-family:var(--font-ui);font-size:.78rem;font-weight:600}
+.steps li b.h{font-family:var(--font-ui);font-weight:600;display:block;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bronze-dark)}
+.steps .big{font-size:1.1rem}
+.eq{white-space:normal}
+.stepbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.stepbar span{font-size:.82rem;color:var(--gray-mid)}
+.scenario p{color:var(--ink-black);font-size:1.02rem;margin:.45rem 0 0}
+.wrapx{overflow-x:auto}
+/* number line of states (cooling page) */
+.nl{margin:.4rem 0 1rem}
+.nlrow{display:grid;grid-template-columns:9.5rem 1fr 4.6rem;align-items:center;gap:.7rem;margin:.5rem 0}
+.nlrow>*{min-width:0}
+.nlrow .name{font-size:.88rem;font-weight:500}
+.nlrow .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.nltrack{position:relative;height:22px;border-radius:4px;overflow:hidden;background:#f1ede6}
+.nltrack i{position:absolute;top:0;bottom:0;display:block}
+.nltrack i.s{background:#2F6FAE} .nltrack i.l{background:#8FC1E6} .nltrack i.g{background:#F3D2B5}
+.nltrack b.cur{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--ink-black)}
+.chip{font-size:.8rem;font-weight:600;text-align:center;border-radius:999px;padding:.15rem .4rem;border:1.5px solid var(--gray-light);background:var(--white)}
+.chip.s{border-color:#2F6FAE;color:#1f4e79} .chip.l{border-color:#5c9fd0;color:#1f4e79} .chip.g{border-color:#d99a66;color:#8a4a17}
+.nlaxis{position:relative;height:1.3rem;font-size:.7rem;color:var(--gray-mid)}
+.nlaxis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.78rem;color:var(--gray-dark);margin:.2rem 0 .6rem}
+.legend i{display:inline-block;width:.9rem;height:.9rem;border-radius:3px;vertical-align:-2px;margin-right:.3rem}
+.status.wrap{white-space:normal}
+#mP{transition:width .6s ease}
+.stage-pill.on{border-color:var(--bronze-core);background:var(--bronze-parch);color:var(--ink-black)}
+@media (max-width:760px){
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+
+@media (max-width:760px){
+  .srow{grid-template-columns:1fr auto;row-gap:.1rem}
+  .srow input[type=range]{grid-column:1 / -1;grid-row:2}
+  .nlrow{grid-template-columns:1fr auto;row-gap:.25rem}
+  .nlrow .nltrack{grid-column:1 / -1;grid-row:2}
+  .steps li{padding-right:.3rem}
+  .readout .lbl{font-size:.62rem;letter-spacing:.02em}
+}
+@media (min-width:761px){ .nlaxis.pad{margin-left:10.2rem;margin-right:5.3rem} }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    Water to Steam
+  </nav>
+  <span class="eyebrow">3.3 Changes of State · Question 4</span>
+  <h1>Water to Steam</h1>
+  <p class="subtitle">The same particles, the same mass, a far larger volume.</p>
+  <div class="rule"></div>
+
+  <div class="scenario" id="qtext">Calculate the volume of steam produced when 0.50&nbsp;kg of water boils away completely. Density of steam = 0.60&nbsp;kg/m³. Show the equation, the substitution and the answer with its unit.</div>
+  <p>Every particle of the water becomes a particle of the steam, so the <b>mass is carried across</b> the change of state. The particles spread out, so the <b>volume changes</b>. Move the sliders and count the particles on each side.</p>
+
+  <div class="applet" id="applet">
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">Before · water</div>
+        <canvas id="water" width="360" height="290" aria-label="Particles of water, touching, at the bottom of a beaker"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">After · steam</div>
+        <canvas id="steam" width="360" height="290" aria-label="The same number of particles spread through a much larger box of steam"></canvas>
+      </div>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Mass, before and after</div><div class="val" id="rM">0.50 kg</div></div>
+      <div class="readout"><div class="lbl">Volume of water</div><div class="val" id="rVw">0.00050 m³</div></div>
+      <div class="readout"><div class="lbl">Volume of steam</div><div class="val" id="rVs">0.83 m³</div></div>
+    </div>
+
+    <div class="sliders">
+      <div class="srow"><label for="sm">Mass of water <small>m, carried across</small></label>
+        <input type="range" id="sm" min="2" max="20" step="1" value="10"><output id="om">0.50 kg</output></div>
+      <div class="srow"><label for="sr">Density of steam <small>ρ</small></label>
+        <input type="range" id="sr" min="6" max="24" step="1" value="12"><output id="or">0.60 kg/m³</output></div>
+    </div>
+    <div class="controls">
+      <button class="ctl" id="boil">▶ Boil the water</button>
+      <button class="ctl ghost" id="reset">↺ Reset to the question's values</button>
+    </div>
+    <p class="note">The steam box is drawn so that its area follows V. The water is drawn enlarged: at true scale it would be a speck beside the steam.</p>
+
+    <div class="explain done" id="explain"></div>
+  </div>
+
+  <h2>Carry the mass across</h2>
+  <div class="two">
+    <div class="card A">
+      <h3>Stays the same</h3>
+      <ul>
+        <li>The <b>number of particles</b>: every water particle becomes a steam particle.</li>
+        <li>So the <b>mass</b>: m is the same number before and after.</li>
+      </ul>
+    </div>
+    <div class="card B">
+      <h3>Changes</h3>
+      <ul>
+        <li>The <b>volume</b>: the particles move far apart.</li>
+        <li>So the <b>density</b>: the same mass in a larger volume is a smaller density.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>The working, one step at a time</h2>
+  <p>The density equation is recalled from memory: it is not on the equation sheet.</p>
+  <div class="answer">
+    <ol class="steps" id="steps">
+      <li><b class="h">Carry the mass</b>Mass is conserved, so the steam has m = 0.50&nbsp;kg.</li>
+      <li><b class="h">Equation</b><span class="eq big">ρ = m / V</span>, rearranged for volume: <span class="eq big">V = m / ρ</span></li>
+      <li><b class="h">Substitution</b><span class="eq big">V = 0.50 / 0.60</span></li>
+      <li><b class="h">Answer with unit</b><span class="big"><b>V = 0.83&nbsp;m³</b></span> (0.833…)</li>
+      <li><b class="h">Compare</b>As water it filled only 0.00050&nbsp;m³: the same particles now fill about 1700 times the volume.</li>
+    </ol>
+    <div class="stepbar">
+      <button class="ctl" id="next">Show first step</button>
+      <button class="ctl ghost" id="hide">Hide steps</button>
+      <span id="count"></span>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <p class="sum">Mass is conserved, so the steam has m = 0.50&nbsp;kg. <span class="eq">V = m / ρ = 0.50 / 0.60 = <b>0.83&nbsp;m³</b></span> (0.833…). As water it filled only 0.00050&nbsp;m³: the same particles now fill about 1700 times the volume.</p>
+    </details>
+  </div>
+
+  <h2>Useful densities from the sheet</h2>
+  <table class="calc" style="max-width:26rem">
+    <tr><th>Substance</th><th>Density</th></tr>
+    <tr><td>Water</td><td class="num">1000 kg/m³</td></tr>
+    <tr><td>Ice</td><td class="num">920 kg/m³</td></tr>
+    <tr><td>Steam</td><td class="num">0.60 kg/m³</td></tr>
+  </table>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+
+  const $ = id => document.getElementById(id);
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ep: css('--ep'), ink: css('--ink-black'), gray: css('--gray-mid'),
+                bronze: css('--bronze-core'), fill: '#9cc6ea', stroke: '#1f4e79' };
+  // two significant figures, written out in full (0.83, 0.00050, 4.6)
+  const sf2 = v => v.toFixed(Math.max(0, 1 - Math.floor(Math.log10(v) + 1e-9)));
+  function dot(ctx, x, y, r) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = COL.fill; ctx.fill(); ctx.strokeStyle = COL.stroke; ctx.lineWidth = 1.3; ctx.stroke();
+  }
+  // step-reveal working
+  (function () {
+    const items = [...document.querySelectorAll('#steps li')], next = $('next'), hide = $('hide'), count = $('count');
+    let n = 0;
+    const show = () => {
+      items.forEach((li, i) => li.classList.toggle('shown', i < n));
+      next.disabled = n >= items.length; next.style.opacity = n >= items.length ? .5 : 1;
+      next.textContent = n === 0 ? 'Show first step' : 'Show next step';
+      count.textContent = n + ' of ' + items.length + ' steps shown';
+    };
+    next.onclick = () => { if (n < items.length) n++; show(); };
+    hide.onclick = () => { n = 0; show(); };
+    if (/steps=all/.test(location.hash)) n = items.length;
+    show();
+  })();
+
+
+  const wc = setup('water'), sc = setup('steam');
+  const M0 = 10, R0 = 12;                 // slider units: m = k × 0.05 kg, ρ = k × 0.05 kg/m³
+  const RHO_W = 1000, VMAX = 1.0 / 0.30;
+  let m, rho, V, N, box, G = [];
+  const R = 4, SP = 62;
+
+  function layout() {
+    m = +$('sm').value * 0.05; rho = +$('sr').value * 0.05; V = m / rho;
+    N = Math.round(m / 0.05) * 4;
+    const s = Math.sqrt(V / VMAX), w = 324 * s, h = 222 * s;
+    box = { x: 180 - w / 2, y: 262 - h, w, h };
+    while (G.length < N) { const a = Math.random() * 6.283;
+      G.push({ x: box.x + Math.random() * w, y: box.y + Math.random() * h, vx: SP * Math.cos(a), vy: SP * Math.sin(a) }); }
+    G.length = N;
+    for (const p of G) { p.x = Math.min(box.x + w - R, Math.max(box.x + R, p.x)); p.y = Math.min(262 - R, Math.max(box.y + R, p.y)); }
+    const Vw = m / RHO_W, ratio = Number((V / Vw).toPrecision(2));
+    $('om').textContent = m.toFixed(2) + ' kg'; $('or').textContent = rho.toFixed(2) + ' kg/m³';
+    $('rM').textContent = m.toFixed(2) + ' kg'; $('rVw').textContent = sf2(Vw) + ' m³'; $('rVs').textContent = sf2(V) + ' m³';
+    $('explain').innerHTML = `<b>${N} particles before, ${N} particles after.</b> The mass is carried across: m = ${m.toFixed(2)}&nbsp;kg. `
+      + `<span class="eq">V = m / ρ = ${m.toFixed(2)} / ${rho.toFixed(2)} = <b>${sf2(V)}&nbsp;m³</b></span>. `
+      + `As water the same particles filled ${sf2(Vw)}&nbsp;m³, so the steam takes up about ${ratio} times the volume.`;
+  }
+  function boil() {                         // start packed, as the liquid, then spread out
+    const cols = Math.max(3, Math.min(N, Math.floor((box.w - 4) / (2 * R + 1))));
+    G.forEach((p, i) => { const c = i % cols, r = Math.floor(i / cols);
+      p.x = 180 - (cols - 1) * (R + .5) + c * (2 * R + 1); p.y = 262 - R - 1 - r * (2 * R + 1);
+      const a = -Math.random() * Math.PI; p.vx = SP * Math.cos(a); p.vy = SP * Math.sin(a); });
+  }
+  $('sm').oninput = $('sr').oninput = layout;
+  $('boil').onclick = boil;
+  $('reset').onclick = () => { $('sm').value = M0; $('sr').value = R0; layout(); };
+
+  function drawWater(t) {
+    const { ctx, W, H } = wc; ctx.clearRect(0, 0, W, H);
+    const RW = 6.5, S = 2 * RW + .6, cols = 10, rows = Math.ceil(N / cols);
+    const L = 180 - cols * S / 2 - 6, Rt = 180 + cols * S / 2 + 6, B = 262, T = 262 - 8 * S - 30;
+    ctx.fillStyle = 'rgba(156,198,234,.25)'; ctx.fillRect(L, B - rows * S - 3, Rt - L, rows * S + 3);
+    ctx.strokeStyle = '#7d756b'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(L - 5, T - 6); ctx.lineTo(L, T); ctx.lineTo(L, B + 2); ctx.lineTo(Rt, B + 2); ctx.lineTo(Rt, T); ctx.lineTo(Rt + 5, T - 6); ctx.stroke();
+    for (let i = 0; i < N; i++) { const c = i % cols, r = Math.floor(i / cols);
+      const x = L + 6 + S / 2 + c * S + (r % 2 ? 2 : -2) + 1.6 * Math.sin(t / 420 + i * 1.7), y = B - RW - 1 - r * S + 1.2 * Math.sin(t / 510 + i * 2.3);
+      dot(ctx, x, y, RW); }
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Liquid: ' + N + ' particles, touching', 14, 20);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif';
+    ctx.fillText('m = ' + m.toFixed(2) + ' kg', 14, 37);
+  }
+  function drawSteam(dt) {
+    const { ctx, W, H } = sc; ctx.clearRect(0, 0, W, H);
+    for (const p of G) {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.x < box.x + R) { p.x = box.x + R; p.vx = Math.abs(p.vx); }
+      if (p.x > box.x + box.w - R) { p.x = box.x + box.w - R; p.vx = -Math.abs(p.vx); }
+      if (p.y < box.y + R) { p.y = box.y + R; p.vy = Math.abs(p.vy); }
+      if (p.y > 262 - R) { p.y = 262 - R; p.vy = -Math.abs(p.vy); }
+    }
+    ctx.fillStyle = '#fbf3ea'; ctx.fillRect(box.x, box.y, box.w, box.h);
+    ctx.strokeStyle = '#7d756b'; ctx.lineWidth = 2; ctx.strokeRect(box.x - 1, box.y - 1, box.w + 2, box.h + 2);
+    for (const p of G) dot(ctx, p.x, p.y, R);
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Gas: ' + N + ' particles, far apart', 14, 20);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif';
+    ctx.fillText('m = ' + m.toFixed(2) + ' kg     V = ' + sf2(V) + ' m³', 14, 37);
+  }
+  layout();
+  { for (let i = 0; i < 200; i++) drawSteam(1 / 60); }
+  let last = performance.now();
+  function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; drawWater(now); drawSteam(dt); requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

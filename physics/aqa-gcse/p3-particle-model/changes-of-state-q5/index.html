@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ice Block to Water — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · question page · v1.0 · 2026-11-17
+  Sheet: p3-l03-changes-of-state.tex (3.3 Changes of State), Question 5, stem verbatim.
+  Spec: aP3-5 (mass is conserved in a change of state), aP3-1 (rho = m / V, recalled).
+  Values: V(ice) = 0.0050 m3, density of ice = 920 kg/m3, density of water = 1000 kg/m3.
+  Key: m = 920 x 0.0050 = 4.6 kg; V = 4.6 / 1000 = 0.0046 m3 (smaller than the ice).
+  Same particle count in both panels; drawn areas are in the ratio of the two volumes.
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/changes-of-state-q5/index.html
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+
+/* ── Additions for the question pages ─────────────── */
+.sliders{display:grid;gap:.55rem;margin:.9rem 0 .4rem}
+.srow{display:grid;grid-template-columns:11rem 1fr 7rem;align-items:center;gap:.7rem}
+.srow>*{min-width:0}
+.srow label{font-size:.88rem;font-weight:500}
+.srow label small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.srow input[type=range]{width:100%;min-width:0}
+.srow output{font-family:var(--font-heading);font-size:1.05rem;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.note{font-family:var(--font-ui);font-size:.8rem;color:var(--gray-mid);margin-top:.5rem;line-height:1.5}
+.steps{list-style:none;counter-reset:st;margin:.4rem 0 .2rem;padding-left:0}
+.answer .steps{padding-left:0}
+.steps li{counter-increment:st;display:none;font-family:var(--font-body);font-size:1rem;line-height:1.7;color:var(--ink-black);padding:.55rem .8rem .55rem 2.6rem;position:relative;border-bottom:1px solid #f3eee6;margin:0}
+.steps li.shown{display:block}
+.steps li::before{content:counter(st);position:absolute;left:.6rem;top:.6rem;width:1.45rem;height:1.45rem;line-height:1.45rem;text-align:center;border-radius:50%;background:var(--bronze-core);color:var(--white);font-family:var(--font-ui);font-size:.78rem;font-weight:600}
+.steps li b.h{font-family:var(--font-ui);font-weight:600;display:block;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bronze-dark)}
+.steps .big{font-size:1.1rem}
+.eq{white-space:normal}
+.stepbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.stepbar span{font-size:.82rem;color:var(--gray-mid)}
+.scenario p{color:var(--ink-black);font-size:1.02rem;margin:.45rem 0 0}
+.wrapx{overflow-x:auto}
+/* number line of states (cooling page) */
+.nl{margin:.4rem 0 1rem}
+.nlrow{display:grid;grid-template-columns:9.5rem 1fr 4.6rem;align-items:center;gap:.7rem;margin:.5rem 0}
+.nlrow>*{min-width:0}
+.nlrow .name{font-size:.88rem;font-weight:500}
+.nlrow .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.nltrack{position:relative;height:22px;border-radius:4px;overflow:hidden;background:#f1ede6}
+.nltrack i{position:absolute;top:0;bottom:0;display:block}
+.nltrack i.s{background:#2F6FAE} .nltrack i.l{background:#8FC1E6} .nltrack i.g{background:#F3D2B5}
+.nltrack b.cur{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--ink-black)}
+.chip{font-size:.8rem;font-weight:600;text-align:center;border-radius:999px;padding:.15rem .4rem;border:1.5px solid var(--gray-light);background:var(--white)}
+.chip.s{border-color:#2F6FAE;color:#1f4e79} .chip.l{border-color:#5c9fd0;color:#1f4e79} .chip.g{border-color:#d99a66;color:#8a4a17}
+.nlaxis{position:relative;height:1.3rem;font-size:.7rem;color:var(--gray-mid)}
+.nlaxis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.78rem;color:var(--gray-dark);margin:.2rem 0 .6rem}
+.legend i{display:inline-block;width:.9rem;height:.9rem;border-radius:3px;vertical-align:-2px;margin-right:.3rem}
+.status.wrap{white-space:normal}
+#mP{transition:width .6s ease}
+.stage-pill.on{border-color:var(--bronze-core);background:var(--bronze-parch);color:var(--ink-black)}
+@media (max-width:760px){
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+
+@media (max-width:760px){
+  .srow{grid-template-columns:1fr auto;row-gap:.1rem}
+  .srow input[type=range]{grid-column:1 / -1;grid-row:2}
+  .nlrow{grid-template-columns:1fr auto;row-gap:.25rem}
+  .nlrow .nltrack{grid-column:1 / -1;grid-row:2}
+  .steps li{padding-right:.3rem}
+  .readout .lbl{font-size:.62rem;letter-spacing:.02em}
+}
+@media (min-width:761px){ .nlaxis.pad{margin-left:10.2rem;margin-right:5.3rem} }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    Ice Block to Water
+  </nav>
+  <span class="eyebrow">3.3 Changes of State · Question 5</span>
+  <h1>Ice Block to Water</h1>
+  <p class="subtitle">Find the mass of the ice, carry it across, then find the volume of the water.</p>
+  <div class="rule"></div>
+
+  <div class="scenario" id="qtext">Calculate the mass of a block of ice of volume 0.0050&nbsp;m³ (density of ice = 920&nbsp;kg/m³), and then the volume of the water formed when it melts in a sealed container (density of water = 1000&nbsp;kg/m³).</div>
+  <p>This is two calculations joined by one idea. First find the <b>mass</b> of the ice. The container is sealed, so that mass is <b>carried across</b> to the water. Then find the water's <b>volume</b>.</p>
+
+  <div class="applet" id="applet">
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">Before · the block of ice</div>
+        <canvas id="ice" width="360" height="290" aria-label="A block of ice in a sealed container: particles in a regular pattern"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">After · the water</div>
+        <canvas id="wat" width="360" height="290" aria-label="The same particles as water in the sealed container, filling a smaller volume"></canvas>
+      </div>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Volume of ice</div><div class="val" id="rVi">0.0050 m³</div></div>
+      <div class="readout"><div class="lbl">Mass, before and after</div><div class="val" id="rM">4.6 kg</div></div>
+      <div class="readout"><div class="lbl">Volume of water</div><div class="val" id="rVw">0.0046 m³</div></div>
+    </div>
+
+    <div class="sliders">
+      <div class="srow"><label for="sv">Volume of the ice <small>V, the block you start with</small></label>
+        <input type="range" id="sv" min="4" max="16" step="1" value="10"><output id="ov">0.0050 m³</output></div>
+    </div>
+    <div class="controls">
+      <button class="ctl" id="melt">▶ Melt the block</button>
+      <button class="ctl ghost" id="reset">↺ Reset to the question's values</button>
+    </div>
+    <p class="note">Both containers hold the same number of particles. The dashed line on the right marks the volume the ice filled.</p>
+
+    <div class="explain done" id="explain"></div>
+  </div>
+
+  <h2>Two stages, one mass</h2>
+  <div class="two">
+    <div class="card A">
+      <h3>Stage 1 · the ice</h3>
+      <ul>
+        <li>Known: volume and density of the ice.</li>
+        <li>Find the mass: <span class="eq">m = ρ V</span></li>
+        <li>Use the density of <b>ice</b>, 920&nbsp;kg/m³.</li>
+      </ul>
+    </div>
+    <div class="card B">
+      <h3>Stage 2 · the water</h3>
+      <ul>
+        <li>Sealed container: the mass is conserved, so the water has the mass from stage 1.</li>
+        <li>Find the volume: <span class="eq">V = m / ρ</span></li>
+        <li>Use the density of <b>water</b>, 1000&nbsp;kg/m³.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>The working, one step at a time</h2>
+  <p>The density equation <span class="eq">ρ = m / V</span> is recalled from memory: it is not on the equation sheet. Both stages use it, rearranged.</p>
+  <div class="answer">
+    <ol class="steps" id="steps">
+      <li><b class="h">Stage 1 · equation</b><span class="eq big">ρ = m / V</span>, rearranged for mass: <span class="eq big">m = ρ V</span></li>
+      <li><b class="h">Stage 1 · substitution</b><span class="eq big">m = 920 × 0.0050</span></li>
+      <li><b class="h">Stage 1 · answer with unit</b><span class="big"><b>m = 4.6&nbsp;kg</b></span></li>
+      <li><b class="h">Carry the mass</b>Mass is conserved, so the water has m = 4.6&nbsp;kg.</li>
+      <li><b class="h">Stage 2 · equation</b><span class="eq big">V = m / ρ</span></li>
+      <li><b class="h">Stage 2 · substitution</b><span class="eq big">V = 4.6 / 1000</span></li>
+      <li><b class="h">Stage 2 · answer with unit</b><span class="big"><b>V = 0.0046&nbsp;m³</b></span></li>
+      <li><b class="h">Compare</b>Smaller than the ice: the particles have moved closer together.</li>
+    </ol>
+    <div class="stepbar">
+      <button class="ctl" id="next">Show first step</button>
+      <button class="ctl ghost" id="hide">Hide steps</button>
+      <span id="count"></span>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <p class="sum"><span class="eq">m = ρ V = 920 × 0.0050 = <b>4.6&nbsp;kg</b></span>. Mass is conserved, so the water has m = 4.6&nbsp;kg: <span class="eq">V = m / ρ = 4.6 / 1000 = <b>0.0046&nbsp;m³</b></span>. Smaller than the ice: the particles have moved closer together.</p>
+    </details>
+  </div>
+
+  <h2>Useful densities from the sheet</h2>
+  <table class="calc" style="max-width:26rem">
+    <tr><th>Substance</th><th>Density</th></tr>
+    <tr><td>Water</td><td class="num">1000 kg/m³</td></tr>
+    <tr><td>Ice</td><td class="num">920 kg/m³</td></tr>
+    <tr><td>Steam</td><td class="num">0.60 kg/m³</td></tr>
+  </table>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+
+  const $ = id => document.getElementById(id);
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ep: css('--ep'), ink: css('--ink-black'), gray: css('--gray-mid'),
+                bronze: css('--bronze-core'), fill: '#9cc6ea', stroke: '#1f4e79' };
+  // two significant figures, written out in full (0.83, 0.00050, 4.6)
+  const sf2 = v => v.toFixed(Math.max(0, 1 - Math.floor(Math.log10(v) + 1e-9)));
+  function dot(ctx, x, y, r) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = COL.fill; ctx.fill(); ctx.strokeStyle = COL.stroke; ctx.lineWidth = 1.3; ctx.stroke();
+  }
+  // step-reveal working
+  (function () {
+    const items = [...document.querySelectorAll('#steps li')], next = $('next'), hide = $('hide'), count = $('count');
+    let n = 0;
+    const show = () => {
+      items.forEach((li, i) => li.classList.toggle('shown', i < n));
+      next.disabled = n >= items.length; next.style.opacity = n >= items.length ? .5 : 1;
+      next.textContent = n === 0 ? 'Show first step' : 'Show next step';
+      count.textContent = n + ' of ' + items.length + ' steps shown';
+    };
+    next.onclick = () => { if (n < items.length) n++; show(); };
+    hide.onclick = () => { n = 0; show(); };
+    if (/steps=all/.test(location.hash)) n = items.length;
+    show();
+  })();
+
+
+  const ic = setup('ice'), wt = setup('wat');
+  const K0 = 10, RHO_I = 920, RHO_W = 1000;      // slider k: V = k × 0.0005 m³, one lattice row per step
+  const COLS = 12, S = 14, R = 5.5, CL = 90, CR = 270, CB = 262, CT = 26, BW = COLS * S;
+  const V0 = 34, DUR = 5.5;
+  let rows, Vi, m, Vw, hIce, hW, P = [], prog = 1, melting = false;
+
+  function layout() {
+    rows = +$('sv').value; Vi = rows * 0.0005; m = RHO_I * Vi; Vw = m / RHO_W;
+    hIce = rows * S * BW / (CR - CL);            // height the ice volume would fill, spread over the container width
+    hW = hIce * RHO_I / RHO_W;                   // water height: same mass, greater density
+    P = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < COLS; c++) {
+      const lx = 180 - (COLS - 1) * S / 2 + c * S, ly = CB - S / 2 - r * S, a = Math.random() * 6.283;
+      P.push({ c, r, lx, ly, x: CL + (c + .5) * (CR - CL) / COLS, y: CB - (r + .5) * hW / rows,
+               vx: V0 * Math.cos(a), vy: V0 * Math.sin(a), liquid: true, ph: Math.random() * 6.3, wa: .85 + Math.random() * .3,
+               key: Math.min(c, COLS - 1 - c, rows - 1 - r) + Math.random() * 1.1 });
+    }
+    [...P].sort((a, b) => a.key - b.key).forEach((p, i) => p.rank = i);
+    prog = 1; melting = false;
+    $('ov').textContent = Vi.toFixed(4) + ' m³'; $('rVi').textContent = Vi.toFixed(4) + ' m³';
+    $('rM').textContent = sf2(m) + ' kg'; $('rVw').textContent = sf2(Vw) + ' m³';
+    $('explain').innerHTML = `<b>${P.length} particles in the ice, ${P.length} particles in the water.</b> `
+      + `Stage 1: <span class="eq">m = ρ V = 920 × ${Vi.toFixed(4)} = <b>${sf2(m)}&nbsp;kg</b></span>. `
+      + `The mass is carried across. Stage 2: <span class="eq">V = m / ρ = ${sf2(m)} / 1000 = <b>${sf2(Vw)}&nbsp;m³</b></span>. `
+      + `The water fills a smaller volume than the ice because its particles are closer together.`;
+  }
+  $('sv').oninput = layout;
+  $('reset').onclick = () => { $('sv').value = K0; layout(); };
+  $('melt').onclick = () => { for (const p of P) { p.liquid = false; p.x = p.lx; p.y = p.ly; } prog = 0; melting = true; };
+
+  function container(ctx) {
+    ctx.strokeStyle = '#7d756b'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.strokeRect(CL - 2, CT, CR - CL + 4, CB - CT + 3);
+    ctx.fillStyle = '#7d756b'; ctx.fillRect(CL - 8, CT - 6, CR - CL + 16, 6);
+  }
+  function caption(ctx, a, b) {
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(a, 8, 14);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif';
+    ctx.save(); ctx.translate(26, CB); ctx.rotate(-Math.PI / 2); ctx.fillText(b, 0, 0); ctx.restore();
+    ctx.textAlign = 'center'; ctx.fillText('sealed container', 180, CB + 20);
+  }
+  function drawIce(t) {
+    const { ctx, W, H } = ic; ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(156,198,234,.22)'; ctx.fillRect(180 - BW / 2, CB - rows * S, BW, rows * S);
+    container(ctx);
+    for (const p of P) dot(ctx, p.lx + 1.1 * Math.sin(t / 60 * p.wa + p.ph), p.ly + 1.1 * Math.sin(t / 66 * p.wa + 2 * p.ph), R);
+    caption(ctx, 'Solid: regular pattern, vibrating', 'V = ' + Vi.toFixed(4) + ' m³     m = ' + sf2(m) + ' kg');
+  }
+  function stepWater(dt, t) {
+    if (melting) { prog = Math.min(1, prog + dt / DUR); if (prog >= 1) melting = false; }
+    const nL = Math.round(prog * P.length), top = CB - (rows * S + 5 + (hW - rows * S - 5) * prog);
+    for (const p of P) {
+      if (p.rank < nL && !p.liquid) { p.liquid = true; const a = Math.random() * 6.283; p.vx = V0 * Math.cos(a); p.vy = V0 * Math.sin(a); }
+      if (!p.liquid) { p.x = p.lx + 1.1 * Math.sin(t / 60 * p.wa + p.ph); p.y = p.ly + 1.1 * Math.sin(t / 66 * p.wa + 2 * p.ph); continue; }
+      const turn = (Math.random() - .5) * .5, c = Math.cos(turn), s = Math.sin(turn);
+      [p.vx, p.vy] = [p.vx * c - p.vy * s, p.vx * s + p.vy * c];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.x < CL + R) { p.x = CL + R; p.vx = Math.abs(p.vx); }
+      if (p.x > CR - R) { p.x = CR - R; p.vx = -Math.abs(p.vx); }
+      if (p.y > CB - R) { p.y = CB - R; p.vy = -Math.abs(p.vy); }
+      if (p.y < top + R) { p.y = top + R; p.vy = Math.abs(p.vy); }
+    }
+    for (let it = 0; it < 2; it++) for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+      const a = P[i], b = P[j]; if (!a.liquid && !b.liquid) continue;
+      const dx = b.x - a.x; if (dx > 12 || dx < -12) continue;
+      const dy = b.y - a.y, d = Math.hypot(dx, dy) || .01, min = 2 * R + .4; if (d >= min) continue;
+      const nx = dx / d, ny = dy / d, o = min - d;
+      if (a.liquid && b.liquid) { a.x -= nx * o / 2; a.y -= ny * o / 2; b.x += nx * o / 2; b.y += ny * o / 2;
+        const va = a.vx * nx + a.vy * ny, vb = b.vx * nx + b.vy * ny;
+        if (va - vb > 0) { a.vx += (vb - va) * nx; a.vy += (vb - va) * ny; b.vx += (va - vb) * nx; b.vy += (va - vb) * ny; } }
+      else { const L = a.liquid ? a : b, sg = a.liquid ? -1 : 1; L.x += sg * nx * o; L.y += sg * ny * o;
+        const vn = L.vx * nx + L.vy * ny; if (sg * vn < 0) { L.vx -= 2 * vn * nx; L.vy -= 2 * vn * ny; } }
+    }
+    for (const p of P) if (p.liquid) { const sp = Math.hypot(p.vx, p.vy) || 1; p.vx *= V0 / sp; p.vy *= V0 / sp;
+      p.x = Math.min(CR - R, Math.max(CL + R, p.x)); p.y = Math.min(CB - R, Math.max(top + R, p.y)); }
+    return top;
+  }
+  function drawWater() {
+    const { ctx, W, H } = wt; ctx.clearRect(0, 0, W, H);
+    if (prog >= 1) { ctx.fillStyle = 'rgba(156,198,234,.3)'; ctx.fillRect(CL, CB - hW, CR - CL, hW); }
+    container(ctx);
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = COL.bronze; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(CL - 12, CB - hIce); ctx.lineTo(CR + 12, CB - hIce); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = COL.bronze; ctx.font = '500 10.5px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('volume', CR + 16, CB - hIce - 2); ctx.fillText('of the ice', CR + 16, CB - hIce + 10);
+    for (const p of P) dot(ctx, p.x, p.y, R);
+    caption(ctx, prog < 1 ? 'Melting: the pattern breaks up' : 'Liquid: closer together, sliding past',
+            prog < 1 ? 'm = ' + sf2(m) + ' kg throughout' : 'V = ' + sf2(Vw) + ' m³     m = ' + sf2(m) + ' kg');
+  }
+  layout();
+  { for (let i = 0; i < 120; i++) stepWater(1 / 60, i * 16.7); }
+  if (/melt/.test(location.hash)) { $('melt').onclick(); for (let i = 0; i < 150; i++) stepWater(1 / 60, i * 16.7); }
+  let last = performance.now();
+  function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; drawIce(now); stepWater(dt, now); drawWater(); requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

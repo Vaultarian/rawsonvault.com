@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cooling Air and Argon — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · practice page · v1.0 · 2026-11-17
+  Own-words practice on states at low temperature.
+  Spec: aP3-2 to aP3-6 (particle model of the three states, changes of state),
+    aP3-8 (internal energy = total kinetic + potential energy of the particles).
+  Values (physical data, rounded to the nearest degree):
+    oxygen          melts -219 °C   boils -183 °C
+    nitrogen        melts -210 °C   boils -196 °C
+    carbon dioxide  sublimates at -78 °C
+    argon           melts -189 °C   boils -186 °C
+  At -190 °C: oxygen liquid, nitrogen gas, carbon dioxide solid, argon solid.
+  Language matches p3-l04 / p3-l05 (E_k, E_p, bonds).
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/cooling-air-argon/index.html
+  Deep link: #T=-187 opens at that temperature.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+
+/* ── Additions for the question pages ─────────────── */
+.sliders{display:grid;gap:.55rem;margin:.9rem 0 .4rem}
+.srow{display:grid;grid-template-columns:11rem 1fr 7rem;align-items:center;gap:.7rem}
+.srow>*{min-width:0}
+.srow label{font-size:.88rem;font-weight:500}
+.srow label small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.srow input[type=range]{width:100%;min-width:0}
+.srow output{font-family:var(--font-heading);font-size:1.05rem;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.note{font-family:var(--font-ui);font-size:.8rem;color:var(--gray-mid);margin-top:.5rem;line-height:1.5}
+.steps{list-style:none;counter-reset:st;margin:.4rem 0 .2rem;padding-left:0}
+.answer .steps{padding-left:0}
+.steps li{counter-increment:st;display:none;font-family:var(--font-body);font-size:1rem;line-height:1.7;color:var(--ink-black);padding:.55rem .8rem .55rem 2.6rem;position:relative;border-bottom:1px solid #f3eee6;margin:0}
+.steps li.shown{display:block}
+.steps li::before{content:counter(st);position:absolute;left:.6rem;top:.6rem;width:1.45rem;height:1.45rem;line-height:1.45rem;text-align:center;border-radius:50%;background:var(--bronze-core);color:var(--white);font-family:var(--font-ui);font-size:.78rem;font-weight:600}
+.steps li b.h{font-family:var(--font-ui);font-weight:600;display:block;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bronze-dark)}
+.steps .big{font-size:1.1rem}
+.eq{white-space:normal}
+.stepbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.stepbar span{font-size:.82rem;color:var(--gray-mid)}
+.scenario p{color:var(--ink-black);font-size:1.02rem;margin:.45rem 0 0}
+.wrapx{overflow-x:auto}
+/* number line of states (cooling page) */
+.nl{margin:.4rem 0 1rem}
+.nlrow{display:grid;grid-template-columns:9.5rem 1fr 4.6rem;align-items:center;gap:.7rem;margin:.5rem 0}
+.nlrow>*{min-width:0}
+.nlrow .name{font-size:.88rem;font-weight:500}
+.nlrow .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.nltrack{position:relative;height:22px;border-radius:4px;overflow:hidden;background:#f1ede6}
+.nltrack i{position:absolute;top:0;bottom:0;display:block}
+.nltrack i.s{background:#2F6FAE} .nltrack i.l{background:#8FC1E6} .nltrack i.g{background:#F3D2B5}
+.nltrack b.cur{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--ink-black)}
+.chip{font-size:.8rem;font-weight:600;text-align:center;border-radius:999px;padding:.15rem .4rem;border:1.5px solid var(--gray-light);background:var(--white)}
+.chip.s{border-color:#2F6FAE;color:#1f4e79} .chip.l{border-color:#5c9fd0;color:#1f4e79} .chip.g{border-color:#d99a66;color:#8a4a17}
+.nlaxis{position:relative;height:1.3rem;font-size:.7rem;color:var(--gray-mid)}
+.nlaxis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.78rem;color:var(--gray-dark);margin:.2rem 0 .6rem}
+.legend i{display:inline-block;width:.9rem;height:.9rem;border-radius:3px;vertical-align:-2px;margin-right:.3rem}
+.status.wrap{white-space:normal}
+#mP{transition:width .6s ease}
+.stage-pill.on{border-color:var(--bronze-core);background:var(--bronze-parch);color:var(--ink-black)}
+@media (max-width:760px){
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+
+@media (max-width:760px){
+  .srow{grid-template-columns:1fr auto;row-gap:.1rem}
+  .srow input[type=range]{grid-column:1 / -1;grid-row:2}
+  .nlrow{grid-template-columns:1fr auto;row-gap:.25rem}
+  .nlrow .nltrack{grid-column:1 / -1;grid-row:2}
+  .steps li{padding-right:.3rem}
+  .readout .lbl{font-size:.62rem;letter-spacing:.02em}
+}
+@media (min-width:761px){ .nlaxis.pad{margin-left:10.2rem;margin-right:5.3rem} }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    Cooling Air and Argon
+  </nav>
+  <span class="eyebrow">States and changes: practice</span>
+  <h1>Cooling Air and Argon</h1>
+  <p class="subtitle">From 20&nbsp;°C down to −190&nbsp;°C: which substances are solid, liquid or gas, and what the particles are doing.</p>
+  <div class="rule"></div>
+
+  <div class="scenario" id="qtext">
+    A sample of air is sealed inside a container at 20&nbsp;°C. The container is cooled steadily until the air inside reaches −190&nbsp;°C.
+    <p><strong>(a)</strong> Air is a mixture. Three of the substances in it are oxygen, nitrogen and carbon dioxide. Use the melting and boiling points below to work out whether each one is a solid, a liquid or a gas at −190&nbsp;°C.</p>
+    <p><strong>(b)</strong> The air also holds a little argon. On the way down from 20&nbsp;°C to −190&nbsp;°C the argon condenses and then freezes. Describe how the arrangement and the movement of the argon particles change as it cools, and say what happens to the energy of the particles.</p>
+  </div>
+
+  <div class="wrapx">
+  <table class="calc" style="max-width:34rem">
+    <tr><th>Substance</th><th>Melting point</th><th>Boiling point</th></tr>
+    <tr><td>Oxygen</td><td class="num">−219&nbsp;°C</td><td class="num">−183&nbsp;°C</td></tr>
+    <tr><td>Nitrogen</td><td class="num">−210&nbsp;°C</td><td class="num">−196&nbsp;°C</td></tr>
+    <tr><td>Carbon dioxide</td><td colspan="2">sublimates at −78&nbsp;°C (solid straight to gas, and back)</td></tr>
+    <tr><td>Argon</td><td class="num">−189&nbsp;°C</td><td class="num">−186&nbsp;°C</td></tr>
+  </table>
+  </div>
+  <p style="margin-top:.9rem">Drag the temperature slider, or press <b>Cool the air</b>. Read each substance's state from where the black marker sits on its line, and watch the argon particles as the marker crosses −186&nbsp;°C and −189&nbsp;°C.</p>
+
+  <div class="applet" id="applet">
+    <div class="stages">
+      <button class="stage-pill" data-t="20">Start: 20&nbsp;°C</button>
+      <button class="stage-pill" data-t="-187">Argon at −187&nbsp;°C</button>
+      <button class="stage-pill" data-t="-190">End: −190&nbsp;°C</button>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="play">▶ Cool the air</button>
+      <button class="ctl ghost" id="reset">↺ Reset to 20&nbsp;°C</button>
+      <input type="range" id="scrub" min="-190" max="20" step="1" value="20" aria-label="Temperature of the air in degrees Celsius">
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Temperature</div><div class="val" id="rT">20 °C</div></div>
+      <div class="readout"><div class="lbl">State of the argon</div><div class="val" id="rS">gas</div></div>
+      <div class="readout"><div class="lbl">Argon particles</div><div class="val" id="rV">fast</div></div>
+    </div>
+
+    <div class="panel-title">Number line of temperature · colder to the left</div>
+    <div class="legend"><span><i style="background:#2F6FAE"></i>solid</span><span><i style="background:#8FC1E6"></i>liquid</span><span><i style="background:#F3D2B5"></i>gas</span><span><i style="background:var(--ink-black);width:3px"></i>the air now</span></div>
+    <div class="nl">
+      <div class="nlrow"><div class="name">Oxygen<small>melts −219 °C · boils −183 °C</small></div>
+        <div class="nltrack" id="t-o"></div><div class="chip" id="c-o"></div></div>
+      <div class="nlrow"><div class="name">Nitrogen<small>melts −210 °C · boils −196 °C</small></div>
+        <div class="nltrack" id="t-n"></div><div class="chip" id="c-n"></div></div>
+      <div class="nlrow"><div class="name">Carbon dioxide<small>sublimates at −78 °C</small></div>
+        <div class="nltrack" id="t-c"></div><div class="chip" id="c-c"></div></div>
+      <div class="nlrow"><div class="name">Argon<small>melts −189 °C · boils −186 °C</small></div>
+        <div class="nltrack" id="t-a"></div><div class="chip" id="c-a"></div></div>
+      <div class="nlaxis pad" id="axis"></div>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">The argon particles</div>
+        <canvas id="argon" width="360" height="290" aria-label="Argon particles in a sealed container, changing arrangement and speed as the temperature falls"></canvas>
+      </div>
+      <div class="panel" style="display:flex;flex-direction:column;justify-content:center;padding:.8rem">
+        <div class="meters" style="margin:0">
+          <div class="meter">
+            <div class="name">Kinetic energy <small>E<sub>k</sub> · how fast the particles move</small></div>
+            <div class="track"><div class="fill ek" id="mK"></div></div>
+            <div class="status wrap" id="sK"></div>
+          </div>
+          <div class="meter">
+            <div class="name">Potential energy <small>E<sub>p</sub> · bonds between particles</small></div>
+            <div class="track"><div class="fill ep" id="mP"></div></div>
+            <div class="status wrap" id="sP"></div>
+          </div>
+        </div>
+        <p class="note">Internal energy is the total of E<sub>k</sub> and E<sub>p</sub>. Both bars shrink on the way down, so the internal energy of the argon decreases.</p>
+      </div>
+    </div>
+
+    <div class="explain" id="explain"></div>
+  </div>
+
+  <h2>Reading a state from two temperatures</h2>
+  <div class="two">
+    <div class="card A">
+      <h3>The rule</h3>
+      <ul>
+        <li>Colder than the melting point: <b>solid</b>.</li>
+        <li>Between the melting point and the boiling point: <b>liquid</b>.</li>
+        <li>Warmer than the boiling point: <b>gas</b>.</li>
+        <li>With negative temperatures, the bigger number after the minus sign is the colder one: −190&nbsp;°C is colder than −183&nbsp;°C.</li>
+      </ul>
+    </div>
+    <div class="card B">
+      <h3>The three states of argon</h3>
+      <ul>
+        <li><b>Gas:</b> far apart, random arrangement, moving quickly in every direction.</li>
+        <li><b>Liquid:</b> touching, random arrangement, sliding past each other.</li>
+        <li><b>Solid:</b> touching, regular pattern, vibrating about fixed positions.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>A model answer, one step at a time</h2>
+  <div class="answer">
+    <ol class="steps" id="steps">
+      <li><b class="h">(a) Oxygen</b>−190&nbsp;°C lies between oxygen's melting point (−219&nbsp;°C) and its boiling point (−183&nbsp;°C), so the oxygen is a <b>liquid</b>.</li>
+      <li><b class="h">(a) Nitrogen</b>−190&nbsp;°C is warmer than nitrogen's boiling point (−196&nbsp;°C), so the nitrogen is still a <b>gas</b>.</li>
+      <li><b class="h">(a) Carbon dioxide</b>−190&nbsp;°C is colder than −78&nbsp;°C, the temperature at which carbon dioxide sublimates, so the carbon dioxide is a <b>solid</b>.</li>
+      <li><b class="h">(b) Argon as a gas, cooling from 20&nbsp;°C</b>The particles are far apart in a random arrangement and move quickly in all directions. As the temperature falls they move more slowly, because their <span class="k">kinetic energy decreases</span>.</li>
+      <li><b class="h">(b) Condensing at −186&nbsp;°C</b>The argon changes from a gas to a liquid. The particles come together until they are touching. The arrangement is still random, and the particles now slide past each other. Bonds form between the particles, so their <span class="p">potential energy decreases</span> while the temperature stays the same.</li>
+      <li><b class="h">(b) Freezing at −189&nbsp;°C</b>The argon changes from a liquid to a solid. The particles settle into a regular pattern and each one vibrates about a fixed position. More bonds form, so the <span class="p">potential energy decreases</span> again.</li>
+      <li><b class="h">(b) The energy overall</b>From 20&nbsp;°C to −190&nbsp;°C the internal energy of the argon decreases the whole way: through <span class="k">E<sub>k</sub></span> while the temperature is falling, and through <span class="p">E<sub>p</sub></span> at each change of state.</li>
+    </ol>
+    <div class="stepbar">
+      <button class="ctl" id="next">Show first step</button>
+      <button class="ctl ghost" id="hide">Hide steps</button>
+      <span id="count"></span>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <p class="sum"><b>(a)</b> At −190&nbsp;°C oxygen is a liquid, nitrogen is a gas and carbon dioxide is a solid.</p>
+      <p class="sum"><b>(b)</b> At 20&nbsp;°C argon is a gas: its particles are far apart, randomly arranged and moving quickly in all directions. As the air cools, the particles slow down because their <span class="k">kinetic energy</span> decreases. At −186&nbsp;°C the argon condenses. The particles are now touching, still randomly arranged, and they slide past each other. At −189&nbsp;°C the argon freezes. The particles are held in a regular pattern and vibrate about fixed positions. At each change of state bonds form between the particles, so their <span class="p">potential energy</span> decreases. The internal energy of the argon decreases throughout.</p>
+    </details>
+  </div>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+
+  const $ = id => document.getElementById(id);
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ep: css('--ep'), ink: css('--ink-black'), gray: css('--gray-mid'),
+                bronze: css('--bronze-core'), fill: '#9cc6ea', stroke: '#1f4e79' };
+  // two significant figures, written out in full (0.83, 0.00050, 4.6)
+  const sf2 = v => v.toFixed(Math.max(0, 1 - Math.floor(Math.log10(v) + 1e-9)));
+  function dot(ctx, x, y, r) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = COL.fill; ctx.fill(); ctx.strokeStyle = COL.stroke; ctx.lineWidth = 1.3; ctx.stroke();
+  }
+  // step-reveal working
+  (function () {
+    const items = [...document.querySelectorAll('#steps li')], next = $('next'), hide = $('hide'), count = $('count');
+    let n = 0;
+    const show = () => {
+      items.forEach((li, i) => li.classList.toggle('shown', i < n));
+      next.disabled = n >= items.length; next.style.opacity = n >= items.length ? .5 : 1;
+      next.textContent = n === 0 ? 'Show first step' : 'Show next step';
+      count.textContent = n + ' of ' + items.length + ' steps shown';
+    };
+    next.onclick = () => { if (n < items.length) n++; show(); };
+    hide.onclick = () => { n = 0; show(); };
+    if (/steps=all/.test(location.hash)) n = items.length;
+    show();
+  })();
+
+
+  const TMIN = -230, TMAX = 30, pos = T => (T - TMIN) / (TMAX - TMIN) * 100;
+  const SUB = { o: { mp: -219, bp: -183 }, n: { mp: -210, bp: -196 }, c: { sub: -78 }, a: { mp: -189, bp: -186 } };
+  const stateOf = (s, T) => s.sub !== undefined ? (T > s.sub ? 'g' : 's') : T > s.bp ? 'g' : T > s.mp ? 'l' : 's';
+  const NAME = { s: 'solid', l: 'liquid', g: 'gas' };
+  for (const k in SUB) {
+    const s = SUB[k], el = $('t-' + k), seg = (cls, a, b) => `<i class="${cls}" style="left:${pos(a)}%;width:${pos(b) - pos(a)}%"></i>`;
+    el.innerHTML = (s.sub !== undefined ? seg('s', TMIN, s.sub) + seg('g', s.sub, TMAX)
+                                         : seg('s', TMIN, s.mp) + seg('l', s.mp, s.bp) + seg('g', s.bp, TMAX)) + '<b class="cur"></b>';
+  }
+  $('axis').innerHTML = [-200, -150, -100, -50, 0].map(T => `<span style="left:${pos(T)}%">${String(T).replace('-', '−')} °C</span>`).join('');
+  const fmtT = T => (T < 0 ? '−' + (-T) : String(T)) + ' °C';
+
+  let T = 20, playing = false;
+  const h = location.hash.match(/T=(-?\d+)/); if (h) T = Math.max(-190, Math.min(20, parseInt(h[1], 10)));
+
+  // ── Argon particles ────────────────────────────────
+  const ar = setup('argon');
+  const BX = { L: 30, Rt: 330, T: 44, B: 258 }, R = 9, COLS = 9, ROWS = 4, SL = 2 * R + 1.5, P = [];
+  for (let i = 0; i < COLS * ROWS; i++) {
+    const c = i % COLS, r = Math.floor(i / COLS), a = Math.random() * 6.283;
+    P.push({ lx: 180 - (COLS - 1) * SL / 2 + c * SL, ly: BX.B - R - 1 - r * SL,
+             x: BX.L + 20 + Math.random() * 260, y: BX.T + 20 + Math.random() * 170, vx: Math.cos(a), vy: Math.sin(a),
+             ph: Math.random() * 6.3, wa: .85 + Math.random() * .3 });
+  }
+  const arState = () => stateOf(SUB.a, T);
+  const gasSpeed = () => 55 + 105 * (T + 186) / 206;      // 160 px/s at 20 °C, 55 px/s at the boiling point
+  let prev = null;
+  function stepArgon(dt, t) {
+    const st = arState();
+    if (st !== prev) {
+      if (st === 's') { // nearest free lattice site for each particle, lowest first
+        const free = P.map(p => ({ x: p.lx, y: p.ly }));
+        for (const p of [...P].sort((a, b) => b.y - a.y)) { let bi = 0, bd = 1e9;
+          free.forEach((f, i) => { const d = (f.x - p.x) ** 2 + 3 * (f.y - p.y) ** 2 + (BX.B - f.y) * 40; if (d < bd) { bd = d; bi = i; } });
+          p.sx = free[bi].x; p.sy = free[bi].y; free.splice(bi, 1); }
+      }
+      if (prev === 's') for (const p of P) { const a = Math.random() * 6.283; p.vx = Math.cos(a); p.vy = Math.sin(a); }
+      prev = st;
+    }
+    if (st === 's') {
+      const amp = T <= -190 ? 1.3 : 1.7;
+      for (const p of P) { const tx = p.sx + amp * Math.sin(t / 55 * p.wa + p.ph), ty = p.sy + amp * Math.sin(t / 61 * p.wa + 2 * p.ph);
+        p.x += (tx - p.x) * .12; p.y += (ty - p.y) * .12; }
+      return;
+    }
+    const v0 = st === 'g' ? gasSpeed() : 46 + 3 * (T + 189);
+    for (const p of P) {
+      if (st === 'l') { p.vy += 420 * dt; const turn = (Math.random() - .5) * .5, c = Math.cos(turn), s = Math.sin(turn);
+        [p.vx, p.vy] = [p.vx * c - p.vy * s, p.vx * s + p.vy * c]; }
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.x < BX.L + R) { p.x = BX.L + R; p.vx = Math.abs(p.vx); }
+      if (p.x > BX.Rt - R) { p.x = BX.Rt - R; p.vx = -Math.abs(p.vx); }
+      if (p.y > BX.B - R) { p.y = BX.B - R; p.vy = -Math.abs(p.vy); }
+      if (p.y < BX.T + R) { p.y = BX.T + R; p.vy = Math.abs(p.vy); }
+    }
+    for (let it = 0; it < 3; it++) for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+      const a = P[i], b = P[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || .01, min = 2 * R + .5;
+      if (d >= min) continue;
+      const nx = dx / d, ny = dy / d, o = min - d;
+      a.x -= nx * o / 2; a.y -= ny * o / 2; b.x += nx * o / 2; b.y += ny * o / 2;
+      const va = a.vx * nx + a.vy * ny, vb = b.vx * nx + b.vy * ny;
+      if (va - vb > 0) { a.vx += (vb - va) * nx; a.vy += (vb - va) * ny; b.vx += (va - vb) * nx; b.vy += (va - vb) * ny; }
+    }
+    for (const p of P) { const sp = Math.hypot(p.vx, p.vy) || 1; p.vx *= v0 / sp; p.vy *= v0 / sp; }
+  }
+  function drawArgon() {
+    const { ctx, W, H } = ar, st = arState(); ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = '#7d756b'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.strokeRect(BX.L - 3, BX.T - 3, BX.Rt - BX.L + 6, BX.B - BX.T + 6);
+    if (st !== 'g') {                              // bonds between touching neighbours
+      ctx.strokeStyle = st === 's' ? COL.ep : 'rgba(47,111,174,.3)'; ctx.lineWidth = st === 's' ? 2 : 1.4;
+      for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) { const a = P[i], b = P[j];
+        if (Math.hypot(a.x - b.x, a.y - b.y) < 2 * R + 4) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }
+    }
+    for (const p of P) dot(ctx, p.x, p.y, R);
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(st === 'g' ? 'Gas: far apart, random, moving freely' : st === 'l' ? 'Liquid: touching, random, sliding past' : 'Solid: regular pattern, vibrating in place', BX.L - 4, 20);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(fmtT(T), BX.Rt + 3, 20);
+  }
+
+  // ── HTML ───────────────────────────────────────────
+  const TEXT = {
+    g: `<b>Argon is a gas.</b> The particles are far apart in a random arrangement and move freely in every direction. As the temperature falls they move more slowly: their <span class="k">kinetic energy decreases</span>. No bonds have formed yet, so the potential energy has not changed.`,
+    l: `<b>Argon is a liquid.</b> At −186&nbsp;°C the argon condensed. The particles are now touching, still in a random arrangement, and they slide past each other. Bonds formed between them as they came together, so their <span class="p">potential energy decreased</span>.`,
+    s: `<b>Argon is a solid.</b> At −189&nbsp;°C the argon froze. The particles sit in a regular pattern and each one vibrates about a fixed position. More bonds formed, so the <span class="p">potential energy decreased</span> again. The internal energy is now far lower than it was at 20&nbsp;°C.`
+  };
+  let lastKey = null;
+  function updateHTML() {
+    const st = arState();
+    $('rT').textContent = fmtT(T); $('rS').textContent = NAME[st];
+    $('rV').textContent = st === 's' ? 'vibrating' : st === 'l' ? 'slow' : T > -60 ? 'fast' : 'slower';
+    for (const k in SUB) { const s = stateOf(SUB[k], T), chip = $('c-' + k);
+      $('t-' + k).querySelector('.cur').style.left = pos(T) + '%';
+      chip.textContent = NAME[s]; chip.className = 'chip ' + s; }
+    $('mK').style.width = (100 * (T + 273) / 293) + '%';
+    $('mP').style.width = (st === 'g' ? 100 : st === 'l' ? 45 : 14) + '%';
+    $('sK').textContent = T >= 20 ? 'start value' : '↓ decreased';
+    $('sK').className = 'status wrap ' + (T >= 20 ? 'flat' : 'up');
+    $('sP').textContent = st === 'g' ? '→ unchanged' : st === 'l' ? '↓ decreased' : '↓ decreased twice';
+    $('sP').className = 'status wrap ' + (st === 'g' ? 'flat' : 'up');
+    if (st !== lastKey) { $('explain').innerHTML = TEXT[st]; $('explain').className = 'explain ' + (st === 'g' ? 'A' : st === 'l' ? 'B' : 'done'); lastKey = st; }
+    document.querySelectorAll('.stage-pill').forEach(b => b.classList.toggle('on', +b.dataset.t === Math.round(T)));
+    $('scrub').value = Math.round(T);
+  }
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : '▶ Cool the air'; };
+  $('play').onclick = () => { if (T <= -190) T = 20; setPlaying(!playing); };
+  $('reset').onclick = () => { T = 20; setPlaying(false); };
+  $('scrub').oninput = e => { T = +e.target.value; setPlaying(false); };
+  document.querySelectorAll('.stage-pill').forEach(b => b.onclick = () => { T = +b.dataset.t; setPlaying(false); });
+
+  let Tf = T;                                      // fractional temperature while playing
+  { for (let i = 0; i < 300; i++) stepArgon(1 / 60, i * 16.7); }
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) { if (Math.abs(Tf - T) > 1) Tf = T;
+      Tf -= dt * (Tf > -180 ? 30 : 1.1);           // slow right down through the two changes of state
+      if (Tf <= -190) { Tf = -190; setPlaying(false); }
+      T = Math.round(Tf); } else Tf = T;
+    stepArgon(dt, now); drawArgon(); updateHTML();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

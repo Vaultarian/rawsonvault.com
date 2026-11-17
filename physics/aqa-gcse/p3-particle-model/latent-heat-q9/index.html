@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Forgotten Ice Cubes — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · question page · v1.0 · 2026-11-17
+  Sheet: p3-l05-specific-latent-heat.tex (3.5 Specific Latent Heat), Question 9 (.tex line 462), Higher.
+  Five 0.10 kg ice cubes at 0 °C: stage 1 melt (E = m L, E_p), stage 2 warm to 20 °C (ΔE = m c Δθ, E_k).
+  Spec: AQA Trilogy 8464, 6.3.2.3 (aP3-13 to aP3-19)
+  Values: m = 5 × 0.10 = 0.50 kg; L fusion (water) = 334 000 J/kg (sheet table); c water = 4200 J/kg °C (key; sheet 3.4).
+  Key: E1 = 167 000 J, E2 = 42 000 J, total = 209 000 J (209 kJ).
+  Stem is verbatim from the sheet (id="qtext"); every number follows the sheet's key.
+  Language matches p3-l04 / p3-l05 (E_k / E_p, bonds, macro -> micro).
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/latent-heat-q9/index.html
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+
+/* ── Additions for the question pages ─────────────── */
+.tier{display:inline-block;font-family:var(--font-ui);font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--white);background:var(--bronze-dark);border-radius:999px;padding:.12rem .7rem;margin-bottom:.55rem}
+.scenario p{color:var(--ink-black);font-size:1.02rem}
+.scenario p+p{margin-top:.7rem}
+.stage-pill[data-stage="1"] .tag{background:var(--ep)}
+.stage-pill[data-stage="2"] .tag{background:var(--ek)}
+.stage-pill.on[data-stage="1"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="2"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.explain.s1{border-color:var(--ep);background:var(--ep-soft)}
+.explain.s2{border-color:var(--ek);background:var(--ek-soft)}
+.card.s1{border-top-color:var(--ep)} .card.s2{border-top-color:var(--ek)} .card.mac{border-top-color:var(--bronze-core)}
+.fill.mac{background:var(--bronze-core)}
+.m{color:var(--bronze-dark);font-weight:700;font-style:normal}
+.sliders{display:grid;gap:.55rem;margin:.9rem 0 .7rem}
+.slider{display:grid;grid-template-columns:11.5rem 1fr 5.5rem;align-items:center;gap:.7rem;font-size:.88rem;font-weight:500}
+.slider input[type=range]{min-width:0;width:100%}
+.slider output{font-family:var(--font-heading);font-size:1rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.steps{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem}
+.steps ol{list-style:none;margin-bottom:.4rem}
+.steps li{display:none;font-family:var(--font-body);font-size:1rem;line-height:1.6;padding:.45rem 0;border-bottom:1px solid #f3eee6}
+.steps li.on{display:grid;grid-template-columns:7.5rem 1fr;gap:.6rem}
+.steps li .lab{font-family:var(--font-ui);font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bronze-dark);padding-top:.25rem}
+.steps li .eq{white-space:normal}
+.steps li.final .eq{font-weight:700;font-style:normal;color:var(--ink-black)}
+.steps .controls{margin-top:.7rem}
+button.ctl:disabled{opacity:.45;cursor:default}
+.readout .lbl .nt{text-transform:none;letter-spacing:0}
+.tablewrap{overflow-x:auto}
+table.data{max-width:34rem}
+table.data td.num,table.data th.num{text-align:right}
+
+@media (max-width:760px){
+  .slider{grid-template-columns:1fr auto;row-gap:.1rem}
+  .slider input[type=range]{grid-column:1/-1;grid-row:2}
+  .steps li.on{grid-template-columns:1fr;gap:.1rem}
+  table.calc{font-size:.84rem}
+  table.calc th,table.calc td{padding:.4rem .45rem}
+  button.ctl{min-width:0}
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    The Forgotten Ice Cubes
+  </nav>
+  <span class="eyebrow">3.5 Specific Latent Heat · Question 9</span>
+  <h1>The Forgotten Ice Cubes</h1>
+  <p class="subtitle">Five ice cubes left in a warm room: stage 1 melts the ice, stage 2 warms the water.</p>
+  <div class="rule"></div>
+
+  <div class="scenario">
+    <span class="tier">Higher · a two-stage problem</span>
+    <div id="qtext"><p>Someone puts 5 ice cubes in a glass, forgets about it, and leaves it for 12&nbsp;hours. The ice absorbs energy from the room around it. First it melts, then the water warms up until it is in thermal equilibrium with the room: the same temperature, 20&nbsp;°C.</p>
+      <p>Each ice cube has a mass of 0.10&nbsp;kg and starts at 0&nbsp;°C. How much energy has <strong>all</strong> of the ice absorbed, to turn it from solid ice at 0&nbsp;°C into liquid water at 20&nbsp;°C?</p></div>
+  </div>
+  <p>This page opens on the finished answer: all the ice melted and the water at 20&nbsp;°C. Press <b>Play</b> to run the 12 hours again from the start, or drag the energy slider. The process has two stages, <span class="p">1</span> and <span class="k">2</span>, and each stage has its own equation.</p>
+
+  <div class="applet" id="applet">
+    <div class="stages">
+      <button class="stage-pill" data-stage="1"><span class="tag">1</span>Melt the ice at 0&nbsp;°C</button>
+      <button class="stage-pill" data-stage="2"><span class="tag">2</span>Warm the water: 0&nbsp;°C → <span id="pillT">20</span>&nbsp;°C</button>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">The particles</div>
+        <canvas id="beaker" width="360" height="290" aria-label="Particles of ice, then water, in a glass"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Heating curve</div>
+        <canvas id="curve" width="360" height="290" aria-label="Graph of temperature against energy absorbed"></canvas>
+      </div>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Temperature</div><div class="val" id="rT">20.0 °C</div></div>
+      <div class="readout"><div class="lbl">Energy absorbed</div><div class="val" id="rE">209&nbsp;000 J</div></div>
+      <div class="readout"><div class="lbl">Ice melted</div><div class="val" id="rM">100 %</div></div>
+    </div>
+
+    <div class="meters">
+      <div class="meter">
+        <div class="name">Potential energy <small>E<sub>p</sub> · stage 1 · bonds break</small></div>
+        <div class="track"><div class="fill ep" id="mP"></div></div>
+        <div class="status" id="sP"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Kinetic energy <small>E<sub>k</sub> · stage 2 · particles move faster</small></div>
+        <div class="track"><div class="fill ek" id="mK"></div></div>
+        <div class="status" id="sK"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Total absorbed <small>E<sub>1</sub> + E<sub>2</sub></small></div>
+        <div class="track"><div class="fill ep" id="mIP"></div><div class="fill ek" id="mIK"></div></div>
+        <div class="status" id="sI"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="play">▶ Play</button>
+      <input type="range" id="scrub" min="0" max="1000" value="1000" aria-label="Energy absorbed">
+    </div>
+
+    <div class="sliders">
+      <label class="slider">Number of ice cubes
+        <input type="range" id="sN" min="1" max="10" step="1" value="5"><output id="oN">5</output></label>
+      <label class="slider">Room temperature
+        <input type="range" id="sT" min="5" max="30" step="1" value="20"><output id="oT">20 °C</output></label>
+    </div>
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Stage 1 · <span class="nt">E<sub>1</sub> = m L</span></div><div class="val" id="rE1">167&nbsp;000 J</div></div>
+      <div class="readout"><div class="lbl">Stage 2 · <span class="nt">E<sub>2</sub> = m c Δθ</span></div><div class="val" id="rE2">42&nbsp;000 J</div></div>
+      <div class="readout"><div class="lbl">Total energy</div><div class="val" id="rET">209&nbsp;000 J</div></div>
+    </div>
+    <div class="controls">
+      <button class="ctl ghost" id="reset">↺ Reset to the question's values</button>
+    </div>
+
+    <div class="explain" id="explain"></div>
+  </div>
+
+  <h2>The values this question uses</h2>
+  <p>The sheet's table gives the specific latent heat. Melting is solid → liquid, so use <b>fusion</b> for water: 334&nbsp;000&nbsp;J/kg.</p>
+  <div class="tablewrap"><table class="calc data">
+    <tr><th>Substance</th><th class="num">Fusion<br>J/kg</th><th class="num">Vaporisation<br>J/kg</th></tr>
+    <tr><td>Water</td><td class="num">334&nbsp;000</td><td class="num">2&nbsp;260&nbsp;000</td></tr>
+    <tr><td>Ethanol</td><td class="num">108&nbsp;000</td><td class="num">840&nbsp;000</td></tr>
+    <tr><td>Lead</td><td class="num">23&nbsp;000</td><td class="num">870&nbsp;000</td></tr>
+    <tr><td>Aluminium</td><td class="num">400&nbsp;000</td><td class="num">10&nbsp;500&nbsp;000</td></tr>
+  </table></div>
+  <p style="margin-top:.8rem">Specific heat capacity of water = 4200&nbsp;J/kg&nbsp;°C, from sheet 3.4.</p>
+
+  <h2>Two stages, two equations</h2>
+  <div class="two">
+    <div class="card s1">
+      <h3><span class="p">1</span> · Melt the ice</h3>
+      <ul>
+        <li>A change of state: solid → liquid.</li>
+        <li>Temperature <b>stays at 0&nbsp;°C</b>.</li>
+        <li>The energy breaks bonds between the particles, so their <span class="p">potential energy increases</span>.</li>
+        <li>Energy: <span class="eq">E = m L</span> (specific latent heat of fusion)</li>
+      </ul>
+    </div>
+    <div class="card s2">
+      <h3><span class="k">2</span> · Warm the water</h3>
+      <ul>
+        <li>A temperature rise: 0&nbsp;°C to 20&nbsp;°C.</li>
+        <li>The particles move faster, so their <span class="k">kinetic energy increases</span>.</li>
+        <li>The water stays liquid the whole time.</li>
+        <li>Energy: <span class="eq">ΔE = m c Δθ</span> (specific heat capacity of water)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Working, one step at a time</h2>
+  <p>These steps use the question's own values. Try each line on paper, then reveal it.</p>
+  <div class="steps" id="steps">
+    <ol>
+      <li><span class="lab">Mass</span><span class="eq">m = 5 × 0.10 = 0.50 kg</span></li>
+      <li><span class="lab">Stage 1 · equation</span><span class="eq">E<sub>1</sub> = m L</span></li>
+      <li><span class="lab">Substitute</span><span class="eq">E<sub>1</sub> = 0.50 × 334&nbsp;000</span></li>
+      <li><span class="lab">Answer</span><span class="eq">E<sub>1</sub> = 167&nbsp;000 J</span></li>
+      <li><span class="lab">Stage 2 · equation</span><span class="eq">E<sub>2</sub> = m c Δθ</span></li>
+      <li><span class="lab">Substitute</span><span class="eq">E<sub>2</sub> = 0.50 × 4200 × 20</span></li>
+      <li><span class="lab">Answer</span><span class="eq">E<sub>2</sub> = 42&nbsp;000 J</span></li>
+      <li><span class="lab">Total · equation</span><span class="eq">Total energy = E<sub>1</sub> + E<sub>2</sub></span></li>
+      <li><span class="lab">Substitute</span><span class="eq">Total energy = 167&nbsp;000 + 42&nbsp;000</span></li>
+      <li class="final"><span class="lab">Answer</span><span class="eq">Total energy = 209&nbsp;000 J (209 kJ)</span></li>
+    </ol>
+    <div class="controls">
+      <button class="ctl" id="next">Show next step</button>
+      <button class="ctl ghost" id="hide">Hide all steps</button>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <div class="tablewrap"><table class="calc">
+        <tr><th>Stage</th><th>Equation</th><th>Working</th><th>Energy</th></tr>
+        <tr><td>Mass of all the ice</td><td></td><td class="num">m = 5 × 0.10</td><td class="num">0.50 kg</td></tr>
+        <tr><td><span class="p">1</span> melt the ice</td><td class="eq">E<sub>1</sub> = m L</td><td class="num">0.50 × 334&nbsp;000</td><td class="num">167&nbsp;000 J</td></tr>
+        <tr><td><span class="k">2</span> warm the water</td><td class="eq">E<sub>2</sub> = m c Δθ</td><td class="num">0.50 × 4200 × 20</td><td class="num">42&nbsp;000 J</td></tr>
+        <tr><td><b>Total</b></td><td class="eq">E<sub>1</sub> + E<sub>2</sub></td><td class="num">167&nbsp;000 + 42&nbsp;000</td><td class="num"><b>209&nbsp;000 J</b></td></tr>
+      </table></div>
+      <p class="sum">All of the ice has absorbed <b>209&nbsp;000&nbsp;J</b> (209&nbsp;kJ). Both equations are on the AQA equation sheet.</p>
+    </details>
+  </div>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+  // ── Shared helpers ─────────────────────────────────
+  const $ = id => document.getElementById(id);
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ep: css('--ep'), ink: css('--ink-black'), gray: css('--gray-mid'),
+                bronze: css('--bronze-core'), fill: '#9cc6ea', stroke: '#1f4e79' };
+  const NB = ' ';
+  const sp = n => Math.round(n).toLocaleString('en-GB').replace(/,/g, NB);
+  const fmtJ = E => E < 1000 ? String(+E.toFixed(1)) : sp(E);            // 87.5, 98, 240 000
+  const sig2 = v => { if (!(v > 0)) return '0'; const s = v.toPrecision(2);
+                      return (v >= 10 || /e/.test(s)) ? String(Number(s)) : s; };
+  const grp = s => s.replace(/\.(\d{3})(\d+)/, '.$1' + NB + '$2');       // 0.00026 -> 0.000 26
+  // Step-reveal working
+  const stepEls = [...document.querySelectorAll('#steps li')]; let nShown = 0;
+  function updSteps() { $('next').disabled = nShown >= stepEls.length; }
+  $('next').onclick = () => { if (nShown < stepEls.length) stepEls[nShown++].classList.add('on'); updSteps(); };
+  $('hide').onclick = () => { stepEls.forEach(s => s.classList.remove('on')); nShown = 0; updSteps(); };
+  updSteps();
+
+  // ── Physics values (sheet 3.5 table; c of water from sheet 3.4) ──
+  const M_CUBE = 0.10, L_F = 334000, C_W = 4200, N0 = 5, TR0 = 20;
+  const DURATION = 16000;
+  let nCubes = N0, Troom = TR0, x = 1, playing = false;
+  const mass = () => nCubes * M_CUBE;
+  const E1 = () => mass() * L_F;                 // stage 1, melting
+  const E2 = () => mass() * C_W * Troom;         // stage 2, warming
+  const ET = () => E1() + E2();
+  const bnd = () => E1() / ET();
+  function state() {
+    if (x >= 0.9995) return { E: ET(), T: Troom, melt: 1, stage: 'done' };
+    const E = x * ET();
+    if (E < E1()) return { E, T: 0, melt: E / E1(), stage: 's1' };
+    return { E, T: Troom * (E - E1()) / E2(), melt: 1, stage: 's2' };
+  }
+  const bk = setup('beaker'), cv = setup('curve');
+
+  // ── Particles (schematic: 36 particles stand for all the ice) ──
+  const R = 10, S = 24.5, COLS = 6, ROWS = 6;
+  const BK = { L: 30, Rt: 330, B: 252, T: 50 };
+  const cx = (BK.L + BK.Rt) / 2;
+  const P = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const lx = cx - (COLS - 1) * S / 2 + c * S, ly = BK.B - R - 1 - r * S;
+    const exposure = Math.min(c, COLS - 1 - c, ROWS - 1 - r);
+    P.push({ c, r, lx, ly, x: lx, y: ly, vx: 0, vy: 0, liquid: false,
+             px: Math.random() * 6.3, py: Math.random() * 6.3,
+             wa: 0.85 + Math.random() * 0.3, wb: 0.85 + Math.random() * 0.3,
+             key: exposure + Math.random() * 1.1 });
+  }
+  [...P].sort((a, b) => a.key - b.key).forEach((p, i) => p.rank = i);
+  const idx = (c, r) => (c < 0 || r < 0 || c >= COLS || r >= ROWS) ? null : P[r * COLS + c];
+  const snaps = [];
+  const V0 = 55;                                   // liquid speed at 0 °C (px/s)
+  function stepParticles(dt, t, st) {
+    const amp = 3.4, w = 21;                       // solid at 0 °C: same vibration all through stage 1
+    const V = V0 * (1 + 1.6 * st.T / 30);          // stage 2: hotter water, faster particles
+    const nLiquid = Math.round(st.melt * P.length);
+    for (const p of P) {
+      const shouldMelt = p.rank < nLiquid;
+      if (shouldMelt && !p.liquid) {
+        p.liquid = true;
+        const a = Math.random() * Math.PI * 2; p.vx = V * Math.cos(a); p.vy = V * Math.sin(a);
+        for (const [dc, dr] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+          const q = idx(p.c + dc, p.r + dr);
+          if (q && !q.liquid) snaps.push({ x: (p.x + q.x) / 2, y: (p.y + q.y) / 2,
+                                           ang: Math.atan2(q.y - p.y, q.x - p.x), t0: t });
+        }
+      } else if (!shouldMelt && p.liquid) p.liquid = false;
+    }
+    for (const p of P) {
+      if (!p.liquid) {
+        const tx = p.lx + amp * Math.sin(w * p.wa * t / 1000 + p.px);
+        const ty = p.ly + amp * Math.sin(w * p.wb * t / 1000 + p.py);
+        p.x += (tx - p.x) * 0.35; p.y += (ty - p.y) * 0.35;
+      } else {
+        p.vy += 420 * dt;
+        const turn = (Math.random() - 0.5) * 0.5, c = Math.cos(turn), s = Math.sin(turn);
+        [p.vx, p.vy] = [p.vx * c - p.vy * s, p.vx * s + p.vy * c];
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.x < BK.L + R) { p.x = BK.L + R; p.vx = Math.abs(p.vx); }
+        if (p.x > BK.Rt - R) { p.x = BK.Rt - R; p.vx = -Math.abs(p.vx); }
+        if (p.y > BK.B - R) { p.y = BK.B - R; p.vy = -Math.abs(p.vy); }
+        if (p.y < BK.T + R) { p.y = BK.T + R; p.vy = Math.abs(p.vy); }
+      }
+    }
+    for (let it = 0; it < 3; it++) {
+      for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+        const a = P[i], b = P[j];
+        if (!a.liquid && !b.liquid) continue;
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01, min = 2 * R + 0.5;
+        if (d >= min) continue;
+        const nx = dx / d, ny = dy / d, o = min - d;
+        if (a.liquid && b.liquid) {
+          a.x -= nx * o / 2; a.y -= ny * o / 2; b.x += nx * o / 2; b.y += ny * o / 2;
+          const va = a.vx * nx + a.vy * ny, vb = b.vx * nx + b.vy * ny;
+          if (va - vb > 0) { a.vx += (vb - va) * nx; a.vy += (vb - va) * ny; b.vx += (va - vb) * nx; b.vy += (va - vb) * ny; }
+        } else {
+          const Lq = a.liquid ? a : b, sgn = a.liquid ? -1 : 1;
+          Lq.x += sgn * nx * o; Lq.y += sgn * ny * o;
+          const vn = Lq.vx * nx + Lq.vy * ny;
+          if (sgn * vn < 0) { Lq.vx -= 2 * vn * nx; Lq.vy -= 2 * vn * ny; }
+        }
+      }
+    }
+    for (const p of P) if (p.liquid) { const s = Math.hypot(p.vx, p.vy) || 1; p.vx *= V / s; p.vy *= V / s; }
+  }
+
+  function drawBeaker(t, st) {
+    const { ctx, W, H } = bk;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(st.stage === 'done' ? 'thermal equilibrium with the room at ' + Troom + ' °C'
+                                     : 'absorbing energy from the room at ' + Troom + ' °C', cx, BK.B + 28);
+    ctx.strokeStyle = '#7d756b'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(BK.L - 3, BK.T - 18);
+    ctx.lineTo(BK.L - 3, BK.B + 3); ctx.lineTo(BK.Rt + 3, BK.B + 3); ctx.lineTo(BK.Rt + 3, BK.T - 18); ctx.stroke();
+    ctx.strokeStyle = COL.ep; ctx.lineWidth = 2;
+    for (const p of P) {
+      if (p.liquid) continue;
+      for (const [dc, dr] of [[1, 0], [0, 1]]) {
+        const q = idx(p.c + dc, p.r + dr);
+        if (q && !q.liquid) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
+      }
+    }
+    ctx.strokeStyle = 'rgba(47,111,174,.28)'; ctx.lineWidth = 1.4;
+    for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+      const a = P[i], b = P[j];
+      if (!a.liquid || !b.liquid) continue;
+      if (Math.hypot(a.x - b.x, a.y - b.y) < 2 * R + 4) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    }
+    for (let i = snaps.length - 1; i >= 0; i--) {
+      const s = snaps[i], age = (t - s.t0) / 700;
+      if (age > 1 || age < 0) { snaps.splice(i, 1); continue; }
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.ang);
+      ctx.strokeStyle = `rgba(47,111,174,${1 - age})`; ctx.lineWidth = 2.2;
+      const g = 2 + age * 7;
+      ctx.beginPath(); ctx.moveTo(-9 - g, 0); ctx.lineTo(-g, -3 - age * 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(9 + g, 0); ctx.lineTo(g, 3 + age * 4); ctx.stroke();
+      ctx.restore();
+    }
+    for (const p of P) {
+      ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI * 2);
+      ctx.fillStyle = COL.fill; ctx.fill();
+      ctx.strokeStyle = COL.stroke; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    const lbl = st.stage === 's1' ? (st.melt < 0.02 ? 'Solid ice at 0 °C: every bond intact' : 'Stage 1 · melting: bonds breaking')
+              : st.stage === 's2' ? 'Stage 2 · warming: particles move faster'
+              : 'Liquid water at ' + Troom + ' °C';
+    ctx.fillText(lbl, BK.L - 4, 20);
+  }
+
+  function drawCurve(st) {
+    const { ctx, W, H } = cv;
+    ctx.clearRect(0, 0, W, H);
+    const m = { l: 50, r: 18, t: 22, b: 70 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const yMin = -4, yMax = 32, b = bnd();
+    const X = v => m.l + v * pw, Y = T => m.t + (yMax - T) / (yMax - yMin) * ph;
+    ctx.fillStyle = COL.ink; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right';
+    for (const T of [0, 5, 10, 15, 20, 25, 30]) {
+      ctx.fillText(String(T), m.l - 7, Y(T) + 4);
+      ctx.strokeStyle = '#efe9df'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(m.l + 1, Y(T)); ctx.lineTo(m.l + pw, Y(T)); ctx.stroke();
+    }
+    // room temperature line
+    ctx.setLineDash([2, 4]); ctx.strokeStyle = COL.bronze; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(m.l + 1, Y(Troom)); ctx.lineTo(m.l + pw, Y(Troom)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = COL.bronze; ctx.textAlign = 'left'; ctx.fillText('room temperature', m.l + 6, Y(Troom) - 5);
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(m.l, m.t - 6); ctx.lineTo(m.l, m.t + ph); ctx.lineTo(m.l + pw + 6, m.t + ph); ctx.stroke();
+    ctx.fillStyle = COL.ink;
+    ctx.save(); ctx.translate(13, m.t + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center';
+    ctx.fillText('temperature in °C', 0, 0); ctx.restore();
+    // x ticks: 0 and E1 on the first row, the total on the second row
+    const tick = (v, label, row, align) => {
+      const tx = X(v); ctx.strokeStyle = COL.ink; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(tx, m.t + ph); ctx.lineTo(tx, m.t + ph + 4 + row * 14); ctx.stroke();
+      ctx.textAlign = align; ctx.fillText(label, tx + (align === 'right' ? 4 : 0), m.t + ph + 17 + row * 14);
+    };
+    tick(0, '0', 0, 'center'); tick(b, sp(E1()), 0, 'center'); tick(1, sp(ET()), 1, 'right');
+    ctx.textAlign = 'center';
+    ctx.fillText('energy absorbed in J', m.l + pw / 2, m.t + ph + 52);
+    // full curve, faint
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = '#c9bfb1'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(b), Y(0)); ctx.lineTo(X(1), Y(Troom)); ctx.stroke();
+    ctx.setLineDash([]);
+    // travelled part
+    ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.strokeStyle = COL.ep; ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(Math.min(x, b)), Y(0)); ctx.stroke();
+    if (x > b) { ctx.strokeStyle = COL.ek; ctx.beginPath(); ctx.moveTo(X(b), Y(0)); ctx.lineTo(X(x), Y(st.T)); ctx.stroke(); }
+    ctx.font = '700 14px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = COL.ep; ctx.fillText('1', X(b / 2), Y(0) - 10);
+    ctx.fillStyle = COL.ek; ctx.fillText('2', X(b + (1 - b) / 2) - 12, Y(Troom / 2) - 6);
+    ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = COL.gray;
+    ctx.fillText('melting at 0 °C', X(b / 2), Y(0) + 15);
+    ctx.beginPath(); ctx.arc(X(x), Y(st.T), 6.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = st.stage === 's1' ? COL.ep : COL.ek; ctx.stroke();
+  }
+
+  // ── HTML readouts ──────────────────────────────────
+  const fmtT = T => T.toFixed(1) + ' °C';
+  const J = E => sp(E) + NB + 'J';
+  const TEXT = {
+    s1: () => `<b><span class="p">1</span> · Melting the ice.</b> The temperature stays at 0&nbsp;°C. The energy absorbed from the room breaks bonds between the particles, and they slide past each other as water: their <span class="p">potential energy increases</span>. Their kinetic energy stays the same. Energy needed: <span class="eq">E = m L</span>, with the specific latent heat of fusion.`,
+    s2: () => `<b><span class="k">2</span> · Warming the water.</b> All the ice has melted. Now the temperature rises from 0&nbsp;°C towards ${Troom}&nbsp;°C, so the particles move faster: their <span class="k">kinetic energy increases</span>. Energy needed: <span class="eq">ΔE = m c Δθ</span>, with the specific heat capacity of water.`,
+    done: () => `<b>Liquid water at ${Troom}&nbsp;°C, in thermal equilibrium with the room.</b> Total energy absorbed = E<sub>1</sub> + E<sub>2</sub> = ${J(E1())} + ${J(E2())} = <b>${J(ET())}</b>. Stage 1 increased the particles' <span class="p">potential energy</span>; stage 2 increased their <span class="k">kinetic energy</span>.`
+  };
+  let lastKey = null;
+  function updateHTML(st) {
+    $('rT').textContent = fmtT(st.T);
+    $('rE').textContent = J(st.E);
+    $('rM').textContent = Math.round(st.melt * 100) + ' %';
+    $('rE1').textContent = J(E1()); $('rE2').textContent = J(E2()); $('rET').textContent = J(ET());
+    const e1 = Math.min(st.E, E1()), e2 = Math.max(0, st.E - E1());
+    $('mP').style.width = (e1 / E1() * 100) + '%';
+    $('mK').style.width = (e2 / E2() * 100) + '%';
+    $('mIP').style.width = (e1 / ET() * 100) + '%';
+    $('mIK').style.width = (e2 / ET() * 100) + '%';
+    $('sP').textContent = J(e1); $('sK').textContent = J(e2); $('sI').textContent = J(st.E);
+    $('sP').className = 'status ' + (st.stage === 's1' ? 'up' : 'flat');
+    $('sK').className = 'status ' + (st.stage === 's2' ? 'up' : 'flat');
+    $('sI').className = 'status up';
+    const key = st.stage + '|' + nCubes + '|' + Troom;
+    if (key !== lastKey) {
+      $('explain').innerHTML = TEXT[st.stage]();
+      $('explain').className = 'explain ' + st.stage;
+      document.querySelectorAll('.stage-pill').forEach(b => b.classList.toggle('on',
+        (b.dataset.stage === '1' && st.stage === 's1') || (b.dataset.stage === '2' && st.stage !== 's1')));
+      $('pillT').textContent = Troom; $('oN').textContent = nCubes; $('oT').textContent = Troom + ' °C';
+      lastKey = key;
+    }
+    $('scrub').value = Math.round(x * 1000);
+  }
+
+  // ── Controls ───────────────────────────────────────
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : '▶ Play'; };
+  $('play').onclick = () => { if (x >= 1) x = 0; setPlaying(!playing); };
+  $('scrub').oninput = e => { x = e.target.value / 1000; setPlaying(false); };
+  $('sN').oninput = e => { nCubes = +e.target.value; };
+  $('sT').oninput = e => { Troom = +e.target.value; };
+  $('reset').onclick = () => { nCubes = N0; Troom = TR0; $('sN').value = N0; $('sT').value = TR0; x = 1; setPlaying(false); };
+  document.querySelectorAll('.stage-pill').forEach(b => b.onclick = () => {
+    x = b.dataset.stage === '1' ? 0 : bnd() + 0.0005; setPlaying(true);
+  });
+  const h = location.hash.match(/x=([\d.]+)/);
+  if (h) x = Math.max(0, Math.min(1, parseFloat(h[1])));
+
+  // ── Loop ───────────────────────────────────────────
+  let last = performance.now();
+  { const st = state(); for (let i = 0; i < 300; i++) stepParticles(1 / 60, i * 16.7, st); }
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) { x = Math.min(1, x + dt * 1000 / DURATION); if (x >= 1) setPlaying(false); }
+    const st = state();
+    stepParticles(dt, now, st);
+    drawBeaker(now, st); drawCurve(st); updateHTML(st);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warming a Copper Block — P3 Particle Model — The Vault</title>
+<!--
+  P3 Particle Model · worksheet question applet · v1.0 · 2026-11-17
+  Sheet: p3-l04-internal-energy-and-shc.tex (3.4 Internal Energy and Specific Heat Capacity)
+  Question 2 (stem .tex lines 364–365 (key 366)), printed word for word in #qtext.
+  Spec: AQA Trilogy 8464 P3 · internal energy (aP3-8) and specific heat capacity, ΔE = m c Δθ.
+  Values: m = 0.50 kg, c(copper) = 385 J/kg °C, Δθ = 15 °C.
+  Key: ΔE = m c Δθ = 0.50 × 385 × 15 = 2887.5 J ≈ 2900 J
+  c values come only from the sheet's own table (water 4200, aluminium 900, concrete 800,
+  iron 450, copper 385, lead 130 J/kg °C).
+  Language matches p3-l04: the temperature rises, particles vibrate faster, kinetic energy
+  (E_k) goes up; no change of state, so potential energy (E_p) stays the same.
+  Self-contained: no site CSS dependency. Destination when published:
+    physics/aqa-gcse/p3-particle-model/shc-q2/index.html
+  Deep link: #steps opens with every step of the working shown.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A;      /* kinetic energy  — stage A */
+  --ek-soft:#F6E1D3;
+  --ep:#2F6FAE;      /* potential energy — stage B */
+  --ep-soft:#DCE8F4;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.05rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.98rem;line-height:1.7}
+.scenario{font-family:var(--font-body);font-size:1.02rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.7;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+/* ── Applet ───────────────────────────────────────── */
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.85rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.35rem .9rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.35rem;height:1.35rem;line-height:1.35rem;text-align:center;border-radius:50%;font-weight:600;font-size:.78rem;margin-right:.4rem;color:var(--white)}
+.stage-pill[data-stage="A"] .tag{background:var(--ek)}
+.stage-pill[data-stage="B"] .tag{background:var(--ep)}
+.stage-pill.on[data-stage="A"]{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on[data-stage="B"]{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--ink-black)}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0;transition:width .08s linear}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap}
+.status.up{color:var(--ink-black)} .status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.toggle{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-dark);cursor:pointer}
+.toggle input{accent-color:var(--bronze-core);width:1rem;height:1rem}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:1rem;line-height:1.7;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.2rem;transition:background .3s,border-color .3s}
+.explain.A{border-color:var(--ek);background:var(--ek-soft)}
+.explain.B{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k{color:var(--ek);font-weight:700;font-style:normal} .p{color:var(--ep);font-weight:700;font-style:normal}
+
+/* ── Two stages, two marks ────────────────────────── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.A{border-top-color:var(--ek)} .card.B{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.95rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.55}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer ol{padding-left:1.3rem}
+.answer li{font-family:var(--font-body);font-size:1rem;line-height:1.7;margin:.35rem 0}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.calc td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+@media (max-width:760px){
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+  .readout .val{font-size:1.05rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+}
+
+/* ── Additions for the specific heat capacity question pages ── */
+.nw{white-space:nowrap}
+.qn{display:block;font-family:var(--font-display);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bronze-core);margin-bottom:.25rem}
+.sliders{display:grid;gap:.55rem;margin-bottom:1rem}
+.srow{display:grid;grid-template-columns:10.5rem 1fr 5.5rem;align-items:center;gap:.7rem}
+.srow>*{min-width:0}
+.srow label{font-size:.88rem;font-weight:500}
+.srow label small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.srow output{font-family:var(--font-heading);font-size:1.02rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.srow input[type=range]{width:100%;min-width:0}
+.srow select{font-family:var(--font-ui);font-size:.92rem;padding:.4rem .5rem;border:1px solid var(--bronze-light);border-radius:var(--radius);background:var(--white);color:var(--ink-black);width:100%;max-width:22rem}
+.live{min-height:0}
+.live .ln{display:block;font-family:var(--font-body);font-size:1.05rem;line-height:1.9;font-variant-numeric:tabular-nums}
+.live .ln b{font-family:var(--font-body);font-weight:700}
+.live .hd{display:block;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-dark);margin-bottom:.2rem}
+.card.E{border-top-color:var(--bronze-core)}
+table.ctab{max-width:24rem}
+table.ctab td.num,table.ctab th.num{text-align:right}
+table.ctab tr.sel td{background:var(--ek-soft);font-weight:700}
+table.steps td.lab{font-family:var(--font-ui);font-weight:600;font-size:.88rem;width:11rem}
+table.steps tr[hidden]{display:none}
+.stepbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.stepbar .count{font-size:.85rem;color:var(--gray-mid)}
+button.ctl:disabled{opacity:.55;cursor:default}
+@media (max-width:760px){
+  .srow{grid-template-columns:1fr 5.2rem;row-gap:.1rem}
+  .srow label{grid-column:1 / -1}
+  .srow.pick{grid-template-columns:1fr}
+  table.steps td.lab{width:6.2rem}
+  .live .ln{font-size:.98rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P3 Particle Model</a><span>·</span>
+    Warming a Copper Block
+  </nav>
+  <span class="eyebrow">3.4 Internal Energy and Specific Heat Capacity · Question 2</span>
+  <h1>Warming a Copper Block</h1>
+  <p class="subtitle">One equation, three values, one multiplication.</p>
+  <div class="rule"></div>
+
+  <div class="scenario">
+    <span class="qn">Question 2</span>
+    <span id="qtext"><strong>Calculate</strong> the energy needed to raise the temperature of a <span class="nw">0.50 kg</span> copper block by <span class="nw">15 °C</span>.</span>
+  </div>
+  <p>The sliders start at the question's own values, so the page opens on the worked answer. Press <b>Warm it up</b> to watch the particles vibrate faster as the temperature rises, then change the mass, the temperature rise or the material and see the energy follow.</p>
+
+  <div class="applet" id="applet">
+    <div class="sliders">
+      <div class="srow">
+        <label for="s_m">Mass, m <small>in kg</small></label>
+        <input type="range" id="s_m" min="0.1" max="2" step="0.05" value="0.5" aria-label="Mass, m">
+        <output id="o_m"></output>
+      </div>
+      <div class="srow">
+        <label for="s_dT">Temperature rise, Δθ <small>in °C</small></label>
+        <input type="range" id="s_dT" min="1" max="50" step="1" value="15" aria-label="Temperature rise, Δθ">
+        <output id="o_dT"></output>
+      </div>
+      <div class="srow pick">
+        <label for="mat">Material <small>from the sheet's table</small></label>
+        <select id="mat" aria-label="Material"></select>
+      </div>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">The particles</div>
+        <canvas id="block" width="360" height="290" aria-label="Particles in a block on a heater, vibrating more as the temperature rises"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Energy for each material</div>
+        <canvas id="side" width="360" height="290" aria-label="Bar chart of the energy needed for each material in the table"></canvas>
+      </div>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="lbl" id="l1"></div><div class="val" id="r1"></div></div>
+      <div class="readout"><div class="lbl" id="l2"></div><div class="val" id="r2"></div></div>
+      <div class="readout"><div class="lbl" id="l3"></div><div class="val" id="r3"></div></div>
+    </div>
+
+    <div class="meters">
+      <div class="meter">
+        <div class="name">Kinetic energy <small>E<sub>k</sub> · how fast the particles vibrate</small></div>
+        <div class="track"><div class="fill ek" id="mK"></div></div>
+        <div class="status" id="sK"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Potential energy <small>E<sub>p</sub> · bonds between particles</small></div>
+        <div class="track"><div class="fill ep" id="mP" style="width:45%"></div></div>
+        <div class="status flat" id="sP">→ constant</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="play">▶ Warm it up</button>
+      <button class="ctl ghost" id="reset">↺ Reset to the question's values</button>
+    </div>
+
+    <div class="explain A live" id="live"></div>
+  </div>
+
+  <h2>Work it out, one step at a time</h2>
+  <p>These steps use the question's own values. Write each line on your sheet as it appears: equation, substitution, answer with its unit.</p>
+  <div class="answer">
+    <div class="stepbar">
+      <button class="ctl" id="next">Show next step</button>
+      <button class="ctl ghost" id="hide">Hide the steps</button>
+      <span class="count" id="count"></span>
+    </div>
+    <table class="calc steps" id="steps"></table>
+  </div>
+
+  <h2>What the energy does</h2>
+  <div class="two">
+    <div class="card A">
+      <h3><span class="k">E<sub>k</sub></span> · The particles</h3>
+      <ul>
+        <li>The temperature <b>rises</b>.</li>
+        <li>The particles vibrate faster about their fixed positions, so their <span class="k">kinetic energy increases</span>.</li>
+        <li>The block stays solid with every bond intact, so potential energy stays the same.</li>
+        <li>Internal energy (total kinetic and potential energy of all the particles) goes up through E<sub>k</sub>.</li>
+      </ul>
+    </div>
+    <div class="card E">
+      <h3>The equation</h3>
+      <ul>
+        <li><span class="eq">ΔE = m c Δθ</span> is on the equation sheet.</li>
+        <li><b>m</b> is the mass in kg.</li>
+        <li><b>c</b> is the specific heat capacity in J/kg&nbsp;°C, from the table.</li>
+        <li><b>Δθ</b> is the temperature change in °C. Here the question gives it directly: 15&nbsp;°C.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <p class="sum"><span class="eq">ΔE = m c Δθ</span> = 0.50 × 385 × 15 = <b>2887.5&nbsp;J</b> ≈ 2900&nbsp;J</p>
+      <p class="sum">The energy raises the temperature of the copper, so the <span class="k">kinetic energy</span> of its particles increases.</p>
+    </details>
+  </div>
+
+  <h2>Specific heat capacity</h2>
+  <p>The table from your sheet. No need to memorise these. In an exam, the question gives you the value you need.</p>
+  <table class="calc ctab" id="ctab">
+    <tr><th>Material</th><th class="num">c in J/kg&nbsp;°C</th></tr>
+    <tr><td>Water</td><td class="num">4200</td></tr>
+    <tr><td>Aluminium</td><td class="num">900</td></tr>
+    <tr><td>Concrete</td><td class="num">800</td></tr>
+    <tr><td>Iron</td><td class="num">450</td></tr>
+    <tr><td>Copper</td><td class="num">385</td></tr>
+    <tr><td>Lead</td><td class="num">130</td></tr>
+  </table>
+  <p style="margin-top:.8rem">Copper has a low specific heat capacity, so each kilogram takes only 385&nbsp;J for every 1&nbsp;°C. Pick water in the applet and compare the bars.</p>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P3 Particle Model · 2026</div>
+</div>
+
+<script>
+(() => {
+  const CFG = {"unit": "kg", "dp": 2, "mode": "rise", "panel": "bars", "approx": "≈ 2900 J", "d": {"m": 0.5, "dT": 15, "mat": 4}, "readouts": ["rise", "sofar", "need"], "steps": [["Equation", "<span class=\"eq\">ΔE = m c Δθ</span>"], ["Substitute", "ΔE = 0.50 × 385 × 15"], ["Answer", "ΔE = <b>2887.5&nbsp;J</b> ≈ 2900&nbsp;J"]]};
+  // ── The sheet's table: the only source of c values ──
+  const MATS = [
+    { n: 'Water',     c: 4200, fill: '#9cc6ea', stroke: '#1f4e79', liquid: true },
+    { n: 'Aluminium', c: 900,  fill: '#d9dee3', stroke: '#66727c' },
+    { n: 'Concrete',  c: 800,  fill: '#ddd3c2', stroke: '#7d7262' },
+    { n: 'Iron',      c: 450,  fill: '#aab2bb', stroke: '#444c55' },
+    { n: 'Copper',    c: 385,  fill: '#e0a070', stroke: '#8a4a1c' },
+    { n: 'Lead',      c: 130,  fill: '#8f98a8', stroke: '#394150' }
+  ];
+  const $ = id => document.getElementById(id);
+  const NB = ' ';
+  // 2887.5 · 67 500 · 21 600 (a space groups the thousands from five digits up, as on the sheet)
+  const grp = v => {
+    let [i, d] = (Math.round(v * 100) / 100).toString().split('.');
+    if (i.length >= 5) i = i.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+    return d ? i + '.' + d : i;
+  };
+  const trim3 = v => (Math.round(v * 1000) / 1000).toString();
+
+  // ── State: the question's own numbers are the starting position ──
+  const S = Object.assign({}, CFG.d);
+  let p = 1;               // 0..1 through the warming; 1 = the whole temperature rise
+  let playing = false, dirty = true;
+  const DURATION = 6000;
+
+  function vals() {
+    const mkg = CFG.unit === 'g' ? S.m / 1000 : S.m;
+    const dT = CFG.mode === 'range' ? S.T2 - S.T1 : S.dT;
+    const mat = MATS[S.mat];
+    const E = Math.round(mkg * mat.c * dT * 100) / 100;
+    const mTxt = CFG.unit === 'g' ? mkg.toFixed(3) : S.m.toFixed(CFG.dp);
+    const atQ = Object.keys(CFG.d).every(k => S[k] === CFG.d[k]);
+    const heat = CFG.mode === 'range' ? (S.T1 + p * dT) / 100 : p * dT / 50;
+    return { mkg, dT, mat, c: mat.c, E, mTxt, atQ, heat: Math.max(0, Math.min(1, heat)) };
+  }
+
+  // ── Canvas helpers ─────────────────────────────────
+  function setup(id) {
+    const c = $(id), ctx = c.getContext('2d');
+    const W = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { c, ctx, W, H };
+  }
+  const bk = setup('block'), sd = setup('side');
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ek: css('--ek'), ekSoft: css('--ek-soft'), ep: css('--ep'), ink: css('--ink-black'),
+                gray: css('--gray-mid'), light: '#d9d0c2', bronze: css('--bronze-core') };
+  function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+
+  // ── Particles: a block on a heater ─────────────────
+  const R = 10, SP = 31, COLS = 7, ROWS = 5, CX = 180, BASE = 236;
+  const P = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    P.push({ c, r, lx: CX - (COLS - 1) * SP / 2 + c * SP, ly: BASE - R - 6 - r * SP, x: 0, y: 0,
+             px: Math.random() * 6.3, py: Math.random() * 6.3,
+             wa: 0.85 + Math.random() * 0.3, wb: 0.85 + Math.random() * 0.3,
+             jx: (Math.random() - 0.5) * 7, jy: (Math.random() - 0.5) * 7 });
+  }
+  P.forEach(q => { q.x = q.lx; q.y = q.ly; });
+  const idx = (c, r) => (c < 0 || r < 0 || c >= COLS || r >= ROWS) ? null : P[r * COLS + c];
+
+  function stepParticles(t, v) {
+    const amp = 0.7 + 3.6 * v.heat, w = 9 + 11 * v.heat, liq = !!v.mat.liquid;
+    for (const q of P) {
+      const bx = q.lx + (liq ? q.jx + 3 * Math.sin(t / 1700 * q.wa + q.py) : 0);
+      const by = q.ly + (liq ? q.jy + 3 * Math.sin(t / 1900 * q.wb + q.px) : 0);
+      const tx = bx + amp * Math.sin(w * q.wa * t / 1000 + q.px);
+      const ty = by + amp * Math.sin(w * q.wb * t / 1000 + q.py);
+      q.x += (tx - q.x) * 0.35; q.y += (ty - q.y) * 0.35;
+    }
+  }
+
+  function drawBlock(t, v) {
+    const { ctx, W, H } = bk, liq = !!v.mat.liquid;
+    ctx.clearRect(0, 0, W, H);
+    const L = CX - (COLS - 1) * SP / 2 - R - 8, Rt = CX + (COLS - 1) * SP / 2 + R + 8;
+    const top = BASE - R - 6 - (ROWS - 1) * SP - R - 8;
+    // heater
+    ctx.fillStyle = playing ? '#e0773a' : '#b9b2a8';
+    ctx.fillRect(L - 16, BASE + 6, Rt - L + 32, 9);
+    if (playing) {
+      ctx.strokeStyle = 'rgba(224,119,58,.55)'; ctx.lineWidth = 1.6;
+      for (let i = 0; i < 6; i++) {
+        const gx = L + 14 + i * 42, ph = (t / 260 + i) % 1;
+        ctx.beginPath(); ctx.moveTo(gx, BASE + 4);
+        ctx.quadraticCurveTo(gx + 5, BASE + 1 - ph * 4, gx, BASE - 2 - ph * 3); ctx.stroke();
+      }
+    }
+    ctx.fillStyle = COL.gray; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(playing ? 'heater on' : 'heater off', CX, BASE + 32);
+    // the block (or, for water, a container holding the liquid)
+    ctx.globalAlpha = 0.22; ctx.fillStyle = v.mat.fill; rr(ctx, L, top, Rt - L, BASE - top, liq ? 2 : 6); ctx.fill();
+    ctx.globalAlpha = 1; ctx.strokeStyle = liq ? '#7d756b' : v.mat.stroke; ctx.lineWidth = liq ? 2.5 : 1.2;
+    if (liq) { ctx.beginPath(); ctx.moveTo(L - 2, top - 14); ctx.lineTo(L - 2, BASE + 1); ctx.lineTo(Rt + 2, BASE + 1); ctx.lineTo(Rt + 2, top - 14); ctx.stroke(); }
+    else { rr(ctx, L, top, Rt - L, BASE - top, 6); ctx.stroke(); }
+    // bonds: every bond intact in the solid
+    if (!liq) {
+      ctx.strokeStyle = COL.ep; ctx.lineWidth = 2;
+      for (const q of P) for (const [dc, dr] of [[1, 0], [0, 1]]) {
+        const n = idx(q.c + dc, q.r + dr);
+        if (n) { ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(n.x, n.y); ctx.stroke(); }
+      }
+    }
+    for (const q of P) {
+      ctx.beginPath(); ctx.arc(q.x, q.y, R, 0, Math.PI * 2);
+      ctx.fillStyle = v.mat.fill; ctx.fill();
+      ctx.strokeStyle = v.mat.stroke; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    ctx.textAlign = 'left'; ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif';
+    ctx.fillText(v.mat.n + (liq ? ' · liquid' : ' · solid'), 8, 20);
+    ctx.fillStyle = COL.gray; ctx.font = '11px Inter, sans-serif';
+    ctx.fillText(liq ? 'particles close together, moving past each other' : 'particles vibrate about fixed positions', 8, 37);
+    ctx.textAlign = 'right'; ctx.fillStyle = COL.ek; ctx.font = '600 12px Inter, sans-serif';
+    ctx.fillText(tempLabel(v), W - 8, 20);
+  }
+  const tempLabel = v => CFG.mode === 'range'
+    ? Math.round(S.T1 + p * v.dT) + ' °C'
+    : '+' + Math.round(p * v.dT) + ' °C';
+
+  // ── Side panel A: energy for each material (Question 2) ──
+  function drawBars(v) {
+    const { ctx, W, H } = sd; ctx.clearRect(0, 0, W, H);
+    const x0 = 84, wMax = 168;
+    ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = COL.gray; ctx.textAlign = 'left';
+    ctx.fillText('same mass (' + v.mTxt + ' kg), same rise (' + v.dT + ' °C)', 8, 18);
+    MATS.forEach((m, i) => {
+      const y = 36 + i * 39, sel = i === S.mat;
+      const E = Math.round(v.mkg * m.c * v.dT * 100) / 100, w = wMax * m.c / 4200;
+      ctx.textAlign = 'left'; ctx.fillStyle = sel ? COL.ink : COL.gray;
+      ctx.font = (sel ? '600 ' : '') + '12px Inter, sans-serif';
+      ctx.fillText(m.n, 8, y + 15);
+      ctx.fillStyle = sel ? COL.ekSoft : '#eee8de'; rr(ctx, x0, y, Math.max(w, 3), 22, 3); ctx.fill();
+      if (sel) { ctx.fillStyle = COL.ek; rr(ctx, x0, y, Math.max(w * p, 3), 22, 3); ctx.fill(); }
+      else { ctx.fillStyle = '#d3c9b9'; rr(ctx, x0, y, Math.max(w, 3), 22, 3); ctx.fill(); }
+      ctx.fillStyle = sel ? COL.ek : COL.gray; ctx.font = (sel ? '700 ' : '') + '12px Inter, sans-serif';
+      ctx.fillText(grp(E) + ' J', x0 + Math.max(w, 3) + 7, y + 15);
+    });
+    ctx.fillStyle = COL.gray; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('energy needed in J', W / 2, H - 8);
+  }
+
+  // ── Side panel B: thermometer (Question 3) ──
+  function drawThermo(v) {
+    const { ctx, W, H } = sd; ctx.clearRect(0, 0, W, H);
+    const tx = 92, yT = 26, yB = 232, Y = T => yB - (yB - yT) * T / 100, T = S.T1 + p * v.dT;
+    // scale
+    ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right';
+    for (let k = 0; k <= 100; k += 10) {
+      ctx.strokeStyle = COL.ink; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(tx - 12, Y(k)); ctx.lineTo(tx - (k % 20 ? 17 : 21), Y(k)); ctx.stroke();
+      if (k % 20 === 0) { ctx.fillStyle = COL.ink; ctx.fillText(String(k), tx - 26, Y(k) + 4); }
+    }
+    ctx.save(); ctx.translate(16, (yT + yB) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center';
+    ctx.fillStyle = COL.gray; ctx.fillText('temperature in °C', 0, 0); ctx.restore();
+    // tube and bulb
+    ctx.fillStyle = '#f4efe7'; rr(ctx, tx - 8, yT - 10, 16, yB - yT + 26, 8); ctx.fill();
+    ctx.strokeStyle = '#7d756b'; ctx.lineWidth = 2; rr(ctx, tx - 8, yT - 10, 16, yB - yT + 26, 8); ctx.stroke();
+    ctx.fillStyle = COL.ek; ctx.fillRect(tx - 4, Y(T), 8, yB - Y(T) + 22);
+    ctx.beginPath(); ctx.arc(tx, yB + 28, 15, 0, Math.PI * 2); ctx.fillStyle = COL.ek; ctx.fill();
+    ctx.strokeStyle = '#7d756b'; ctx.stroke();
+    // start and end marks
+    const mark = (Tm, txt, bold) => {
+      ctx.setLineDash([4, 3]); ctx.strokeStyle = COL.gray; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(tx + 10, Y(Tm)); ctx.lineTo(tx + 62, Y(Tm)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.textAlign = 'left'; ctx.fillStyle = COL.ink; ctx.font = (bold ? '600 ' : '') + '12px Inter, sans-serif';
+      ctx.fillText(txt, tx + 96, Y(Tm) + 4);
+    };
+    const close = Math.abs(Y(S.T1) - Y(S.T2)) < 30;
+    mark(S.T2, 'end  ' + S.T2 + ' °C', false);
+    if (S.T2 !== S.T1) {
+      ctx.setLineDash([4, 3]); ctx.strokeStyle = COL.gray; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(tx + 10, Y(S.T1)); ctx.lineTo(tx + 62, Y(S.T1)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.textAlign = 'left'; ctx.fillStyle = COL.ink; ctx.font = '12px Inter, sans-serif';
+      ctx.fillText('start  ' + S.T1 + ' °C', tx + 96, Y(S.T1) + (close ? 18 : 4));
+      // bracket for the temperature change
+      const bx = tx + 74;
+      ctx.strokeStyle = COL.ek; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(bx - 6, Y(S.T2)); ctx.lineTo(bx, Y(S.T2)); ctx.lineTo(bx, Y(S.T1)); ctx.lineTo(bx - 6, Y(S.T1)); ctx.stroke();
+    }
+    // the change, stated in a box
+    ctx.fillStyle = COL.ekSoft; rr(ctx, 176, 244, 174, 38, 4); ctx.fill();
+    ctx.fillStyle = COL.ink; ctx.textAlign = 'center'; ctx.font = '600 13px Inter, sans-serif';
+    ctx.fillText('Δθ = ' + S.T2 + ' − ' + S.T1 + ' = ' + v.dT + ' °C', 263, 268);
+    ctx.fillStyle = COL.ek; ctx.font = '700 15px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('now ' + Math.round(T) + ' °C', tx + 96, 20);
+  }
+
+  // ── Side panel C: g → kg and J → kJ (Question 4) ──
+  function drawConvert(v) {
+    const { ctx, W, H } = sd; ctx.clearRect(0, 0, W, H);
+    const row = (y, title, a, b, strong) => {
+      ctx.textAlign = 'left'; ctx.fillStyle = COL.gray; ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillText(title, 10, y - 8);
+      const bw = 118, bh = 44, x1 = 10, x2 = W - 10 - bw;
+      ctx.fillStyle = '#fff'; rr(ctx, x1, y, bw, bh, 5); ctx.fill();
+      ctx.strokeStyle = COL.light; ctx.lineWidth = 1.5; rr(ctx, x1, y, bw, bh, 5); ctx.stroke();
+      ctx.fillStyle = strong ? COL.ekSoft : '#faf6ef'; rr(ctx, x2, y, bw, bh, 5); ctx.fill();
+      ctx.strokeStyle = strong ? COL.ek : COL.bronze; rr(ctx, x2, y, bw, bh, 5); ctx.stroke();
+      ctx.fillStyle = COL.ink; ctx.textAlign = 'center'; ctx.font = '600 16px Merriweather, Georgia, serif';
+      ctx.fillText(a, x1 + bw / 2, y + 28); ctx.fillText(b, x2 + bw / 2, y + 28);
+      // arrow
+      const ax1 = x1 + bw + 8, ax2 = x2 - 8, ay = y + bh / 2 + 6;
+      ctx.strokeStyle = COL.bronze; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(ax1, ay); ctx.lineTo(ax2, ay); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ax2, ay); ctx.lineTo(ax2 - 7, ay - 5); ctx.lineTo(ax2 - 7, ay + 5); ctx.closePath();
+      ctx.fillStyle = COL.bronze; ctx.fill();
+      ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillText('÷ 1000', (ax1 + ax2) / 2, ay - 8);
+    };
+    row(34, 'MASS · grams to kilograms', grp(S.m) + ' g', v.mTxt + ' kg', false);
+    row(126, 'ENERGY · joules to kilojoules', grp(v.E) + ' J', trim3(v.E / 1000) + ' kJ', true);
+    // energy transferred so far
+    const y = 214, x0 = 10, w = W - 20;
+    ctx.textAlign = 'left'; ctx.fillStyle = COL.gray; ctx.font = '600 11px Inter, sans-serif';
+    ctx.fillText('ENERGY TRANSFERRED SO FAR', x0, y - 8);
+    ctx.fillStyle = '#f1ede6'; rr(ctx, x0, y, w, 18, 9); ctx.fill();
+    if (p > 0.01) { ctx.fillStyle = COL.ek; rr(ctx, x0, y, Math.max(18, w * p), 18, 9); ctx.fill(); }
+    ctx.fillStyle = COL.ink; ctx.font = '12px Inter, sans-serif';
+    ctx.fillText('0', x0, y + 36);
+    ctx.textAlign = 'right'; ctx.fillText(grp(v.E) + ' J  =  ' + trim3(v.E / 1000) + ' kJ', x0 + w, y + 36);
+    ctx.textAlign = 'center'; ctx.fillStyle = COL.ek; ctx.font = '700 13px Inter, sans-serif';
+    ctx.fillText(grp(Math.round(v.E * p)) + ' J', W / 2, y + 58);
+  }
+  const drawSide = { bars: drawBars, thermo: drawThermo, convert: drawConvert }[CFG.panel];
+
+  // ── HTML: sliders, readouts, live working ──────────
+  const sel = $('mat');
+  MATS.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.textContent = m.n + ' · c = ' + m.c + ' J/kg °C'; sel.appendChild(o); });
+  const rows = [...document.querySelectorAll('#ctab tr')].slice(1);
+
+  function syncInputs() {
+    for (const k of ['m', 'dT', 'T1', 'T2']) if ($('s_' + k)) $('s_' + k).value = S[k];
+    sel.value = S.mat;
+  }
+  function updateStatic(v) {            // only when a value changes
+    if ($('o_m')) $('o_m').textContent = CFG.unit === 'g' ? grp(S.m) + ' g' : S.m.toFixed(CFG.dp) + ' kg';
+    if ($('o_dT')) $('o_dT').textContent = S.dT + ' °C';
+    if ($('o_T1')) $('o_T1').textContent = S.T1 + ' °C';
+    if ($('o_T2')) $('o_T2').textContent = S.T2 + ' °C';
+    rows.forEach((r, i) => r.classList.toggle('sel', i === S.mat));
+    const L = ['<span class="hd">Your values · ' + v.mat.n.toLowerCase() + ', c = ' + v.c + ' J/kg&nbsp;°C</span>'];
+    if (CFG.unit === 'g') L.push('m = ' + grp(S.m) + ' g ÷ 1000 = ' + v.mTxt + ' kg');
+    if (CFG.mode === 'range') L.push('Δθ = ' + S.T2 + ' − ' + S.T1 + ' = ' + v.dT + ' °C');
+    L.push('<span class="eq">ΔE = m c Δθ</span>');
+    L.push('ΔE = ' + v.mTxt + ' × ' + v.c + ' × ' + v.dT);
+    L.push('ΔE = <b>' + grp(v.E) + ' J</b>' + (v.atQ && CFG.approx ? ' ' + CFG.approx : ''));
+    if (CFG.unit === 'g') L.push('ΔE = ' + grp(v.E) + ' J ÷ 1000 = <b>' + trim3(v.E / 1000) + ' kJ</b>');
+    $('live').innerHTML = L.map((s, i) => i ? '<span class="ln">' + s + '</span>' : s).join('');
+  }
+  const LBL = {
+    rise: 'Temperature rise so far', temp: 'Temperature', sofar: 'Energy transferred so far',
+    need: 'Energy needed, ΔE', needJ: 'Energy needed in J', needkJ: 'Energy needed in kJ'
+  };
+  CFG.readouts.forEach((k, i) => $('l' + (i + 1)).textContent = LBL[k]);
+  function updateLive(v) {              // every frame
+    const R_ = {
+      rise: Math.round(p * v.dT) + ' °C', temp: Math.round((S.T1 || 0) + p * v.dT) + ' °C',
+      sofar: grp(Math.round(v.E * p * 10) / 10 === v.E ? v.E : Math.round(v.E * p)) + ' J',
+      need: grp(v.E) + ' J', needJ: grp(v.E) + ' J', needkJ: trim3(v.E / 1000) + ' kJ'
+    };
+    CFG.readouts.forEach((k, i) => $('r' + (i + 1)).textContent = R_[k]);
+    $('mK').style.width = (8 + 88 * v.heat) + '%';
+    const sK = $('sK');
+    sK.textContent = playing ? '↑ increasing' : (p >= 1 && v.dT > 0 ? 'has increased' : '→ steady');
+    sK.className = 'status ' + (playing ? 'up' : 'flat');
+  }
+
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : '▶ Warm it up'; };
+  $('play').onclick = () => { if (!playing && p >= 1) p = 0; setPlaying(!playing); };
+  $('reset').onclick = () => { Object.assign(S, CFG.d); p = 1; setPlaying(false); syncInputs(); dirty = true; };
+  const bind = (k, fix) => { const el = $('s_' + k); if (!el) return;
+    el.oninput = () => { S[k] = parseFloat(el.value); if (fix) fix(); p = 1; setPlaying(false); syncInputs(); dirty = true; }; };
+  bind('m'); bind('dT');
+  bind('T1', () => { if (S.T2 < S.T1) S.T2 = S.T1; });
+  bind('T2', () => { if (S.T1 > S.T2) S.T1 = S.T2; });
+  sel.onchange = () => { S.mat = parseInt(sel.value, 10); p = 1; setPlaying(false); dirty = true; };
+  syncInputs();
+
+  // ── Step-reveal working (the question's values) ────
+  const stepsEl = $('steps');
+  stepsEl.innerHTML = CFG.steps.map((s, i) =>
+    '<tr hidden><td class="lab">' + (i + 1) + '. ' + s[0] + '</td><td>' + s[1] + '</td></tr>').join('');
+  const stepRows = [...stepsEl.querySelectorAll('tr')];
+  let shown = 0;
+  function showSteps(n) {
+    shown = Math.max(0, Math.min(stepRows.length, n));
+    stepRows.forEach((r, i) => r.hidden = i >= shown);
+    stepsEl.style.display = shown ? '' : 'none';
+    $('next').disabled = shown >= stepRows.length;
+    $('next').textContent = shown >= stepRows.length ? 'All steps shown' : 'Show next step';
+    $('hide').style.display = shown ? '' : 'none';
+    $('count').textContent = 'Step ' + shown + ' of ' + stepRows.length;
+  }
+  $('next').onclick = () => showSteps(shown + 1);
+  $('hide').onclick = () => showSteps(0);
+  showSteps(/steps/.test(location.hash) ? stepRows.length : 0);
+  if (/steps/.test(location.hash)) document.querySelectorAll('details').forEach(d => d.open = true);
+
+  // ── Loop ───────────────────────────────────────────
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) { p = Math.min(1, p + dt * 1000 / DURATION); if (p >= 1) setPlaying(false); }
+    const v = vals();
+    if (dirty) { updateStatic(v); dirty = false; }
+    stepParticles(now, v); drawBlock(now, v); drawSide(v); updateLive(v);
+    requestAnimationFrame(frame);
+  }
+  { const v = vals(); updateStatic(v); dirty = false; for (let i = 0; i < 30; i++) stepParticles(i * 16.7, v); drawBlock(0, v); drawSide(v); updateLive(v); }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
