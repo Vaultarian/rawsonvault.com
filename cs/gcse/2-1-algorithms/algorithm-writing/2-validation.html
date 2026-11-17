@@ -41,6 +41,7 @@
   #task li{margin:2px 0}
   .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  .from{margin:-2px 0 10px;font-size:.9rem;font-style:italic;font-weight:600;color:var(--ink)}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
   summary::-webkit-details-marker{display:none}
@@ -105,8 +106,9 @@
 
   <div class="panel task">
     <p class="qlabel" id="qlabel"></p>
+    <p class="from" id="src"></p>
     <div id="task"></div>
-    <p class="src" id="src"></p>
+    <p class="src">Reworded for this page; the exact exam wording is on your printed sheet.</p>
   </div>
 
   <details>
@@ -194,7 +196,7 @@ const DATA = {
     <li>checks that both values are sensible and within range</li>
     <li>outputs <code>True</code> if both are valid, and <code>False</code> if not.</li>
   </ul><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
-  src: "OCR J277 practice paper, Paper 2, Question 4(b)(i). Reworded for this page; the exam paper itself is on your printed sheet.",
+  src: "From a past paper: OCR GCSE Computer Science J277, Practice Paper 2, Question 4(b)(i).",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'miles = int(input("Enter the miles: "))',

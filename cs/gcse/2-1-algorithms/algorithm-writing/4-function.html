@@ -41,6 +41,7 @@
   #task li{margin:2px 0}
   .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  .from{margin:-2px 0 10px;font-size:.9rem;font-style:italic;font-weight:600;color:var(--ink)}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
   summary::-webkit-details-marker{display:none}
@@ -105,8 +106,9 @@
 
   <div class="panel task">
     <p class="qlabel" id="qlabel"></p>
+    <p class="from" id="src"></p>
     <div id="task"></div>
-    <p class="src" id="src"></p>
+    <p class="src">Reworded for this page; the exact exam wording is on your printed sheet.</p>
   </div>
 
   <details>
@@ -173,7 +175,7 @@ const DATA = {
   task: `<p>A theme park sells adult tickets for £19.99 and child tickets for £8.99. Every order also has a booking fee of £2.50.</p>
   <p>A function, <code>ticketprice()</code>, is given the number of adult tickets and the number of child tickets as parameters. It works out the total price to pay and returns it.</p>
   <p><b>Write the function <code>ticketprice()</code>.</b></p><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
-  src: "OCR GCSE (J276) Paper 2, June 2019, Question 6(a)(i). Reworded for this page; the exam paper itself is on your printed sheet.",
+  src: "From a past paper: OCR GCSE Computer Science, June 2019 Paper 2, Question 6(a)(i).",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'def ticketprice(adults, children):',

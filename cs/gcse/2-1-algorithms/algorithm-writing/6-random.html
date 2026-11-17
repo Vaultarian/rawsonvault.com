@@ -41,6 +41,7 @@
   #task li{margin:2px 0}
   .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+  .from{margin:-2px 0 10px;font-size:.9rem;font-style:italic;font-weight:600;color:var(--ink)}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
   summary::-webkit-details-marker{display:none}
@@ -105,8 +106,8 @@
 
   <div class="panel task">
     <p class="qlabel" id="qlabel"></p>
+    <p class="from" id="src"></p>
     <div id="task"></div>
-    <p class="src" id="src"></p>
   </div>
 
   <details>
@@ -210,7 +211,7 @@ const DATA = {
     <li>The game continues until the user guesses the correct number.</li>
   </ul>
   <p class="use">In OCR Exam Reference Language, a random number is <code>random(1, 100)</code>.</p>`,
-  src: "Isaac Computer Science, \"Guess the Number\" (isaaccomputerscience.org/questions/whileloops_medium), in Isaac's own words. Not an exam question, so no marks.",
+  src: "From Isaac Computer Science, \"Guess the Number\" (isaaccomputerscience.org), in Isaac's own words. Not an exam question, so no marks.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'import random',
