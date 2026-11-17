@@ -33,7 +33,13 @@
   h1{font-size:1.35rem;margin:0 0 10px}
   .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
-  .task ul{margin:4px 0 0;padding-left:22px}
+  .task{border-left:6px solid var(--accent)}
+  .qlabel{margin:0 0 6px;font-weight:800;font-size:1.05rem;color:var(--accent)}
+  #task{font-size:1.08rem}
+  #task p{margin:0 0 8px}
+  #task ul{margin:0 0 8px;padding-left:24px}
+  #task li{margin:2px 0}
+  .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
@@ -98,7 +104,7 @@
   <h1>Shape 1: Repeat until a stop value</h1>
 
   <div class="panel task">
-    <p class="label">The task</p>
+    <p class="qlabel" id="qlabel"></p>
     <div id="task"></div>
     <p class="src" id="src"></p>
   </div>
@@ -177,22 +183,25 @@
 /* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
 const DATA = {
   qnum: 1,
-  task: `<ul>
-    <li>Ask the user for a number.</li>
-    <li>Print double that number.</li>
-    <li>Keep doing this until the user types a number less than 0.</li>
-  </ul>`,
-  src: "Based on an OCR J277 sample paper question (Paper 2, Question 2(b)), restated in plain words.",
+  marks: 5,
+  task: `<p>A program needs to:</p>
+  <ul>
+    <li>take a number as input from the user</li>
+    <li>double the number and print the result</li>
+    <li>repeat the first two steps until the user enters a number less than 0.</li>
+  </ul>
+  <p><b>Write an algorithm for this program.</b></p><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
+  src: "OCR J277 sample paper, Paper 2, Question 2(b). Reworded for this page; the exam paper itself is on your printed sheet.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'number = int(input("Enter a number: "))',
-      why: '<b>"Ask the user for a number"</b> = <code>input()</code>. <code>int()</code> turns what they type into a whole number, so it can be doubled and compared with 0. This first input happens <i>before</i> the loop, so the loop has a number to check.' },
+      why: '<b>"take a number as input from the user"</b> = <code>input()</code>. <code>int()</code> turns what they type into a whole number, so it can be doubled and compared with 0. This first input happens <i>before</i> the loop, so the loop has a number to check.' },
     { c: 'while number >= 0:',
-      why: '<b>"until the user types a number less than 0"</b> = keep going <i>while</i> the number is 0 or more. The check happens at the top, before every pass. If the very first number is negative, the loop never runs.' },
+      why: '<b>"until the user enters a number less than 0"</b> = keep going <i>while</i> the number is 0 or more. The check happens at the top, before every pass. If the very first number is negative, the loop never runs.' },
     { c: '    print(number * 2)',
-      why: '<b>"Print double that number"</b> = <code>print(number * 2)</code>. No new variable is needed: work it out and print it on the same line.' },
+      why: '<b>"double the number and print the result"</b> = <code>print(number * 2)</code>. No new variable is needed: work it out and print it on the same line.' },
     { c: '    number = int(input("Enter a number: "))',
-      why: '<b>"Keep doing this"</b> = ask again, at the <i>bottom</i> of the loop, then go back up to the check. Without this line the number never changes and the loop never ends.' }
+      why: '<b>"repeat the first two steps"</b> = ask again, at the <i>bottom</i> of the loop, then go back up to the check. Without this line the number never changes and the loop never ends.' }
   ],
   pattern: '<b>The pattern.</b> Every "repeat until" answer has the same four parts: <b>input before the loop</b> · <b>while</b> the stop value has not been entered · <b>do the work</b> · <b>input again</b> at the bottom of the loop.',
   erl: 'number = int(input("Enter a number: "))\nwhile number >= 0\n    print(number * 2)\n    number = int(input("Enter a number: "))\nendwhile',
@@ -214,6 +223,7 @@ const DATA = {
 /* ===== PAGE CODE: identical on all six pages ===== */
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("qlabel").textContent = "Question " + DATA.qnum + (DATA.marks ? " · " + DATA.marks + " marks" : "");
 $("task").innerHTML = DATA.task;
 $("src").textContent = DATA.src;
 $("qnum").textContent = DATA.qnum;

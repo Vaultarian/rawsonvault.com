@@ -33,7 +33,13 @@
   h1{font-size:1.35rem;margin:0 0 10px}
   .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
-  .task ul{margin:4px 0 0;padding-left:22px}
+  .task{border-left:6px solid var(--accent)}
+  .qlabel{margin:0 0 6px;font-weight:800;font-size:1.05rem;color:var(--accent)}
+  #task{font-size:1.08rem}
+  #task p{margin:0 0 8px}
+  #task ul{margin:0 0 8px;padding-left:24px}
+  #task li{margin:2px 0}
+  .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
@@ -98,7 +104,7 @@
   <h1>Shape 4: A function: parameters in, one value returned</h1>
 
   <div class="panel task">
-    <p class="label">The task</p>
+    <p class="qlabel" id="qlabel"></p>
     <div id="task"></div>
     <p class="src" id="src"></p>
   </div>
@@ -163,18 +169,17 @@
 /* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
 const DATA = {
   qnum: 4,
-  task: `<ul>
-    <li>A theme park sells adult tickets at £19.99 each and child tickets at £8.99 each.</li>
-    <li>Every order also pays a £2.50 booking fee.</li>
-    <li>Write a function <code>ticketprice()</code> that is given the number of adult tickets and the number of child tickets, works out the total price, and returns it.</li>
-  </ul>`,
-  src: "Based on an OCR GCSE question (J276 Paper 2, June 2019, Question 6(a)(i)), restated in plain words.",
+  marks: 6,
+  task: `<p>A theme park sells adult tickets for £19.99 and child tickets for £8.99. Every order also has a booking fee of £2.50.</p>
+  <p>A function, <code>ticketprice()</code>, is given the number of adult tickets and the number of child tickets as parameters. It works out the total price to pay and returns it.</p>
+  <p><b>Write the function <code>ticketprice()</code>.</b></p><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
+  src: "OCR GCSE (J276) Paper 2, June 2019, Question 6(a)(i). Reworded for this page; the exam paper itself is on your printed sheet.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'def ticketprice(adults, children):',
-      why: '<b>"a function ticketprice() that is given the number of adult tickets and the number of child tickets"</b> = <code>def</code>, the name, then the two parameters in brackets. <code>def</code> defines the function. The parameters <i>are</i> the two given numbers: whoever calls the function supplies them, so they arrive through the brackets and the function needs no <code>input()</code> of its own.' },
+      why: '<b>"ticketprice() is given the number of adult tickets and the number of child tickets as parameters"</b> = <code>def</code>, the name, then the two parameters in brackets. <code>def</code> defines the function. The parameters <i>are</i> the two given numbers: whoever calls the function supplies them, so they arrive through the brackets and the function needs no <code>input()</code> of its own.' },
     { c: '    price = adults * 19.99 + children * 8.99 + 2.50',
-      why: '<b>"works out the total price"</b> = one line does the whole sum. Each number of tickets is multiplied by its own price, and the <b>"£2.50 booking fee"</b> is added once at the end, because it is paid once per order.' },
+      why: '<b>"works out the total price to pay"</b> = one line does the whole sum. Each number of tickets is multiplied by its own price, and the <b>"a booking fee of £2.50"</b> is added once at the end, because it is paid once per order.' },
     { c: '    return price',
       why: '<b>"and returns it"</b> = <code>return</code>. It hands the answer back to the line that called the function, which can then store it or print it. The whole answer is three lines, and that is normal for a 6-mark function question.' }
   ],
@@ -193,6 +198,7 @@ const DATA = {
 /* ===== PAGE CODE: identical on all six pages ===== */
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("qlabel").textContent = "Question " + DATA.qnum + (DATA.marks ? " · " + DATA.marks + " marks" : "");
 $("task").innerHTML = DATA.task;
 $("src").textContent = DATA.src;
 $("qnum").textContent = DATA.qnum;

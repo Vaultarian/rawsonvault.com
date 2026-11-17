@@ -33,7 +33,13 @@
   h1{font-size:1.35rem;margin:0 0 10px}
   .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
-  .task ul{margin:4px 0 0;padding-left:22px}
+  .task{border-left:6px solid var(--accent)}
+  .qlabel{margin:0 0 6px;font-weight:800;font-size:1.05rem;color:var(--accent)}
+  #task{font-size:1.08rem}
+  #task p{margin:0 0 8px}
+  #task ul{margin:0 0 8px;padding-left:24px}
+  #task li{margin:2px 0}
+  .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
@@ -98,7 +104,7 @@
   <h1>Shape 2: Validation: is the input in range?</h1>
 
   <div class="panel task">
-    <p class="label">The task</p>
+    <p class="qlabel" id="qlabel"></p>
     <div id="task"></div>
     <p class="src" id="src"></p>
   </div>
@@ -180,27 +186,29 @@
 /* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
 const DATA = {
   qnum: 2,
-  task: `<ul>
-    <li>A car dealership only sells cars with fewer than 10 000 miles that are 5 years old or less.</li>
-    <li>Ask for the miles and the age of a car.</li>
-    <li>Check both are sensible and in range.</li>
-    <li>Output True if both are valid, otherwise False.</li>
-  </ul>`,
-  src: "Based on an OCR J277 practice paper question (Paper 2, Question 4(b)(i)), restated in plain words.",
+  marks: 5,
+  task: `<p>A car dealership only sells cars that have done fewer than 10&#8239;000 miles and are no more than 5 years old.</p>
+  <p><b>Write an algorithm that:</b></p>
+  <ul>
+    <li>asks the user for the number of miles and the age of a car</li>
+    <li>checks that both values are sensible and within range</li>
+    <li>outputs <code>True</code> if both are valid, and <code>False</code> if not.</li>
+  </ul><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
+  src: "OCR J277 practice paper, Paper 2, Question 4(b)(i). Reworded for this page; the exam paper itself is on your printed sheet.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'miles = int(input("Enter the miles: "))',
-      why: '<b>"Ask for the miles"</b> = <code>input()</code>. <code>int()</code> turns what is typed into a whole number, so it can be compared with 0 and 10000.' },
+      why: '<b>"asks the user for the number of miles"</b> = <code>input()</code>. <code>int()</code> turns what is typed into a whole number, so it can be compared with 0 and 10000.' },
     { c: 'age = int(input("Enter the age: "))',
       why: '<b>"and the age of a car"</b> = a second <code>input()</code>, stored in its own variable. Two pieces of data need two variables.' },
     { c: 'if miles >= 0 and miles < 10000 and age >= 0 and age <= 5:',
-      why: '<b>"Check both are sensible and in range"</b> = one <code>if</code> with four tests. "Sensible" means not negative, so <code>&gt;= 0</code> for both. "Fewer than 10 000" = <code>&lt; 10000</code>, so 10000 itself is refused. "5 years old or less" = <code>&lt;= 5</code>, so 5 itself is allowed. Each range has two ends and the mark scheme wants both. <code>and</code> means all four tests must be True.' },
+      why: '<b>"checks that both values are sensible and within range"</b> = one <code>if</code> with four tests. "Sensible" means not negative, so <code>&gt;= 0</code> for both. "Fewer than 10 000" = <code>&lt; 10000</code>, so 10000 itself is refused. "5 years old or less" = <code>&lt;= 5</code>, so 5 itself is allowed. Each range has two ends and the mark scheme wants both. <code>and</code> means all four tests must be True.' },
     { c: '    print(True)',
-      why: '<b>"Output True if both are valid"</b> = <code>print(True)</code>. With no quotation marks, <code>True</code> is the Boolean value. This line runs only when the check on line 3 is True.' },
+      why: '<b>"outputs True if both are valid"</b> = <code>print(True)</code>. With no quotation marks, <code>True</code> is the Boolean value. This line runs only when the check on line 3 is True.' },
     { c: 'else:',
-      why: '<b>"otherwise"</b> = <code>else</code>. It catches every other case: one test failing is enough to land here.' },
+      why: '<b>"and False if not"</b> = <code>else</code>. It catches every other case: one test failing is enough to land here.' },
     { c: '    print(False)',
-      why: '<b>"otherwise False"</b> = <code>print(False)</code>. Exactly one of the two <code>print</code> lines runs each time, so the program always gives an answer.' }
+      why: '<b>"and False if not"</b> = <code>print(False)</code>. Exactly one of the two <code>print</code> lines runs each time, so the program always gives an answer.' }
   ],
   pattern: '<b>The pattern.</b> Every validation answer has the same four parts: <b>input</b> the data · <b>if</b> it is at least the lowest allowed value <b>and</b> at most the highest allowed value · <b>output valid</b> · <b>else output invalid</b>.',
   erl: 'miles = int(input("Enter the miles: "))\nage = int(input("Enter the age: "))\nif miles >= 0 AND miles < 10000 AND age >= 0 AND age <= 5 then\n    print(True)\nelse\n    print(False)\nendif',
@@ -218,6 +226,7 @@ const DATA = {
 /* ===== PAGE CODE: identical on all six pages ===== */
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("qlabel").textContent = "Question " + DATA.qnum + (DATA.marks ? " · " + DATA.marks + " marks" : "");
 $("task").innerHTML = DATA.task;
 $("src").textContent = DATA.src;
 $("qnum").textContent = DATA.qnum;

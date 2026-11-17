@@ -33,7 +33,13 @@
   h1{font-size:1.35rem;margin:0 0 10px}
   .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
-  .task ul{margin:4px 0 0;padding-left:22px}
+  .task{border-left:6px solid var(--accent)}
+  .qlabel{margin:0 0 6px;font-weight:800;font-size:1.05rem;color:var(--accent)}
+  #task{font-size:1.08rem}
+  #task p{margin:0 0 8px}
+  #task ul{margin:0 0 8px;padding-left:24px}
+  #task li{margin:2px 0}
+  .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
@@ -98,7 +104,7 @@
   <h1>Shape 3: Compare two values and output the bigger one</h1>
 
   <div class="panel task">
-    <p class="label">The task</p>
+    <p class="qlabel" id="qlabel"></p>
     <div id="task"></div>
     <p class="src" id="src"></p>
   </div>
@@ -185,31 +191,34 @@
 /* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
 const DATA = {
   qnum: 3,
-  task: `<p style="margin:0 0 4px">Workers in a teddy bear factory are paid either £2 for every teddy bear they make or £5 for every hour they work, whichever is more.</p>
+  marks: 6,
+  task: `<p>In a teddy bear factory, a worker is paid £2 for each teddy bear they make or £5 for each hour they work, whichever is the larger amount.</p>
+  <p><b>Write an algorithm that:</b></p>
   <ul>
-    <li>Ask for the number of teddy bears made and the number of hours worked.</li>
-    <li>Work out both pays.</li>
-    <li>Output the bigger one.</li>
-  </ul>`,
-  src: "Based on an OCR ExamBuilder question (Paper 2 style), restated in plain words.",
+    <li>lets the user enter the number of teddy bears made and the number of hours worked</li>
+    <li>works out the pay for the teddy bears</li>
+    <li>works out the pay for the hours</li>
+    <li>outputs whichever pay is larger.</li>
+  </ul><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
+  src: "OCR ExamBuilder question. Reworded for this page; the exam question itself is on your printed sheet.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'bears = int(input("Enter teddy bears made: "))',
-      why: '<b>"Ask for the number of teddy bears"</b> = <code>input()</code>. <code>int()</code> turns what they type into a whole number, so it can be multiplied.' },
+      why: '<b>"lets the user enter the number of teddy bears made"</b> = <code>input()</code>. <code>int()</code> turns what they type into a whole number, so it can be multiplied.' },
     { c: 'hours = int(input("Enter hours worked: "))',
-      why: '<b>"and the number of hours"</b> = a second <code>input()</code>. One input for each value, each stored in its own variable.' },
+      why: '<b>"and the number of hours worked"</b> = a second <code>input()</code>. One input for each value, each stored in its own variable.' },
     { c: 'bearpay = bears * 2',
-      why: '<b>"£2 for every teddy bear"</b> = <code>bears * 2</code>. The answer gets its own variable, <code>bearpay</code>, so it can be compared later. The mark scheme gives a mark for each calculation.' },
+      why: '<b>"works out the pay for the teddy bears"</b> = <code>bears * 2</code>. The answer gets its own variable, <code>bearpay</code>, so it can be compared later. The mark scheme gives a mark for each calculation.' },
     { c: 'hourpay = hours * 5',
-      why: '<b>"£5 for every hour"</b> = <code>hours * 5</code>, stored in <code>hourpay</code>. Now both pays are worked out and ready to compare.' },
+      why: '<b>"works out the pay for the hours"</b> = <code>hours * 5</code>, stored in <code>hourpay</code>. Now both pays are worked out and ready to compare.' },
     { c: 'if bearpay > hourpay:',
-      why: '<b>"whichever is more"</b> = compare the two pays with <code>&gt;</code>, which means "is greater than". The answer is either True or False.' },
+      why: '<b>"whichever is the larger amount"</b> = compare the two pays with <code>&gt;</code>, which means "is greater than". The answer is either True or False.' },
     { c: '    print(bearpay)',
-      why: '<b>"Output the bigger one"</b> = <code>print(bearpay)</code>. This line runs only when the check is True, so <code>bearpay</code> is the bigger pay.' },
+      why: '<b>"outputs whichever pay is larger"</b> = <code>print(bearpay)</code>. This line runs only when the check is True, so <code>bearpay</code> is the bigger pay.' },
     { c: 'else:',
-      why: '<b>"either … or"</b> = <code>if</code> with <code>else</code>. Exactly one of the two branches runs, so exactly one pay is printed every time.' },
+      why: '<b>"£2 for each teddy bear … or £5 for each hour"</b> = <code>if</code> with <code>else</code>. Exactly one of the two branches runs, so exactly one pay is printed every time.' },
     { c: '    print(hourpay)',
-      why: '<b>"Output the bigger one"</b> = <code>print(hourpay)</code> when the check is False. If the two pays are equal, this branch runs and prints the same amount, so either one is correct.' }
+      why: '<b>"outputs whichever pay is larger"</b> = <code>print(hourpay)</code> when the check is False. If the two pays are equal, this branch runs and prints the same amount, so either one is correct.' }
   ],
   pattern: '<b>The pattern.</b> Every "output the bigger one" answer has the same four parts: <b>input both</b> values · <b>calculate both</b> · <b>if</b> first &gt; second, <b>output the first</b> · <b>else output the second</b>.',
   erl: 'bears = int(input("Enter teddy bears made: "))\nhours = int(input("Enter hours worked: "))\nbearpay = bears * 2\nhourpay = hours * 5\nif bearpay > hourpay then\n    print(bearpay)\nelse\n    print(hourpay)\nendif',
@@ -229,6 +238,7 @@ const DATA = {
 /* ===== PAGE CODE: identical on all six pages ===== */
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("qlabel").textContent = "Question " + DATA.qnum + (DATA.marks ? " · " + DATA.marks + " marks" : "");
 $("task").innerHTML = DATA.task;
 $("src").textContent = DATA.src;
 $("qnum").textContent = DATA.qnum;

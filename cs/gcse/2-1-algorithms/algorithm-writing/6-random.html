@@ -33,7 +33,13 @@
   h1{font-size:1.35rem;margin:0 0 10px}
   .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
-  .task ul{margin:4px 0 0;padding-left:22px}
+  .task{border-left:6px solid var(--accent)}
+  .qlabel{margin:0 0 6px;font-weight:800;font-size:1.05rem;color:var(--accent)}
+  #task{font-size:1.08rem}
+  #task p{margin:0 0 8px}
+  #task ul{margin:0 0 8px;padding-left:24px}
+  #task li{margin:2px 0}
+  .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
@@ -98,7 +104,7 @@
   <h1>Shape 6: Random numbers</h1>
 
   <div class="panel task">
-    <p class="label">The task</p>
+    <p class="qlabel" id="qlabel"></p>
     <div id="task"></div>
     <p class="src" id="src"></p>
   </div>
@@ -196,27 +202,29 @@
 /* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
 const DATA = {
   qnum: 6,
+  marks: 0,
   task: `<ul>
-    <li>The program picks a random number from 1 to 100.</li>
-    <li>The user guesses the number.</li>
-    <li>After each guess the program says too high, too low, or correct.</li>
-    <li>It keeps going until the guess is right.</li>
-  </ul>`,
-  src: "From Isaac Computer Science, \"Guess the Number\" (isaaccomputerscience.org/questions/whileloops_medium). Not an exam question.",
+    <li>Write a Python program that picks a random number between 1 and 100.</li>
+    <li>The user has to guess the number.</li>
+    <li>The program will tell the user if the guess is too high, too low, or correct.</li>
+    <li>The game continues until the user guesses the correct number.</li>
+  </ul>
+  <p class="use">In OCR Exam Reference Language, a random number is <code>random(1, 100)</code>.</p>`,
+  src: "Isaac Computer Science, \"Guess the Number\" (isaaccomputerscience.org/questions/whileloops_medium), in Isaac's own words. Not an exam question, so no marks.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'import random',
       why: '<b>"picks a random number"</b> = Python needs its <code>random</code> tools first. Import them once, on the first line of the program.' },
     { c: 'secret = random.randint(1, 100)',
-      why: '<b>"a random number from 1 to 100"</b> = <code>random.randint(1, 100)</code>. It gives a whole number, and <i>both</i> ends are included: 1 can come up and so can 100. This line is before the loop, so the number is picked once and stays the same.' },
+      why: '<b>"a random number between 1 and 100"</b> = <code>random.randint(1, 100)</code>. It gives a whole number, and <i>both</i> ends are included: 1 can come up and so can 100. This line is before the loop, so the number is picked once and stays the same.' },
     { c: 'guess = 0',
-      why: '<b>"The user guesses"</b> = a variable called <code>guess</code>. It starts at 0 so the <code>while</code> check has something to compare the first time. The secret is 1 or more, so 0 is never the secret and the loop always starts.' },
+      why: '<b>"The user has to guess"</b> = a variable called <code>guess</code>. It starts at 0 so the <code>while</code> check has something to compare the first time. The secret is 1 or more, so 0 is never the secret and the loop always starts.' },
     { c: 'while guess != secret:',
-      why: '<b>"keeps going until the guess is right"</b> = keep going <i>while</i> the guess is <i>not equal to</i> the secret. <code>!=</code> means "not equal to". The check happens at the top, before every pass.' },
+      why: '<b>"continues until the user guesses the correct number"</b> = keep going <i>while</i> the guess is <i>not equal to</i> the secret. <code>!=</code> means "not equal to". The check happens at the top, before every pass.' },
     { c: '    guess = int(input("Guess the number: "))',
-      why: '<b>"The user guesses the number"</b> = <code>input()</code>, inside the loop, so the user gets a new guess on every pass. <code>int()</code> turns what they type into a whole number, so it can be compared with the secret.' },
+      why: '<b>"The user has to guess the number"</b> = <code>input()</code>, inside the loop, so the user gets a new guess on every pass. <code>int()</code> turns what they type into a whole number, so it can be compared with the secret.' },
     { c: '    if guess > secret:',
-      why: '<b>"says too high"</b> = first question: is the guess bigger than the secret?' },
+      why: '<b>"tell the user if the guess is too high"</b> = first question: is the guess bigger than the secret?' },
     { c: '        print("Too high")',
       why: '<b>"too high"</b> = <code>print("Too high")</code>. This runs only when the first question is True.' },
     { c: '    elif guess < secret:',
@@ -258,6 +266,7 @@ const DATA = {
 /* ===== PAGE CODE: identical on all six pages ===== */
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("qlabel").textContent = "Question " + DATA.qnum + (DATA.marks ? " · " + DATA.marks + " marks" : "");
 $("task").innerHTML = DATA.task;
 $("src").textContent = DATA.src;
 $("qnum").textContent = DATA.qnum;

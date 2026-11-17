@@ -33,7 +33,13 @@
   h1{font-size:1.35rem;margin:0 0 10px}
   .panel{background:var(--panel);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
-  .task ul{margin:4px 0 0;padding-left:22px}
+  .task{border-left:6px solid var(--accent)}
+  .qlabel{margin:0 0 6px;font-weight:800;font-size:1.05rem;color:var(--accent)}
+  #task{font-size:1.08rem}
+  #task p{margin:0 0 8px}
+  #task ul{margin:0 0 8px;padding-left:24px}
+  #task li{margin:2px 0}
+  .use{font-size:.92rem;color:var(--muted)}
   .src{font-size:.8rem;color:var(--muted);margin:10px 0 0}
   details{background:var(--panel);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);margin:0 0 14px}
   summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:1.05rem;list-style:none;display:flex;align-items:center;gap:10px}
@@ -98,7 +104,7 @@
   <h1>Shape 5: Count inside a loop, stop on END</h1>
 
   <div class="panel task">
-    <p class="label">The task</p>
+    <p class="qlabel" id="qlabel"></p>
     <div id="task"></div>
     <p class="src" id="src"></p>
   </div>
@@ -204,41 +210,44 @@
 /* ===== DATA: the only part that changes from page to page (with the SVG above) ===== */
 const DATA = {
   qnum: 5,
-  task: `<ul>
-    <li>An election has three candidates: A, B and C.</li>
-    <li>Let the voters type A, B or C, one after another.</li>
-    <li>Keep a count for each candidate.</li>
-    <li>When the official types END, print each candidate's count and the total number of votes.</li>
-  </ul>`,
-  src: "Based on an OCR GCSE question (J276 Paper 2, June 2018, Question 8), restated in plain words.",
+  marks: 6,
+  task: `<p>A town election has three candidates: A, B and C. People vote at an electronic voting booth.</p>
+  <p><b>Write an algorithm that:</b></p>
+  <ul>
+    <li>lets each voter enter A, B or C</li>
+    <li>keeps a count of the votes for each candidate</li>
+    <li>lets the next person vote as soon as one person has finished</li>
+    <li>when an official types <code>END</code>, prints the number of votes for each candidate and the total number of votes.</li>
+  </ul><p class="use">Answer in Python or OCR Exam Reference Language.</p>`,
+  src: "OCR GCSE (J276) Paper 2, June 2018, Question 8. Reworded for this page; the exam paper itself is on your printed sheet.",
   /* code: one entry per line. why: the phrase from the task = the code, then the reason. */
   code: [
     { c: 'a = 0',
-      why: '<b>"Keep a count for each candidate"</b> = one variable for each candidate. Every count starts at 0, <i>before</i> the loop, because nobody has voted yet.' },
+      why: '<b>"keeps a count of the votes for each candidate"</b> = one variable for each candidate. Every count starts at 0, <i>before</i> the loop, because nobody has voted yet.' },
     { c: 'b = 0',
-      why: '<b>"Keep a count for each candidate"</b> = <code>b</code> is the count for candidate B. It starts at 0 too.' },
+      why: '<b>"keeps a count of the votes for each candidate"</b> = <code>b</code> is the count for candidate B. It starts at 0 too.' },
     { c: 'c = 0',
-      why: '<b>"Keep a count for each candidate"</b> = <code>c</code> is the count for candidate C. Three candidates, three counts.' },
+      why: '<b>"keeps a count of the votes for each candidate"</b> = <code>c</code> is the count for candidate C. Three candidates, three counts.' },
     { c: 'vote = ""',
-      why: '<b>"Let the voters type"</b> = a variable to hold what is typed. It starts as an empty string, so the <code>while</code> check on the next line has something to test the first time.' },
+      why: '<b>"lets each voter enter"</b> = a variable to hold what is typed. It starts as an empty string, so the <code>while</code> check on the next line has something to test the first time.' },
     { c: 'while vote != "END":',
-      why: '<b>"When the official types END"</b> = keep going <i>while</i> the vote is not END. <code>!=</code> means "is not equal to". This is how "until END" is written.' },
+      why: '<b>"when an official types END"</b> = keep going <i>while</i> the vote is not END. <code>!=</code> means "is not equal to". This is how "until END" is written.' },
     { c: '    vote = input("Enter A, B or C: ")',
-      why: '<b>"type A, B or C, one after another"</b> = <code>input()</code> <i>inside</i> the loop, so it asks again on every pass. No <code>int()</code> here: a vote is a letter, so it stays a string.' },
+      why: '<b>"lets the next person vote as soon as one person has finished"</b> = <code>input()</code> <i>inside</i> the loop, so it asks again on every pass. No <code>int()</code> here: a vote is a letter, so it stays a string.' },
     { c: '    if vote == "A":',
-      why: '<b>"Keep a count for each candidate"</b> = first find out who the vote is for. <code>"A"</code> is in quotes because it is a string. The mark scheme gives the mark for <code>"A"</code> in quotes; <code>A</code> on its own would be a variable.' },
+      why: '<b>"keeps a count of the votes for each candidate"</b> = first find out who the vote is for. <code>"A"</code> is in quotes because it is a string. The mark scheme gives the mark for <code>"A"</code> in quotes; <code>A</code> on its own would be a variable.' },
     { c: '        a = a + 1',
-      why: '<b>"Keep a count"</b> = <code>a = a + 1</code>: take the count, add one, store it back in <code>a</code>. This is "add one to the count".' },
+      why: '<b>"keeps a count"</b> = <code>a = a + 1</code>: take the count, add one, store it back in <code>a</code>. This is "add one to the count".' },
     { c: '    elif vote == "B":',
       why: '<b>"A, B or C"</b> = <code>elif</code> means "otherwise, if". Each vote matches one branch, so one count goes up for each vote.' },
     { c: '        b = b + 1',
-      why: '<b>"Keep a count"</b> = add one to the count for B.' },
+      why: '<b>"keeps a count"</b> = add one to the count for B.' },
     { c: '    elif vote == "C":',
       why: '<b>"A, B or C"</b> = the last candidate. END matches none of A, B or C, so when END is typed no count goes up.' },
     { c: '        c = c + 1',
-      why: '<b>"Keep a count"</b> = add one to the count for C. This is the last line of the loop, so the program goes back up to the <code>while</code> check.' },
+      why: '<b>"keeps a count"</b> = add one to the count for C. This is the last line of the loop, so the program goes back up to the <code>while</code> check.' },
     { c: 'print(a, b, c)',
-      why: '<b>"print each candidate\'s count"</b> = <code>print(a, b, c)</code>. It is <i>not</i> indented, so it runs once, after the loop has ended.' },
+      why: '<b>"prints the number of votes for each candidate"</b> = <code>print(a, b, c)</code>. It is <i>not</i> indented, so it runs once, after the loop has ended.' },
     { c: 'print(a + b + c)',
       why: '<b>"and the total number of votes"</b> = <code>a + b + c</code>, worked out at the end. The three counts already hold the answer, so the total needs no variable of its own.' }
   ],
@@ -279,6 +288,7 @@ const DATA = {
 /* ===== PAGE CODE: identical on all six pages ===== */
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+$("qlabel").textContent = "Question " + DATA.qnum + (DATA.marks ? " · " + DATA.marks + " marks" : "");
 $("task").innerHTML = DATA.task;
 $("src").textContent = DATA.src;
 $("qnum").textContent = DATA.qnum;
