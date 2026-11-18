@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apparent Weight — P5 Forces — The Vault</title>
 <!--
-  P5 Forces · Forces 2 · apparent weight applet · v1.0 · 2026-11-18
+  P5 Forces · Forces 2 · apparent weight applet · v1.1 · 2026-11-18
   Built for Physics 10 R, Thu 19 Nov 2026 (free fall, terminal velocity, apparent weight).
   SOURCE: f2-l10-apparent-weight.tex (Alex's own sheet, self-written, published with its
   key). The page opens on that sheet's worked example, word for word:
@@ -16,13 +16,17 @@
     resultant down  F_N = W - m a   lighter
     resultant zero  F_N = W         normal
     free fall a = g F_N = 0         zero
-  The table at the foot loads the worked example (both halves) and Task 2 rows 1-7;
-  every reading agrees with f2-l10-apparent-weight-answers.pdf:
-    565, 415, 686, 546, 576, 824, 0.
+  v1.1 (Alex, 18 Nov): the lift now makes a whole journey: it speeds up for a set time
+  (2 s to start), travels 6 s at a steady speed, then slows down at the same rate. A time
+  slider and a velocity-time graph follow it, and mass, acceleration and time are typed
+  in or dragged. Going up, going down, or free fall.
+  The table at the foot loads the worked example (both halves), Task 2 rows 1-7 and
+  the Task 3(a) ride; every reading agrees with f2-l10-apparent-weight-answers.pdf:
+    565, 415, 686, 546, 576, 824, 0, and 605 / 539 / 473.
   Labels are words (weight, normal contact force), g = 9.8 N/kg, x never a dot.
   Nothing from f2-l10-apparent-weight-exam-questions (past paper) is on this page.
   Self-contained. Published to physics/aqa-gcse/p5-forces/apparent-weight/
-  Deep link: #steps opens with every step of the working shown.
+  Deep link: #steps opens with every step of the working shown; #t=9 sets the time.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -189,6 +193,34 @@ table.calc tr.sel td{background:var(--am-soft)}
   .sliders2{grid-template-columns:1fr}
   .sliders2 .srow{grid-template-columns:1fr 5.2rem}
 }
+
+/* ── v1.1: journey, time slider, typed variables ── */
+.jset{display:inline-flex;gap:.45rem;flex-wrap:wrap}
+#jpills{padding-right:.7rem;margin-right:.25rem;border-right:1px solid var(--bronze-light)}
+.mode-pill.on.n{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.stage-pill.h .tag{background:var(--am)} .stage-pill.l .tag{background:var(--ep)} .stage-pill.n .tag{background:var(--gray-mid)} .stage-pill.z .tag{background:var(--res)}
+.stage-pill.on.h{border-color:var(--am);background:var(--am-soft);color:var(--ink-black)}
+.stage-pill.on.l{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.stage-pill.on.n{border-color:var(--gray-mid);background:#efece6;color:var(--ink-black)}
+.stage-pill.on.z{border-color:var(--res);background:var(--res-soft);color:var(--ink-black)}
+.panel.wide{margin-top:1rem}
+.tnow{font-family:var(--font-heading);font-size:1rem;font-variant-numeric:tabular-nums;min-width:5.2rem;text-align:right}
+.vsets{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem 1.2rem;margin-top:.9rem}
+.vset{display:grid;grid-template-columns:1fr auto;align-items:center;gap:.25rem .6rem;background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.45rem .7rem}
+.vset>*{min-width:0}
+.vset label{font-size:.85rem;font-weight:500}
+.vset .vnum{font-family:var(--font-heading);font-size:.95rem;white-space:nowrap}
+.vset input[type=number]{font-family:var(--font-heading);font-size:1.05rem;width:4.6rem;padding:.2rem .35rem;border:1.5px solid var(--bronze-core);border-radius:var(--radius);text-align:right;background:var(--white);color:var(--ink-black);font-variant-numeric:tabular-nums}
+.vset input[type=number]:disabled,.vset input[type=range]:disabled{opacity:.5}
+.vset input[type=range]{grid-column:1/-1;width:100%;min-width:0}
+@media (min-width:900px){
+  .applet{grid-template-rows:none}
+  .panel.wide,.vsets{grid-column:1/-1;margin:0}
+}
+@media (max-width:760px){
+  .vsets{grid-template-columns:1fr}
+  #jpills{border-right:none;padding-right:0;margin-right:0;width:100%}
+}
 </style>
 </head>
 <body>
@@ -209,10 +241,13 @@ table.calc tr.sel td{background:var(--am-soft)}
     <span class="qn">Apparent Weight worksheet · worked example</span>
     A <strong>60&nbsp;kg</strong> student stands on a scale. The lift speeds up going up at <strong>2&nbsp;m/s²</strong>. Calculate the scale reading.
   </div>
-  <p>The page opens on this question, so the lift below already shows its answer. Choose what the lift is doing, then move the sliders. The <span class="p-t">weight</span> arrow depends only on the mass. The <span class="a-t">normal contact force</span> arrow is the push of the scale on the student, and the scale shows that force as its reading.</p>
+  <p>The page opens on this question, so the lift below already shows its answer. Press <b>Play</b> to ride the whole journey: the lift speeds up, travels at a steady speed, then slows down. Drag the time slider to stop at any moment, and type in your own mass, acceleration and time. The <span class="p-t">weight</span> arrow depends only on the mass. The <span class="a-t">normal contact force</span> arrow is the push of the scale on the student, and the scale shows that force as its reading.</p>
 
   <div class="applet">
-    <div class="stages" id="pills"></div>
+    <div class="stages">
+      <span id="jpills" class="jset"></span>
+      <span id="pills" class="jset"></span>
+    </div>
 
     <div class="panels">
       <div class="panel">
@@ -245,16 +280,33 @@ table.calc tr.sel td{background:var(--am-soft)}
     </div>
     </div>
 
-    <div class="sliders2">
-      <div class="srow">
-        <label for="sM">Mass <small>of the student</small></label>
-        <input type="range" id="sM" min="40" max="90" step="1" value="60" aria-label="Mass of the student in kilograms">
-        <output id="oM"></output>
+    <div class="panel wide">
+      <div class="panel-title">Velocity–time graph of the journey</div>
+      <canvas id="graph" width="720" height="210" aria-label="Velocity–time graph of the lift's journey, with the scale reading written on each stage"></canvas>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="play">▶ Play</button>
+      <button class="ctl ghost" id="reset">↺ Reset</button>
+      <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Time in the journey">
+      <output id="oT" class="tnow"></output>
+    </div>
+
+    <div class="vsets">
+      <div class="vset">
+        <label for="nM">Mass of the student</label>
+        <span class="vnum"><input type="number" id="nM" min="20" max="150" step="1" value="60" inputmode="decimal"> kg</span>
+        <input type="range" id="sM" min="20" max="150" step="1" value="60" aria-label="Mass of the student in kilograms">
       </div>
-      <div class="srow">
-        <label for="sA">Acceleration <small>size, of the lift</small></label>
-        <input type="range" id="sA" min="0.1" max="5" step="0.1" value="2" aria-label="Size of the lift's acceleration in metres per second squared">
-        <output id="oA"></output>
+      <div class="vset">
+        <label for="nA">Acceleration of the lift</label>
+        <span class="vnum"><input type="number" id="nA" min="0" max="9.8" step="0.1" value="2" inputmode="decimal"> m/s²</span>
+        <input type="range" id="sA" min="0" max="9.8" step="0.1" value="2" aria-label="Size of the lift's acceleration in metres per second squared">
+      </div>
+      <div class="vset">
+        <label for="nT">Time spent speeding up</label>
+        <span class="vnum"><input type="number" id="nT" min="0.5" max="5" step="0.5" value="2" inputmode="decimal"> s</span>
+        <input type="range" id="sT" min="0.5" max="5" step="0.5" value="2" aria-label="Time the lift spends speeding up, in seconds">
       </div>
     </div>
 
@@ -262,7 +314,7 @@ table.calc tr.sel td{background:var(--am-soft)}
   </div>
 
   <h2>Work it out, one step at a time</h2>
-  <p>The steps follow the shape of the worked example: weight first, then m × a, then add or subtract. They use whatever the lift above is showing. Write each line on your sheet as it appears.</p>
+  <p>The steps follow the shape of the worked example: weight first, then m × a, then add or subtract. They use whatever moment the lift above is showing. Write each line on your sheet as it appears.</p>
   <div class="answer">
     <div class="stepbar">
       <button class="ctl" id="next">Show next step</button>
@@ -309,7 +361,7 @@ table.calc tr.sel td{background:var(--am-soft)}
   <p style="margin-top:1rem">The weight never changes. Only the push from the scale changes, and that push is the reading.</p>
 
   <h2>Try the worksheet's numbers</h2>
-  <p>Each button sets the lift to one row of the Apparent Weight worksheet. Work the reading out on paper, then press the button and compare.</p>
+  <p>Each button sets the lift to one row of the Apparent Weight worksheet. Work the reading out on paper, then press the button and compare. The last row plays the whole ride from Task 3.</p>
   <div class="tablewrap" style="overflow-x:auto">
   <table class="calc" id="rows">
     <tr><th>From the sheet</th><th>Mass</th><th>What the lift is doing</th><th>a in m/s²</th><th></th></tr>
@@ -321,49 +373,78 @@ table.calc tr.sel td{background:var(--am-soft)}
 
 <script>
 (() => {
-  const G = 9.8;
-  // dir: +1 resultant up, -1 resultant down, 0 zero. vdir: +1 moving up, -1 moving down.
-  const MODES = {
-    steady:   { name: 'Steady speed or at rest', cls: 'n', dir: 0,  vdir: 1,  prof: 'steady', doing: 'at rest, or moving at a steady speed' },
-    upUp:     { name: 'Speeding up going up',    cls: 'h', dir: 1,  vdir: 1,  prof: 'gain',   doing: 'speeding up going up' },
-    upSlow:   { name: 'Slowing down going up',   cls: 'l', dir: -1, vdir: 1,  prof: 'lose',   doing: 'slowing down going up' },
-    downUp:   { name: 'Speeding up going down',  cls: 'l', dir: -1, vdir: -1, prof: 'gain',   doing: 'speeding up going down' },
-    downSlow: { name: 'Slowing down going down', cls: 'h', dir: 1,  vdir: -1, prof: 'lose',   doing: 'slowing down going down' },
-    fall:     { name: 'Free fall, cable gone',   cls: 'z', dir: -1, vdir: -1, prof: 'gain',   doing: 'falling freely, cable gone' },
-  };
-  // The sheet's own rows: the worked example, then Task 2.
+  const G = 9.8, STEADY = 6, FALL_T = 3;
+  // The sheet's own rows: the worked example, Task 2, then the Task 3(a) journey.
+  // [label, mass, journey, stage, a, what the lift is doing, a shown]
   const ROWS = [
-    ['Worked example', 60, 'upUp', 2, 'speeding up going up'],
-    ['Worked example', 60, 'upSlow', 2, 'slowing down going up'],
-    ['Task 2, row 1', 50, 'upUp', 1.5, 'speeding up going up'],
-    ['Task 2, row 2', 50, 'upSlow', 1.5, 'slowing down going up'],
-    ['Task 2, row 3', 70, 'steady', 0, 'moving down at a steady speed'],
-    ['Task 2, row 4', 70, 'downUp', 2, 'speeding up going down'],
-    ['Task 2, row 5', 45, 'downSlow', 3, 'slowing down going down'],
-    ['Task 2, row 6', 80, 'upUp', 0.5, 'speeding up going up'],
-    ['Task 2, row 7', 60, 'fall', 9.8, 'falling freely, cable gone'],
+    ['Worked example', 60, 'up', 0, 2, 'speeding up going up', '2'],
+    ['Worked example', 60, 'up', 2, 2, 'slowing down going up', '2'],
+    ['Task 2, row 1', 50, 'up', 0, 1.5, 'speeding up going up', '1.5'],
+    ['Task 2, row 2', 50, 'up', 2, 1.5, 'slowing down going up', '1.5'],
+    ['Task 2, row 3', 70, 'down', 1, null, 'moving down at a steady speed', '0'],
+    ['Task 2, row 4', 70, 'down', 0, 2, 'speeding up going down', '2'],
+    ['Task 2, row 5', 45, 'down', 2, 3, 'slowing down going down', '3'],
+    ['Task 2, row 6', 80, 'up', 0, 0.5, 'speeding up going up', '0.5'],
+    ['Task 2, row 7', 60, 'fall', 0, null, 'falling freely, cable gone', '9.8'],
+    ['Task 3 (a)', 55, 'up', -1, 1.2, 'the whole ride up: stages A, B and C', '1.2'],
   ];
-  let mode = 'upUp', mass = 60, acc = 2, rowSel = 0;
+  const JOURNEYS = { up: 'Going up', down: 'Going down', fall: 'Free fall, cable gone' };
+  let journey = 'up', mass = 60, acc = 2, t1 = 2, t = 0, playing = false, rowSel = 0;
 
   const trim = n => String(parseFloat(n.toFixed(1)));
+  const dur = () => journey === 'fall' ? FALL_T : 2 * t1 + STEADY;
+  // Stages of the current journey. dir: +1 resultant up, -1 down, 0 zero.
+  function stages() {
+    if (journey === 'fall') return [{ k: 'A', t0: 0, t1: FALL_T, dir: -1, a: G, cls: 'z', feel: 'Zero', name: 'Falling freely', doing: 'falling freely, cable gone' }];
+    const up = journey === 'up', way = up ? 'up' : 'down', flat = acc === 0;
+    const mk = (k, t0, tE, dir, name, doing) => {
+      const d = flat ? 0 : dir;
+      return { k, t0, t1: tE, dir: d, a: d === 0 ? 0 : acc, cls: d > 0 ? 'h' : d < 0 ? 'l' : 'n', feel: d > 0 ? 'Heavier' : d < 0 ? 'Lighter' : 'Normal', name, doing };
+    };
+    return [
+      mk('A', 0, t1, up ? 1 : -1, 'Speeding up', 'speeding up going ' + way),
+      mk('B', t1, t1 + STEADY, 0, 'Steady speed', 'moving ' + way + ' at a steady speed'),
+      mk('C', t1 + STEADY, 2 * t1 + STEADY, up ? -1 : 1, 'Slowing down', 'slowing down going ' + way),
+    ];
+  }
+  function speedAt(tt) {              // size of the velocity, m/s
+    if (journey === 'fall') return G * tt;
+    const T = dur();
+    return tt < t1 ? acc * tt : tt < t1 + STEADY ? acc * t1 : acc * Math.max(0, T - tt);
+  }
+  function distAt(tt) {
+    if (journey === 'fall') return 0.5 * G * tt * tt;
+    const vm = acc * t1, T = dur();
+    if (tt < t1) return 0.5 * acc * tt * tt;
+    if (tt < t1 + STEADY) return 0.5 * vm * t1 + vm * (tt - t1);
+    const r = Math.max(0, T - tt);
+    return 0.5 * vm * t1 + vm * STEADY + 0.5 * vm * t1 - 0.5 * acc * r * r;
+  }
+  function reading(st) {              // tenths of a newton, exact
+    const W10 = Math.round(mass * G * 10), ma10 = Math.round(mass * st.a * 10);
+    return { W10, ma10, N10: journey === 'fall' ? 0 : W10 + st.dir * ma10 };
+  }
   function vals() {
-    const md = MODES[mode];
-    const a = mode === 'steady' ? 0 : mode === 'fall' ? G : acc;
-    const W10 = Math.round(mass * G * 10), ma10 = Math.round(mass * a * 10);   // tenths of a newton
-    const N10 = mode === 'fall' ? 0 : W10 + md.dir * ma10;
-    const feel = mode === 'fall' ? 'Zero' : md.dir > 0 ? 'Heavier' : md.dir < 0 ? 'Lighter' : 'Normal';
-    return { md, a, W: W10 / 10, ma: ma10 / 10, N: N10 / 10, feel, dirW: md.dir > 0 ? 'up' : md.dir < 0 ? 'down' : '' };
+    const S = stages(), T = dur(), end = t >= T - 1e-6 && journey !== 'fall';
+    let i = S.findIndex(s => t < s.t1); if (i < 0) i = S.length - 1;
+    const st = end ? { k: '', dir: 0, a: 0, cls: 'n', feel: 'Normal', name: 'Arrived', doing: 'at rest at the ' + (journey === 'up' ? 'top' : 'ground') + ' floor' } : S[i];
+    const r = reading(st);
+    return { st, i: end ? -1 : i, end, a: st.a, W: r.W10 / 10, ma: r.ma10 / 10, N: r.N10 / 10, feel: st.feel,
+             dirW: st.dir > 0 ? 'up' : st.dir < 0 ? 'down' : '', speed: speedAt(Math.min(t, T)), vdir: journey === 'up' ? 1 : -1 };
   }
 
   // ── Canvas helpers ─────────────────────────────────
-  function setup(id) {
+  function setup(id, w, h) {
     const c = document.getElementById(id), ctx = c.getContext('2d');
+    if (w) { c.width = w; c.height = h; }
     const Wd = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
     c.width = Wd * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
     return { ctx, W: Wd, H };
   }
-  const lf = setup('lift'), fb = setup('fbd');
+  const narrow = window.matchMedia('(max-width:760px)').matches;
+  const lf = setup('lift'), fb = setup('fbd'), gr = narrow ? setup('graph', 360, 250) : setup('graph');
   const COL = { am: '#C8860D', ep: '#2F6FAE', res: '#6B3FA0', ink: '#1A1008', gray: '#707070' };
+  const CLS = { h: COL.am, l: COL.ep, n: COL.gray, z: COL.res };
   function arrow(ctx, x0, y0, len, col, lw) {      // len > 0 points down
     if (Math.abs(len) < 1.5) return;
     const y1 = y0 + len, h = Math.min(9, Math.abs(len) * 0.6), d = Math.sign(len);
@@ -374,52 +455,36 @@ table.calc tr.sel td{background:var(--am-soft)}
 
   // ── The lift ───────────────────────────────────────
   // The car stays in the middle of the picture; the marks on the shaft wall slide past it.
-  const CYCLE = 3.0, HOLD = 0.7;
-  let tau = 0, scroll = 0;
-  function speedNow(v) {              // signed, + = upwards, in m/s
-    const md = v.md, T = mode === 'fall' ? 2.0 : CYCLE, f = Math.min(1, tau / T);
-    const s = md.prof === 'steady' ? 3 : md.prof === 'gain' ? v.a * T * f : v.a * T * (1 - f);
-    return md.vdir * s;
-  }
-  function drawLift(dt, v) {
+  function drawLift(v) {
     const { ctx, W: Wd, H } = lf;
-    const T = mode === 'fall' ? 2.0 : CYCLE;
-    tau += dt; if (tau > T + HOLD) tau = 0;
-    const vel = speedNow(v);
-    scroll += vel * dt * 12;
+    const vel = v.vdir * v.speed, scroll = v.vdir * distAt(Math.min(t, dur())) * 12;
     ctx.clearRect(0, 0, Wd, H);
     const SL = 62, SR = 222, top = 30;
     ctx.fillStyle = '#f4f1eb'; ctx.fillRect(SL, top, SR - SL, H - top);
     ctx.strokeStyle = '#8a8178'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(SL, top); ctx.lineTo(SL, H); ctx.moveTo(SR, top); ctx.lineTo(SR, H); ctx.stroke();
-    // marks on the shaft wall, every 36 px, sliding the opposite way to the lift
     ctx.strokeStyle = '#a79d90'; ctx.lineWidth = 1.5;
     const off = ((scroll % 36) + 36) % 36;
     for (let y = top - 36 + off; y < H; y += 36) {
       if (y < top) continue;
-      ctx.beginPath(); ctx.moveTo(SL - 9, y); ctx.lineTo(SL, y); ctx.moveTo(SR, y); ctx.lineTo(SR + 9, y); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(SL + 1, y); ctx.lineTo(SL + 12, y); ctx.moveTo(SR - 12, y); ctx.lineTo(SR - 1, y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(SL - 9, y); ctx.lineTo(SL + 12, y); ctx.moveTo(SR - 12, y); ctx.lineTo(SR + 9, y); ctx.stroke();
     }
-    // car
     const CL = 92, CR = 192, CT = 78, CB = 258, cx = (CL + CR) / 2;
     ctx.strokeStyle = '#6f675e'; ctx.lineWidth = 1.5;
-    if (mode === 'fall') {
+    if (journey === 'fall') {
       ctx.beginPath(); ctx.moveTo(cx, CT); ctx.lineTo(cx, CT - 16);
       for (let i = 0; i < 4; i++) ctx.lineTo(cx + (i % 2 ? -4 : 4), CT - 20 - i * 4);
       ctx.stroke();
     } else { ctx.beginPath(); ctx.moveTo(cx, CT); ctx.lineTo(cx, top); ctx.stroke(); }
     ctx.fillStyle = '#fdfbf8'; ctx.strokeStyle = '#3b3530'; ctx.lineWidth = 2.2;
     ctx.fillRect(CL, CT, CR - CL, CB - CT); ctx.strokeRect(CL, CT, CR - CL, CB - CT);
-    // scale
     ctx.fillStyle = '#bdb5aa'; ctx.strokeStyle = '#6f675e'; ctx.lineWidth = 1.2;
     ctx.fillRect(cx - 24, CB - 10, 48, 9); ctx.strokeRect(cx - 24, CB - 10, 48, 9);
-    // student
     const feet = CB - 10, dotY = 188;
     ctx.fillStyle = '#dbe7f3'; ctx.strokeStyle = '#3b3530'; ctx.lineWidth = 1.6;
     ctx.beginPath(); ctx.roundRect(cx - 13, feet - 86, 26, 86, 6); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(cx, feet - 98, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    // forces
-    const PX = 0.058;
+    const PX = Math.min(0.058, 78 / Math.max(v.N, 1), 60 / v.W);
     arrow(ctx, cx, dotY, v.W * PX, COL.ep, 4);
     arrow(ctx, cx, dotY, -v.N * PX, COL.am, 4);
     ctx.beginPath(); ctx.arc(cx, dotY, 3, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill();
@@ -428,44 +493,44 @@ table.calc tr.sel td{background:var(--am-soft)}
     ctx.font = '600 11px Inter, sans-serif'; ctx.textAlign = 'center';
     ctx.fillStyle = COL.gray; ctx.fillText('velocity', VX, 50);
     ctx.fillStyle = COL.ink; ctx.fillText('acceleration', AX, 50);
-    const vl = Math.max(-56, Math.min(56, vel * 5.5));
+    const vl = Math.max(-56, Math.min(56, vel * 7));
     if (Math.abs(vl) < 1.5) { ctx.beginPath(); ctx.arc(VX, MID, 3, 0, Math.PI * 2); ctx.fillStyle = COL.gray; ctx.fill(); }
     else arrow(ctx, VX, MID + vl / 2, -vl, COL.gray, 3.5);
-    const al = v.md.dir * Math.min(56, 10 + v.a * 6);
-    if (v.md.dir === 0) { ctx.beginPath(); ctx.arc(AX, MID, 3, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill(); }
+    const al = v.st.dir * Math.min(56, 10 + v.a * 5);
+    if (v.st.dir === 0) { ctx.beginPath(); ctx.arc(AX, MID, 3, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill(); }
     else arrow(ctx, AX, MID + al / 2, -al, COL.ink, 3.5);
     ctx.font = '500 10.5px Inter, sans-serif';
-    ctx.fillStyle = COL.gray; ctx.fillText(Math.abs(vel) < 0.05 ? '0 m/s' : Math.abs(vel).toFixed(1) + ' m/s', VX, 168);
-    ctx.fillText(Math.abs(vel) < 0.05 ? '' : vel > 0 ? 'up' : 'down', VX, 181);
-    ctx.fillStyle = COL.ink; ctx.fillText(v.md.dir === 0 ? 'zero' : trim(v.a) + ' m/s²', AX, 168);
-    ctx.fillText(v.md.dir === 0 ? '' : v.md.dir > 0 ? 'up' : 'down', AX, 181);
+    const still = Math.abs(vel) < 0.05;
+    ctx.fillStyle = COL.gray; ctx.fillText(still ? '0 m/s' : Math.abs(vel).toFixed(1) + ' m/s', VX, 168);
+    ctx.fillText(still ? '' : vel > 0 ? 'up' : 'down', VX, 181);
+    ctx.fillStyle = COL.ink; ctx.fillText(v.st.dir === 0 ? 'zero' : trim(v.a) + ' m/s²', AX, 168);
+    ctx.fillText(v.st.dir === 0 ? '' : v.st.dir > 0 ? 'up' : 'down', AX, 181);
     // the scale's display
     ctx.fillStyle = '#2a2622'; ctx.beginPath(); ctx.roundRect(240, 204, 108, 54, 5); ctx.fill();
     ctx.fillStyle = '#d7cbb8'; ctx.font = '500 9.5px Inter, sans-serif'; ctx.fillText('SCALE READING', 294, 221);
     ctx.fillStyle = '#ffd27a'; ctx.font = '700 20px Inter, sans-serif'; ctx.fillText(trim(v.N) + ' N', 294, 246);
     ctx.strokeStyle = '#8a8178'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
-    ctx.beginPath(); ctx.moveTo(cx + 24, CB - 5); ctx.lineTo(240, CB - 5 - 14); ctx.stroke(); ctx.setLineDash([]);
-    // caption
+    ctx.beginPath(); ctx.moveTo(cx + 24, CB - 5); ctx.lineTo(240, CB - 19); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('The lift is ' + v.md.doing, 8, 20);
+    ctx.fillText('The lift is ' + v.st.doing, 8, 20);
   }
 
   // ── Free body diagram ──────────────────────────────
   function drawFbd(v) {
     const { ctx, W: Wd, H } = fb;
     ctx.clearRect(0, 0, Wd, H);
-    const X0 = 112, Y0 = 168, RX = 296, PX = 0.1;
+    const X0 = 112, Y0 = 168, RX = 296;
+    const PX = Math.min(0.1, 128 / Math.max(v.N, 1), 84 / v.W);
     const lW = v.W * PX, lN = v.N * PX;
     arrow(ctx, X0, Y0, lW, COL.ep, 5);
     arrow(ctx, X0, Y0, -lN, COL.am, 5);
     ctx.beginPath(); ctx.arc(X0, Y0, 5, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill();
     ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'left';
     ctx.fillStyle = COL.ep; ctx.fillText('weight', X0 + 13, Y0 + lW - 8); ctx.fillText(trim(v.W) + ' N', X0 + 13, Y0 + lW + 8);
-    const ny = Y0 - Math.max(lN, 30);
+    const ny = Y0 - Math.max(lN, 34);
     ctx.fillStyle = COL.am; ctx.fillText('normal contact force', X0 + 13, ny + 6); ctx.fillText(trim(v.N) + ' N', X0 + 13, ny + 22);
     ctx.textAlign = 'right'; ctx.fillStyle = COL.gray; ctx.font = '500 10.5px Inter, sans-serif';
     ctx.fillText('the student', X0 - 12, Y0 + 4);
-    // resultant
     const F = v.N - v.W, lF = F * PX, zero = Math.abs(F) < 0.05;
     ctx.strokeStyle = '#d9d0c2'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(RX - 26, Y0); ctx.lineTo(RX + 26, Y0); ctx.stroke(); ctx.setLineDash([]);
@@ -479,22 +544,78 @@ table.calc tr.sel td{background:var(--am-soft)}
                    Normal: 'Normal: the reading equals the weight', Zero: 'Zero: weight is the only force' }[v.feel], 8, 20);
   }
 
+  // ── Velocity–time graph of the journey ─────────────
+  const NICE = [1, 1.2, 1.6, 2, 2.4, 3.2, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48];
+  function drawGraph(v) {
+    const { ctx, W: Wd, H } = gr;
+    ctx.clearRect(0, 0, Wd, H);
+    const m = { l: 50, r: 16, t: 30, b: 44 }, pw = Wd - m.l - m.r, ph = H - m.t - m.b;
+    const S = stages(), T = dur();
+    const peak = journey === 'fall' ? G * FALL_T : acc * t1;
+    const vMax = NICE.find(n => n >= Math.max(peak, 0.5) - 1e-9) || 48;
+    const X = tt => m.l + tt / T * pw, Y = vv => m.t + (vMax - vv) / vMax * ph;
+    ctx.font = '11px Inter, sans-serif';
+    for (let i = 0; i <= 4; i++) {
+      const vv = vMax * i / 4;
+      ctx.fillStyle = COL.ink; ctx.textAlign = 'right'; ctx.fillText(String(parseFloat(vv.toFixed(2))), m.l - 7, Y(vv) + 4);
+      if (i) { ctx.strokeStyle = '#efe9df'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(m.l + 1, Y(vv)); ctx.lineTo(m.l + pw, Y(vv)); ctx.stroke(); }
+    }
+    const every = T > 12 ? 2 : 1;
+    for (let tt = 0; tt <= T + 1e-6; tt += every) {
+      ctx.fillStyle = COL.ink; ctx.textAlign = 'center'; ctx.fillText(String(tt), X(tt), m.t + ph + 15);
+      if (tt) { ctx.strokeStyle = '#efe9df'; ctx.beginPath(); ctx.moveTo(X(tt), m.t); ctx.lineTo(X(tt), m.t + ph); ctx.stroke(); }
+    }
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(m.l, m.t - 6); ctx.lineTo(m.l, m.t + ph); ctx.lineTo(m.l + pw + 6, m.t + ph); ctx.stroke();
+    ctx.fillStyle = COL.ink; ctx.textAlign = 'center'; ctx.fillText('time in s', m.l + pw / 2, m.t + ph + 34);
+    ctx.save(); ctx.translate(13, m.t + ph / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('velocity ' + (journey === 'up' ? 'upwards' : 'downwards') + ' in m/s', 0, 0); ctx.restore();
+    // the journey, one colour per stage, with the reading written on it
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    S.forEach((s, i) => {
+      const y0 = Y(speedAt(s.t0)), y1 = Y(speedAt(s.t1 - 1e-9));
+      ctx.strokeStyle = CLS[s.cls]; ctx.globalAlpha = v.i === i ? 1 : 0.45; ctx.lineWidth = v.i === i ? 4.5 : 3.5;
+      ctx.beginPath(); ctx.moveTo(X(s.t0), y0); ctx.lineTo(X(s.t1), y1); ctx.stroke(); ctx.globalAlpha = 1;
+      const r = reading(s), mid = X((s.t0 + s.t1) / 2);
+      ctx.fillStyle = CLS[s.cls]; ctx.font = '700 12px Inter, sans-serif'; ctx.textAlign = 'center';
+      const txt = s.k + ' · ' + trim(r.N10 / 10) + ' N';
+      const lx = Math.max(m.l + 34, Math.min(m.l + pw - 34, mid));
+      ctx.fillText(txt, lx, m.t - 14);
+      ctx.font = '500 10.5px Inter, sans-serif'; ctx.fillText(s.feel.toLowerCase(), lx, m.t - 2);
+      if (i) { ctx.strokeStyle = '#cbbfae'; ctx.setLineDash([2, 4]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X(s.t0), m.t); ctx.lineTo(X(s.t0), m.t + ph); ctx.stroke(); ctx.setLineDash([]); }
+    });
+    const tt = Math.min(t, T);
+    ctx.beginPath(); ctx.arc(X(tt), Y(speedAt(tt)), 6.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = CLS[v.st.cls]; ctx.stroke();
+  }
+
   // ── HTML ───────────────────────────────────────────
   const $ = id => document.getElementById(id);
-  const pills = $('pills');
-  Object.entries(MODES).forEach(([key, md]) => {
+  Object.entries(JOURNEYS).forEach(([key, name]) => {
     const b = document.createElement('button');
-    b.className = 'mode-pill ' + md.cls; b.dataset.k = key; b.textContent = md.name;
-    b.onclick = () => { mode = key; rowSel = -1; tau = 0; refresh(); };
-    pills.appendChild(b);
+    b.className = 'mode-pill n'; b.dataset.k = key; b.textContent = name;
+    b.onclick = () => { journey = key; t = 0; rowSel = -1; setPlaying(false); refresh(); };
+    $('jpills').appendChild(b);
   });
+  function buildStagePills() {
+    $('pills').innerHTML = '';
+    stages().forEach((s, i) => {
+      const b = document.createElement('button');
+      b.className = 'stage-pill ' + s.cls; b.dataset.i = i;
+      b.innerHTML = `<span class="tag">${s.k}</span>${s.name}`;
+      b.onclick = () => { t = (s.t0 + s.t1) / 2; rowSel = -1; setPlaying(false); refresh(); };
+      $('pills').appendChild(b);
+    });
+  }
   const rowsEl = $('rows');
   ROWS.forEach((r, i) => {
     const tr = document.createElement('tr'); tr.dataset.i = i;
-    tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}&nbsp;kg</td><td>${r[4]}</td><td>${r[3]}</td><td><button class="load">Show in the lift</button></td>`;
+    tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}&nbsp;kg</td><td>${r[5]}</td><td>${r[6]}</td><td><button class="load">Show in the lift</button></td>`;
     tr.querySelector('button').onclick = () => {
-      mass = r[1]; mode = r[2]; if (r[2] !== 'steady' && r[2] !== 'fall') acc = r[3];
-      rowSel = i; tau = 0; $('sM').value = mass; $('sA').value = acc; refresh();
+      mass = r[1]; journey = r[2]; if (r[4] !== null) acc = r[4]; t1 = 2;
+      const s = stages()[Math.max(0, r[3])];
+      t = r[3] < 0 ? 0 : (s.t0 + s.t1) / 2;
+      rowSel = i; setPlaying(r[3] < 0); refresh();
       document.querySelector('.applet').scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
     rowsEl.appendChild(tr);
@@ -513,64 +634,98 @@ table.calc tr.sel td{background:var(--am-soft)}
   $('next').onclick = () => showSteps(shown + 1);
   $('hide').onclick = () => showSteps(0);
 
-  function refresh() {
-    const v = vals(), md = v.md, W = trim(v.W), ma = trim(v.ma), N = trim(v.N), a = trim(v.a);
-    $('oM').textContent = mass + ' kg';
-    $('oA').textContent = a + ' m/s²';
-    $('sA').disabled = mode === 'steady' || mode === 'fall';
-    $('rF').textContent = md.dir === 0 ? 'zero' : ma + ' N ' + v.dirW;
+  let lastKey = '';
+  function refresh() {                 // everything that changes with the settings or the stage
+    const v = vals(), st = v.st, W = trim(v.W), ma = trim(v.ma), N = trim(v.N), a = trim(v.a);
+    const key = [journey, mass, acc, t1, v.i].join('|');
+    if (key === lastKey) return; lastKey = key;
+    const fall = journey === 'fall';
+    $('nM').value = $('sM').value = mass;
+    if (document.activeElement !== $('nA')) $('nA').value = acc; $('sA').value = acc;
+    if (document.activeElement !== $('nT')) $('nT').value = t1; $('sT').value = t1;
+    ['nA', 'sA', 'nT', 'sT'].forEach(id => $(id).disabled = fall);
+    buildStagePills();
+    $('rF').textContent = st.dir === 0 ? 'zero' : ma + ' N ' + v.dirW;
     $('rN').textContent = N + ' N';
     $('rS').textContent = v.feel;
-    const FULL = 1400;
+    const FULL = Math.max(1400, v.W * 2.1);
     $('mW').style.width = (v.W / FULL * 100) + '%'; $('sW').textContent = W + ' N down';
     $('mN').style.width = (v.N / FULL * 100) + '%'; $('sN').textContent = N + ' N up';
-    pills.querySelectorAll('.mode-pill').forEach(p => p.classList.toggle('on', p.dataset.k === mode));
+    $('jpills').querySelectorAll('.mode-pill').forEach(p => p.classList.toggle('on', p.dataset.k === journey));
+    $('pills').querySelectorAll('.stage-pill').forEach(p => p.classList.toggle('on', +p.dataset.i === v.i));
     rowsEl.querySelectorAll('tr[data-i]').forEach(tr => tr.classList.toggle('sel', +tr.dataset.i === rowSel));
 
-    const FN = 'F<sub>N</sub>';
-    let text, sW, sF, sN, sum;
-    sW = `<span class="eq">W = m × g</span> = ${mass} × 9.8 = <b>${W}&nbsp;N</b>`;
-    if (mode === 'fall') {
-      text = `<b>Zero.</b> The cable has gone, and the lift, the scale and the student all fall freely with an acceleration of 9.8&nbsp;m/s². Weight is the only force on the student. The resultant force is the weight, so m × a = m × g = W and ${FN} = W − W = <b>0&nbsp;N</b>. The scale falls with the same acceleration as the student, so the student does not push on it, and it reads zero.`;
+    const FN = 'F<sub>N</sub>', tag = st.k ? `<b>${st.k} · ${st.name}.</b> ` : '';
+    let text, sF, sN, sum;
+    const sW = `<span class="eq">W = m × g</span> = ${mass} × 9.8 = <b>${W}&nbsp;N</b>`;
+    if (fall) {
+      text = `${tag}<b>Zero.</b> The cable has gone, and the lift, the scale and the student all fall freely with an acceleration of 9.8&nbsp;m/s². Weight is the only force on the student. The resultant force is the weight, so m × a = m × g = W and ${FN} = W − W = <b>0&nbsp;N</b>. The scale falls with the same acceleration as the student, so the student does not push on it, and it reads zero.`;
       sF = `<span class="eq">ΣF = m × a</span> = ${mass} × 9.8 = <b>${ma}&nbsp;N</b>, <b>down</b>`;
       sN = `<span class="eq">${FN} = W − m × a</span> = ${W} − ${ma}<br>${FN} = <b>0&nbsp;N</b>: <b>zero</b>`;
       sum = 'Weight is the only force on the student, so the scale reads zero.';
-    } else if (md.dir === 0) {
-      text = `<b>Normal.</b> At rest, or moving at a steady speed, up or down, the acceleration is zero, so the resultant force on the student is zero. The two forces balance: ${FN} = W = <b>${W}&nbsp;N</b>. The scale reads the student's weight.`;
+    } else if (st.dir === 0) {
+      text = `${tag}<b>Normal.</b> The lift is ${st.doing}. At rest, or moving at a steady speed, up or down, the acceleration is zero, so the resultant force on the student is zero. The two forces balance: ${FN} = W = <b>${W}&nbsp;N</b>. The scale reads the student's weight.`;
       sF = `<span class="eq">ΣF = m × a</span> = ${mass} × 0 = <b>0&nbsp;N</b>`;
       sN = `<span class="eq">${FN} = W</span><br>${FN} = <b>${W}&nbsp;N</b>: <b>normal</b>`;
       sum = 'A steady speed means zero acceleration and zero resultant force, so the scale reads the weight.';
     } else {
-      const up = md.dir > 0, sign = up ? '+' : '−', word = up ? 'heavier' : 'lighter';
-      text = `<b>${v.feel}.</b> The lift is ${md.doing} at ${a}&nbsp;m/s², so the resultant force on the student is <b>${v.dirW}wards</b>: m × a = ${mass} × ${a} = ${ma}&nbsp;N. The normal contact force is ${up ? 'bigger' : 'smaller'} than the weight by that amount: ${FN} = W ${sign} m × a = ${W} ${sign} ${ma} = <b>${N}&nbsp;N</b>. The scale reads ${N}&nbsp;N.`;
+      const up = st.dir > 0, sign = up ? '+' : '−', word = up ? 'heavier' : 'lighter';
+      text = `${tag}<b>${v.feel}.</b> The lift is ${st.doing} at ${a}&nbsp;m/s², so the resultant force on the student is <b>${v.dirW}wards</b>: m × a = ${mass} × ${a} = ${ma}&nbsp;N. The normal contact force is ${up ? 'bigger' : 'smaller'} than the weight by that amount: ${FN} = W ${sign} m × a = ${W} ${sign} ${ma} = <b>${N}&nbsp;N</b>. The scale reads ${N}&nbsp;N.`;
       sF = `<span class="eq">ΣF = m × a</span> = ${mass} × ${a} = <b>${ma}&nbsp;N</b>, <b>${v.dirW}</b>`;
       sN = `<span class="eq">${FN} = W ${sign} m × a</span> = ${W} ${sign} ${ma}<br>${FN} = <b>${N}&nbsp;N</b>: <b>${word}</b>`;
       sum = `The weight is still ${W}&nbsp;N. Only the push from the scale changed, and that push is the reading.`;
     }
     $('explain').innerHTML = text;
-    $('explain').className = 'explain ' + md.cls;
+    $('explain').className = 'explain ' + st.cls;
     const rows = [['Weight', sW], ['Second Law', sF], ['Reading', sN]];
     $('steps').innerHTML = rows.map(r => `<tr><td class="lab">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
-    $('full').innerHTML = `<p class="sum">A ${mass}&nbsp;kg student; the lift is ${md.doing}${md.dir !== 0 && mode !== 'fall' ? ' at ' + a + '&nbsp;m/s²' : ''}.</p>` +
+    $('full').innerHTML = `<p class="sum">A ${mass}&nbsp;kg student; the lift is ${st.doing}${st.dir !== 0 && !fall ? ' at ' + a + '&nbsp;m/s²' : ''}.</p>` +
       rows.map(r => `<p class="sum"><b>${r[0]}:</b> ${r[1].replace('<br>', ', so ')}</p>`).join('') + `<p class="sum">${sum}</p>`;
     showSteps(shown);
   }
-  $('sM').oninput = e => { mass = +e.target.value; rowSel = -1; refresh(); };
-  $('sA').oninput = e => { acc = +e.target.value; rowSel = -1; refresh(); };
+
+  // Type a number or drag the slider: both set the same variable.
+  function bind(numId, rngId, lo, hi, set) {
+    const apply = (raw, fromNum) => {
+      let x = parseFloat(raw); if (!isFinite(x)) return;
+      x = Math.max(lo, Math.min(hi, Math.round(x * 10) / 10));
+      const frac = t / dur(); set(x); t = frac * dur(); rowSel = -1;
+      if (!fromNum) $(numId).value = x;
+      refresh();
+    };
+    $(numId).oninput = e => apply(e.target.value, true);
+    $(numId).onchange = e => { apply(e.target.value, true); lastKey = ''; e.target.blur(); refresh(); };
+    $(rngId).oninput = e => apply(e.target.value, false);
+  }
+  bind('nM', 'sM', 20, 150, x => mass = Math.round(x));
+  bind('nA', 'sA', 0, 9.8, x => acc = x);
+  bind('nT', 'sT', 0.5, 5, x => t1 = Math.round(x * 2) / 2);
+
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : '▶ Play'; };
+  $('play').onclick = () => { if (t >= dur() - 1e-6) t = 0; setPlaying(!playing); };
+  $('reset').onclick = () => { t = 0; setPlaying(false); refresh(); };
+  $('scrub').oninput = e => { t = e.target.value / 1000 * dur(); setPlaying(false); refresh(); };
   if (/steps/.test(location.hash)) { shown = 3; document.querySelectorAll('details').forEach(d => d.open = true); }
+  const h = location.hash.match(/t=([\d.]+)/);
+  if (h) t = Math.max(0, Math.min(dur(), parseFloat(h[1])));
   refresh();
 
   let prev = performance.now();
   function frame(now) {
     const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    if (playing) { t = Math.min(dur(), t + dt); if (t >= dur()) setPlaying(false); refresh(); }
     const v = vals();
-    drawLift(dt, v); drawFbd(v);
+    drawLift(v); drawFbd(v); drawGraph(v);
+    $('scrub').value = Math.round(t / dur() * 1000);
+    $('oT').textContent = 't = ' + t.toFixed(1) + ' s';
     requestAnimationFrame(frame);
   }
-  { const v = vals(); drawLift(0, v); drawFbd(v); }
+  { const v = vals(); drawLift(v); drawFbd(v); drawGraph(v); }
   requestAnimationFrame(frame);
   window.__vals = vals;
   window.__load = i => rowsEl.querySelectorAll('button.load')[i].click();
+  window.__set = (id, val) => { const el = $(id); el.value = val; el.oninput({ target: el }); };
+  window.__readings = () => stages().map(s => s.k + ' ' + reading(s).N10 / 10);
 })();
 </script>
 </body>
