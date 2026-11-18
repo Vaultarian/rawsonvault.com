@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apparent Weight — P5 Forces — The Vault</title>
+<!--
+  P5 Forces · Forces 2 · apparent weight applet · v1.0 · 2026-11-18
+  Built for Physics 10 R, Thu 19 Nov 2026 (free fall, terminal velocity, apparent weight).
+  SOURCE: f2-l10-apparent-weight.tex (Alex's own sheet, self-written, published with its
+  key). The page opens on that sheet's worked example, word for word:
+    60 kg student, lift speeds up going up at 2 m/s^2
+    W = 60 x 9.8 = 588 N · m a = 120 N up · F_N = 588 + 120 = 708 N: heavier
+  Rules, as the sheet (positive numbers only, direction in words):
+    resultant up    F_N = W + m a   heavier
+    resultant down  F_N = W - m a   lighter
+    resultant zero  F_N = W         normal
+    free fall a = g F_N = 0         zero
+  The table at the foot loads the worked example (both halves) and Task 2 rows 1-7;
+  every reading agrees with f2-l10-apparent-weight-answers.pdf:
+    565, 415, 686, 546, 576, 824, 0.
+  Labels are words (weight, normal contact force), g = 9.8 N/kg, x never a dot.
+  Nothing from f2-l10-apparent-weight-exam-questions (past paper) is on this page.
+  Self-contained. Published to physics/aqa-gcse/p5-forces/apparent-weight/
+  Deep link: #steps opens with every step of the working shown.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A; --ek-soft:#F6E1D3;
+  --ep:#2F6FAE; --ep-soft:#DCE8F4;
+  --res:#6B3FA0; --res-soft:#E9E0F3;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.02rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.95rem;line-height:1.75}
+.scenario{font-family:var(--font-body);font-size:1rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.75;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.8rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.3rem .75rem .3rem .35rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.3rem;height:1.3rem;line-height:1.3rem;text-align:center;border-radius:50%;font-weight:600;font-size:.75rem;margin-right:.35rem;color:var(--white)}
+.stage-pill.k .tag{background:var(--ek)} .stage-pill.p .tag{background:var(--ep)}
+.stage-pill.on.k{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on.p{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.3rem;font-variant-numeric:tabular-nums lining-nums;color:var(--ink-black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)} .fill.res{background:var(--res)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+button.ctl:disabled{opacity:.55;cursor:default}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:.95rem;line-height:1.75;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.4rem}
+.explain.k{border-color:var(--ek);background:var(--ek-soft)}
+.explain.p{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k-t{color:var(--ek);font-weight:700;font-style:normal} .p-t{color:var(--ep);font-weight:700;font-style:normal} .r-t{color:var(--res);font-weight:700;font-style:normal}
+.nw{white-space:nowrap}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.k{border-top-color:var(--ek)} .card.p{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.92rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.6}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.steps td.lab{font-family:var(--font-ui);font-weight:600;font-size:.88rem;width:11rem}
+table.steps tr[hidden]{display:none}
+.stepbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.stepbar .count{font-size:.85rem;color:var(--gray-mid)}
+.srow{display:grid;grid-template-columns:10.5rem 1fr 5.5rem;align-items:center;gap:.7rem;margin-bottom:.9rem}
+.srow>*{min-width:0}
+.srow label{font-size:.88rem;font-weight:500}
+.srow label small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.srow output{font-family:var(--font-heading);font-size:1.02rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.srow input[type=range]{width:100%;min-width:0}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+/* Laptop and projector: the applet box is 16:9, everything visible without scrolling. */
+@media (min-width:900px){
+  .applet{aspect-ratio:16/9;display:grid;grid-template-columns:1fr 1fr 11.5rem;grid-template-rows:auto 1fr auto auto;gap:.6rem .75rem;padding:.85rem}
+  .stages{grid-column:1/-1;margin:0}
+  .panels{display:contents}
+  .panel{display:flex;flex-direction:column;justify-content:center}
+  .side{display:flex;flex-direction:column;justify-content:space-between;gap:.5rem;min-width:0}
+  .side .readouts{grid-template-columns:1fr;gap:.4rem;margin:0}
+  .side .readout{padding:.3rem .6rem}
+  .side .readout .val{font-size:1.1rem}
+  .side .meters{margin:0;gap:.45rem}
+  .side .meter{grid-template-columns:1fr auto;row-gap:.2rem;gap:.2rem .4rem}
+  .side .meter .name{font-size:.8rem}
+  .side .meter .name small{display:none}
+  .side .meter .track{grid-column:1/-1;grid-row:2;height:14px}
+  .side .meter .status{font-size:.72rem}
+  .controls{grid-column:1/-1;margin:0}
+  .explain{grid-column:1/-1;margin:0;min-height:0;font-size:.88rem;line-height:1.6;padding:.6rem .9rem}
+}
+@media (max-width:760px){
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{gap:.4rem}
+  .readout .val{font-size:1rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+  .srow{grid-template-columns:1fr 5.2rem;row-gap:.1rem}
+  .srow label{grid-column:1 / -1}
+  table.steps td.lab{width:6.2rem}
+}
+
+/* ── Additions for the apparent weight page ── */
+:root{--am:#C8860D;--am-soft:#F8EBCF}
+.qn{display:block;font-family:var(--font-display);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bronze-core);margin-bottom:.25rem}
+.mode-pill{font-family:var(--font-ui);font-size:.8rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.32rem .8rem;cursor:pointer;transition:all .2s}
+.mode-pill.on.h{border-color:var(--am);background:var(--am-soft);color:var(--ink-black)}
+.mode-pill.on.l{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.mode-pill.on.n{border-color:var(--gray-mid);background:#efece6;color:var(--ink-black)}
+.mode-pill.on.z{border-color:var(--res);background:var(--res-soft);color:var(--ink-black)}
+.fill.am{background:var(--am)}
+.a-t{color:var(--am);font-weight:700;font-style:normal}
+.explain.h{border-color:var(--am);background:var(--am-soft)}
+.explain.l{border-color:var(--ep);background:var(--ep-soft)}
+.explain.n{border-color:var(--gray-mid);background:#f3f0ea}
+.explain.z{border-color:var(--res);background:var(--res-soft)}
+.card.h{border-top-color:var(--am)} .card.l{border-top-color:var(--ep)} .card.n{border-top-color:var(--gray-mid)} .card.z{border-top-color:var(--res)}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
+.four>*{min-width:0}
+.card .big{font-family:var(--font-body);font-size:1.02rem;color:var(--ink-black);margin-top:.5rem;white-space:nowrap}
+.sliders2{display:grid;grid-template-columns:1fr 1fr;gap:.4rem 1.4rem;margin-top:.6rem}
+.sliders2 .srow{margin:0;grid-template-columns:8.2rem 1fr 5.4rem}
+button.load{font-family:var(--font-ui);font-size:.8rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--white);color:var(--bronze-dark);border-radius:var(--radius);padding:.25rem .7rem;cursor:pointer;white-space:nowrap}
+button.load:hover{background:var(--bronze-parch)}
+table.calc tr.sel td{background:var(--am-soft)}
+@media (min-width:900px){
+  .applet{aspect-ratio:auto}
+  .sliders2{grid-column:1/-1;margin:0}
+}
+@media (max-width:760px){
+  .four{grid-template-columns:1fr 1fr}
+  .sliders2{grid-template-columns:1fr}
+  .sliders2 .srow{grid-template-columns:1fr 5.2rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P5 Forces</a><span>·</span>
+    Apparent Weight
+  </nav>
+  <span class="eyebrow">AQA GCSE · Trilogy 8464 · P5 Forces · Forces 2</span>
+  <h1>Apparent Weight</h1>
+  <p class="subtitle">A student on a scale in a lift: the reading follows the resultant force.</p>
+  <div class="rule"></div>
+
+  <div class="scenario">
+    <span class="qn">Apparent Weight worksheet · worked example</span>
+    A <strong>60&nbsp;kg</strong> student stands on a scale. The lift speeds up going up at <strong>2&nbsp;m/s²</strong>. Calculate the scale reading.
+  </div>
+  <p>The page opens on this question, so the lift below already shows its answer. Choose what the lift is doing, then move the sliders. The <span class="p-t">weight</span> arrow depends only on the mass. The <span class="a-t">normal contact force</span> arrow is the push of the scale on the student, and the scale shows that force as its reading.</p>
+
+  <div class="applet">
+    <div class="stages" id="pills"></div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">The lift</div>
+        <canvas id="lift" width="360" height="300" aria-label="A student standing on a scale inside a lift, with the lift's velocity and acceleration shown beside it"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Forces on the student</div>
+        <canvas id="fbd" width="360" height="300" aria-label="Free body diagram of the student: weight down, normal contact force up, and the resultant force"></canvas>
+      </div>
+    </div>
+
+    <div class="side">
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Resultant force, m × a</div><div class="val" id="rF"></div></div>
+      <div class="readout"><div class="lbl">Scale reading, F<sub>N</sub></div><div class="val" id="rN"></div></div>
+      <div class="readout"><div class="lbl">The student feels</div><div class="val" id="rS"></div></div>
+    </div>
+    <div class="meters">
+      <div class="meter">
+        <div class="name">Weight <small>W = m g</small></div>
+        <div class="track"><div class="fill ep" id="mW"></div></div>
+        <div class="status" id="sW"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Normal contact force <small>the scale reading</small></div>
+        <div class="track"><div class="fill am" id="mN"></div></div>
+        <div class="status" id="sN"></div>
+      </div>
+    </div>
+    </div>
+
+    <div class="sliders2">
+      <div class="srow">
+        <label for="sM">Mass <small>of the student</small></label>
+        <input type="range" id="sM" min="40" max="90" step="1" value="60" aria-label="Mass of the student in kilograms">
+        <output id="oM"></output>
+      </div>
+      <div class="srow">
+        <label for="sA">Acceleration <small>size, of the lift</small></label>
+        <input type="range" id="sA" min="0.1" max="5" step="0.1" value="2" aria-label="Size of the lift's acceleration in metres per second squared">
+        <output id="oA"></output>
+      </div>
+    </div>
+
+    <div class="explain" id="explain"></div>
+  </div>
+
+  <h2>Work it out, one step at a time</h2>
+  <p>The steps follow the shape of the worked example: weight first, then m × a, then add or subtract. They use whatever the lift above is showing. Write each line on your sheet as it appears.</p>
+  <div class="answer">
+    <div class="stepbar">
+      <button class="ctl" id="next">Show next step</button>
+      <button class="ctl ghost" id="hide">Hide the steps</button>
+      <span class="count" id="count"></span>
+    </div>
+    <table class="calc steps" id="steps"></table>
+  </div>
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <div id="full"></div>
+    </details>
+  </div>
+
+  <h2>What a scale measures</h2>
+  <div class="two">
+    <div class="card h">
+      <h3>The reading is the normal contact force</h3>
+      <ul>
+        <li>A scale measures <b>how hard you push down on it</b>, and shows that force as its reading.</li>
+        <li><b>Newton's Third Law</b> says those pushes come in a pair. You push down on the scale, so the scale pushes up on you with a <b>normal contact force</b>, F<sub>N</sub>, of the same size.</li>
+        <li><b>scale reading = normal contact force on you</b></li>
+      </ul>
+    </div>
+    <div class="card l">
+      <h3>Two forces act on you</h3>
+      <ul>
+        <li>Your <b>weight</b> pulls down and the <b>normal contact force</b> pushes up.</li>
+        <li>Standing still, the two forces balance, so the scale reads your weight.</li>
+        <li>When the forces on you are <b>unbalanced</b>, the reading changes. That reading is your <b>apparent weight</b>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>The four lift cases</h2>
+  <p>The reading follows the <b>resultant force</b> on you, which points the same way as your <b>acceleration</b>.</p>
+  <div class="four" style="margin-top:.8rem">
+    <div class="card n"><h3>Normal</h3><p>At rest, or moving at a steady speed, up or down.</p><p>Resultant: <b>zero</b></p><p class="big eq">F<sub>N</sub> = W</p></div>
+    <div class="card h"><h3>Heavier</h3><p>Speeding up going up, or slowing down going down.</p><p>Resultant: <b>up</b></p><p class="big eq">F<sub>N</sub> = W + m × a</p></div>
+    <div class="card l"><h3>Lighter</h3><p>Speeding up going down, or slowing down going up.</p><p>Resultant: <b>down</b></p><p class="big eq">F<sub>N</sub> = W − m × a</p></div>
+    <div class="card z"><h3>Zero</h3><p>Free fall: the cable has gone and weight is the only force.</p><p>Resultant: <b>down</b>, = W</p><p class="big eq">F<sub>N</sub> = 0</p></div>
+  </div>
+  <p style="margin-top:1rem">The weight never changes. Only the push from the scale changes, and that push is the reading.</p>
+
+  <h2>Try the worksheet's numbers</h2>
+  <p>Each button sets the lift to one row of the Apparent Weight worksheet. Work the reading out on paper, then press the button and compare.</p>
+  <div class="tablewrap" style="overflow-x:auto">
+  <table class="calc" id="rows">
+    <tr><th>From the sheet</th><th>Mass</th><th>What the lift is doing</th><th>a in m/s²</th><th></th></tr>
+  </table>
+  </div>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P5 Forces · 2026</div>
+</div>
+
+<script>
+(() => {
+  const G = 9.8;
+  // dir: +1 resultant up, -1 resultant down, 0 zero. vdir: +1 moving up, -1 moving down.
+  const MODES = {
+    steady:   { name: 'Steady speed or at rest', cls: 'n', dir: 0,  vdir: 1,  prof: 'steady', doing: 'at rest, or moving at a steady speed' },
+    upUp:     { name: 'Speeding up going up',    cls: 'h', dir: 1,  vdir: 1,  prof: 'gain',   doing: 'speeding up going up' },
+    upSlow:   { name: 'Slowing down going up',   cls: 'l', dir: -1, vdir: 1,  prof: 'lose',   doing: 'slowing down going up' },
+    downUp:   { name: 'Speeding up going down',  cls: 'l', dir: -1, vdir: -1, prof: 'gain',   doing: 'speeding up going down' },
+    downSlow: { name: 'Slowing down going down', cls: 'h', dir: 1,  vdir: -1, prof: 'lose',   doing: 'slowing down going down' },
+    fall:     { name: 'Free fall, cable gone',   cls: 'z', dir: -1, vdir: -1, prof: 'gain',   doing: 'falling freely, cable gone' },
+  };
+  // The sheet's own rows: the worked example, then Task 2.
+  const ROWS = [
+    ['Worked example', 60, 'upUp', 2, 'speeding up going up'],
+    ['Worked example', 60, 'upSlow', 2, 'slowing down going up'],
+    ['Task 2, row 1', 50, 'upUp', 1.5, 'speeding up going up'],
+    ['Task 2, row 2', 50, 'upSlow', 1.5, 'slowing down going up'],
+    ['Task 2, row 3', 70, 'steady', 0, 'moving down at a steady speed'],
+    ['Task 2, row 4', 70, 'downUp', 2, 'speeding up going down'],
+    ['Task 2, row 5', 45, 'downSlow', 3, 'slowing down going down'],
+    ['Task 2, row 6', 80, 'upUp', 0.5, 'speeding up going up'],
+    ['Task 2, row 7', 60, 'fall', 9.8, 'falling freely, cable gone'],
+  ];
+  let mode = 'upUp', mass = 60, acc = 2, rowSel = 0;
+
+  const trim = n => String(parseFloat(n.toFixed(1)));
+  function vals() {
+    const md = MODES[mode];
+    const a = mode === 'steady' ? 0 : mode === 'fall' ? G : acc;
+    const W10 = Math.round(mass * G * 10), ma10 = Math.round(mass * a * 10);   // tenths of a newton
+    const N10 = mode === 'fall' ? 0 : W10 + md.dir * ma10;
+    const feel = mode === 'fall' ? 'Zero' : md.dir > 0 ? 'Heavier' : md.dir < 0 ? 'Lighter' : 'Normal';
+    return { md, a, W: W10 / 10, ma: ma10 / 10, N: N10 / 10, feel, dirW: md.dir > 0 ? 'up' : md.dir < 0 ? 'down' : '' };
+  }
+
+  // ── Canvas helpers ─────────────────────────────────
+  function setup(id) {
+    const c = document.getElementById(id), ctx = c.getContext('2d');
+    const Wd = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = Wd * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { ctx, W: Wd, H };
+  }
+  const lf = setup('lift'), fb = setup('fbd');
+  const COL = { am: '#C8860D', ep: '#2F6FAE', res: '#6B3FA0', ink: '#1A1008', gray: '#707070' };
+  function arrow(ctx, x0, y0, len, col, lw) {      // len > 0 points down
+    if (Math.abs(len) < 1.5) return;
+    const y1 = y0 + len, h = Math.min(9, Math.abs(len) * 0.6), d = Math.sign(len);
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'butt';
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1 - d * h * 0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y1); ctx.lineTo(x0 - h * 0.62, y1 - d * h); ctx.lineTo(x0 + h * 0.62, y1 - d * h); ctx.closePath(); ctx.fill();
+  }
+
+  // ── The lift ───────────────────────────────────────
+  // The car stays in the middle of the picture; the marks on the shaft wall slide past it.
+  const CYCLE = 3.0, HOLD = 0.7;
+  let tau = 0, scroll = 0;
+  function speedNow(v) {              // signed, + = upwards, in m/s
+    const md = v.md, T = mode === 'fall' ? 2.0 : CYCLE, f = Math.min(1, tau / T);
+    const s = md.prof === 'steady' ? 3 : md.prof === 'gain' ? v.a * T * f : v.a * T * (1 - f);
+    return md.vdir * s;
+  }
+  function drawLift(dt, v) {
+    const { ctx, W: Wd, H } = lf;
+    const T = mode === 'fall' ? 2.0 : CYCLE;
+    tau += dt; if (tau > T + HOLD) tau = 0;
+    const vel = speedNow(v);
+    scroll += vel * dt * 12;
+    ctx.clearRect(0, 0, Wd, H);
+    const SL = 62, SR = 222, top = 30;
+    ctx.fillStyle = '#f4f1eb'; ctx.fillRect(SL, top, SR - SL, H - top);
+    ctx.strokeStyle = '#8a8178'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(SL, top); ctx.lineTo(SL, H); ctx.moveTo(SR, top); ctx.lineTo(SR, H); ctx.stroke();
+    // marks on the shaft wall, every 36 px, sliding the opposite way to the lift
+    ctx.strokeStyle = '#a79d90'; ctx.lineWidth = 1.5;
+    const off = ((scroll % 36) + 36) % 36;
+    for (let y = top - 36 + off; y < H; y += 36) {
+      if (y < top) continue;
+      ctx.beginPath(); ctx.moveTo(SL - 9, y); ctx.lineTo(SL, y); ctx.moveTo(SR, y); ctx.lineTo(SR + 9, y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(SL + 1, y); ctx.lineTo(SL + 12, y); ctx.moveTo(SR - 12, y); ctx.lineTo(SR - 1, y); ctx.stroke();
+    }
+    // car
+    const CL = 92, CR = 192, CT = 78, CB = 258, cx = (CL + CR) / 2;
+    ctx.strokeStyle = '#6f675e'; ctx.lineWidth = 1.5;
+    if (mode === 'fall') {
+      ctx.beginPath(); ctx.moveTo(cx, CT); ctx.lineTo(cx, CT - 16);
+      for (let i = 0; i < 4; i++) ctx.lineTo(cx + (i % 2 ? -4 : 4), CT - 20 - i * 4);
+      ctx.stroke();
+    } else { ctx.beginPath(); ctx.moveTo(cx, CT); ctx.lineTo(cx, top); ctx.stroke(); }
+    ctx.fillStyle = '#fdfbf8'; ctx.strokeStyle = '#3b3530'; ctx.lineWidth = 2.2;
+    ctx.fillRect(CL, CT, CR - CL, CB - CT); ctx.strokeRect(CL, CT, CR - CL, CB - CT);
+    // scale
+    ctx.fillStyle = '#bdb5aa'; ctx.strokeStyle = '#6f675e'; ctx.lineWidth = 1.2;
+    ctx.fillRect(cx - 24, CB - 10, 48, 9); ctx.strokeRect(cx - 24, CB - 10, 48, 9);
+    // student
+    const feet = CB - 10, dotY = 188;
+    ctx.fillStyle = '#dbe7f3'; ctx.strokeStyle = '#3b3530'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.roundRect(cx - 13, feet - 86, 26, 86, 6); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, feet - 98, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // forces
+    const PX = 0.058;
+    arrow(ctx, cx, dotY, v.W * PX, COL.ep, 4);
+    arrow(ctx, cx, dotY, -v.N * PX, COL.am, 4);
+    ctx.beginPath(); ctx.arc(cx, dotY, 3, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill();
+    // velocity and acceleration of the lift
+    const VX = 252, AX = 320, MID = 118;
+    ctx.font = '600 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = COL.gray; ctx.fillText('velocity', VX, 50);
+    ctx.fillStyle = COL.ink; ctx.fillText('acceleration', AX, 50);
+    const vl = Math.max(-56, Math.min(56, vel * 5.5));
+    if (Math.abs(vl) < 1.5) { ctx.beginPath(); ctx.arc(VX, MID, 3, 0, Math.PI * 2); ctx.fillStyle = COL.gray; ctx.fill(); }
+    else arrow(ctx, VX, MID + vl / 2, -vl, COL.gray, 3.5);
+    const al = v.md.dir * Math.min(56, 10 + v.a * 6);
+    if (v.md.dir === 0) { ctx.beginPath(); ctx.arc(AX, MID, 3, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill(); }
+    else arrow(ctx, AX, MID + al / 2, -al, COL.ink, 3.5);
+    ctx.font = '500 10.5px Inter, sans-serif';
+    ctx.fillStyle = COL.gray; ctx.fillText(Math.abs(vel) < 0.05 ? '0 m/s' : Math.abs(vel).toFixed(1) + ' m/s', VX, 168);
+    ctx.fillText(Math.abs(vel) < 0.05 ? '' : vel > 0 ? 'up' : 'down', VX, 181);
+    ctx.fillStyle = COL.ink; ctx.fillText(v.md.dir === 0 ? 'zero' : trim(v.a) + ' m/s²', AX, 168);
+    ctx.fillText(v.md.dir === 0 ? '' : v.md.dir > 0 ? 'up' : 'down', AX, 181);
+    // the scale's display
+    ctx.fillStyle = '#2a2622'; ctx.beginPath(); ctx.roundRect(240, 204, 108, 54, 5); ctx.fill();
+    ctx.fillStyle = '#d7cbb8'; ctx.font = '500 9.5px Inter, sans-serif'; ctx.fillText('SCALE READING', 294, 221);
+    ctx.fillStyle = '#ffd27a'; ctx.font = '700 20px Inter, sans-serif'; ctx.fillText(trim(v.N) + ' N', 294, 246);
+    ctx.strokeStyle = '#8a8178'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(cx + 24, CB - 5); ctx.lineTo(240, CB - 5 - 14); ctx.stroke(); ctx.setLineDash([]);
+    // caption
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('The lift is ' + v.md.doing, 8, 20);
+  }
+
+  // ── Free body diagram ──────────────────────────────
+  function drawFbd(v) {
+    const { ctx, W: Wd, H } = fb;
+    ctx.clearRect(0, 0, Wd, H);
+    const X0 = 112, Y0 = 168, RX = 296, PX = 0.1;
+    const lW = v.W * PX, lN = v.N * PX;
+    arrow(ctx, X0, Y0, lW, COL.ep, 5);
+    arrow(ctx, X0, Y0, -lN, COL.am, 5);
+    ctx.beginPath(); ctx.arc(X0, Y0, 5, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill();
+    ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = COL.ep; ctx.fillText('weight', X0 + 13, Y0 + lW - 8); ctx.fillText(trim(v.W) + ' N', X0 + 13, Y0 + lW + 8);
+    const ny = Y0 - Math.max(lN, 30);
+    ctx.fillStyle = COL.am; ctx.fillText('normal contact force', X0 + 13, ny + 6); ctx.fillText(trim(v.N) + ' N', X0 + 13, ny + 22);
+    ctx.textAlign = 'right'; ctx.fillStyle = COL.gray; ctx.font = '500 10.5px Inter, sans-serif';
+    ctx.fillText('the student', X0 - 12, Y0 + 4);
+    // resultant
+    const F = v.N - v.W, lF = F * PX, zero = Math.abs(F) < 0.05;
+    ctx.strokeStyle = '#d9d0c2'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(RX - 26, Y0); ctx.lineTo(RX + 26, Y0); ctx.stroke(); ctx.setLineDash([]);
+    if (!zero) arrow(ctx, RX, Y0, -lF, COL.res, 5);
+    ctx.beginPath(); ctx.arc(RX, Y0, zero ? 5 : 3.2, 0, Math.PI * 2); ctx.fillStyle = COL.res; ctx.fill();
+    ctx.font = '600 11.5px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('resultant force', RX, 268);
+    ctx.fillText(zero ? 'zero' : trim(Math.abs(F)) + ' N ' + (F > 0 ? 'up' : 'down'), RX, 283);
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText({ Heavier: 'Heavier: the reading is more than the weight', Lighter: 'Lighter: the reading is less than the weight',
+                   Normal: 'Normal: the reading equals the weight', Zero: 'Zero: weight is the only force' }[v.feel], 8, 20);
+  }
+
+  // ── HTML ───────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const pills = $('pills');
+  Object.entries(MODES).forEach(([key, md]) => {
+    const b = document.createElement('button');
+    b.className = 'mode-pill ' + md.cls; b.dataset.k = key; b.textContent = md.name;
+    b.onclick = () => { mode = key; rowSel = -1; tau = 0; refresh(); };
+    pills.appendChild(b);
+  });
+  const rowsEl = $('rows');
+  ROWS.forEach((r, i) => {
+    const tr = document.createElement('tr'); tr.dataset.i = i;
+    tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}&nbsp;kg</td><td>${r[4]}</td><td>${r[3]}</td><td><button class="load">Show in the lift</button></td>`;
+    tr.querySelector('button').onclick = () => {
+      mass = r[1]; mode = r[2]; if (r[2] !== 'steady' && r[2] !== 'fall') acc = r[3];
+      rowSel = i; tau = 0; $('sM').value = mass; $('sA').value = acc; refresh();
+      document.querySelector('.applet').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    rowsEl.appendChild(tr);
+  });
+
+  let shown = 0;
+  function showSteps(n) {
+    const rows = [...$('steps').querySelectorAll('tr')];
+    shown = Math.max(0, Math.min(rows.length, n));
+    rows.forEach((r, i) => r.hidden = i >= shown);
+    $('steps').style.display = shown ? '' : 'none';
+    $('next').disabled = shown >= rows.length;
+    $('next').textContent = shown >= rows.length ? 'All steps shown' : 'Show next step';
+    $('count').textContent = 'Step ' + shown + ' of ' + rows.length;
+  }
+  $('next').onclick = () => showSteps(shown + 1);
+  $('hide').onclick = () => showSteps(0);
+
+  function refresh() {
+    const v = vals(), md = v.md, W = trim(v.W), ma = trim(v.ma), N = trim(v.N), a = trim(v.a);
+    $('oM').textContent = mass + ' kg';
+    $('oA').textContent = a + ' m/s²';
+    $('sA').disabled = mode === 'steady' || mode === 'fall';
+    $('rF').textContent = md.dir === 0 ? 'zero' : ma + ' N ' + v.dirW;
+    $('rN').textContent = N + ' N';
+    $('rS').textContent = v.feel;
+    const FULL = 1400;
+    $('mW').style.width = (v.W / FULL * 100) + '%'; $('sW').textContent = W + ' N down';
+    $('mN').style.width = (v.N / FULL * 100) + '%'; $('sN').textContent = N + ' N up';
+    pills.querySelectorAll('.mode-pill').forEach(p => p.classList.toggle('on', p.dataset.k === mode));
+    rowsEl.querySelectorAll('tr[data-i]').forEach(tr => tr.classList.toggle('sel', +tr.dataset.i === rowSel));
+
+    const FN = 'F<sub>N</sub>';
+    let text, sW, sF, sN, sum;
+    sW = `<span class="eq">W = m × g</span> = ${mass} × 9.8 = <b>${W}&nbsp;N</b>`;
+    if (mode === 'fall') {
+      text = `<b>Zero.</b> The cable has gone, and the lift, the scale and the student all fall freely with an acceleration of 9.8&nbsp;m/s². Weight is the only force on the student. The resultant force is the weight, so m × a = m × g = W and ${FN} = W − W = <b>0&nbsp;N</b>. The scale falls with the same acceleration as the student, so the student does not push on it, and it reads zero.`;
+      sF = `<span class="eq">ΣF = m × a</span> = ${mass} × 9.8 = <b>${ma}&nbsp;N</b>, <b>down</b>`;
+      sN = `<span class="eq">${FN} = W − m × a</span> = ${W} − ${ma}<br>${FN} = <b>0&nbsp;N</b>: <b>zero</b>`;
+      sum = 'Weight is the only force on the student, so the scale reads zero.';
+    } else if (md.dir === 0) {
+      text = `<b>Normal.</b> At rest, or moving at a steady speed, up or down, the acceleration is zero, so the resultant force on the student is zero. The two forces balance: ${FN} = W = <b>${W}&nbsp;N</b>. The scale reads the student's weight.`;
+      sF = `<span class="eq">ΣF = m × a</span> = ${mass} × 0 = <b>0&nbsp;N</b>`;
+      sN = `<span class="eq">${FN} = W</span><br>${FN} = <b>${W}&nbsp;N</b>: <b>normal</b>`;
+      sum = 'A steady speed means zero acceleration and zero resultant force, so the scale reads the weight.';
+    } else {
+      const up = md.dir > 0, sign = up ? '+' : '−', word = up ? 'heavier' : 'lighter';
+      text = `<b>${v.feel}.</b> The lift is ${md.doing} at ${a}&nbsp;m/s², so the resultant force on the student is <b>${v.dirW}wards</b>: m × a = ${mass} × ${a} = ${ma}&nbsp;N. The normal contact force is ${up ? 'bigger' : 'smaller'} than the weight by that amount: ${FN} = W ${sign} m × a = ${W} ${sign} ${ma} = <b>${N}&nbsp;N</b>. The scale reads ${N}&nbsp;N.`;
+      sF = `<span class="eq">ΣF = m × a</span> = ${mass} × ${a} = <b>${ma}&nbsp;N</b>, <b>${v.dirW}</b>`;
+      sN = `<span class="eq">${FN} = W ${sign} m × a</span> = ${W} ${sign} ${ma}<br>${FN} = <b>${N}&nbsp;N</b>: <b>${word}</b>`;
+      sum = `The weight is still ${W}&nbsp;N. Only the push from the scale changed, and that push is the reading.`;
+    }
+    $('explain').innerHTML = text;
+    $('explain').className = 'explain ' + md.cls;
+    const rows = [['Weight', sW], ['Second Law', sF], ['Reading', sN]];
+    $('steps').innerHTML = rows.map(r => `<tr><td class="lab">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    $('full').innerHTML = `<p class="sum">A ${mass}&nbsp;kg student; the lift is ${md.doing}${md.dir !== 0 && mode !== 'fall' ? ' at ' + a + '&nbsp;m/s²' : ''}.</p>` +
+      rows.map(r => `<p class="sum"><b>${r[0]}:</b> ${r[1].replace('<br>', ', so ')}</p>`).join('') + `<p class="sum">${sum}</p>`;
+    showSteps(shown);
+  }
+  $('sM').oninput = e => { mass = +e.target.value; rowSel = -1; refresh(); };
+  $('sA').oninput = e => { acc = +e.target.value; rowSel = -1; refresh(); };
+  if (/steps/.test(location.hash)) { shown = 3; document.querySelectorAll('details').forEach(d => d.open = true); }
+  refresh();
+
+  let prev = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    const v = vals();
+    drawLift(dt, v); drawFbd(v);
+    requestAnimationFrame(frame);
+  }
+  { const v = vals(); drawLift(0, v); drawFbd(v); }
+  requestAnimationFrame(frame);
+  window.__vals = vals;
+  window.__load = i => rowsEl.querySelectorAll('button.load')[i].click();
+})();
+</script>
+</body>
+</html>

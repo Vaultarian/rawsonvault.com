@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Velocity — P5 Forces — The Vault</title>
+<!--
+  P5 Forces · Forces 2 · terminal velocity applet · v1.0 · 2026-11-18
+  Built for Physics 10 R, Thu 19 Nov 2026 (free fall, terminal velocity, apparent weight).
+  OWN WORK: scenario, wording and numbers written for this page. Nothing here is taken
+  from f2-l08 (AQA past paper, print only) or from the Forces 2 unit test pool.
+    Skydiver m = 80 kg, g = 9.8 N/kg, W = m g = 784 N (constant throughout).
+    Air resistance modelled as k v^2:
+      before the parachute  k = W / 50^2  -> terminal velocity 50 m/s
+      parachute fully open  k = W / 5^2   -> terminal velocity  5 m/s
+    Parachute opens at t = 25 s and takes 5 s to fill (k rises smoothly), so the
+    largest air resistance is about 1980 N.
+    Stages:  A stepping out · B speeding up · C terminal velocity ·
+             D parachute opens · E lower terminal velocity
+    Down is the positive direction on the graph.
+  Worked example: air resistance 300 N -> resultant 484 N down -> a = 6.05 m/s^2.
+  Callback: f2-l02 Rocket's Journey graph, stages 5-6 (two flat lines below the axis).
+  Self-contained. Published to physics/aqa-gcse/p5-forces/terminal-velocity/
+  Deep link: #t=12 (seconds, opens paused), #steps (working shown).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bronze-dark:#984808; --bronze-core:#B88040; --bronze-light:#D0A880; --bronze-parch:#E8D8C8;
+  --ink-black:#1A1008; --gray-dark:#505050; --gray-mid:#707070; --gray-light:#C0C0C0; --white:#FFFFFF;
+  --bg-site:#f7f3ec;
+  --ek:#C0622A; --ek-soft:#F6E1D3;
+  --ep:#2F6FAE; --ep-soft:#DCE8F4;
+  --res:#6B3FA0; --res-soft:#E9E0F3;
+  --font-display:'Cinzel','Trajan Pro',Georgia,serif;
+  --font-heading:'Merriweather',Georgia,serif;
+  --font-body:'Merriweather',Georgia,serif;
+  --font-ui:'Inter',-apple-system,sans-serif;
+  --radius:4px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg-site);color:var(--ink-black);font-family:var(--font-ui);line-height:1.5;font-variant-numeric:lining-nums;overflow-x:hidden}
+.container{max-width:980px;margin:0 auto;padding:2.5rem 16px 3rem}
+a{color:var(--bronze-core)} a:hover{color:var(--bronze-dark)}
+.breadcrumb{font-family:var(--font-display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:1.5rem}
+.breadcrumb a{text-decoration:none}
+.breadcrumb span{margin:0 .5em;color:var(--bronze-light)}
+.eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bronze-core)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,5vw,2.6rem);margin:.3rem 0 .4rem}
+.subtitle{font-family:var(--font-body);font-style:italic;color:var(--gray-dark);font-size:1.02rem}
+.rule{height:1px;background:var(--bronze-light);margin:1.6rem 0}
+h2{font-family:var(--font-heading);font-size:1.2rem;margin:2rem 0 .8rem}
+p{font-family:var(--font-body);color:var(--gray-dark);font-size:.95rem;line-height:1.75}
+.scenario{font-family:var(--font-body);font-size:1rem;background:var(--white);border-left:3px solid var(--bronze-core);padding:1rem 1.25rem;margin:1.25rem 0;line-height:1.75;color:var(--ink-black)}
+.scenario strong{font-family:var(--font-ui);font-weight:600}
+
+.applet{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1.1rem;margin-top:1rem}
+.stages{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.9rem}
+.stage-pill{font-family:var(--font-ui);font-size:.8rem;font-weight:500;border:1.5px solid var(--gray-light);background:var(--white);color:var(--gray-dark);border-radius:999px;padding:.3rem .75rem .3rem .35rem;cursor:pointer;transition:all .2s}
+.stage-pill .tag{display:inline-block;width:1.3rem;height:1.3rem;line-height:1.3rem;text-align:center;border-radius:50%;font-weight:600;font-size:.75rem;margin-right:.35rem;color:var(--white)}
+.stage-pill.k .tag{background:var(--ek)} .stage-pill.p .tag{background:var(--ep)}
+.stage-pill.on.k{border-color:var(--ek);background:var(--ek-soft);color:var(--ink-black)}
+.stage-pill.on.p{border-color:var(--ep);background:var(--ep-soft);color:var(--ink-black)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.panel{border:1px solid #eee6da;border-radius:var(--radius);background:#fdfbf8;padding:.5rem}
+.panel-title{font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);padding:.15rem .3rem .35rem}
+canvas{display:block;width:100%;max-width:100%;height:auto}
+.panels>*,.two>*,.meter>*,.readouts>*{min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.9rem 0}
+.readout{background:#fdfbf8;border:1px solid #eee6da;border-radius:var(--radius);padding:.5rem .7rem}
+.readout .lbl{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-mid)}
+.readout .val{font-family:var(--font-heading);font-size:1.3rem;font-variant-numeric:tabular-nums lining-nums;color:var(--ink-black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meters{display:grid;gap:.55rem;margin:.4rem 0 1rem}
+.meter{display:grid;grid-template-columns:9.5rem 1fr 7.5rem;align-items:center;gap:.7rem}
+.meter .name{font-size:.88rem;font-weight:500}
+.meter .name small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.track{height:18px;border-radius:9px;background:#f1ede6;overflow:hidden;display:flex}
+.fill{height:100%;width:0}
+.fill.ek{background:var(--ek)} .fill.ep{background:var(--ep)} .fill.res{background:var(--res)}
+.status{font-size:.8rem;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.status.flat{color:var(--gray-mid);font-weight:400}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.3rem}
+button.ctl{font-family:var(--font-ui);font-size:.9rem;font-weight:500;border:1px solid var(--bronze-core);background:var(--bronze-core);color:var(--white);border-radius:var(--radius);padding:.45rem 1rem;cursor:pointer;min-width:6.5rem}
+button.ctl.ghost{background:var(--white);color:var(--bronze-dark)}
+button.ctl:hover{filter:brightness(1.06)}
+button.ctl:disabled{opacity:.55;cursor:default}
+input[type=range]{flex:1;min-width:10rem;accent-color:var(--bronze-core)}
+.explain{margin-top:1rem;border-radius:var(--radius);padding:.9rem 1.1rem;font-family:var(--font-body);font-size:.95rem;line-height:1.75;border-left:4px solid var(--gray-light);background:#faf8f4;min-height:6.4rem}
+.explain.k{border-color:var(--ek);background:var(--ek-soft)}
+.explain.p{border-color:var(--ep);background:var(--ep-soft)}
+.explain.done{border-color:var(--bronze-core);background:var(--bronze-parch)}
+.explain b{font-family:var(--font-ui);font-weight:600}
+.eq{font-family:var(--font-body);font-style:italic;white-space:nowrap}
+.k-t{color:var(--ek);font-weight:700;font-style:normal} .p-t{color:var(--ep);font-weight:700;font-style:normal} .r-t{color:var(--res);font-weight:700;font-style:normal}
+.nw{white-space:nowrap}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--white);border:1px solid #eee6da;border-radius:6px;padding:1rem 1.1rem;border-top:4px solid var(--gray-light)}
+.card.k{border-top-color:var(--ek)} .card.p{border-top-color:var(--ep)}
+.card h3{font-family:var(--font-heading);font-size:1rem;margin-bottom:.5rem}
+.card ul{list-style:none}
+.card li{font-family:var(--font-body);font-size:.92rem;color:var(--gray-dark);padding:.28rem 0;border-bottom:1px solid #f3eee6;line-height:1.6}
+.card li:last-child{border-bottom:none}
+.answer{background:var(--white);border:1px solid var(--bronze-light);border-radius:6px;padding:1rem 1.2rem;margin-top:1rem}
+.answer .sum{font-family:var(--font-body);margin-top:.6rem;color:var(--ink-black)}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--bronze-dark);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+details[open] summary{margin-bottom:.6rem}
+table.calc{border-collapse:collapse;width:100%;margin-top:.6rem;font-family:var(--font-body);font-size:.95rem;background:var(--white)}
+table.calc th,table.calc td{border:1px solid #d9d0c2;padding:.5rem .7rem;text-align:left;vertical-align:top}
+table.calc th{font-family:var(--font-ui);font-weight:600;font-size:.82rem;background:#faf6ef}
+table.steps td.lab{font-family:var(--font-ui);font-weight:600;font-size:.88rem;width:11rem}
+table.steps tr[hidden]{display:none}
+.stepbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.stepbar .count{font-size:.85rem;color:var(--gray-mid)}
+.srow{display:grid;grid-template-columns:10.5rem 1fr 5.5rem;align-items:center;gap:.7rem;margin-bottom:.9rem}
+.srow>*{min-width:0}
+.srow label{font-size:.88rem;font-weight:500}
+.srow label small{display:block;font-weight:400;font-size:.72rem;color:var(--gray-mid)}
+.srow output{font-family:var(--font-heading);font-size:1.02rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.srow input[type=range]{width:100%;min-width:0}
+.footer{margin-top:2.5rem;font-family:var(--font-display);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-mid);text-align:center}
+
+/* Laptop and projector: the applet box is 16:9, everything visible without scrolling. */
+@media (min-width:900px){
+  .applet{aspect-ratio:16/9;display:grid;grid-template-columns:1fr 1fr 11.5rem;grid-template-rows:auto 1fr auto auto;gap:.6rem .75rem;padding:.85rem}
+  .stages{grid-column:1/-1;margin:0}
+  .panels{display:contents}
+  .panel{display:flex;flex-direction:column;justify-content:center}
+  .side{display:flex;flex-direction:column;justify-content:space-between;gap:.5rem;min-width:0}
+  .side .readouts{grid-template-columns:1fr;gap:.4rem;margin:0}
+  .side .readout{padding:.3rem .6rem}
+  .side .readout .val{font-size:1.1rem}
+  .side .meters{margin:0;gap:.45rem}
+  .side .meter{grid-template-columns:1fr auto;row-gap:.2rem;gap:.2rem .4rem}
+  .side .meter .name{font-size:.8rem}
+  .side .meter .name small{display:none}
+  .side .meter .track{grid-column:1/-1;grid-row:2;height:14px}
+  .side .meter .status{font-size:.72rem}
+  .controls{grid-column:1/-1;margin:0}
+  .explain{grid-column:1/-1;margin:0;min-height:0;font-size:.88rem;line-height:1.6;padding:.6rem .9rem}
+}
+@media (max-width:760px){
+  .panels,.two{grid-template-columns:1fr}
+  .readouts{gap:.4rem}
+  .readout .val{font-size:1rem}
+  .meter{grid-template-columns:6.8rem 1fr;row-gap:.15rem}
+  .meter .status{grid-column:2}
+  .applet{padding:.75rem}
+  .srow{grid-template-columns:1fr 5.2rem;row-gap:.1rem}
+  .srow label{grid-column:1 / -1}
+  table.steps td.lab{width:6.2rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="../../../../">The Vault</a><span>·</span>
+    <a href="../../../">Physics</a><span>·</span>
+    <a href="../../">AQA GCSE Physics</a><span>·</span>
+    <a href="../">P5 Forces</a><span>·</span>
+    Terminal Velocity
+  </nav>
+  <span class="eyebrow">AQA GCSE · Trilogy 8464 · P5 Forces · Forces 2</span>
+  <h1>Terminal Velocity</h1>
+  <p class="subtitle">A skydiver's fall in five stages: watch the air resistance grow until it balances the weight, twice.</p>
+  <div class="rule"></div>
+
+  <div class="scenario">
+    A skydiver of mass <strong>80&nbsp;kg</strong> steps out of an aircraft and falls for <strong>25&nbsp;s</strong>, then opens a parachute.
+    Follow the two forces on the skydiver, <strong>weight</strong> and <strong>air resistance</strong>, and the velocity–time graph they produce.
+  </div>
+  <p>Press <b>Play</b>, or click a letter to jump to that stage. The <span class="p-t">weight</span> arrow stays the same length all the way down. The <span class="k-t">air resistance</span> arrow changes with the speed. The <span class="r-t">resultant force</span> is the difference between them, and it decides what the velocity does next.</p>
+
+  <div class="applet">
+    <div class="stages" id="pills"></div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">The forces</div>
+        <canvas id="sky" width="360" height="300" aria-label="A falling skydiver with a weight arrow pointing down, an air resistance arrow pointing up and the resultant force beside them"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Velocity–time graph</div>
+        <canvas id="graph" width="360" height="300" aria-label="Graph of the skydiver's downward velocity against time"></canvas>
+      </div>
+    </div>
+
+    <div class="side">
+    <div class="readouts">
+      <div class="readout"><div class="lbl">Time</div><div class="val" id="rT"></div></div>
+      <div class="readout"><div class="lbl">Velocity, downwards</div><div class="val" id="rV"></div></div>
+      <div class="readout"><div class="lbl">Acceleration</div><div class="val" id="rA"></div></div>
+    </div>
+
+    <div class="meters">
+      <div class="meter">
+        <div class="name">Weight <small>W = m g, constant</small></div>
+        <div class="track"><div class="fill ep" id="mW"></div></div>
+        <div class="status" id="sW"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Air resistance <small>bigger at higher speed</small></div>
+        <div class="track"><div class="fill ek" id="mR"></div></div>
+        <div class="status" id="sR"></div>
+      </div>
+      <div class="meter">
+        <div class="name">Resultant force <small>the difference</small></div>
+        <div class="track"><div class="fill res" id="mF"></div></div>
+        <div class="status" id="sF"></div>
+      </div>
+    </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="play">▶ Play</button>
+      <button class="ctl ghost" id="reset">↺ Reset</button>
+      <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Time">
+    </div>
+
+    <div class="explain" id="explain"></div>
+  </div>
+
+  <h2>Curves and flats</h2>
+  <div class="two">
+    <div class="card k">
+      <h3>Curved sections: <span class="k-t">A, B, D</span></h3>
+      <ul>
+        <li>The forces are <b>unbalanced</b>, so there is a resultant force.</li>
+        <li>A resultant force means an acceleration: the velocity <b>changes</b>.</li>
+        <li>In A and B the resultant force is downwards, the same way as the motion: speeding up.</li>
+        <li>In D the resultant force is upwards, opposite to the motion: slowing down.</li>
+        <li>The gradient of the graph is the acceleration.</li>
+      </ul>
+    </div>
+    <div class="card p">
+      <h3>Flat sections: <span class="p-t">C, E</span></h3>
+      <ul>
+        <li>Air resistance <b>equals</b> weight: the forces are balanced.</li>
+        <li>The resultant force is zero, so the acceleration is zero.</li>
+        <li>The skydiver keeps falling at a <b>constant velocity</b>.</li>
+        <li>This constant velocity is the <b>terminal velocity</b>.</li>
+        <li>The gradient of the graph is zero.</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:1rem">The weight is 784&nbsp;N in every stage. Everything that happens on the graph comes from the air resistance changing.</p>
+
+  <h2>Calculate the acceleration</h2>
+  <div class="scenario" id="q"></div>
+  <p>The slider starts at 300&nbsp;N. Move it to try other moments in the fall, including values above the weight, where the parachute is open.</p>
+  <div class="answer">
+    <div class="srow">
+      <label for="sR2">Air resistance <small>in newtons</small></label>
+      <input type="range" id="sR2" min="0" max="1960" step="4" value="300" aria-label="Air resistance in newtons">
+      <output id="oR2"></output>
+    </div>
+    <div class="stepbar">
+      <button class="ctl" id="next">Show next step</button>
+      <button class="ctl ghost" id="hide">Hide the steps</button>
+      <span class="count" id="count"></span>
+    </div>
+    <table class="calc steps" id="steps"></table>
+  </div>
+  <div class="answer">
+    <details>
+      <summary>Show a full answer</summary>
+      <div id="full"></div>
+    </details>
+  </div>
+
+  <h2>Where you have met this before</h2>
+  <p>On the <b>Rocket's Journey</b> graph, stages 5 and 6 were two flat lines below the axis. Those were the rocket's two terminal velocities: one while it fell freely, and a lower one once its parachute had opened. That graph took upwards as positive, so a fall plotted below the axis. This graph takes downwards as positive, so the same two flat lines sit above it, as C and E.</p>
+
+  <div class="footer">The Vault · AQA GCSE Physics · P5 Forces · 2026</div>
+</div>
+
+<script>
+(() => {
+  // ── Physics ────────────────────────────────────────
+  const M = 80, G = 9.8, W = M * G;
+  const VT1 = 50, VT2 = 5, K1 = W / (VT1 * VT1), K2 = W / (VT2 * VT2);
+  const T_OPEN = 25, RAMP = 5, T_END = 45, DT = 0.005;
+  const open = t => Math.max(0, Math.min(1, (t - T_OPEN) / RAMP));
+  const kOf = t => K1 * Math.pow(K2 / K1, open(t));
+  const SV = [], SR = [];
+  { let v = 0;
+    for (let i = 0; i <= T_END / DT; i++) {
+      const R = kOf(i * DT) * v * v;
+      SV.push(v); SR.push(R);
+      v += (G - R / M) * DT;
+    } }
+  const firstT = f => SV.findIndex((v, i) => f(v, i * DT)) * DT;
+  const T_B = 1.5;
+  const T_C = firstT(v => v >= 0.999 * VT1);
+  const T_E = firstT((v, t) => t > T_OPEN && v <= VT2 * 1.001);
+  const SEG = [
+    { k: 'A', kind: 'k', t0: 0,      t1: T_B,    name: 'Stepping out' },
+    { k: 'B', kind: 'k', t0: T_B,    t1: T_C,    name: 'Speeding up' },
+    { k: 'C', kind: 'p', t0: T_C,    t1: T_OPEN, name: 'Terminal velocity' },
+    { k: 'D', kind: 'k', t0: T_OPEN, t1: T_E,    name: 'Parachute opens' },
+    { k: 'E', kind: 'p', t0: T_E,    t1: T_END,  name: 'Lower terminal velocity' },
+  ];
+  const DURATION = 29000;
+  let x = 0, playing = false;
+
+  function state() {
+    const end = x >= 0.9995, t = x * T_END;
+    const i = Math.min(SV.length - 1, Math.round(t / DT));
+    let s = SEG.findIndex(g => t < g.t1); if (s < 0 || end) s = SEG.length - 1;
+    const v = SV[i], R = SR[i], F = W - R;
+    return { t, v, R, F, a: F / M, s, open: open(t), stage: end ? 'done' : SEG[s].k, kind: end ? 'done' : SEG[s].kind };
+  }
+
+  // ── Canvas helpers ─────────────────────────────────
+  function setup(id) {
+    const c = document.getElementById(id), ctx = c.getContext('2d');
+    const Wd = c.width, H = c.height, dpr = Math.max(1, window.devicePixelRatio || 1);
+    c.width = Wd * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+    return { ctx, W: Wd, H };
+  }
+  const sk = setup('sky'), gr = setup('graph');
+  const COL = { ek: '#C0622A', ep: '#2F6FAE', res: '#6B3FA0', ink: '#1A1008', gray: '#707070' };
+  const n0 = F => Math.round(F).toLocaleString('en-GB').replace(/,/g, ' ');
+
+  function arrow(ctx, x0, y0, len, col, lw) {      // len > 0 points down
+    if (Math.abs(len) < 1.5) return;
+    const y1 = y0 + len, h = Math.min(9, Math.abs(len) * 0.6), d = Math.sign(len);
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'butt';
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1 - d * h * 0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y1); ctx.lineTo(x0 - h * 0.62, y1 - d * h); ctx.lineTo(x0 + h * 0.62, y1 - d * h); ctx.closePath(); ctx.fill();
+  }
+
+  // ── The falling skydiver ───────────────────────────
+  const PX = 48 / W;                  // 48 px for 784 N
+  const CX = 132, CY = 178, RX = 296;
+  const streaks = Array.from({ length: 16 }, () => ({ x: 12 + Math.random() * 336, y: Math.random() * 300, z: 0.5 + Math.random() * 0.8 }));
+  function drawSky(dt, s) {
+    const { ctx, W: Wd, H } = sk;
+    ctx.clearRect(0, 0, Wd, H);
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#e9f2fa'); g.addColorStop(1, '#f8fbfd');
+    ctx.fillStyle = g; ctx.fillRect(0, 30, Wd, H - 30);
+    // air rushing past: faster streaks at higher speed
+    ctx.strokeStyle = 'rgba(120,150,180,.45)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    for (const p of streaks) {
+      if (playing) { p.y -= s.v * 7 * p.z * dt; if (p.y < 30) { p.y = H + Math.random() * 20; p.x = 12 + Math.random() * 336; } }
+      const L = 3 + s.v * 0.55 * p.z;
+      ctx.beginPath(); ctx.moveTo(p.x, Math.max(31, p.y)); ctx.lineTo(p.x, Math.max(31, p.y + L)); ctx.stroke();
+    }
+    // parachute
+    if (s.open > 0) {
+      const o = s.open, rw = 14 + 58 * o, rh = 10 + 24 * o, py = CY - 62 - 26 * o;
+      ctx.strokeStyle = '#8a8178'; ctx.lineWidth = 1;
+      for (const f of [-1, -0.5, 0.5, 1]) { ctx.beginPath(); ctx.moveTo(CX + f * rw, py); ctx.lineTo(CX + f * 5, CY - 14); ctx.stroke(); }
+      ctx.beginPath(); ctx.ellipse(CX, py, rw, rh, 0, Math.PI, 0); ctx.closePath();
+      ctx.fillStyle = '#f0d9c4'; ctx.fill(); ctx.strokeStyle = '#984808'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    // skydiver: arms and legs spread before the parachute, hanging upright under it
+    const o = s.open;
+    ctx.strokeStyle = '#3b3530'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    const limb = (x0, y0, x1, y1) => { ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); };
+    limb(CX, CY - 12, CX, CY + 12);
+    limb(CX, CY - 8, CX - 22 + 12 * o, CY - 16 - 6 * o); limb(CX, CY - 8, CX + 22 - 12 * o, CY - 16 - 6 * o);
+    limb(CX, CY + 12, CX - 16 + 10 * o, CY + 32 + 3 * o); limb(CX, CY + 12, CX + 16 - 10 * o, CY + 32 + 3 * o);
+    ctx.beginPath(); ctx.arc(CX, CY - 21, 7.5, 0, Math.PI * 2); ctx.fillStyle = '#3b3530'; ctx.fill();
+    // forces on the skydiver
+    const lenR = s.R * PX, lenW = 48;
+    arrow(ctx, CX, CY, lenW, COL.ep, 4);
+    arrow(ctx, CX, CY, -lenR, COL.ek, 4);
+    ctx.beginPath(); ctx.arc(CX, CY, 3.2, 0, Math.PI * 2); ctx.fillStyle = COL.ink; ctx.fill();
+    ctx.font = '600 11.5px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = COL.ep; ctx.fillText('weight', CX + 12, CY + lenW - 4); ctx.fillText(n0(W) + ' N', CX + 12, CY + lenW + 10);
+    const ry = CY - Math.max(lenR, 30);
+    ctx.fillStyle = COL.ek; ctx.fillText('air resistance', CX + 12, ry + 2); ctx.fillText(n0(s.R) + ' N', CX + 12, ry + 16);
+    // resultant
+    const lenF = s.F * PX, zero = Math.abs(s.F) < 4;
+    ctx.strokeStyle = '#d9d0c2'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(RX - 26, CY); ctx.lineTo(RX + 26, CY); ctx.stroke(); ctx.setLineDash([]);
+    if (!zero) arrow(ctx, RX, CY, lenF, COL.res, 5);
+    ctx.beginPath(); ctx.arc(RX, CY, zero ? 5 : 3.2, 0, Math.PI * 2); ctx.fillStyle = COL.res; ctx.fill();
+    ctx.fillStyle = COL.res; ctx.textAlign = 'center';
+    ctx.fillText('resultant force', RX, 262);
+    ctx.fillText(zero ? 'zero' : n0(Math.abs(s.F)) + ' N ' + (s.F > 0 ? 'down' : 'up'), RX, 277);
+    // caption
+    ctx.fillStyle = COL.ink; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'left';
+    const lbl = { A: 'Weight is almost the only force', B: 'Air resistance is growing',
+                  C: 'Balanced: air resistance = weight', D: 'Air resistance is bigger than weight',
+                  E: 'Balanced again, at a lower speed', done: 'Balanced again, at a lower speed' }[s.stage];
+    ctx.fillText(lbl, 8, 20);
+  }
+
+  // ── Velocity–time graph ────────────────────────────
+  function drawGraph(s) {
+    const { ctx, W: Wd, H } = gr;
+    ctx.clearRect(0, 0, Wd, H);
+    const m = { l: 46, r: 14, t: 22, b: 52 }, pw = Wd - m.l - m.r, ph = H - m.t - m.b, vMax = 60;
+    const X = t => m.l + t / T_END * pw, Y = v => m.t + (vMax - v) / vMax * ph;
+    ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = COL.ink;
+    for (let v = 0; v <= 60; v += 10) {
+      ctx.textAlign = 'right'; ctx.fillText(String(v), m.l - 7, Y(v) + 4);
+      if (v) { ctx.strokeStyle = '#efe9df'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(m.l + 1, Y(v)); ctx.lineTo(m.l + pw, Y(v)); ctx.stroke(); }
+    }
+    for (let t = 0; t <= 40; t += 10) {
+      ctx.textAlign = 'center'; ctx.fillText(String(t), X(t), m.t + ph + 16);
+      if (t) { ctx.strokeStyle = '#efe9df'; ctx.beginPath(); ctx.moveTo(X(t), m.t); ctx.lineTo(X(t), m.t + ph); ctx.stroke(); }
+    }
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(m.l, m.t - 6); ctx.lineTo(m.l, m.t + ph); ctx.lineTo(m.l + pw + 6, m.t + ph); ctx.stroke();
+    ctx.textAlign = 'center'; ctx.fillText('time in s', m.l + pw / 2, m.t + ph + 36);
+    ctx.save(); ctx.translate(12, m.t + ph / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('velocity downwards in m/s', 0, 0); ctx.restore();
+    // parachute marker
+    ctx.strokeStyle = '#cbbfae'; ctx.setLineDash([2, 4]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(X(T_OPEN), m.t); ctx.lineTo(X(T_OPEN), m.t + ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '10.5px Inter, sans-serif'; ctx.fillStyle = COL.gray; ctx.textAlign = 'left';
+    ctx.fillText('parachute opens', X(T_OPEN) + 5, m.t + 8);
+    // whole curve, faint
+    const STEP = 20;
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = '#c9bfb1'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0));
+    for (let i = STEP; i < SV.length; i += STEP) ctx.lineTo(X(i * DT), Y(SV[i]));
+    ctx.stroke(); ctx.setLineDash([]);
+    // travelled
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (const g of SEG) {
+      if (s.t <= g.t0) break;
+      const tEnd = Math.min(s.t, g.t1);
+      ctx.strokeStyle = g.kind === 'k' ? COL.ek : COL.ep;
+      ctx.beginPath(); ctx.moveTo(X(g.t0), Y(SV[Math.round(g.t0 / DT)]));
+      for (let t = g.t0 + STEP * DT; t < tEnd; t += STEP * DT) ctx.lineTo(X(t), Y(SV[Math.round(t / DT)]));
+      ctx.lineTo(X(tEnd), Y(SV[Math.min(SV.length - 1, Math.round(tEnd / DT))])); ctx.stroke();
+    }
+    // letters and labels
+    ctx.font = '700 13px Inter, sans-serif'; ctx.textAlign = 'center';
+    const L = [['A', 3.4, 5, 'k'], ['B', 4.6, 46, 'k'], ['C', (T_C + T_OPEN) / 2, 55, 'p'], ['D', T_OPEN + 4.4, 32, 'k'], ['E', (T_E + T_END) / 2, 15.5, 'p']];
+    for (const [k, t, v, kind] of L) { ctx.fillStyle = kind === 'k' ? COL.ek : COL.ep; ctx.fillText(k, X(t), Y(v) + 4); }
+    ctx.font = '10.5px Inter, sans-serif'; ctx.fillStyle = COL.gray;
+    ctx.textAlign = 'right'; ctx.fillText('terminal velocity', X(T_OPEN) - 7, Y(VT1) + 17); ctx.textAlign = 'center';
+    ctx.fillText('lower terminal velocity', X((T_E + T_END) / 2), Y(VT2) - 8);
+    ctx.beginPath(); ctx.arc(X(s.t), Y(s.v), 6.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = s.kind === 'p' ? COL.ep : COL.ek; ctx.stroke();
+  }
+
+  // ── HTML ───────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const pills = $('pills');
+  SEG.forEach((g, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'stage-pill ' + g.kind; btn.dataset.i = i;
+    btn.innerHTML = `<span class="tag">${g.k}</span>${g.name}`;
+    btn.onclick = () => { x = g.t0 / T_END + 0.0005; setPlaying(true); };
+    pills.appendChild(btn);
+  });
+  const TEXT = {
+    A: `<b><span class="k-t">A</span> · Stepping out.</b> The skydiver has only just started to move, so the air resistance is very small. Weight is almost the only force: the resultant force is close to the full 784&nbsp;N downwards, and the acceleration is close to 9.8&nbsp;m/s². The graph starts at its steepest.`,
+    B: `<b><span class="k-t">B</span> · Speeding up.</b> The faster the skydiver falls, the bigger the air resistance. The weight stays at 784&nbsp;N, so the resultant force downwards gets smaller, and the acceleration gets smaller with it. The skydiver is still speeding up, by a little less each second: the graph curves over.`,
+    C: `<b><span class="p-t">C</span> · Terminal velocity.</b> The air resistance has grown until it equals the weight, 784&nbsp;N. The forces are balanced, so the resultant force is zero and the acceleration is zero. The skydiver falls at a constant 50&nbsp;m/s: the graph is a flat line.`,
+    D: `<b><span class="k-t">D</span> · Parachute opens.</b> The parachute has a much larger surface area, so the air resistance becomes bigger than the weight. The resultant force is now upwards, opposite to the motion, so the skydiver slows down while still moving downwards. As the speed drops, the air resistance drops back towards the weight.`,
+    E: `<b><span class="p-t">E</span> · Lower terminal velocity.</b> The air resistance equals the weight again, 784&nbsp;N each: balanced forces, zero resultant force, zero acceleration. With the parachute open, this balance comes at a much lower speed, 5&nbsp;m/s, slow enough to land.`,
+    done: `<b>Two terminal velocities.</b> The weight was 784&nbsp;N all the way down. Each time the <span class="k-t">air resistance</span> came to equal the <span class="p-t">weight</span>, the resultant force was zero and the velocity stayed constant: 50&nbsp;m/s without the parachute (C) and 5&nbsp;m/s with it (E).`
+  };
+  let last = null;
+  function updateHTML(s) {
+    $('rT').textContent = s.t.toFixed(1) + ' s';
+    $('rV').textContent = s.v.toFixed(1) + ' m/s';
+    const a = Math.abs(s.a) < 0.05 ? 0 : s.a;
+    $('rA').textContent = a === 0 ? '0 m/s²' : Math.abs(a).toFixed(1) + ' m/s² ' + (a > 0 ? 'down' : 'up');
+    const FULL = 2000;
+    $('mW').style.width = (W / FULL * 100) + '%';
+    $('mR').style.width = (s.R / FULL * 100) + '%';
+    $('mF').style.width = (Math.abs(s.F) / FULL * 100) + '%';
+    const zero = Math.abs(s.F) < 4;
+    $('sW').textContent = n0(W) + ' N down';
+    $('sR').textContent = n0(s.R) + ' N up';
+    $('sF').textContent = zero ? 'zero' : n0(Math.abs(s.F)) + ' N ' + (s.F > 0 ? 'down' : 'up');
+    $('sF').className = 'status' + (zero ? ' flat' : '');
+    if (s.stage !== last) {
+      $('explain').innerHTML = TEXT[s.stage];
+      $('explain').className = 'explain ' + s.kind;
+      pills.querySelectorAll('.stage-pill').forEach(p => p.classList.toggle('on', +p.dataset.i === s.s));
+      last = s.stage;
+    }
+    $('scrub').value = Math.round(x * 1000);
+  }
+
+  const setPlaying = on => { playing = on; $('play').textContent = on ? '❚❚ Pause' : '▶ Play'; };
+  $('play').onclick = () => { if (x >= 1) x = 0; setPlaying(!playing); };
+  $('reset').onclick = () => { x = 0; setPlaying(false); };
+  $('scrub').oninput = e => { x = e.target.value / 1000; setPlaying(false); };
+  const h = location.hash.match(/t=([\d.]+)/);
+  if (h) x = Math.max(0, Math.min(1, parseFloat(h[1]) / T_END));
+
+  // ── Worked example: resultant force, then acceleration ──
+  const trim = (n, dp) => String(parseFloat(n.toFixed(dp)));
+  let shown = 0;
+  function working() {
+    const R = +$('sR2').value, F = W - R, up = F < 0, zero = F === 0, aF = Math.abs(F);
+    $('oR2').textContent = n0(R) + ' N';
+    $('q').innerHTML = `At one moment in the fall, the air resistance on the <strong>80&nbsp;kg</strong> skydiver is <strong>${n0(R)}&nbsp;N</strong>. Calculate the resultant force on the skydiver and the acceleration. Use g = 9.8&nbsp;N/kg.`;
+    const rows = [
+      ['Weight', `<span class="eq">W = m g</span> = 80 × 9.8 = <b>784&nbsp;N</b>, downwards`],
+      ['Resultant force', zero ? `weight − air resistance = 784 − 784 = <b>0&nbsp;N</b>: the forces are balanced`
+        : up ? `air resistance − weight = ${n0(R)} − 784 = <b>${n0(aF)}&nbsp;N</b>, upwards`
+             : `weight − air resistance = 784 − ${n0(R)} = <b>${n0(aF)}&nbsp;N</b>, downwards`],
+      ['Acceleration', zero ? `<span class="eq">F = m a</span>, so a = F ÷ m = 0 ÷ 80 = <b>0&nbsp;m/s²</b>: constant velocity, the terminal velocity`
+        : `<span class="eq">F = m a</span>, so a = F ÷ m = ${n0(aF)} ÷ 80 = <b>${trim(aF / M, 2)}&nbsp;m/s²</b>, ${up ? 'upwards: slowing down' : 'downwards: speeding up'}`],
+    ];
+    $('steps').innerHTML = rows.map(r => `<tr><td class="lab">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    $('full').innerHTML = rows.map(r => `<p class="sum"><b>${r[0]}:</b> ${r[1]}</p>`).join('') +
+      `<p class="sum">${zero ? 'Balanced forces give zero acceleration, so the skydiver falls at a constant velocity.'
+        : up ? 'The resultant force is opposite to the motion, so the skydiver slows down. As the speed drops, the air resistance drops, until it equals the weight.'
+             : 'The resultant force is in the direction of the motion, so the skydiver speeds up. As the speed rises, the air resistance rises, until it equals the weight.'}</p>`;
+    showSteps(shown);
+  }
+  function showSteps(n) {
+    const rows = [...$('steps').querySelectorAll('tr')];
+    shown = Math.max(0, Math.min(rows.length, n));
+    rows.forEach((r, i) => r.hidden = i >= shown);
+    $('steps').style.display = shown ? '' : 'none';
+    $('next').disabled = shown >= rows.length;
+    $('next').textContent = shown >= rows.length ? 'All steps shown' : 'Show next step';
+    $('count').textContent = 'Step ' + shown + ' of ' + rows.length;
+  }
+  $('next').onclick = () => showSteps(shown + 1);
+  $('hide').onclick = () => showSteps(0);
+  $('sR2').oninput = working;
+  if (/steps/.test(location.hash)) { shown = 3; document.querySelectorAll('details').forEach(d => d.open = true); }
+  working();
+
+  let prev = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    if (playing) { x = Math.min(1, x + dt * 1000 / DURATION); if (x >= 1) setPlaying(false); }
+    const s = state();
+    drawSky(dt, s); drawGraph(s); updateHTML(s);
+    requestAnimationFrame(frame);
+  }
+  { const s = state(); drawSky(0, s); drawGraph(s); updateHTML(s); }
+  requestAnimationFrame(frame);
+  window.__state = state;
+})();
+</script>
+</body>
+</html>
