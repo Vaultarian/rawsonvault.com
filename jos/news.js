@@ -27,6 +27,21 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'✨', when:'17 Nov', title:'Trampoline Tramp: power orbs, getting sick, and pick your season',
+      what:'Catch a glowing power orb and watch an ad for 1 minute of every upgrade and infinite coins and money. But bounce too much and you get sick!',
+      more:'A small glowing orb with spinning rings waits in front of you when you press Play, and every minute there is a 1 in 4 chance another one appears in the yard. ' +
+           'Walk into it and choose Cancel or Watch ad. After the ad you get every upgrade and infinite coins and money for 1 minute. ' +
+           'Being in the air makes you a little hungry. Bounce more than 20 times in a row, or keep moving for 20 seconds without stopping, and you get sick: ' +
+           'the screen goes woozy and green, and you get hungry for 20 seconds. ' +
+           'Type spring, summer, autumn or winter while you play and the season changes straight away. And Start over now starts a fresh game as soon as you press Yes.',
+      play:'trampoline-tramp/' },
+    { emoji:'🚌', when:'16 Nov', title:'Trampoline Tramp: 3D jobs and a whole town',
+      what:'Every job is now 3D, and the world has a town, traffic, day and night, and the four seasons.',
+      more:'Pick a job on the computer and a bus picks you up at the gate. Mow a lawn, catch pests in a house (don\'t cage the cat!), fix pipes down a manhole, ' +
+           'flip pancakes in a café, make pizzas for customers, and sort the recycling. Press Esc to leave a job early for $2. ' +
+           'Across the road there are houses, shops and a city, with a kid on a swing next door. Cars and people cross the road, and the bus stops for them. ' +
+           'A day lasts 4 minutes, with a sun, a moon, stars and clouds. The seasons change every 2 days: leaves grow in spring, fall in autumn, and in winter there is snow and icicles. Sometimes it rains. Press N to skip to the next season.',
+      play:'trampoline-tramp/' },
     { emoji:'🤸', when:'15 Nov', title:'Trampoline Tramp',
       what:'Bounce on a trampoline in a 3D yard, do jobs, buy food, and unlock a giant skill tree.',
       more:'Walk into the yard and bounce on the trampoline. Press Space right as you land to bounce higher, and the higher you go the more coins you get. ' +

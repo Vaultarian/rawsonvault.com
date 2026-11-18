@@ -37,6 +37,222 @@
   ];
   if (GAME) MODS = MODS.filter(function (m) { return HOME_ONLY.indexOf(m.id) < 0; });
 
+  /* ---------- slow-combo data (23 Oct 2026) ----------
+     A robot tested all 190 pairs of mods and timed how much work Chrome did
+     for each one (layout + style-recalc + script time, in milliseconds,
+     during a few seconds of mouse movement and clicking). Bigger = slower.
+     jelly+magnet is the one pair Jos actually caught freezing live, at
+     0.6 FPS on his real screen — it measured 82.4ms here, so 80ms+ is BLOCK
+     and 55-80ms is WARN. Below 55ms is fine. This can't see combos of three
+     or more mods, only pairs — the worst PAIR among whatever is on is used
+     as the estimate, which is a simplification, not a guarantee. */
+  var PAIR_WORK = {
+    "bubbles|buddy": 67.5,
+    "bubbles|colour": 51.8,
+    "bubbles|flip": 50.9,
+    "bubbles|fw": 76.6,
+    "bubbles|glow": 53.0,
+    "bubbles|jelly": 53.3,
+    "bubbles|leaves": 62.1,
+    "bubbles|magnet": 81.5,
+    "bubbles|pop": 51.0,
+    "bubbles|rainbow": 55.2,
+    "bubbles|ripple": 58.0,
+    "bubbles|secret": 50.1,
+    "bubbles|shake": 56.8,
+    "bubbles|sky": 49.1,
+    "bubbles|snow": 75.8,
+    "bubbles|spin": 51.8,
+    "bubbles|star": 44.4,
+    "bubbles|torch": 58.0,
+    "bubbles|trail": 99.5,
+    "buddy|colour": 55.5,
+    "buddy|flip": 60.6,
+    "buddy|fw": 86.5,
+    "buddy|glow": 59.9,
+    "buddy|jelly": 62.9,
+    "buddy|leaves": 65.9,
+    "buddy|magnet": 91.8,
+    "buddy|pop": 59.3,
+    "buddy|rainbow": 66.6,
+    "buddy|ripple": 66.4,
+    "buddy|secret": 57.8,
+    "buddy|shake": 60.7,
+    "buddy|sky": 65.8,
+    "buddy|snow": 79.6,
+    "buddy|spin": 61.9,
+    "buddy|star": 55.1,
+    "buddy|torch": 60.7,
+    "buddy|trail": 110.9,
+    "colour|flip": 44.6,
+    "colour|fw": 76.7,
+    "colour|glow": 51.8,
+    "colour|jelly": 53.0,
+    "colour|leaves": 57.5,
+    "colour|magnet": 79.0,
+    "colour|pop": 52.9,
+    "colour|rainbow": 50.5,
+    "colour|ripple": 55.3,
+    "colour|secret": 47.6,
+    "colour|shake": 52.7,
+    "colour|sky": 55.3,
+    "colour|snow": 78.4,
+    "colour|spin": 49.8,
+    "colour|star": 50.1,
+    "colour|torch": 55.7,
+    "colour|trail": 105.1,
+    "flip|fw": 78.8,
+    "flip|glow": 51.2,
+    "flip|jelly": 52.9,
+    "flip|leaves": 63.1,
+    "flip|magnet": 101.4,
+    "flip|pop": 50.8,
+    "flip|rainbow": 56.4,
+    "flip|ripple": 55.4,
+    "flip|secret": 46.9,
+    "flip|shake": 50.0,
+    "flip|sky": 49.7,
+    "flip|snow": 80.8,
+    "flip|spin": 51.7,
+    "flip|star": 45.1,
+    "flip|torch": 55.7,
+    "flip|trail": 96.5,
+    "fw|glow": 70.6,
+    "fw|jelly": 74.8,
+    "fw|leaves": 81.3,
+    "fw|magnet": 103.5,
+    "fw|pop": 69.9,
+    "fw|rainbow": 74.1,
+    "fw|ripple": 77.8,
+    "fw|secret": 69.0,
+    "fw|shake": 75.6,
+    "fw|sky": 84.1,
+    "fw|snow": 89.2,
+    "fw|spin": 71.7,
+    "fw|star": 72.1,
+    "fw|torch": 75.7,
+    "fw|trail": 123.7,
+    "glow|jelly": 49.6,
+    "glow|leaves": 60.1,
+    "glow|magnet": 80.4,
+    "glow|pop": 52.0,
+    "glow|rainbow": 55.9,
+    "glow|ripple": 59.3,
+    "glow|secret": 57.4,
+    "glow|shake": 53.5,
+    "glow|sky": 55.4,
+    "glow|snow": 80.7,
+    "glow|spin": 51.9,
+    "glow|star": 40.5,
+    "glow|torch": 56.5,
+    "glow|trail": 114.2,
+    "jelly|leaves": 64.8,
+    "jelly|magnet": 82.4,
+    "jelly|pop": 52.2,
+    "jelly|rainbow": 52.3,
+    "jelly|ripple": 57.7,
+    "jelly|secret": 51.2,
+    "jelly|shake": 53.8,
+    "jelly|sky": 51.4,
+    "jelly|snow": 73.9,
+    "jelly|spin": 51.9,
+    "jelly|star": 47.0,
+    "jelly|torch": 55.9,
+    "jelly|trail": 102.1,
+    "leaves|magnet": 89.5,
+    "leaves|pop": 57.5,
+    "leaves|rainbow": 60.0,
+    "leaves|ripple": 67.5,
+    "leaves|secret": 63.6,
+    "leaves|shake": 66.1,
+    "leaves|sky": 62.9,
+    "leaves|snow": 80.8,
+    "leaves|spin": 57.4,
+    "leaves|star": 57.5,
+    "leaves|torch": 69.3,
+    "leaves|trail": 111.6,
+    "magnet|pop": 75.8,
+    "magnet|rainbow": 85.0,
+    "magnet|ripple": 83.3,
+    "magnet|secret": 80.9,
+    "magnet|shake": 82.4,
+    "magnet|sky": 84.9,
+    "magnet|snow": 110.5,
+    "magnet|spin": 90.4,
+    "magnet|star": 77.0,
+    "magnet|torch": 79.2,
+    "magnet|trail": 130.1,
+    "pop|rainbow": 51.6,
+    "pop|ripple": 55.3,
+    "pop|secret": 50.6,
+    "pop|shake": 51.8,
+    "pop|sky": 51.6,
+    "pop|snow": 72.2,
+    "pop|spin": 53.2,
+    "pop|star": 44.0,
+    "pop|torch": 56.1,
+    "pop|trail": 100.4,
+    "rainbow|ripple": 57.2,
+    "rainbow|secret": 51.8,
+    "rainbow|shake": 53.8,
+    "rainbow|sky": 59.1,
+    "rainbow|snow": 74.0,
+    "rainbow|spin": 53.9,
+    "rainbow|star": 44.1,
+    "rainbow|torch": 59.0,
+    "rainbow|trail": 106.2,
+    "ripple|secret": 55.4,
+    "ripple|shake": 55.7,
+    "ripple|sky": 53.5,
+    "ripple|snow": 80.8,
+    "ripple|spin": 55.8,
+    "ripple|star": 48.7,
+    "ripple|torch": 61.1,
+    "ripple|trail": 114.4,
+    "secret|shake": 58.4,
+    "secret|sky": 58.1,
+    "secret|snow": 67.8,
+    "secret|spin": 54.7,
+    "secret|star": 43.8,
+    "secret|torch": 50.1,
+    "secret|trail": 100.4,
+    "shake|sky": 57.6,
+    "shake|snow": 86.4,
+    "shake|spin": 55.3,
+    "shake|star": 50.9,
+    "shake|torch": 57.9,
+    "shake|trail": 102.7,
+    "sky|snow": 82.2,
+    "sky|spin": 54.3,
+    "sky|star": 46.4,
+    "sky|torch": 64.7,
+    "sky|trail": 99.9,
+    "snow|spin": 73.4,
+    "snow|star": 68.3,
+    "snow|torch": 76.9,
+    "snow|trail": 124.7,
+    "spin|star": 44.4,
+    "spin|torch": 56.0,
+    "spin|trail": 105.3,
+    "star|torch": 48.7,
+    "star|trail": 97.6,
+    "torch|trail": 112.0,
+  };
+  function pairWork(a, b) { return PAIR_WORK[[a, b].sort().join('|')] || 0; }
+  function pairTier(a, b) {    /* 1 block, 0 warn, undefined fine */
+    var w = pairWork(a, b);
+    return w >= 80 ? 1 : (w >= 55 ? 0 : undefined);
+  }
+  function modLabel(id) { var m = MODS.filter(function (x) { return x.id === id; })[0]; return m ? m.name.replace(/^\S+\s/, '') : id; }
+  function showModToast(text, bad) {
+    var t = document.createElement('div');
+    t.className = 'mod-toast' + (bad ? ' bad' : '');
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(function () { t.classList.add('go'); }, 10);
+    setTimeout(function () { t.remove(); }, 3200);
+  }
+
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
   }
@@ -54,6 +270,20 @@
       history.replaceState(null, '', location.pathname + rest + location.hash);
     } catch (e) {}
   }
+  /* testing switch: ?mods=trail,magnet turns ON exactly that list and everything
+     else OFF, saved that way — for checking one specific combination */
+  var modsParam = /[?&]mods=([^&]*)/.exec(location.search);
+  if (modsParam) {
+    var want = decodeURIComponent(modsParam[1]).split(',').filter(Boolean);
+    MODS.concat(HOME_ONLY.map(function (id) { return { id: id }; })).forEach(function (m) {
+      state[m.id] = want.indexOf(m.id) >= 0;
+    });
+    save(state);
+    try {
+      var rest2 = location.search.replace(/[?&]mods=[^&]*/, '').replace(/^&/, '?');
+      history.replaceState(null, '', location.pathname + rest2 + location.hash);
+    } catch (e) {}
+  }
   function isOn(id) {
     if (GAME && HOME_ONLY.indexOf(id) >= 0) return false;
     if (state[id] !== undefined) return state[id] !== false;
@@ -69,6 +299,19 @@
     '  background:linear-gradient(90deg,#7a4fb5,#3d9595);padding:.7rem 1.35rem;border-radius:50px;',
     '  box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .12s,box-shadow .12s}',
     '#modsBtn:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.3)}',
+    /* the slow-combo toast */
+    '.mod-toast{position:fixed;left:50%;bottom:1.4rem;transform:translate(-50%,20px);z-index:2000000;',
+    '  max-width:min(90vw,420px);text-align:center;font-family:"Nunito",sans-serif;font-weight:700;',
+    '  font-size:.95rem;color:#fff;background:#3d9595;padding:.8rem 1.2rem;border-radius:14px;',
+    '  box-shadow:0 6px 18px rgba(0,0,0,.3);opacity:0;transition:opacity .25s,transform .25s}',
+    '.mod-toast.go{opacity:1;transform:translate(-50%,0)}',
+    '.mod-toast.bad{background:#d9643a}',
+    /* the little FPS estimate, bottom of the screen, always there */
+    '#estFps{position:fixed;left:50%;bottom:.5rem;transform:translateX(-50%);z-index:499;',
+    '  font-family:Nunito,sans-serif;font-weight:700;font-size:.75rem;color:#89806f;',
+    '  background:rgba(255,255,255,.75);padding:.25rem .6rem;border-radius:20px;pointer-events:none}',
+    '#estFps.ok{color:#2f9e5c}#estFps.mid{color:#b8791f}#estFps.low{color:#c14a2e}',
+    '@media (max-width:600px){#estFps{font-size:.68rem;bottom:.35rem}}',
     'body.sm-open #modsBtn,body.set-open #modsBtn,body.sm-open #modsPanel,body.set-open #modsPanel{display:none}',
     '@media (max-width:600px){#modsBtn{font-size:.8rem;padding:.55rem 1rem;top:6.2rem;right:.6rem}}',
     /* in a game: bottom right corner, panel opens upwards */
@@ -92,6 +335,11 @@
     '  font:700 .85rem Nunito,sans-serif;text-align:left;cursor:pointer;transition:background .15s,border-color .15s,color .15s,scale .1s}',
     '.mod-btn:hover{border-color:#3d9595}.mod-btn:active{scale:.94}',
     '.mod-btn.on{background:#2f9e5c;border-color:#24804a;color:#fff}',
+    /* grey + X: can't be turned on right now, because of a mod that is already on.
+       orange: can be turned on, but it will run a bit slow together. */
+    '.mod-btn.blocked{background:#e4e1d8;border-color:#cfc7b8;color:#9a9284;position:relative}',
+    '.mod-btn.blocked::after{content:"✕";position:absolute;top:2px;right:7px;font-size:1rem;color:#b0453a}',
+    '.mod-btn.warn-combo{background:#fde2c8;border-color:#e0a248;color:#7a4f14}',
     '.mod-about{font-size:.8rem;color:#567;line-height:1.3;margin-top:.7rem;min-height:2.1em}',
 
     /* MOD: hover glow */
@@ -596,6 +844,45 @@
     var about = document.createElement('div');
     about.className = 'mod-about';
     function aboutOf(m) { return typeof m.about === 'function' ? m.about() : m.about; }
+    /* every mod that is OFF gets styled against whatever is already ON:
+       grey + X (can't be turned on), orange (can, but runs a bit slow),
+       or left alone (fine). A mod that is already ON just stays green. */
+    function refreshConflictStyles() {
+      var onIds = MODS.filter(function (x) { return isOn(x.id); }).map(function (x) { return x.id; });
+      Array.prototype.forEach.call(grid.querySelectorAll('.mod-btn'), function (btn) {
+        var id = btn.dataset.mod;
+        if (isOn(id)) { btn.classList.remove('blocked', 'warn-combo'); return; }
+        var others = onIds.filter(function (o) { return o !== id; });
+        var blocked = others.some(function (o) { return pairTier(o, id) === 1; });
+        var warn = !blocked && others.some(function (o) { return pairTier(o, id) === 0; });
+        btn.classList.toggle('blocked', blocked);
+        btn.classList.toggle('warn-combo', warn);
+      });
+    }
+    /* Est FPS: the worst pair among whatever mods are ON right now, turned
+       into a rough number. 130.1ms (the slowest pair the robot measured) is
+       treated as "about 0 FPS" and 0ms of extra work is "60 FPS, fine". It is
+       a guess from the robot's numbers, not a live measurement of your screen. */
+    var estFps = document.getElementById('estFps');
+    if (!estFps) {
+      estFps = document.createElement('div');
+      estFps.id = 'estFps';
+      document.body.appendChild(estFps);
+    }
+    function refreshEstFps() {
+      var onIds = MODS.filter(function (x) { return isOn(x.id); }).map(function (x) { return x.id; });
+      var worst = 0;
+      for (var i = 0; i < onIds.length; i++) {
+        for (var j = i + 1; j < onIds.length; j++) {
+          worst = Math.max(worst, pairWork(onIds[i], onIds[j]));
+        }
+      }
+      var fps = worst === 0 ? 60 : Math.max(1, Math.round(60 * (1 - worst / 130.1)));
+      estFps.textContent = 'Est FPS: ' + fps;
+      estFps.classList.toggle('ok', fps >= 45);
+      estFps.classList.toggle('mid', fps >= 20 && fps < 45);
+      estFps.classList.toggle('low', fps < 20);
+    }
     MODS.forEach(function (m) {
       var b = document.createElement('button');
       b.type = 'button';
@@ -603,16 +890,33 @@
       b.className = 'mod-btn' + (isOn(m.id) ? ' on' : '');
       b.textContent = m.name;
       b.addEventListener('click', function () {
-        state[m.id] = !isOn(m.id);
+        var turningOn = !isOn(m.id);
+        if (turningOn) {
+          var onIds = MODS.filter(function (x) { return x.id !== m.id && isOn(x.id); }).map(function (x) { return x.id; });
+          var blocker = onIds.filter(function (id) { return pairTier(id, m.id) === 1; })[0];
+          if (blocker) {
+            showModToast('🚫 ' + modLabel(m.id) + ' + ' + modLabel(blocker) + ' makes the screen freeze up — turn ' + modLabel(blocker) + ' off first', true);
+            return;
+          }
+          var warner = onIds.filter(function (id) { return pairTier(id, m.id) === 0; })[0];
+          if (warner) {
+            showModToast('⚠️ ' + modLabel(m.id) + ' + ' + modLabel(warner) + ' can run a bit slow');
+          }
+        }
+        state[m.id] = turningOn;
         save(state);
         b.classList.toggle('on', isOn(m.id));
         apply();
+        refreshConflictStyles();
+        refreshEstFps();
         about.textContent = aboutOf(m);
       });
       b.addEventListener('mouseenter', function () { about.textContent = aboutOf(m); });
       b.addEventListener('mouseleave', function () { about.textContent = HINT; });
       grid.appendChild(b);
     });
+    refreshConflictStyles();
+    refreshEstFps();
     panel.appendChild(grid);
     panel.appendChild(about);
     function words() { about.textContent = HINT; }
