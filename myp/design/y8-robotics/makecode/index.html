@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>micro:bit with MakeCode — MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        body { animation: none; }
+        .summary, .lesson, .setup li, .key td { font-family: var(--font-body); color: var(--ink-black); }
+        .summary { font-size: 0.95rem; line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-md); }
+        code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.86em; background: #f0ece4; border-radius: 3px; padding: 0.05em 0.3em; }
+        .blk { display: inline-block; font-family: var(--font-ui); font-weight: 600; font-size: 0.8em; color: #fff; border-radius: 4px; padding: 0.05em 0.45em; white-space: nowrap; line-height: 1.5; }
+        .blk-tp { background: #32b9b9; } .blk-basic { background: #1e90ff; } .blk-input { background: #d400d4; }
+        .blk-logic { background: #00a4a6; } .blk-loops { background: #00aa00; } .blk-vars { background: #dc143c; } .blk-math { background: #9400d3; }
+        .setup { counter-reset: step; list-style: none; margin: 0 0 var(--gap-md); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+        .setup li { counter-increment: step; background: #fff; border: 1px solid #e6dfd2; border-radius: 8px; padding: 0.9rem 1rem 1rem; font-size: 0.88rem; line-height: 1.6; }
+        .setup li::before { content: "Step " counter(step); display: block; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); margin-bottom: 0.3rem; }
+        .setup strong.t { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.25rem; }
+        .bar { display: flex; justify-content: space-between; align-items: baseline; margin: var(--gap-md) 0 var(--gap-xs); }
+        .bar h2 { margin: 0; }
+        .bar button { font-family: var(--font-ui); font-weight: 600; font-size: 0.78rem; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer; }
+        .bar button:hover { border-color: var(--bronze-core); }
+        details.lesson { background: #fff; border: 1px solid #e6dfd2; border-radius: 10px; margin: 0 0 0.6rem; scroll-margin-top: 1rem; }
+        details.lesson[open] { border-color: var(--bronze-light); }
+        details.lesson > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 0.9rem; align-items: center; padding: 0.85rem 1rem; }
+        details.lesson > summary::-webkit-details-marker { display: none; }
+        .num { font-family: var(--font-ui); font-weight: 600; font-size: 0.85rem; color: #fff; background: var(--bronze-core); border-radius: 999px; min-width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; }
+        .st { font-family: var(--font-heading); font-size: 1.05rem; color: var(--ink-black); }
+        .st span { display: block; font-family: var(--font-body); font-size: 0.86rem; color: var(--gray-dark); line-height: 1.5; margin-top: 0.1rem; }
+        .chev { width: 0.6rem; height: 0.6rem; border-right: 2px solid var(--bronze-core); border-bottom: 2px solid var(--bronze-core); transform: rotate(45deg); transition: transform 0.15s; margin-right: 0.3rem; }
+        details[open] > summary .chev { transform: rotate(-135deg); }
+        .body { padding: 0.2rem 1.1rem 1.1rem; border-top: 1px solid #f0ece4; font-size: 0.92rem; line-height: 1.7; }
+        .body h3 { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bronze-dark); margin: 1.1rem 0 0.35rem; }
+        .body ol, .body ul { margin: 0; padding-left: 1.3rem; }
+        .body li { margin: 0 0 0.4rem; }
+        .need { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; padding: 0 !important; }
+        .need li { background: #faf7f2; border: 1px solid #e0d6c6; border-radius: 999px; padding: 0.05rem 0.7rem; font-size: 0.82rem; margin: 0; }
+        figure.prog { margin: 0.9rem 0 0; }
+        figure.prog .frame { background: #f7f5f1; border: 1px solid #ece7dd; border-radius: 8px; padding: 0.9rem; overflow-x: auto; }
+        figure.prog img { display: block; max-width: 100%; height: auto; }
+        figure.prog figcaption { font-size: 0.84rem; color: var(--gray-dark); margin-top: 0.35rem; line-height: 1.5; }
+        .see { background: #f3f8f4; border-left: 3px solid #2e7d4f; border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 0; }
+        .idea { background: #faf7f2; border-left: 3px solid var(--bronze-core); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 1rem 0 0; }
+        .key { border-collapse: collapse; margin: 0.9rem 0 0; }
+        .key th { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-dark); text-align: left; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid var(--bronze-light); }
+        .key td { font-size: 0.86rem; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid #ece7dd; }
+        .key td:first-child { font-size: 1rem; letter-spacing: 0.1em; white-space: nowrap; }
+        .docs { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .docs a, a.src { font-family: var(--font-ui); font-weight: 600; font-size: 0.8rem; text-decoration: none; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.3rem 0.7rem; display: inline-block; }
+        .docs a:hover, a.src:hover { border-color: var(--bronze-core); }
+        .srcline { margin: 1.1rem 0 0; }
+        .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-lg) 0 var(--gap-md); line-height: 1.6; }
+        .credit-note a { color: var(--bronze-light); }
+        @media (max-width: 860px) { .setup { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 560px) { .setup { grid-template-columns: 1fr; } details.lesson > summary { gap: 0.6rem; padding: 0.75rem 0.8rem; } }
+    </style>
+</head>
+<body>
+    <div class="container container--wide">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">MYP</a><span>·</span>
+            <a href="../../">Design</a><span>·</span>
+            <a href="../">Robotics &amp; Control</a><span>·</span>
+            micro:bit with MakeCode
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">MYP Design · Year 8 · Lessons so far</span>
+            <h1>micro:bit with MakeCode</h1>
+        </div>
+        <div class="rule--full"></div>
+
+        <p class="summary">Every lesson so far with the micro:bit, in order. Open a lesson to see what you need, the steps, the blocks and something to try next. All of the building happens at <a href="https://makecode.microbit.org" target="_blank" rel="noopener">makecode.microbit.org</a>.</p>
+
+        <div class="bar"><h2>Lessons</h2><button type="button" id="toggle-all">Open all</button></div>
+
+        <details class="lesson" id="lesson-1">
+            <summary><span class="num">1</span><span class="st">Hello, MakeCode<span>Your first program: a name badge that plays when you press a button.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>USB cable</li><li>A laptop with makecode.microbit.org open</li></ul>
+            <h3>Steps</h3><ol><li>Open <strong>makecode.microbit.org</strong>, choose <strong>New Project</strong> and name it <code>name-badge</code>.</li><li>Drag <span class="blk blk-basic">show leds</span> inside <span class="blk blk-basic">on start</span>. Click each LED you want lit to draw your first letter.</li><li>Plug in the USB cable and press the purple <strong>Download</strong> button. If a file lands in Downloads, drag it onto the <strong>MICROBIT</strong> drive. Your letter appears on the board.</li><li>Add one <span class="blk blk-basic">show leds</span> for each letter of your name, with <span class="blk blk-basic">pause (ms) 100</span> after each. Finish with a blank <span class="blk blk-basic">show leds</span> and <span class="blk blk-basic">pause (ms) 500</span>. That is the gap before the name starts again.</li><li>Wrap all of it in <span class="blk blk-loops">repeat 4 times</span>. A repeat block is a <strong>loop</strong>: it runs the same blocks again and again.</li><li>Move everything out of <span class="blk blk-basic">on start</span> and into <span class="blk blk-input">on button A pressed</span>.</li><li>Press <strong>Share</strong>, then <strong>Publish project</strong>, and copy the link. Publishing is how you hand work in.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m1-first.png" width="159" height="244" loading="lazy" alt="MakeCode blocks. Step 2. One letter, shown when the micro:bit starts."></div><figcaption>Step 2. One letter, shown when the micro:bit starts.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/m1-badge.png" width="194" height="785" loading="lazy" alt="MakeCode blocks. Step 6. A two-letter name, played four times when you press A."></div><figcaption>Step 6. A two-letter name, played four times when you press A.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Press A and your name plays across the LEDs four times, with a short gap between each run.</p>
+            <p class="idea"><strong>The idea.</strong> The button is the <strong>input</strong>, the loop is the <strong>process</strong> and the LEDs are the <strong>output</strong>.</p>
+            <h3>Now change it</h3><ul><li>Make <span class="blk blk-input">on button B pressed</span> do something different.</li><li>Make the pauses smaller and smaller. Find the fastest speed you can still read.</li><li>Try <span class="blk blk-basic">show string</span> with your name in it. Work out what it is doing for you.</li></ul>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-l01-intro-to-makecode-handout.pdf">MakeCode quick reference</a></li><li><a href="../../../../classes/design-8a/files/rc-l01-intro-to-makecode-homework.pdf">Homework: make something of your own</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-2">
+            <summary><span class="num">2</span><span class="st">Algorithms 1: making the micro:bit decide<span>Events, a variable and a condition: show a heart on the fourth press of B.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>USB cable</li><li>Battery pack</li></ul>
+            <h3>Steps</h3><ol><li>Show a happy face when you shake the micro:bit: <span class="blk blk-input">on shake</span> with <span class="blk blk-basic">show icon</span> inside.</li><li>Show a sad face when you press A: <span class="blk blk-input">on button A pressed</span> with <span class="blk blk-basic">show icon</span> inside.</li><li>Now the challenge: show a heart when B has been pressed <strong>four times</strong>. The micro:bit has to remember how many presses there have been, then ask a question about that number.</li><li>In the <strong>Variables</strong> drawer choose <strong>Make a Variable</strong> and call it <code>B Clicks</code>. A variable is a box with a name on it. In <span class="blk blk-basic">on start</span>, put <span class="blk blk-vars">set B Clicks to 0</span>.</li><li>Start a new stack: <span class="blk blk-input">on button B pressed</span> with <span class="blk blk-vars">change B Clicks by 1</span> inside. Every press adds one to the box.</li><li>Under that, add <span class="blk blk-logic">if … then</span> from the <strong>Logic</strong> drawer and drop <span class="blk blk-logic">B Clicks = 4</span> into its gap. This is a <strong>condition</strong>: a question with only two answers, yes or no.</li><li>Inside the <span class="blk blk-logic">if</span>, show the heart, pause, clear the screen and <span class="blk blk-vars">set B Clicks to 0</span>. Setting it back to 0 lets the count start again.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m2-events.png" width="380" height="115" loading="lazy" alt="MakeCode blocks. Steps 1 and 2. Two events, each with its own answer."></div><figcaption>Steps 1 and 2. Two events, each with its own answer.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/m2-counter.png" width="555" height="342" loading="lazy" alt="MakeCode blocks. Steps 4 to 7. The finished counter. MakeCode shows the variable as B_Clicks here; yours reads B Clicks."></div><figcaption>Steps 4 to 7. The finished counter. MakeCode shows the variable as B_Clicks here; yours reads B Clicks.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Three presses of B show nothing. The fourth shows a heart for one second. Four more presses show it again.</p>
+            <p class="idea"><strong>The idea.</strong> <strong>Remembering</strong> needs a variable. <strong>Checking</strong> needs a condition.</p>
+            <h3>Now change it</h3><ul><li>Change the 4 to another number and test it.</li><li>Show a different icon on the fourth press.</li><li>Build the <strong>Shake Counter</strong>: a variable called <code>Shakes</code> that goes up by 1 on every shake, and an icon on the third shake.</li></ul>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-l02-algorithms-1-handout.pdf">Algorithms 1 handout</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-3">
+            <summary><span class="num">3</span><span class="st">Choosing your game<span>The Mini Project begins: pick one game from the Games Menu.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>The Games Menu</li><li>The Criteria A and B sheet</li></ul>
+            <h3>Steps</h3><ol><li>Read through the <strong>Games Menu</strong>. It holds 23 micro:bit games in three levels.</li><li>Pick two games you like and one you will build. For each, write down one strength and one weakness.</li><li>Read the <strong>Criteria A and B</strong> sheet. It lists the eight pieces of design work you hand in, one for each strand.</li><li>Tell Mr. Rawson which game you have chosen.</li></ol>
+            <h3>What happens</h3><p class="see">You leave with one game chosen and a reason for choosing it.</p>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-games-menu.pdf">The Games Menu</a></li><li><a href="../../../../classes/design-8a/files/rc-summative-ab-what-you-are-marked-on.pdf">Criteria A and B: what you are marked on</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-4">
+            <summary><span class="num">4</span><span class="st">My Game Design: the design packet<span>Summative A and B. Explain your game and exactly how it works, on paper.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>My Game Design packet</li><li>The Games Menu</li><li>A pencil</li></ul>
+            <h3>Steps</h3><ol><li>Work through the eight parts of the packet in order. Each part is labelled with the strand it earns.</li><li>In Part 1, name a real person your game is for.</li><li>Write success criteria that you can see or count, such as <em>the score goes up by 1 for each catch</em>.</li><li>Plan three versions of <strong>one</strong> game, each using A, B, A+B and shake in a different way.</li><li>Fill in the controls table for your final version. Write <em>not used</em> beside any input your game leaves out.</li><li>Draw your four 5 × 5 screens and write out one round of the game step by step.</li></ol>
+            <h3>What happens</h3><p class="see">A finished packet that another person could build your game from.</p>
+            <p class="idea"><strong>The idea.</strong> The packet is marked on how clearly it explains your plan.</p>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-summative-design-packet.pdf">My Game Design packet</a></li><li><a href="../../../../classes/design-8a/files/rc-summative-ab-what-you-are-marked-on.pdf">Criteria A and B: what you are marked on</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-5">
+            <summary><span class="num">5</span><span class="st">Building your game<span>Turn the design packet into a working game in MakeCode.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>Your finished design packet</li><li>micro:bit</li><li>USB cable</li></ul>
+            <h3>Steps</h3><ol><li>Open your packet at the controls table and the block list. They are your plan.</li><li>Build one input at a time. Start with button A, download, and test it on the micro:bit.</li><li>Add the next input and test again. Small steps keep the game working the whole way through.</li><li>Most games keep a score or pick something at random. The two patterns below do those jobs.</li><li>Press <strong>Share</strong>, then <strong>Publish project</strong>, and post the link in the Google Classroom build thread.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m5-score.png" width="426" height="144" loading="lazy" alt="MakeCode blocks. Keeping score. A variable goes up by 1 and the micro:bit shows it."></div><figcaption>Keeping score. A variable goes up by 1 and the micro:bit shows it.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/m5-random.png" width="311" height="104" loading="lazy" alt="MakeCode blocks. A random number from 1 to 6 on every shake."></div><figcaption>A random number from 1 to 6 on every shake.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Your game runs on a real micro:bit, and its link is in the build thread.</p>
+            <h3>Now change it</h3><ul><li>Add a sound or an icon for winning.</li><li>Add a way to start a new game without unplugging the micro:bit.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-6">
+            <summary><span class="num">6</span><span class="st">Carousel Play Day<span>Play each other's games and tell the builder what you noticed.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Your game's sharing link</li></ul>
+            <h3>Steps</h3><ol><li>Open your own game from its sharing link and download it to your micro:bit.</li><li>Move round the room when Mr. Rawson calls. Play each game you reach.</li><li>Tell the builder the first thing you did when you picked their game up.</li><li>Back at your own game, read what your players noticed and make one change.</li><li>If your game changed, publish it again and post the new link.</li></ol>
+            <h3>What happens</h3><p class="see">Your game has been played by people who did not build it, and you have one idea to borrow from someone else's.</p>
+            </div></details>
+
+        <div class="credit-note">Block pictures are drawn by <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>. Lessons 1 and 2 are adapted from <em>Intro to Computer Science with MakeCode for micro:bit</em> by Douglas Kiang and Mary Kiang, published by Microsoft MakeCode. The full course is on the <a href="../">Robotics &amp; Control</a> page.</div>
+
+        <footer class="site-footer">The Vault · MYP Design · Robotics &amp; Control · 2026</footer>
+    </div>
+
+    <script>
+    (function () {
+        var all = Array.prototype.slice.call(document.querySelectorAll('details.lesson'));
+        var btn = document.getElementById('toggle-all');
+        function label() { btn.textContent = all.every(function (d) { return d.open; }) ? 'Close all' : 'Open all'; }
+        function fromHash() {
+            var d = location.hash && document.getElementById(location.hash.slice(1));
+            if (d && d.tagName === 'DETAILS') { d.open = true; d.scrollIntoView(); }
+        }
+        btn.addEventListener('click', function () {
+            var open = !all.every(function (d) { return d.open; });
+            all.forEach(function (d) { d.open = open; });
+        });
+        all.forEach(function (d) {
+            d.addEventListener('toggle', function () {
+                label();
+                if (d.open && history.replaceState) history.replaceState(null, '', '#' + d.id);
+            });
+        });
+        window.addEventListener('hashchange', fromHash);
+        fromHash(); label();
+    })();
+    </script>
+</body>
+</html>
