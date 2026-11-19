@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Scene: 20 Story Ideas — MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://studio.code.org">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        body { animation: none; }
+        .summary, .steps li, .card p, .moves td { font-family: var(--font-body); color: var(--ink-black); }
+        .summary { font-size: 0.95rem; line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-md); }
+        code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.86em; background: #f0ece4; border-radius: 3px; padding: 0.05em 0.3em; }
+        a.inline { color: var(--bronze-dark); }
+        .steps { counter-reset: step; list-style: none; margin: 0 0 var(--gap-lg); padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+        .steps li { counter-increment: step; background: #fff; border: 1px solid #e6dfd2; border-radius: 8px; padding: 0.9rem 1rem 1rem; font-size: 0.9rem; line-height: 1.6; }
+        .steps li::before { content: "Step " counter(step); display: block; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); margin-bottom: 0.3rem; }
+        .steps strong { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.25rem; }
+        .moves { width: 100%; border-collapse: collapse; margin: var(--gap-xs) 0 var(--gap-lg); }
+        .moves th { font-family: var(--font-ui); font-weight: 600; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-dark); text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--bronze-light); }
+        .moves td { font-size: 0.9rem; padding: 0.5rem; border-bottom: 1px solid #ece7dd; vertical-align: baseline; }
+        .moves td:nth-child(2) code { white-space: nowrap; }
+        .example { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 1.2rem; align-items: start; margin: var(--gap-sm) 0 var(--gap-lg); }
+        pre { margin: 0; background: #2b2118; color: #f4ece0; border-radius: 8px; padding: 0.9rem 1rem; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.78rem; line-height: 1.55; overflow-x: auto; }
+        pre .c { color: #e2b77f; }
+        .ex-notes { font-family: var(--font-body); font-size: 0.88rem; line-height: 1.65; margin: 0.7rem 0 0; padding-left: 1.2rem; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1rem; margin: var(--gap-sm) 0 var(--gap-lg); }
+        .card { background: #fff; border: 1px solid #e6dfd2; border-radius: 10px; padding: 0.8rem; display: flex; flex-direction: column; }
+        .card h3 { font-family: var(--font-heading); font-size: 1.02rem; margin: 0.7rem 0 0.3rem; color: var(--ink-black); }
+        .card h3 .num { font-family: var(--font-ui); font-weight: 600; font-size: 0.72rem; color: #fff; background: var(--bronze-core); border-radius: 999px; padding: 0.1rem 0.5rem; margin-right: 0.4rem; vertical-align: 0.12em; }
+        .card p { font-size: 0.86rem; line-height: 1.55; margin: 0 0 0.45rem; }
+        .card .lab { display: block; font-family: var(--font-ui); font-weight: 600; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .lab.count { color: #2f6f8f; } .lab.rand { color: #a3562a; } .lab.kit { color: var(--gray-dark); }
+        .stage { position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 6px; background: #e9e4da; container-type: inline-size; }
+        .stage > img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
+        .stage .sp { position: absolute; background-repeat: no-repeat; background-size: 100% 100%; will-change: left, top, transform; }
+        .stage .cap { position: absolute; left: 0; right: 0; top: 4%; text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 6cqw; line-height: 1.1; }
+        .run { align-self: flex-start; margin-top: 0.6rem; font-family: var(--font-ui); font-weight: 600; font-size: 0.8rem; color: #fff; background: var(--slate-core); border: 0; border-radius: 6px; padding: 0.4rem 0.9rem; cursor: pointer; }
+        .run:hover { background: var(--slate-deep); }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.15rem; }
+        .chip { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.7rem; color: var(--ink-black); background: #faf7f2; border: 1px solid #e0d6c6; border-radius: 5px; padding: 0.12rem 0.4rem; cursor: pointer; }
+        .chip:hover { border-color: var(--bronze-core); }
+        .chip.copied { color: #2e7d4f; border-color: #2e7d4f; }
+        .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-lg) 0 var(--gap-md); line-height: 1.6; }
+        .credit-note a { color: var(--bronze-light); }
+        @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } .example { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container container--wide">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">MYP</a><span>·</span>
+            <a href="../../">Design</a><span>·</span>
+            <a href="../">Interactive Animations &amp; Games</a><span>·</span>
+            Story Ideas
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">MYP Design · Year 9 · Lesson 14 Mini-Project</span>
+            <h1>Animated Scene: 20 Story Ideas</h1>
+        </div>
+        <div class="rule--full"></div>
+
+        <p class="summary">Your mini-project is an animated scene that tells a small story. Follow the three steps, then borrow one of the 20 ideas below or invent your own. Press <strong>Run</strong> on any idea to watch it play.</p>
+
+        <ol class="steps">
+            <li><strong>Choose a background</strong>Pick one from the library. The background decides where your story happens. <a class="inline" href="../sprites/?q=background">See all the backgrounds</a>.</li>
+            <li><strong>Think of a story</strong>Who is in this place? It could be an animal, a person or a machine. What are they doing? One sentence is enough.</li>
+            <li><strong>Choose the movement</strong>Use the counter pattern for something that travels. Use random numbers for something that shakes.</li>
+        </ol>
+
+        <h2>The two kinds of movement</h2>
+        <table class="moves">
+            <tr><th>Pattern</th><th>Code inside <code>draw()</code></th><th>What you see</th><th>Good for</th></tr>
+            <tr><td><strong>Counter pattern</strong></td><td><code>sprite.x = sprite.x + 2;</code></td><td>The sprite travels smoothly to the right and off the screen. It happens once each time you press Run.</td><td>Walking, driving, flying, swimming</td></tr>
+            <tr><td></td><td><code>sprite.x = sprite.x - 2;</code></td><td>The same, travelling left.</td><td>A sprite that faces left</td></tr>
+            <tr><td></td><td><code>sprite.y = sprite.y - 2;</code></td><td>The sprite rises. Use <code>+</code> to make it sink.</td><td>Rockets, balloons, bubbles, landings</td></tr>
+            <tr><td></td><td><code>sprite.rotation = sprite.rotation + 5;</code></td><td>The sprite spins on the spot.</td><td>Wheels, balls, suns</td></tr>
+            <tr><td><strong>Random numbers</strong></td><td><code>sprite.rotation = randomNumber(-5, 5);</code></td><td>The sprite shakes from side to side.</td><td>Waving, shivering, roaring, laughing</td></tr>
+            <tr><td></td><td><code>sprite.x = randomNumber(198, 202);</code></td><td>The sprite jitters around one spot. Add the same for <code>y</code> to make it hover.</td><td>Bees, butterflies, anything nervous</td></tr>
+        </table>
+
+        <h2>A worked example: Lift-off</h2>
+        <div class="example">
+            <div id="example-stage"></div>
+            <div>
+<pre>var sky = createSprite(200, 200);
+sky.setAnimation(&quot;space&quot;);
+
+var rocket = createSprite(210, 300);
+rocket.setAnimation(&quot;sticker_32&quot;);
+rocket.scale = 0.3;
+
+var astronaut = createSprite(325, 310);
+astronaut.setAnimation(&quot;astronaut&quot;);
+astronaut.scale = 0.2;
+
+function draw() {
+  rocket.y = rocket.y - 3;
+  astronaut.rotation = randomNumber(-8, 8);
+  drawSprites();
+  fill(&quot;white&quot;);
+  textSize(24);
+  text(&quot;3, 2, 1... lift-off!&quot;, 100, 40);
+}</pre>
+                <ul class="ex-notes">
+                    <li>The background is a sprite too. It is created first, so it sits behind everything else.</li>
+                    <li>Add each picture to your project in the <strong>Animation</strong> tab before you use its name in <code>setAnimation</code>.</li>
+                    <li>Library sprites are large. A <code>scale</code> between 0.1 and 0.4 fits most of them into the scene.</li>
+                    <li>The text comes after <code>drawSprites()</code>, so it is drawn on top.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>20 story ideas</h2>
+        <p class="summary">Each idea names its background and its sprites. Click a name to copy it, then paste it into the library search in Game Lab. The whole library is in the <a class="inline" href="../sprites/">sprite gallery</a>.</p>
+        <div class="cards" id="cards"></div>
+
+        <h2>Invent your own</h2>
+        <p class="summary">Finish these three sentences and you have a plan. <em>My scene is in</em> (a background). <em>The thing that travels is</em> (a sprite), <em>and it goes</em> (left, right, up or down). <em>The thing that shakes is</em> (a sprite), <em>because</em> (a reason from your story).</p>
+
+        <div class="credit-note">
+            The mini-project is Lesson 14 of <em>Interactive Animations and Games</em>, a CS Discoveries unit by <a href="https://code.org" target="_blank" rel="noopener">code.org</a>. Every picture on this page is from code.org's Game Lab animation library and loads directly from code.org. The story ideas and the previews are St Leonards' own; the previews imitate Game Lab and are not Game Lab itself.
+        </div>
+
+        <footer class="site-footer">The Vault · MYP Design · Animated Scene Story Ideas · 2026</footer>
+    </div>
+
+<script>
+const STORIES = [{"title":"Lift-off","story":"A rocket leaves for the stars while an astronaut waves goodbye.","bg":"space","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/qoFFPgWiydir6HZwldQy.Fmh8NmNhTI9/category_backgrounds/background_space.png","text":"3, 2, 1... lift-off!","tc":"#fff","moves":"The rocket rises: its <code>y<\/code> counts down.","shakes":"The astronaut waves: random <code>rotation<\/code>.","sprites":[{"name":"earth","url":"https://studio.code.org/api/v1/animation-library/gamelab/nGOenE1WijfC4DHy9IQB7Isq7IVsds8K/category_icons/earth.png","x":70,"y":335,"w":110,"h":110.3,"n":1,"cols":1,"rows":1,"m":null},{"name":"sticker_32","url":"https://studio.code.org/api/v1/animation-library/gamelab/smJq1V8_R..28mzSGvzZahN32S2hC3YW/category_stickers/sticker_32.png","x":210,"y":300,"w":90,"h":81.2,"n":1,"cols":1,"rows":1,"m":{"y":-3}},{"name":"astronaut","url":"https://studio.code.org/api/v1/animation-library/gamelab/C07UkVmsjiLCWoQ9U_vl1e7INpeSMmE_/category_icons/astronaut.png","x":325,"y":310,"w":60,"h":72.1,"n":1,"cols":1,"rows":1,"m":{"shake":8}}]},{"title":"The tortoise and the hare","story":"Two animals race across the field. One is quick and one is steady.","bg":"farm_land","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/B7nUqE7MHvtM.bH.nFWaMiZcfScwjIfx/category_backgrounds/farm_land.png","text":"Slow and steady wins the race.","tc":"#1A1008","moves":"Both cross the field: <code>x<\/code> counts up by 4 for the hare and by 1 for the tortoise.","shakes":"The bee hovers: random <code>x<\/code> and <code>y<\/code>.","sprites":[{"name":"bee","url":"https://studio.code.org/api/v1/animation-library/gamelab/N602_cNy0LoPLXkwaUfCp2XJWPo86SUw/category_animals/bee.png","x":300,"y":150,"w":40,"h":31.7,"n":2,"cols":2,"rows":1,"m":{"jitter":4}},{"name":"hare","url":"https://studio.code.org/api/v1/animation-library/gamelab/MiwZVzWBqCz_YfappaNHyYrX7vDn.3eo/category_animals/hare.png","x":40,"y":280,"w":55,"h":77.4,"n":1,"cols":1,"rows":1,"m":{"x":4}},{"name":"cuteanimals_tortoise","url":"https://studio.code.org/api/v1/animation-library/gamelab/6ouXq4uNHs.GatlrdN52bUa6fxcByx9R/category_animals/cuteanimals_tortoise.png","x":45,"y":350,"w":75,"h":75.0,"n":1,"cols":1,"rows":1,"m":{"x":1}}]},{"title":"The shipwreck","story":"A fish explores an old ship on the sea bed while a crab guards the treasure.","bg":"background_underwater_05","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/b.wUIlJjGpUDp5hPJOOrJBX9HqHOOATt/category_backgrounds/background_underwater_05.png","text":"Who lives in the shipwreck?","tc":"#1A1008","moves":"The fish swims across: its <code>x<\/code> counts down. The bubble rises: its <code>y<\/code> counts down.","shakes":"The crab snaps its claws: random <code>rotation<\/code>.","sprites":[{"name":"crab","url":"https://studio.code.org/api/v1/animation-library/gamelab/kTmRQ1_RRECOF2u.0RFbMaEMXAWisxyS/category_animals/crab.png","x":305,"y":350,"w":60,"h":39.8,"n":1,"cols":1,"rows":1,"m":{"shake":8}},{"name":"bubble","url":"https://studio.code.org/api/v1/animation-library/gamelab/T13JmtR9uvv9WDY_zQmQa9raKRvaKzwm/category_aquatic_objects/bubble.png","x":120,"y":330,"w":28,"h":28.5,"n":1,"cols":1,"rows":1,"m":{"y":-1}},{"name":"fish_blue","url":"https://studio.code.org/api/v1/animation-library/gamelab/MOSRaWdZgDTvG_GyAUPUwddd9lijhqCr/category_animals/fish_blue.png","x":380,"y":140,"w":70,"h":52.9,"n":2,"cols":2,"rows":1,"m":{"x":-2}}]},{"title":"Balloon ride","story":"A hot air balloon climbs over the mountains as a bird flies past.","bg":"pine_trees","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/aXDGFLKigHda5qAkWF.aTWPcdAB_SAWJ/category_backgrounds/pine_trees.png","text":"Up, up and away!","tc":"#1A1008","moves":"The balloon rises slowly: its <code>y<\/code> counts down by 1. The bird crosses the sky: its <code>x<\/code> counts up by 3.","shakes":"The owl hoots in the trees: random <code>rotation<\/code>.","sprites":[{"name":"cuteanimals_owl","url":"https://studio.code.org/api/v1/animation-library/gamelab/W8XaL0_W_kippE4gmFJTj8bi3exmKfMi/category_animals/cuteanimals_owl.png","x":70,"y":300,"w":50,"h":60.1,"n":1,"cols":1,"rows":1,"m":{"shake":6}},{"name":"hotairballoon_01","url":"https://studio.code.org/api/v1/animation-library/gamelab/dIw3_Bk4CAFZrQ.XSDy1kKPkritM4F2c/category_vehicles/hotairballoon_01.png","x":270,"y":240,"w":70,"h":102.9,"n":1,"cols":1,"rows":1,"m":{"y":-1}},{"name":"bluebird","url":"https://studio.code.org/api/v1/animation-library/gamelab/kQexpOuEHfXtN3z0vHMm_pYQT1cNTn7q/category_animals/bluebird.png","x":20,"y":70,"w":55,"h":38.4,"n":1,"cols":1,"rows":1,"m":{"x":3}}]},{"title":"Desert crossing","story":"A camel plods across the dunes at sunset and a tumbleweed rolls by.","bg":"desert","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/At9X2LiZq9X6dQUW0NBluC3Te8fbAPEx/category_backgrounds/background_desert.png","text":"A long walk home.","tc":"#fff","moves":"The camel walks: its <code>x<\/code> counts up by 1. The tumbleweed rolls: its <code>x<\/code> and its <code>rotation<\/code> both count up.","shakes":"The sun shimmers in the heat: random <code>rotation<\/code>.","sprites":[{"name":"sun","url":"https://studio.code.org/api/v1/animation-library/gamelab/knVkn0PWAe33ZGmZASkzXLBnj1H6j5H4/category_icons/sun.png","x":320,"y":70,"w":70,"h":69.8,"n":1,"cols":1,"rows":1,"m":{"shake":4}},{"name":"camel","url":"https://studio.code.org/api/v1/animation-library/gamelab/kZQj9T1smV0oogX5CK15Y4P5cNPAyqX8/category_animals/camel.png","x":60,"y":300,"w":110,"h":94.7,"n":1,"cols":1,"rows":1,"m":{"x":1}},{"name":"tumbleweed","url":"https://studio.code.org/api/v1/animation-library/gamelab/oHx_1v_PHPEs6lmkTOk2.j.KWUJDVtY9/category_video_games/tumbleweed.png","x":20,"y":365,"w":40,"h":34.8,"n":1,"cols":1,"rows":1,"m":{"x":3,"rotation":8}}]},{"title":"No hurry","story":"A snail takes its time crossing the meadow while a butterfly flutters overhead.","bg":"meadow","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/6M6MI5k464mg5p8h89sU8tyvtAbANGea/category_backgrounds/meadow.png","text":"No hurry.","tc":"#1A1008","moves":"The snail crawls: its <code>x<\/code> counts down by 1.","shakes":"The butterfly flutters: random <code>x<\/code> and <code>y<\/code>.","sprites":[{"name":"ladybug","url":"https://studio.code.org/api/v1/animation-library/gamelab/H4nSKI40zcOgf9vkmL_oBWN7mcheqVpU/category_animals/ladybug.png","x":110,"y":370,"w":30,"h":27.7,"n":1,"cols":1,"rows":1,"m":null},{"name":"butterfly","url":"https://studio.code.org/api/v1/animation-library/gamelab/Y8rLrPP4qJ_PtGUAXmnx3fkbeEisuyxJ/category_animals/butterfly.png","x":290,"y":170,"w":55,"h":36.0,"n":1,"cols":1,"rows":1,"m":{"jitter":5}},{"name":"snail","url":"https://studio.code.org/api/v1/animation-library/gamelab/hU2yuCo8Q.ucIRHxBKIPKmQmB8InyKVm/category_animals/snail.png","x":370,"y":355,"w":50,"h":33.9,"n":2,"cols":2,"rows":1,"m":{"x":-1}}]},{"title":"Snow day","story":"A fox trots home through the snow past a shivering polar bear.","bg":"background_landscape28","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/XvK_aiSa0_cUi9fT6zafPmwQyaf4kMl_/category_backgrounds/background_landscape28.png","text":"Brrr! It is cold today.","tc":"#1A1008","moves":"The fox trots across: its <code>x<\/code> counts up by 2.","shakes":"The polar bear shivers: random <code>x<\/code> and <code>y<\/code>.","sprites":[{"name":"polar_bear","url":"https://studio.code.org/api/v1/animation-library/gamelab/h7_8nuroYTARDkpPYQ4xkQx1ueHxhPm7/category_animals/polar_bear.png","x":300,"y":315,"w":80,"h":80.0,"n":1,"cols":1,"rows":1,"m":{"jitter":2}},{"name":"cuteanimals_fox","url":"https://studio.code.org/api/v1/animation-library/gamelab/oBVab82Jmd5wod9DzCjNRnpG_.p1jjEC/category_animals/cuteanimals_fox.png","x":30,"y":340,"w":80,"h":77.8,"n":1,"cols":1,"rows":1,"m":{"x":2}}]},{"title":"Goal!","story":"The ball rolls into the net and the striker celebrates.","bg":"soccer_field","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/J6AoCEQiDKlKsdVff_tiZnDVueArBO2V/category_backgrounds/soccer_field.png","text":"GOAL!","tc":"#fff","moves":"The ball rolls down the pitch: its <code>y<\/code> counts up and its <code>rotation<\/code> counts up, so it spins.","shakes":"The striker jumps for joy: random <code>rotation<\/code>.","sprites":[{"name":"blue_shirt_ball","url":"https://studio.code.org/api/v1/animation-library/gamelab/to.BxxB_nG2Yh2OClpPzC6VZkmT1m7sQ/category_people/blue_shirt_ball.png","x":90,"y":190,"w":40,"h":127.4,"n":1,"cols":1,"rows":1,"m":{"shake":10}},{"name":"soccer_bw","url":"https://studio.code.org/api/v1/animation-library/gamelab/KAKckB.0WJDP55kNGzIZIfW5wf7Rk5mG/category_sports/soccer_bw.png","x":200,"y":110,"w":36,"h":36.1,"n":1,"cols":1,"rows":1,"m":{"y":3,"rotation":12}}]},{"title":"The cave ghost","story":"A ghost floats up through a dark cave while a spider drops down on its thread.","bg":"cave","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/In3iY920nuOrZ0JmAOQbuVG8j8D4iTGD/category_backgrounds/background_cave.png","text":"Who is there?","tc":"#fff","moves":"The ghost floats up: its <code>y<\/code> counts down. The spider drops: its <code>y<\/code> counts up.","shakes":"The bat flaps about: random <code>x<\/code> and <code>y<\/code>.","sprites":[{"name":"bat","url":"https://studio.code.org/api/v1/animation-library/gamelab/ZDqxOIsPUxo1v0QEjzxvWOiy1DevnaVu/category_animals/bat.png","x":100,"y":110,"w":90,"h":48.8,"n":1,"cols":1,"rows":1,"m":{"jitter":6}},{"name":"brownspider","url":"https://studio.code.org/api/v1/animation-library/gamelab/AZXQMTWpWuyKpERcb.on0Ntp8xk2t6U_/category_animals/brownspider.png","x":310,"y":20,"w":45,"h":67.9,"n":1,"cols":1,"rows":1,"m":{"y":1}},{"name":"ghost_standing","url":"https://studio.code.org/api/v1/animation-library/gamelab/sGLFDy168GSBfI5ybuBb2KHSBqLUdc71/category_fantasy/ghost_standing.png","x":200,"y":330,"w":50,"h":109.7,"n":7,"cols":7,"rows":1,"m":{"y":-1}}]},{"title":"City flyover","story":"A helicopter crosses the skyline and someone on the ground waves at it.","bg":"city","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/OGMmhuYDozWZhjtNHQkjhdvs2Ge_Q0UF/category_backgrounds/city.png","text":"Hello up there!","tc":"#1A1008","moves":"The helicopter flies across: its <code>x<\/code> counts up by 3.","shakes":"The person waves: random <code>rotation<\/code>.","sprites":[{"name":"kid_16_waving","url":"https://studio.code.org/api/v1/animation-library/gamelab/D5Yf9d61FntZdu8eHOGSu4nWw5G53rXf/category_people/kid_16_waving.png","x":200,"y":335,"w":80,"h":108.1,"n":1,"cols":1,"rows":1,"m":{"shake":6}},{"name":"helicopter","url":"https://studio.code.org/api/v1/animation-library/gamelab/sYPFLoB1TE09j.zX4wGRPIOHfkL0FAoR/category_icons/helicopter.png","x":10,"y":70,"w":90,"h":50.2,"n":1,"cols":1,"rows":1,"m":{"x":3}}]},{"title":"Dinner time","story":"A mouse dashes along the worktop to the cheese while the cat gets ready to pounce.","bg":"kitchen","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/IJemJVUh3J1gcGlCdIJ8obCWhXAqxbUT/category_backgrounds/kitchen.png","text":"Dinner time!","tc":"#1A1008","moves":"The mouse runs to the cheese: its <code>x<\/code> counts down by 2.","shakes":"The cat wiggles, ready to pounce: random <code>rotation<\/code>.","sprites":[{"name":"cheese","url":"https://studio.code.org/api/v1/animation-library/gamelab/BnRZRFpznzKZ.5IPc97zl99rHJyU2geK/category_food/cheese.png","x":40,"y":205,"w":45,"h":42.7,"n":1,"cols":1,"rows":1,"m":null},{"name":"orange_cat","url":"https://studio.code.org/api/v1/animation-library/gamelab/_9DyaUDX71HXd3ZDq8czdwuTP6pbZX83/category_animals/orange_cat.png","x":320,"y":337,"w":66,"h":119.3,"n":1,"cols":1,"rows":1,"m":{"shake":5}},{"name":"mouse","url":"https://studio.code.org/api/v1/animation-library/gamelab/JiNH1fnncYd5VrE5Js_QJMmE4Vm1Lt2p/category_animals/mouse.png","x":370,"y":212,"w":45,"h":27.3,"n":2,"cols":2,"rows":1,"m":{"x":-2}}]},{"title":"On stage","story":"The band plays, the drums shake and the music floats up into the lights.","bg":"stage","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/TdvFk_EJmrYopRqAIsI6ivoO16CTMwxN/category_backgrounds/stage.png","text":"Rock on!","tc":"#fff","moves":"The note floats up: its <code>y<\/code> counts down by 2.","shakes":"The drum kit shakes with every beat: random <code>rotation<\/code>.","sprites":[{"name":"drum_set","url":"https://studio.code.org/api/v1/animation-library/gamelab/XSgNTGLwztVMMHv5AxA4uia16j5QRbFx/category_music/drum_set.png","x":220,"y":290,"w":150,"h":114.5,"n":1,"cols":1,"rows":1,"m":{"shake":3}},{"name":"kid_34_excited","url":"https://studio.code.org/api/v1/animation-library/gamelab/4afaMYZ6n2j49hw9H8i5MoxxWtcSz66A/category_people/kid_34_excited.png","x":75,"y":300,"w":80,"h":91.9,"n":1,"cols":1,"rows":1,"m":null},{"name":"eighth_note","url":"https://studio.code.org/api/v1/animation-library/gamelab/BeMwQ8jrF6mwtB1P7j2TVQu_BSF0nt6E/category_music/eighth_note.png","x":320,"y":230,"w":28,"h":39.6,"n":1,"cols":1,"rows":1,"m":{"y":-2}}]},{"title":"Over the rainbow","story":"A unicorn cat flies over the rainbow under a spinning sun.","bg":"rainbow","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/2JbYx3k.w.ZsY_IjFwTPssGZWs1Pv25./category_backgrounds/background_rainbow.png","text":"Make a wish!","tc":"#1A1008","moves":"The unicorn cat flies across: its <code>x<\/code> counts up by 3. The sun spins: its <code>rotation<\/code> counts up.","shakes":"The bunny bounces with excitement: random <code>x<\/code> and <code>y<\/code>.","sprites":[{"name":"sun_happy","url":"https://studio.code.org/api/v1/animation-library/gamelab/jUZ7f4J2epX4bHKIb0dIGPT1hYAFlNYe/category_video_games/sun_happy.png","x":335,"y":60,"w":60,"h":60.0,"n":2,"cols":2,"rows":1,"m":{"rotation":3}},{"name":"cuteanimals_bunny","url":"https://studio.code.org/api/v1/animation-library/gamelab/BaBhTMgCAJP8j1hdaqVVhT6JJs4Wmmva/category_animals/cuteanimals_bunny.png","x":200,"y":335,"w":55,"h":63.8,"n":1,"cols":1,"rows":1,"m":{"jitter":3}},{"name":"sticker_12","url":"https://studio.code.org/api/v1/animation-library/gamelab/ds6tFbUz6rK49A8_WcKlK4eGrPOLsmcZ/category_stickers/sticker_12.png","x":10,"y":110,"w":100,"h":81.9,"n":1,"cols":1,"rows":1,"m":{"x":3}}]},{"title":"Night flight","story":"A reindeer takes off into the night sky under a twinkling star.","bg":"santa","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/9ZleRnJkMxYhfpPY2zZrrikGdZ6H6F6l/category_backgrounds/background_santa.png","text":"Merry Christmas!","tc":"#fff","moves":"The reindeer flies up and across: its <code>x<\/code> counts up by 2 and its <code>y<\/code> counts down by 1.","shakes":"The star twinkles: random <code>rotation<\/code>.","sprites":[{"name":"gameplay_yellowstar2","url":"https://studio.code.org/api/v1/animation-library/gamelab/SC6iye4vliWRaovAEFWZmAfCd4nEyJfD/category_video_games/gameplay_yellowstar2.png","x":310,"y":75,"w":50,"h":48.8,"n":1,"cols":1,"rows":1,"m":{"shake":15}},{"name":"cuteanimals_reindeer","url":"https://studio.code.org/api/v1/animation-library/gamelab/iRgT0rqXDohmhWc7zHfFWOWBfAcE.Fxs/category_animals/cuteanimals_reindeer.png","x":40,"y":330,"w":90,"h":97.8,"n":1,"cols":1,"rows":1,"m":{"x":2,"y":-1}}]},{"title":"Alien landing","story":"A flying saucer lands on a strange planet and an alien steps out to explore.","bg":"background_landscape09","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/T167cO7veEolJu4MdK3thTgLhnqD_rJB/category_backgrounds/background_landscape09.png","text":"We come in peace.","tc":"#fff","moves":"The saucer lands: its <code>y<\/code> counts up by 1. The alien walks: its <code>x<\/code> counts up by 1.","shakes":"The rover rattles as it scans the ground: random <code>rotation<\/code>.","sprites":[{"name":"rover","url":"https://studio.code.org/api/v1/animation-library/gamelab/jTOPCqemZeDLi_OeTaRvzhS4wRXkkoz8/category_icons/rover.png","x":320,"y":330,"w":80,"h":68.8,"n":1,"cols":1,"rows":1,"m":{"shake":4}},{"name":"ufo_02","url":"https://studio.code.org/api/v1/animation-library/gamelab/QrXSuy9Lst0RVUF7O1QEbrfGQLjzvxzy/category_vehicles/ufo_02.png","x":200,"y":105,"w":90,"h":75.1,"n":1,"cols":1,"rows":1,"m":{"y":1}},{"name":"alienGreen_walk","url":"https://studio.code.org/api/v1/animation-library/gamelab/KhGCMOy_GmSGbNF7hrN3JLopGwt9Bzuj/category_fantasy/alienGreen_walk.png","x":30,"y":335,"w":40,"h":54.4,"n":2,"cols":2,"rows":1,"m":{"x":1}}]},{"title":"The winning shot","story":"The eight ball rolls towards the corner pocket and the trophy is already shaking.","bg":"sports_billards","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/bf053G1veJ_hBin18xrCLIXWpbQYCGqb/category_backgrounds/sports_billards.png","text":"The winning shot.","tc":"#fff","moves":"The eight ball rolls to the corner: its <code>x<\/code> counts up by 2 and its <code>y<\/code> counts down by 2.","shakes":"The trophy rattles: random <code>rotation<\/code>.","sprites":[{"name":"golfball","url":"https://studio.code.org/api/v1/animation-library/gamelab/HnGkChZ0Lf5fTeAmaQDwhmGSUiF59YcY/category_sports/golfball.png","x":110,"y":290,"w":26,"h":26.1,"n":1,"cols":1,"rows":1,"m":null},{"name":"award_trophy1","url":"https://studio.code.org/api/v1/animation-library/gamelab/qYuvwscvicUp26fkvQOaDTrPjKxv1BlU/category_video_games/award_trophy1.png","x":110,"y":130,"w":50,"h":64.1,"n":1,"cols":1,"rows":1,"m":{"shake":6}},{"name":"eightball","url":"https://studio.code.org/api/v1/animation-library/gamelab/0g3OdHzUFOX2YJG_syVQcF2OsFD9taIo/category_sports/eightball.png","x":180,"y":220,"w":28,"h":28.1,"n":1,"cols":1,"rows":1,"m":{"x":2,"y":-2}}]},{"title":"Dinosaur valley","story":"A tyrannosaurus roars across the valley as a pterodactyl glides overhead.","bg":"background_landscape05","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/33483OYhVDVsX.GNODCgRASPM5bNdz.q/category_backgrounds/background_landscape05.png","text":"ROAR!","tc":"#1A1008","moves":"The pterodactyl glides across: its <code>x<\/code> counts up by 3.","shakes":"The tyrannosaurus roars: random <code>rotation<\/code>.","sprites":[{"name":"tyrannosaurus","url":"https://studio.code.org/api/v1/animation-library/gamelab/u8kTMkYc3EaF8ISVcwP3TrNnBeGANJrR/category_animals/tyrannosaurus.png","x":280,"y":290,"w":140,"h":147.7,"n":1,"cols":1,"rows":1,"m":{"shake":4}},{"name":"pterodactyl","url":"https://studio.code.org/api/v1/animation-library/gamelab/hAqdNUAvq4CTFV5OUK88POUgtpyj8l4H/category_animals/pterodactyl.png","x":20,"y":80,"w":90,"h":68.7,"n":1,"cols":1,"rows":1,"m":{"x":3}}]},{"title":"Land ahoy","story":"A little boat sails up to the island and a toucan squawks from the tree.","bg":"tree_island","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/l2HYVselH.2q4KS7.yoaSIHOHM7.BYtT/category_backgrounds/tree_island.png","text":"Land ahoy!","tc":"#1A1008","moves":"The boat sails in: its <code>x<\/code> counts down by 1.","shakes":"The toucan squawks: random <code>rotation<\/code>.","sprites":[{"name":"toucan","url":"https://studio.code.org/api/v1/animation-library/gamelab/Ya08isPVrTTDGM6_BQRqW8svOK_o94XR/category_animals/toucan.png","x":150,"y":150,"w":60,"h":43.1,"n":1,"cols":1,"rows":1,"m":{"shake":8}},{"name":"boat","url":"https://studio.code.org/api/v1/animation-library/gamelab/PxN9yaK_YEYckfaYEUA05Acna96g9oo6/category_vehicles/boat.png","x":345,"y":366,"w":70,"h":70.0,"n":1,"cols":1,"rows":1,"m":{"x":-1}}]},{"title":"The diamond mine","story":"A mine cart rattles through a crystal cave towards a sparkling diamond.","bg":"background_landscape04","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/E0idw.1TCsifYp9.wBCGiUEEOv6cU3qn/category_backgrounds/background_landscape04.png","text":"Treasure!","tc":"#1A1008","moves":"The mine cart rolls across: its <code>x<\/code> counts up by 2.","shakes":"The diamond sparkles: random <code>rotation<\/code>.","sprites":[{"name":"ore_diamond","url":"https://studio.code.org/api/v1/animation-library/gamelab/4u3N8GIq2HWm5e5wiuwZZFK2FpiCqEyo/category_video_games/ore_diamond.png","x":320,"y":215,"w":55,"h":55.0,"n":1,"cols":1,"rows":1,"m":{"shake":12}},{"name":"minecart","url":"https://studio.code.org/api/v1/animation-library/gamelab/2PzLvIilnxHk8GaBnlIIdpEuJbGNDCoB/category_vehicles/minecart.png","x":30,"y":325,"w":80,"h":80.0,"n":1,"cols":1,"rows":1,"m":{"x":2}}]},{"title":"Mind the gap","story":"Someone hurries along the platform for the train as a pigeon pecks about.","bg":"subway","bgUrl":"https://studio.code.org/api/v1/animation-library/gamelab/z.Cyu1bPMNXoN3yoR5CqPJ26RuMBohzf/category_backgrounds/subway.png","text":"Mind the gap!","tc":"#fff","moves":"The person walks along the platform: their <code>x<\/code> counts down by 2.","shakes":"The pigeon pecks: random <code>rotation<\/code>.","sprites":[{"name":"pigeon","url":"https://studio.code.org/api/v1/animation-library/gamelab/JcgaMLVUlPDcxvqE8NU806wjh6q1WM1b/category_animals/pigeon.png","x":80,"y":345,"w":40,"h":26.2,"n":1,"cols":1,"rows":1,"m":{"shake":8}},{"name":"kid_15_walking","url":"https://studio.code.org/api/v1/animation-library/gamelab/qlB4XRMjWhG4H3chPaxZHMsKo.lkG4KD/category_people/kid_15_walking.png","x":370,"y":300,"w":60,"h":105.1,"n":1,"cols":1,"rows":1,"m":{"x":-2}}]}];
+const FRAMES = 240;   // 8 seconds at Game Lab's 30 frames a second
+
+function buildStage(st) {
+  const stage = document.createElement("div"); stage.className = "stage";
+  const bg = document.createElement("img"); bg.className = "bg"; bg.alt = ""; bg.loading = "lazy"; bg.src = st.bgUrl;
+  stage.appendChild(bg);
+  const parts = st.sprites.map(s => {
+    const el = document.createElement("div"); el.className = "sp";
+    el.style.width = (s.w / 4) + "%"; el.style.height = (s.h / 4) + "%";
+    el.style.backgroundImage = 'url("' + s.url + '")';
+    if (s.n > 1) el.style.backgroundSize = (s.cols * 100) + "% " + (s.rows * 100) + "%";
+    stage.appendChild(el);
+    return {el: el, s: s};
+  });
+  const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = st.text; cap.style.color = st.tc;
+  stage.appendChild(cap);
+  const state = {parts: parts, frame: 0, timer: null};
+  draw(state);
+  return {stage: stage, state: state};
+}
+
+function rnd(a) { return Math.floor(Math.random() * (2 * a + 1)) - a; }
+
+function draw(state) {
+  const f = state.frame;
+  for (const p of state.parts) {
+    const s = p.s, m = s.m || {};
+    let x = s.x + (m.x || 0) * f, y = s.y + (m.y || 0) * f, rot = (m.rotation || 0) * f;
+    if (f > 0 && m.shake) rot = rnd(m.shake);
+    if (f > 0 && m.jitter) { x = s.x + rnd(m.jitter); y = s.y + rnd(m.jitter); }
+    p.el.style.left = ((x - s.w / 2) / 4) + "%";
+    p.el.style.top = ((y - s.h / 2) / 4) + "%";
+    p.el.style.transform = rot ? "rotate(" + rot + "deg)" : "";
+    if (s.n > 1) {
+      const k = Math.floor(f / 2) % s.n, c = k % s.cols, r = Math.floor(k / s.cols);
+      p.el.style.backgroundPosition = (s.cols > 1 ? c / (s.cols - 1) * 100 : 0) + "% " + (s.rows > 1 ? r / (s.rows - 1) * 100 : 0) + "%";
+    }
+  }
+}
+
+function run(state, btn) {
+  clearInterval(state.timer);
+  state.frame = 0; btn.textContent = "Running";
+  state.timer = setInterval(() => {
+    state.frame++; draw(state);
+    if (state.frame >= FRAMES) { clearInterval(state.timer); btn.textContent = "▶ Run again"; }
+  }, 1000 / 30);
+}
+
+function runButton(state) {
+  const b = document.createElement("button"); b.type = "button"; b.className = "run"; b.textContent = "▶ Run";
+  b.addEventListener("click", () => run(state, b));
+  return b;
+}
+
+function chip(name) {
+  const c = document.createElement("button"); c.type = "button"; c.className = "chip"; c.textContent = name; c.title = "Click to copy the name";
+  c.addEventListener("click", () => {
+    const done = () => { c.classList.add("copied"); c.textContent = "copied"; setTimeout(() => { c.classList.remove("copied"); c.textContent = name; }, 900); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(name).then(done, done); else done();
+  });
+  return c;
+}
+
+function para(cls, label, htmlText) {
+  const p = document.createElement("p");
+  const l = document.createElement("span"); l.className = "lab " + cls; l.textContent = label;
+  const t = document.createElement("span"); t.innerHTML = htmlText;
+  p.append(l, t); return p;
+}
+
+const cards = document.getElementById("cards");
+STORIES.forEach((st, i) => {
+  const card = document.createElement("article"); card.className = "card";
+  const built = buildStage(st);
+  const h = document.createElement("h3");
+  const num = document.createElement("span"); num.className = "num"; num.textContent = i + 1;
+  h.append(num, document.createTextNode(st.title));
+  const story = document.createElement("p"); story.textContent = st.story;
+  const kit = document.createElement("p");
+  const kl = document.createElement("span"); kl.className = "lab kit"; kl.textContent = "Background and sprites";
+  const chips = document.createElement("span"); chips.className = "chips";
+  chips.appendChild(chip(st.bg)); st.sprites.forEach(s => chips.appendChild(chip(s.name)));
+  kit.append(kl, chips);
+  card.append(built.stage, h, story, para("count", "Counter pattern", st.moves), para("rand", "Random numbers", st.shakes), kit, runButton(built.state));
+  cards.appendChild(card);
+  if (i === 0) {
+    const ex = buildStage(st), box = document.getElementById("example-stage");
+    box.append(ex.stage, runButton(ex.state));
+  }
+});
+</script>
+</body>
+</html>
