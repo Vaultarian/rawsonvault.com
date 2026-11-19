@@ -36,7 +36,7 @@ M_START, M_END = "<!-- DESIGN8-LESSONS:START -->", "<!-- DESIGN8-LESSONS:END -->
 ANCHOR = "        <!-- UNITS:START -->"
 # Which pages are live. Alex, 19 Nov 2026: publish the TPBot page; the MakeCode page is
 # built and approved by eye but waits for his word. Add "makecode" to publish it.
-LIVE = ("tpbot",)
+LIVE = tuple(os.environ.get("DESIGN8_LIVE", "tpbot").split(","))  # preview both: DESIGN8_LIVE=makecode,tpbot
 TPBOT_PKG = "tpbot=github:elecfreaks/pxt-tpbot#v2.0.7"
 WIKI = "https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/"
 FILES = "../../../../classes/design-8a/files/"
@@ -84,6 +84,136 @@ score = 0""",
     "m5-random": """input.onGesture(Gesture.Shake, function () {
     basic.showNumber(randint(1, 6))
 })""",
+    # ── MakeCode page: games like the ones the class built ──────────────────────
+    "g1-8ball": """let answer = 0
+input.onGesture(Gesture.Shake, function () {
+    answer = randint(0, 4)
+    if (answer == 0) {
+        basic.showString("YES")
+    } else if (answer == 1) {
+        basic.showString("NO")
+    } else if (answer == 2) {
+        basic.showString("MAYBE")
+    } else if (answer == 3) {
+        basic.showString("ASK AGAIN")
+    } else {
+        basic.showString("DEFINITELY")
+    }
+})
+basic.showString("ASK")""",
+    "g1-list": """let answers: string[] = []
+input.onButtonPressed(Button.A, function () {
+    basic.showString(answers._pickRandom())
+})
+answers = ["Yes", "No", "Maybe", "Try again", "Ask a friend"]""",
+    "g2-rps": """let hand = 0
+input.onGesture(Gesture.Shake, function () {
+    hand = randint(1, 3)
+    if (hand == 1) {
+        basic.showIcon(IconNames.SmallSquare)
+    } else if (hand == 2) {
+        basic.showIcon(IconNames.Square)
+    } else {
+        basic.showIcon(IconNames.Scissors)
+    }
+})""",
+    "g4-potato": """let timer = 0
+input.onButtonPressed(Button.A, function () {
+    timer = randint(5, 15)
+    basic.showIcon(IconNames.Chessboard)
+    while (timer > 0) {
+        timer += -1
+        basic.pause(1000)
+    }
+    basic.showIcon(IconNames.Skull)
+})""",
+    "g5-score": """let away = 0
+let home = 0
+input.onButtonPressed(Button.A, function () {
+    home += 1
+    basic.showNumber(home)
+})
+input.onButtonPressed(Button.B, function () {
+    away += 1
+    basic.showNumber(away)
+})
+input.onButtonPressed(Button.AB, function () {
+    home = 0
+    away = 0
+    basic.clearScreen()
+})
+home = 0
+away = 0""",
+    "g6-reaction": """let running = false
+let start = 0
+input.onButtonPressed(Button.A, function () {
+    basic.showNumber(3)
+    basic.showNumber(2)
+    basic.showNumber(1)
+    basic.clearScreen()
+    basic.pause(randint(1000, 3000))
+    start = input.runningTime()
+    running = true
+    led.plot(2, 2)
+})
+input.onButtonPressed(Button.B, function () {
+    if (running) {
+        running = false
+        basic.showNumber(input.runningTime() - start)
+    }
+})""",
+    "g7-catch": """let item: game.LedSprite = null
+let player: game.LedSprite = null
+input.onButtonPressed(Button.A, function () {
+    player.move(-1)
+})
+input.onButtonPressed(Button.B, function () {
+    player.move(1)
+})
+player = game.createSprite(2, 4)
+basic.forever(function () {
+    item = game.createSprite(randint(0, 4), 0)
+    basic.pause(300)
+    for (let index = 0; index < 4; index++) {
+        item.change(LedSpriteProperty.Y, 1)
+        basic.pause(300)
+    }
+    if (player.isTouching(item)) {
+        game.addScore(1)
+    }
+    item.delete()
+})""",
+    "g8-words": """let index = 0
+let wordList: string[] = []
+input.onGesture(Gesture.LogoUp, function () {
+    index = randint(0, wordList.length - 1)
+    basic.showString(wordList[index])
+})
+input.onGesture(Gesture.ScreenDown, function () {
+    game.addScore(1)
+})
+input.onGesture(Gesture.ScreenUp, function () {
+    game.removeLife(1)
+})
+wordList = ["TIGER", "OTTER", "MANGO", "LANTERN", "CRAYON"]
+game.startCountdown(30000)""",
+    "g9-21": """let card = 0
+let score = 0
+input.onButtonPressed(Button.A, function () {
+    card = randint(1, 10)
+    score += card
+    if (score > 21) {
+        basic.showString("GAME OVER")
+        score = 0
+    } else {
+        basic.showNumber(score)
+    }
+})
+input.onButtonPressed(Button.B, function () {
+    score = 0
+    basic.showNumber(0)
+})
+score = 0""",
     # ── TPBot page ───────────────────────────────────────────────────────────────
     "t01-a": "TPBot.setTravelTime(TPBot.DriveDirection.Forward, 50, 2)",
     "t01-b": """input.onButtonPressed(Button.A, function () {
@@ -310,6 +440,152 @@ MAKECODE = [
          change=[], docs=[]),
 ]
 
+# Sample games. Each is a clean example of a KIND of game the two Year 8 classes built for
+# the Mini Project (Alex's two slide decks, 19 Nov 2026). No pupil is named and no pupil's
+# program is reproduced: these were written fresh, with neutral words on the screen.
+# "how" explains the game; steps are the basic build, not every block.
+GAMES = [
+    dict(n=1, title="Magic 8 Ball", line="Ask a question, shake, and read your answer.",
+         how="You ask a yes-or-no question out loud and shake the micro:bit. It picks a random number, and each number has its own answer. The player sees the answer scroll past and never sees the number.",
+         need=["micro:bit", "Battery pack"],
+         steps=[
+             "Make a variable called <code>answer</code>.",
+             f"In {b('on shake','input')}, set <code>answer</code> to {b('pick random 0 to 4','math')}. That gives five possible numbers: 0, 1, 2, 3 and 4.",
+             f"Add {b('if … then … else','logic')} and press its <strong>+</strong> until it has a branch for each number. Give each branch a condition such as <code>answer = 0</code>.",
+             f"Put a {b('show string','basic')} with a different answer in every branch. The last answer goes in the plain <em>else</em>, which catches whatever number is left.",
+             f"Add {b('show string','basic')} to {b('on start','basic')} so the player knows the game is ready.",
+         ],
+         progs=[("g1-8ball", "Five numbers, five answers. The else at the bottom catches the number 4."),
+                ("g1-list", "A shorter way that some of the class found: keep the answers in a list and let MakeCode pick one.")],
+         see="Each shake scrolls one of the five answers across the screen.",
+         idea="A random number chooses, and <strong>if … else if</strong> turns the number into words.",
+         change=["Write your own answers. Short ones are easiest to read on a 5 × 5 screen.",
+                 "Add a sixth answer: change the random range to 0 to 5 and add one more branch.",
+                 "Show a picture for some answers with show icon."]),
+    dict(n=2, title="Rock, Paper, Scissors", line="Shake to throw a random hand.",
+         how="Two players count to three and shake their micro:bits together. Each micro:bit picks 1, 2 or 3 at random and shows a picture: a small square for rock, a large square for paper, or scissors. The players decide who won.",
+         need=["Two micro:bits", "Two battery packs"],
+         steps=[
+             "Make a variable called <code>hand</code>.",
+             f"In {b('on shake','input')}, set <code>hand</code> to {b('pick random 1 to 3','math')}.",
+             f"Add {b('if … then … else','logic')} with one extra branch. Test for <code>hand = 1</code>, then <code>hand = 2</code>, and leave the else for 3.",
+             f"Put a {b('show icon','basic')} in each branch: small square, square, scissors.",
+         ],
+         progs=[("g2-rps", "Three numbers, three pictures.")],
+         see="Each shake shows rock, paper or scissors.",
+         idea="The same shape as the Magic 8 Ball, with pictures in place of words.",
+         change=["Draw your own rock, paper and scissors with show leds.",
+                 "Play a different note for each hand.",
+                 "Clear the screen after 2 seconds so that the next round starts fresh."]),
+    dict(n=3, title="Dice", line="Shake for a number from 1 to 6.",
+         how="The whole game is one event. A shake picks a random number from 1 to 6 and shows it, so the micro:bit can stand in for the dice in any board game.",
+         need=["micro:bit", "Battery pack"],
+         steps=[
+             f"Drag out {b('on shake','input')}.",
+             f"Put {b('show number','basic')} inside it.",
+             f"Drop {b('pick random 1 to 6','math')} into the number gap.",
+         ],
+         progs=[("m5-random", "The value block sits inside show number, so no variable is needed.")],
+         see="Each shake shows a number from 1 to 6.",
+         idea="A block that gives a value can go straight into the gap of another block.",
+         change=["Make a 20-sided dice.",
+                 "Roll two dice: show one number, pause, then show the other.",
+                 "Draw the six dice faces with show leds and show the right face for each number."]),
+    dict(n=4, title="Hot Potato", line="Pass it on before the hidden timer runs out.",
+         how="Press A and pass the micro:bit round the circle. It has secretly chosen a number of seconds between 5 and 15 and is counting down. When the count reaches 0 a skull appears, and whoever is holding it is out.",
+         need=["micro:bit", "Battery pack", "Three or more players"],
+         steps=[
+             "Make a variable called <code>timer</code>.",
+             f"In {b('on button A pressed','input')}, set <code>timer</code> to {b('pick random 5 to 15','math')} and show an icon that means the game is running.",
+             f"Add {b('while','loops')} with the condition <code>timer &gt; 0</code>. A while loop keeps repeating for as long as its condition is true.",
+             f"Inside the loop put {b('change timer by -1','vars')} and {b('pause (ms) 1000','basic')}. Each trip round the loop takes one second off.",
+             f"Under the loop, add {b('show icon','basic')} with the skull.",
+         ],
+         progs=[("g4-potato", "The loop runs once a second until the timer reaches 0.")],
+         see="The chessboard icon shows while the potato is hot. After 5 to 15 seconds the skull appears.",
+         idea="A <strong>while</strong> loop repeats until something changes, and here the loop itself makes the change.",
+         change=["Change the range to make rounds longer or shorter.",
+                 "Play a sound when the skull appears.",
+                 "Speed up the last three seconds with a shorter pause."]),
+    dict(n=5, title="Scorekeeper", line="Keep the score for two teams.",
+         how="The micro:bit remembers two numbers, one for each team. Button A adds a point for the home team and button B adds one for the away team. Pressing both together starts a new match.",
+         need=["micro:bit", "Battery pack"],
+         steps=[
+             f"Make two variables, <code>home</code> and <code>away</code>. Set both to 0 in {b('on start','basic')}.",
+             f"In {b('on button A pressed','input')}: {b('change home by 1','vars')}, then {b('show number','basic')} with <code>home</code> in the gap.",
+             "Build the same for button B with <code>away</code>.",
+             f"In {b('on button A+B pressed','input')}, set both variables to 0 and clear the screen.",
+         ],
+         progs=[("g5-score", "Two variables, one for each team.")],
+         see="Each press shows that team's new score. A and B together sets both back to 0.",
+         idea="One variable for each thing the game has to remember.",
+         change=["Show both scores on shake, one after the other.",
+                 "Show a trophy when a team reaches 5.",
+                 "Add a way to take a point away after a mistake."]),
+    dict(n=6, title="Reaction Timer", line="Press B the moment the dot appears.",
+         how="Press A and the micro:bit counts 3, 2, 1, then waits for a random time and lights one dot. Press B as fast as you can. The micro:bit shows how many milliseconds you took: 1000 milliseconds is one second.",
+         need=["micro:bit", "Battery pack"],
+         steps=[
+             "Make two variables, <code>start</code> and <code>running</code>.",
+             f"In {b('on button A pressed','input')}: show 3, 2, 1, clear the screen, then pause for {b('pick random 1000 to 3000','math')} milliseconds.",
+             f"Straight after the pause, set <code>start</code> to {b('running time (ms)','input')}, set <code>running</code> to true and {b('plot x 2 y 2','led')}. Running time is the micro:bit's own stopwatch.",
+             f"In {b('on button B pressed','input')}, add {b('if running then','logic')}. Inside it, set <code>running</code> to false and show {b('running time (ms)','input')} minus <code>start</code>.",
+         ],
+         progs=[("g6-reaction", "The time now, minus the time the dot appeared, is your reaction time.")],
+         see="A dot appears after a wait of 1 to 3 seconds. Pressing B scrolls your time, usually between 200 and 400.",
+         idea="<strong>running</strong> is a true-or-false variable. It lets B work only while a round is on.",
+         change=["Show a happy face for times under 300.",
+                 "Keep the best time in a variable called <code>best</code> and show it on shake.",
+                 "Light the dot in a random place with pick random 0 to 4 for x and y."]),
+    dict(n=7, title="Catch the Dot", line="Move left and right to catch the falling dots.",
+         how="You are a dot on the bottom row, moved left with A and right with B. Another dot appears somewhere on the top row and falls one row at a time. If it lands on you, you score a point.",
+         need=["micro:bit", "Battery pack"],
+         steps=[
+             f"Open <strong>Advanced</strong>, then <strong>Game</strong>. In {b('on start','basic')}, set a variable called <code>player</code> to {b('create sprite at x: 2 y: 4','game')}. A sprite is a dot the game can move and test.",
+             f"Button A: {b('player move by -1','game')}. Button B: {b('player move by 1','game')}.",
+             f"In {b('forever','basic')}, set <code>item</code> to a new sprite at a random x from 0 to 4, with y 0, and pause.",
+             f"Add {b('repeat 4 times','loops')} holding {b('item change y by 1','game')} and a pause. Four steps take the dot from the top row to the bottom.",
+             f"After the loop, add {b('if player touching item then','logic')} with {b('change score by 1','game')} inside, then {b('delete item','game')}.",
+         ],
+         progs=[("g7-catch", "Forever makes one dot fall, checks for a catch, deletes the dot and starts again.")],
+         see="Dots fall one after another, and each catch adds a point.",
+         idea="The 5 × 5 screen is a grid. x counts across from 0 to 4 and y counts down from 0 to 4.",
+         change=["Make the dots fall faster by shortening the pause.",
+                 "Take a life for each dot you miss with remove life.",
+                 "Show the score when A and B are pressed together."]),
+    dict(n=8, title="Heads Up", line="Hold it to your forehead and guess the word from your friends' clues.",
+         how="Hold the micro:bit upright on your forehead so that only your friends can read it. They give clues and you guess the word. Tip it face down for a correct guess, which scores a point, or face up to pass, which costs a life. Stand it upright again for the next word. A countdown ends the game after 30 seconds.",
+         need=["micro:bit", "Battery pack", "Two or more players"],
+         steps=[
+             f"In {b('on start','basic')}, set a variable called <code>wordList</code> to an {b('array of','arrays')} words. An array is a list kept in one variable. Then add {b('start countdown (ms) 30000','game')}.",
+             f"In {b('on logo up','input')}, set <code>index</code> to a random number from 0 to {b('length of array wordList','arrays')} minus 1. Positions in a list start at 0, so a list of five words has positions 0 to 4.",
+             f"Still in logo up, {b('show string','basic')} the word at that position: {b('wordList get value at index','arrays')}.",
+             f"{b('on screen down','input')}: {b('change score by 1','game')}. {b('on screen up','input')}: {b('remove life 1','game')}.",
+         ],
+         progs=[("g8-words", "Three tilts do three jobs: next word, correct, pass.")],
+         see="Each time the micro:bit stands upright a word scrolls across. When the 30 seconds are up it shows the score.",
+         idea="The micro:bit knows which way up it is, so tilting it works like three more buttons.",
+         change=["Write a word list on one theme, such as animals or films.",
+                 "Change the countdown to 60000 for a one-minute round.",
+                 "Add more words with the + on the array block."]),
+    dict(n=9, title="Twenty-One", line="Draw cards and get as close to 21 as you dare.",
+         how="Each press of A draws a card worth 1 to 10 and adds it to your total. You choose when to stop. Go over 21 and the game is over. The player who stops closest to 21 wins.",
+         need=["micro:bit", "Battery pack"],
+         steps=[
+             f"Make two variables, <code>score</code> and <code>card</code>. Set <code>score</code> to 0 in {b('on start','basic')}.",
+             f"In {b('on button A pressed','input')}, set <code>card</code> to {b('pick random 1 to 10','math')}, then {b('change score by','vars')} <code>card</code>.",
+             f"Add {b('if … then … else','logic')} with the condition <code>score &gt; 21</code>. In <em>then</em>, show GAME OVER and set the score back to 0. In <em>else</em>, show the score.",
+             f"In {b('on button B pressed','input')}, set <code>score</code> to 0 and show 0, ready for the next player.",
+         ],
+         progs=[("g9-21", "Every card is added to the total, then the total is checked against 21.")],
+         see="The total climbs with each press of A. Above 21 it scrolls GAME OVER and starts again from 0.",
+         idea="<strong>change score by card</strong> adds a different amount each time, because the amount is itself a variable.",
+         change=["Show the card you drew before showing the total.",
+                 "Play a sad sound on GAME OVER.",
+                 "Show a star when the total is exactly 21."]),
+]
+
+
 LINE_KEY = ('<table class="key"><tr><th>Block shows</th><th>The sensors see</th></tr>'
             '<tr><td>● ●</td><td>black under both sensors</td></tr>'
             '<tr><td>● ◌</td><td>black on the left, white on the right</td></tr>'
@@ -494,12 +770,14 @@ CSS = """
         .blk { display: inline-block; font-family: var(--font-ui); font-weight: 600; font-size: 0.8em; color: #fff; border-radius: 4px; padding: 0.05em 0.45em; white-space: nowrap; line-height: 1.5; }
         .blk-tp { background: #32b9b9; } .blk-basic { background: #1e90ff; } .blk-input { background: #d400d4; }
         .blk-logic { background: #00a4a6; } .blk-loops { background: #00aa00; } .blk-vars { background: #dc143c; } .blk-math { background: #9400d3; }
+        .blk-game { background: #007a4b; } .blk-arrays { background: #e65722; } .blk-led { background: #5c2d91; }
         .setup { counter-reset: step; list-style: none; margin: 0 0 var(--gap-md); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
         .setup li { counter-increment: step; background: #fff; border: 1px solid #e6dfd2; border-radius: 8px; padding: 0.9rem 1rem 1rem; font-size: 0.88rem; line-height: 1.6; }
         .setup li::before { content: "Step " counter(step); display: block; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); margin-bottom: 0.3rem; }
         .setup strong.t { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.25rem; }
         .bar { display: flex; justify-content: space-between; align-items: baseline; margin: var(--gap-md) 0 var(--gap-xs); }
         .bar h2 { margin: 0; }
+        .group-intro { font-family: var(--font-body); font-size: 0.92rem; line-height: 1.7; color: var(--ink-black); margin: 0 0 var(--gap-xs); }
         .bar button { font-family: var(--font-ui); font-weight: 600; font-size: 0.78rem; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer; }
         .bar button:hover { border-color: var(--bronze-core); }
         details.lesson { background: #fff; border: 1px solid #e6dfd2; border-radius: 10px; margin: 0 0 0.6rem; scroll-margin-top: 1rem; }
@@ -512,6 +790,7 @@ CSS = """
         .chev { width: 0.6rem; height: 0.6rem; border-right: 2px solid var(--bronze-core); border-bottom: 2px solid var(--bronze-core); transform: rotate(45deg); transition: transform 0.15s; margin-right: 0.3rem; }
         details[open] > summary .chev { transform: rotate(-135deg); }
         .body { padding: 0.2rem 1.1rem 1.1rem; border-top: 1px solid #f0ece4; font-size: 0.92rem; line-height: 1.7; }
+        .body p.how { margin: 0; }
         .body h3 { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bronze-dark); margin: 1.1rem 0 0.35rem; }
         .body ol, .body ul { margin: 0; padding-left: 1.3rem; }
         .body li { margin: 0 0 0.4rem; }
@@ -571,10 +850,11 @@ def figure(pid, cap, man):
             f'<figcaption>{cap}</figcaption></figure>')
 
 
-def lesson(L, man, word):
-    o = [f'<details class="lesson" id="lesson-{L["n"]}">',
+def lesson(L, man, word, prefix="lesson"):
+    o = [f'<details class="lesson" id="{prefix}-{L["n"]}">',
          f'<summary><span class="num">{L["n"]}</span><span class="st">{L["title"]}<span>{L["line"]}</span></span><span class="chev"></span></summary>',
          '<div class="body">',
+         f'<h3>How the game works</h3><p class="how">{L["how"]}</p>' if L.get("how") else "",
          '<h3>You need</h3><ul class="need">' + "".join(f"<li>{x}</li>" for x in L["need"]) + "</ul>",
          f'<h3>{word}</h3><ol>' + "".join(f"<li>{x}</li>" for x in L["steps"]) + "</ol>"]
     if L["progs"]:
@@ -594,8 +874,15 @@ def lesson(L, man, word):
     return "\n            ".join(o)
 
 
-def page(title, crumb, eyebrow, summary, top, lessons, man, word, credit):
-    body = "\n\n        ".join(lesson(L, man, word) for L in lessons)
+def page(title, crumb, eyebrow, summary, top, groups, man, credit):
+    """groups: [(heading, intro, lessons, steps_word, id_prefix)]. The first carries Open all."""
+    parts = []
+    for i, (heading, intro, lessons, word, prefix) in enumerate(groups):
+        btn = '<button type="button" id="toggle-all">Open all</button>' if i == 0 else ""
+        parts.append(f'<div class="bar"><h2>{heading}</h2>{btn}</div>'
+                     + (f'\n        <p class="group-intro">{intro}</p>' if intro else ""))
+        parts += [lesson(L, man, word, prefix) for L in lessons]
+    body = "\n\n        ".join(parts)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -625,8 +912,6 @@ def page(title, crumb, eyebrow, summary, top, lessons, man, word, credit):
 
         <p class="summary">{summary}</p>
 {top}
-        <div class="bar"><h2>Lessons</h2><button type="button" id="toggle-all">Open all</button></div>
-
         {body}
 
         <div class="credit-note">{credit}</div>
@@ -674,7 +959,7 @@ def write_if_changed(path, text):
 def main():
     with open(MANIFEST, encoding="utf-8") as f:
         man = json.load(f)
-    sets = dict(makecode=MAKECODE, tpbot=TPBOT)
+    sets = dict(makecode=MAKECODE + GAMES, tpbot=TPBOT)
     used = [p for k in LIVE for L in sets[k] for p, _ in L["progs"]]
     for pid in used:
         png = os.path.join(ROOT, UNIT, "blocks", pid + ".png")
@@ -684,10 +969,14 @@ def main():
     pages = {
         f"{UNIT}/makecode/index.html": page(
             "micro:bit with MakeCode", "micro:bit with MakeCode", "MYP Design · Year 8 · Lessons so far",
-            "Every lesson so far with the micro:bit, in order. Open a lesson to see what you need, the steps, "
+            "Every lesson so far with the micro:bit, in order, followed by nine games to build. Open one to see what you need, the steps, "
             "the blocks and something to try next. All of the building happens at "
             '<a href="https://makecode.microbit.org" target="_blank" rel="noopener">makecode.microbit.org</a>.',
-            "", MAKECODE, man, "Steps",
+            "", [("Lessons", "", MAKECODE, "Steps", "lesson"),
+                 ("Games to build",
+                  "Nine games like the ones Year 8 built for the Mini Project. Each one explains how the game works, "
+                  "then gives the basic steps. Build one, then make it your own.",
+                  GAMES, "Basic steps", "game")], man,
             'Block pictures are drawn by <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>. '
             "Lessons 1 and 2 are adapted from <em>Intro to Computer Science with MakeCode for micro:bit</em> by Douglas Kiang and Mary Kiang, "
             'published by Microsoft MakeCode. The full course is on the <a href="../">Robotics &amp; Control</a> page.'),
@@ -695,7 +984,7 @@ def main():
             "Coding the TPBot", "Coding the TPBot", "MYP Design · Year 8 · The robot car",
             "Eleven lessons for the TPBot robot car. Each one is a short program to build, run on the floor and then change. "
             "Open a lesson to see what you need, the steps and the blocks.",
-            TPBOT_TOP, TPBOT, man, "Build it",
+            TPBOT_TOP, [("Lessons", "", TPBOT, "Build it", "lesson")], man,
             f'These eleven lessons follow Cases 01 to 11 of the <a href="{WIKI}" target="_blank" rel="noopener">TPBot guide by ELECFREAKS</a>, '
             "who make the car. Each lesson links to its original case. The programs here were rebuilt with the current TPBot blocks and the "
             'instructions written for this class. Block pictures are drawn by <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>.'),

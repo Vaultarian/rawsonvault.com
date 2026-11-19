@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>micro:bit with MakeCode — MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        body { animation: none; }
+        .summary, .lesson, .setup li, .key td { font-family: var(--font-body); color: var(--ink-black); }
+        .summary { font-size: 0.95rem; line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-md); }
+        code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.86em; background: #f0ece4; border-radius: 3px; padding: 0.05em 0.3em; }
+        .blk { display: inline-block; font-family: var(--font-ui); font-weight: 600; font-size: 0.8em; color: #fff; border-radius: 4px; padding: 0.05em 0.45em; white-space: nowrap; line-height: 1.5; }
+        .blk-tp { background: #32b9b9; } .blk-basic { background: #1e90ff; } .blk-input { background: #d400d4; }
+        .blk-logic { background: #00a4a6; } .blk-loops { background: #00aa00; } .blk-vars { background: #dc143c; } .blk-math { background: #9400d3; }
+        .blk-game { background: #007a4b; } .blk-arrays { background: #e65722; } .blk-led { background: #5c2d91; }
+        .setup { counter-reset: step; list-style: none; margin: 0 0 var(--gap-md); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+        .setup li { counter-increment: step; background: #fff; border: 1px solid #e6dfd2; border-radius: 8px; padding: 0.9rem 1rem 1rem; font-size: 0.88rem; line-height: 1.6; }
+        .setup li::before { content: "Step " counter(step); display: block; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); margin-bottom: 0.3rem; }
+        .setup strong.t { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.25rem; }
+        .bar { display: flex; justify-content: space-between; align-items: baseline; margin: var(--gap-md) 0 var(--gap-xs); }
+        .bar h2 { margin: 0; }
+        .group-intro { font-family: var(--font-body); font-size: 0.92rem; line-height: 1.7; color: var(--ink-black); margin: 0 0 var(--gap-xs); }
+        .bar button { font-family: var(--font-ui); font-weight: 600; font-size: 0.78rem; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer; }
+        .bar button:hover { border-color: var(--bronze-core); }
+        details.lesson { background: #fff; border: 1px solid #e6dfd2; border-radius: 10px; margin: 0 0 0.6rem; scroll-margin-top: 1rem; }
+        details.lesson[open] { border-color: var(--bronze-light); }
+        details.lesson > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 0.9rem; align-items: center; padding: 0.85rem 1rem; }
+        details.lesson > summary::-webkit-details-marker { display: none; }
+        .num { font-family: var(--font-ui); font-weight: 600; font-size: 0.85rem; color: #fff; background: var(--bronze-core); border-radius: 999px; min-width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; }
+        .st { font-family: var(--font-heading); font-size: 1.05rem; color: var(--ink-black); }
+        .st span { display: block; font-family: var(--font-body); font-size: 0.86rem; color: var(--gray-dark); line-height: 1.5; margin-top: 0.1rem; }
+        .chev { width: 0.6rem; height: 0.6rem; border-right: 2px solid var(--bronze-core); border-bottom: 2px solid var(--bronze-core); transform: rotate(45deg); transition: transform 0.15s; margin-right: 0.3rem; }
+        details[open] > summary .chev { transform: rotate(-135deg); }
+        .body { padding: 0.2rem 1.1rem 1.1rem; border-top: 1px solid #f0ece4; font-size: 0.92rem; line-height: 1.7; }
+        .body p.how { margin: 0; }
+        .body h3 { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bronze-dark); margin: 1.1rem 0 0.35rem; }
+        .body ol, .body ul { margin: 0; padding-left: 1.3rem; }
+        .body li { margin: 0 0 0.4rem; }
+        .need { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; padding: 0 !important; }
+        .need li { background: #faf7f2; border: 1px solid #e0d6c6; border-radius: 999px; padding: 0.05rem 0.7rem; font-size: 0.82rem; margin: 0; }
+        figure.prog { margin: 0.9rem 0 0; }
+        figure.prog .frame { background: #f7f5f1; border: 1px solid #ece7dd; border-radius: 8px; padding: 0.9rem; overflow-x: auto; }
+        figure.prog img { display: block; max-width: 100%; height: auto; }
+        figure.prog figcaption { font-size: 0.84rem; color: var(--gray-dark); margin-top: 0.35rem; line-height: 1.5; }
+        .see { background: #f3f8f4; border-left: 3px solid #2e7d4f; border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 0; }
+        .idea { background: #faf7f2; border-left: 3px solid var(--bronze-core); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 1rem 0 0; }
+        .key { border-collapse: collapse; margin: 0.9rem 0 0; }
+        .key th { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-dark); text-align: left; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid var(--bronze-light); }
+        .key td { font-size: 0.86rem; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid #ece7dd; }
+        .key td:first-child { font-size: 1rem; letter-spacing: 0.1em; white-space: nowrap; }
+        .docs { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .docs a, a.src { font-family: var(--font-ui); font-weight: 600; font-size: 0.8rem; text-decoration: none; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.3rem 0.7rem; display: inline-block; }
+        .docs a:hover, a.src:hover { border-color: var(--bronze-core); }
+        .srcline { margin: 1.1rem 0 0; }
+        .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-lg) 0 var(--gap-md); line-height: 1.6; }
+        .credit-note a { color: var(--bronze-light); }
+        @media (max-width: 860px) { .setup { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 560px) { .setup { grid-template-columns: 1fr; } details.lesson > summary { gap: 0.6rem; padding: 0.75rem 0.8rem; } }
+    </style>
+</head>
+<body>
+    <div class="container container--wide">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">MYP</a><span>·</span>
+            <a href="../../">Design</a><span>·</span>
+            <a href="../">Robotics &amp; Control</a><span>·</span>
+            micro:bit with MakeCode
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">MYP Design · Year 8 · Lessons so far</span>
+            <h1>micro:bit with MakeCode</h1>
+        </div>
+        <div class="rule--full"></div>
+
+        <p class="summary">Every lesson so far with the micro:bit, in order, followed by nine games to build. Open one to see what you need, the steps, the blocks and something to try next. All of the building happens at <a href="https://makecode.microbit.org" target="_blank" rel="noopener">makecode.microbit.org</a>.</p>
+
+        <div class="bar"><h2>Lessons</h2><button type="button" id="toggle-all">Open all</button></div>
+
+        <details class="lesson" id="lesson-1">
+            <summary><span class="num">1</span><span class="st">Hello, MakeCode<span>Your first program: a name badge that plays when you press a button.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>USB cable</li><li>A laptop with makecode.microbit.org open</li></ul>
+            <h3>Steps</h3><ol><li>Open <strong>makecode.microbit.org</strong>, choose <strong>New Project</strong> and name it <code>name-badge</code>.</li><li>Drag <span class="blk blk-basic">show leds</span> inside <span class="blk blk-basic">on start</span>. Click each LED you want lit to draw your first letter.</li><li>Plug in the USB cable and press the purple <strong>Download</strong> button. If a file lands in Downloads, drag it onto the <strong>MICROBIT</strong> drive. Your letter appears on the board.</li><li>Add one <span class="blk blk-basic">show leds</span> for each letter of your name, with <span class="blk blk-basic">pause (ms) 100</span> after each. Finish with a blank <span class="blk blk-basic">show leds</span> and <span class="blk blk-basic">pause (ms) 500</span>. That is the gap before the name starts again.</li><li>Wrap all of it in <span class="blk blk-loops">repeat 4 times</span>. A repeat block is a <strong>loop</strong>: it runs the same blocks again and again.</li><li>Move everything out of <span class="blk blk-basic">on start</span> and into <span class="blk blk-input">on button A pressed</span>.</li><li>Press <strong>Share</strong>, then <strong>Publish project</strong>, and copy the link. Publishing is how you hand work in.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m1-first.png" width="159" height="244" loading="lazy" alt="MakeCode blocks. Step 2. One letter, shown when the micro:bit starts."></div><figcaption>Step 2. One letter, shown when the micro:bit starts.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/m1-badge.png" width="194" height="785" loading="lazy" alt="MakeCode blocks. Step 6. A two-letter name, played four times when you press A."></div><figcaption>Step 6. A two-letter name, played four times when you press A.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Press A and your name plays across the LEDs four times, with a short gap between each run.</p>
+            <p class="idea"><strong>The idea.</strong> The button is the <strong>input</strong>, the loop is the <strong>process</strong> and the LEDs are the <strong>output</strong>.</p>
+            <h3>Now change it</h3><ul><li>Make <span class="blk blk-input">on button B pressed</span> do something different.</li><li>Make the pauses smaller and smaller. Find the fastest speed you can still read.</li><li>Try <span class="blk blk-basic">show string</span> with your name in it. Work out what it is doing for you.</li></ul>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-l01-intro-to-makecode-handout.pdf">MakeCode quick reference</a></li><li><a href="../../../../classes/design-8a/files/rc-l01-intro-to-makecode-homework.pdf">Homework: make something of your own</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-2">
+            <summary><span class="num">2</span><span class="st">Algorithms 1: making the micro:bit decide<span>Events, a variable and a condition: show a heart on the fourth press of B.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>USB cable</li><li>Battery pack</li></ul>
+            <h3>Steps</h3><ol><li>Show a happy face when you shake the micro:bit: <span class="blk blk-input">on shake</span> with <span class="blk blk-basic">show icon</span> inside.</li><li>Show a sad face when you press A: <span class="blk blk-input">on button A pressed</span> with <span class="blk blk-basic">show icon</span> inside.</li><li>Now the challenge: show a heart when B has been pressed <strong>four times</strong>. The micro:bit has to remember how many presses there have been, then ask a question about that number.</li><li>In the <strong>Variables</strong> drawer choose <strong>Make a Variable</strong> and call it <code>B Clicks</code>. A variable is a box with a name on it. In <span class="blk blk-basic">on start</span>, put <span class="blk blk-vars">set B Clicks to 0</span>.</li><li>Start a new stack: <span class="blk blk-input">on button B pressed</span> with <span class="blk blk-vars">change B Clicks by 1</span> inside. Every press adds one to the box.</li><li>Under that, add <span class="blk blk-logic">if … then</span> from the <strong>Logic</strong> drawer and drop <span class="blk blk-logic">B Clicks = 4</span> into its gap. This is a <strong>condition</strong>: a question with only two answers, yes or no.</li><li>Inside the <span class="blk blk-logic">if</span>, show the heart, pause, clear the screen and <span class="blk blk-vars">set B Clicks to 0</span>. Setting it back to 0 lets the count start again.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m2-events.png" width="380" height="115" loading="lazy" alt="MakeCode blocks. Steps 1 and 2. Two events, each with its own answer."></div><figcaption>Steps 1 and 2. Two events, each with its own answer.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/m2-counter.png" width="555" height="342" loading="lazy" alt="MakeCode blocks. Steps 4 to 7. The finished counter. MakeCode shows the variable as B_Clicks here; yours reads B Clicks."></div><figcaption>Steps 4 to 7. The finished counter. MakeCode shows the variable as B_Clicks here; yours reads B Clicks.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Three presses of B show nothing. The fourth shows a heart for one second. Four more presses show it again.</p>
+            <p class="idea"><strong>The idea.</strong> <strong>Remembering</strong> needs a variable. <strong>Checking</strong> needs a condition.</p>
+            <h3>Now change it</h3><ul><li>Change the 4 to another number and test it.</li><li>Show a different icon on the fourth press.</li><li>Build the <strong>Shake Counter</strong>: a variable called <code>Shakes</code> that goes up by 1 on every shake, and an icon on the third shake.</li></ul>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-l02-algorithms-1-handout.pdf">Algorithms 1 handout</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-3">
+            <summary><span class="num">3</span><span class="st">Choosing your game<span>The Mini Project begins: pick one game from the Games Menu.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>The Games Menu</li><li>The Criteria A and B sheet</li></ul>
+            <h3>Steps</h3><ol><li>Read through the <strong>Games Menu</strong>. It holds 23 micro:bit games in three levels.</li><li>Pick two games you like and one you will build. For each, write down one strength and one weakness.</li><li>Read the <strong>Criteria A and B</strong> sheet. It lists the eight pieces of design work you hand in, one for each strand.</li><li>Tell Mr. Rawson which game you have chosen.</li></ol>
+            <h3>What happens</h3><p class="see">You leave with one game chosen and a reason for choosing it.</p>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-games-menu.pdf">The Games Menu</a></li><li><a href="../../../../classes/design-8a/files/rc-summative-ab-what-you-are-marked-on.pdf">Criteria A and B: what you are marked on</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-4">
+            <summary><span class="num">4</span><span class="st">My Game Design: the design packet<span>Summative A and B. Explain your game and exactly how it works, on paper.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>My Game Design packet</li><li>The Games Menu</li><li>A pencil</li></ul>
+            <h3>Steps</h3><ol><li>Work through the eight parts of the packet in order. Each part is labelled with the strand it earns.</li><li>In Part 1, name a real person your game is for.</li><li>Write success criteria that you can see or count, such as <em>the score goes up by 1 for each catch</em>.</li><li>Plan three versions of <strong>one</strong> game, each using A, B, A+B and shake in a different way.</li><li>Fill in the controls table for your final version. Write <em>not used</em> beside any input your game leaves out.</li><li>Draw your four 5 × 5 screens and write out one round of the game step by step.</li></ol>
+            <h3>What happens</h3><p class="see">A finished packet that another person could build your game from.</p>
+            <p class="idea"><strong>The idea.</strong> The packet is marked on how clearly it explains your plan.</p>
+            <h3>Documents</h3><ul class="docs"><li><a href="../../../../classes/design-8a/files/rc-summative-design-packet.pdf">My Game Design packet</a></li><li><a href="../../../../classes/design-8a/files/rc-summative-ab-what-you-are-marked-on.pdf">Criteria A and B: what you are marked on</a></li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-5">
+            <summary><span class="num">5</span><span class="st">Building your game<span>Turn the design packet into a working game in MakeCode.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>Your finished design packet</li><li>micro:bit</li><li>USB cable</li></ul>
+            <h3>Steps</h3><ol><li>Open your packet at the controls table and the block list. They are your plan.</li><li>Build one input at a time. Start with button A, download, and test it on the micro:bit.</li><li>Add the next input and test again. Small steps keep the game working the whole way through.</li><li>Most games keep a score or pick something at random. The two patterns below do those jobs.</li><li>Press <strong>Share</strong>, then <strong>Publish project</strong>, and post the link in the Google Classroom build thread.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m5-score.png" width="426" height="144" loading="lazy" alt="MakeCode blocks. Keeping score. A variable goes up by 1 and the micro:bit shows it."></div><figcaption>Keeping score. A variable goes up by 1 and the micro:bit shows it.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/m5-random.png" width="311" height="104" loading="lazy" alt="MakeCode blocks. A random number from 1 to 6 on every shake."></div><figcaption>A random number from 1 to 6 on every shake.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Your game runs on a real micro:bit, and its link is in the build thread.</p>
+            <h3>Now change it</h3><ul><li>Add a sound or an icon for winning.</li><li>Add a way to start a new game without unplugging the micro:bit.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-6">
+            <summary><span class="num">6</span><span class="st">Carousel Play Day<span>Play each other's games and tell the builder what you noticed.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Your game's sharing link</li></ul>
+            <h3>Steps</h3><ol><li>Open your own game from its sharing link and download it to your micro:bit.</li><li>Move round the room when Mr. Rawson calls. Play each game you reach.</li><li>Tell the builder the first thing you did when you picked their game up.</li><li>Back at your own game, read what your players noticed and make one change.</li><li>If your game changed, publish it again and post the new link.</li></ol>
+            <h3>What happens</h3><p class="see">Your game has been played by people who did not build it, and you have one idea to borrow from someone else's.</p>
+            </div></details>
+
+        <div class="bar"><h2>Games to build</h2></div>
+        <p class="group-intro">Nine games like the ones Year 8 built for the Mini Project. Each one explains how the game works, then gives the basic steps. Build one, then make it your own.</p>
+
+        <details class="lesson" id="game-1">
+            <summary><span class="num">1</span><span class="st">Magic 8 Ball<span>Ask a question, shake, and read your answer.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">You ask a yes-or-no question out loud and shake the micro:bit. It picks a random number, and each number has its own answer. The player sees the answer scroll past and never sees the number.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li></ul>
+            <h3>Basic steps</h3><ol><li>Make a variable called <code>answer</code>.</li><li>In <span class="blk blk-input">on shake</span>, set <code>answer</code> to <span class="blk blk-math">pick random 0 to 4</span>. That gives five possible numbers: 0, 1, 2, 3 and 4.</li><li>Add <span class="blk blk-logic">if … then … else</span> and press its <strong>+</strong> until it has a branch for each number. Give each branch a condition such as <code>answer = 0</code>.</li><li>Put a <span class="blk blk-basic">show string</span> with a different answer in every branch. The last answer goes in the plain <em>else</em>, which catches whatever number is left.</li><li>Add <span class="blk blk-basic">show string</span> to <span class="blk blk-basic">on start</span> so the player knows the game is ready.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g1-8ball.png" width="561" height="539" loading="lazy" alt="MakeCode blocks. Five numbers, five answers. The else at the bottom catches the number 4."></div><figcaption>Five numbers, five answers. The else at the bottom catches the number 4.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/g1-list.png" width="758" height="294" loading="lazy" alt="MakeCode blocks. A shorter way that some of the class found: keep the answers in a list and let MakeCode pick one."></div><figcaption>A shorter way that some of the class found: keep the answers in a list and let MakeCode pick one.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Each shake scrolls one of the five answers across the screen.</p>
+            <p class="idea"><strong>The idea.</strong> A random number chooses, and <strong>if … else if</strong> turns the number into words.</p>
+            <h3>Now change it</h3><ul><li>Write your own answers. Short ones are easiest to read on a 5 × 5 screen.</li><li>Add a sixth answer: change the random range to 0 to 5 and add one more branch.</li><li>Show a picture for some answers with show icon.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-2">
+            <summary><span class="num">2</span><span class="st">Rock, Paper, Scissors<span>Shake to throw a random hand.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">Two players count to three and shake their micro:bits together. Each micro:bit picks 1, 2 or 3 at random and shows a picture: a small square for rock, a large square for paper, or scissors. The players decide who won.</p>
+            <h3>You need</h3><ul class="need"><li>Two micro:bits</li><li>Two battery packs</li></ul>
+            <h3>Basic steps</h3><ol><li>Make a variable called <code>hand</code>.</li><li>In <span class="blk blk-input">on shake</span>, set <code>hand</code> to <span class="blk blk-math">pick random 1 to 3</span>.</li><li>Add <span class="blk blk-logic">if … then … else</span> with one extra branch. Test for <code>hand = 1</code>, then <code>hand = 2</code>, and leave the else for 3.</li><li>Put a <span class="blk blk-basic">show icon</span> in each branch: small square, square, scissors.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g2-rps.png" width="341" height="406" loading="lazy" alt="MakeCode blocks. Three numbers, three pictures."></div><figcaption>Three numbers, three pictures.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Each shake shows rock, paper or scissors.</p>
+            <p class="idea"><strong>The idea.</strong> The same shape as the Magic 8 Ball, with pictures in place of words.</p>
+            <h3>Now change it</h3><ul><li>Draw your own rock, paper and scissors with show leds.</li><li>Play a different note for each hand.</li><li>Clear the screen after 2 seconds so that the next round starts fresh.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-3">
+            <summary><span class="num">3</span><span class="st">Dice<span>Shake for a number from 1 to 6.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">The whole game is one event. A shake picks a random number from 1 to 6 and shows it, so the micro:bit can stand in for the dice in any board game.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li></ul>
+            <h3>Basic steps</h3><ol><li>Drag out <span class="blk blk-input">on shake</span>.</li><li>Put <span class="blk blk-basic">show number</span> inside it.</li><li>Drop <span class="blk blk-math">pick random 1 to 6</span> into the number gap.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/m5-random.png" width="311" height="104" loading="lazy" alt="MakeCode blocks. The value block sits inside show number, so no variable is needed."></div><figcaption>The value block sits inside show number, so no variable is needed.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Each shake shows a number from 1 to 6.</p>
+            <p class="idea"><strong>The idea.</strong> A block that gives a value can go straight into the gap of another block.</p>
+            <h3>Now change it</h3><ul><li>Make a 20-sided dice.</li><li>Roll two dice: show one number, pause, then show the other.</li><li>Draw the six dice faces with show leds and show the right face for each number.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-4">
+            <summary><span class="num">4</span><span class="st">Hot Potato<span>Pass it on before the hidden timer runs out.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">Press A and pass the micro:bit round the circle. It has secretly chosen a number of seconds between 5 and 15 and is counting down. When the count reaches 0 a skull appears, and whoever is holding it is out.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li><li>Three or more players</li></ul>
+            <h3>Basic steps</h3><ol><li>Make a variable called <code>timer</code>.</li><li>In <span class="blk blk-input">on button A pressed</span>, set <code>timer</code> to <span class="blk blk-math">pick random 5 to 15</span> and show an icon that means the game is running.</li><li>Add <span class="blk blk-loops">while</span> with the condition <code>timer &gt; 0</code>. A while loop keeps repeating for as long as its condition is true.</li><li>Inside the loop put <span class="blk blk-vars">change timer by -1</span> and <span class="blk blk-basic">pause (ms) 1000</span>. Each trip round the loop takes one second off.</li><li>Under the loop, add <span class="blk blk-basic">show icon</span> with the skull.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g4-potato.png" width="351" height="352" loading="lazy" alt="MakeCode blocks. The loop runs once a second until the timer reaches 0."></div><figcaption>The loop runs once a second until the timer reaches 0.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The chessboard icon shows while the potato is hot. After 5 to 15 seconds the skull appears.</p>
+            <p class="idea"><strong>The idea.</strong> A <strong>while</strong> loop repeats until something changes, and here the loop itself makes the change.</p>
+            <h3>Now change it</h3><ul><li>Change the range to make rounds longer or shorter.</li><li>Play a sound when the skull appears.</li><li>Speed up the last three seconds with a shorter pause.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-5">
+            <summary><span class="num">5</span><span class="st">Scorekeeper<span>Keep the score for two teams.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">The micro:bit remembers two numbers, one for each team. Button A adds a point for the home team and button B adds one for the away team. Pressing both together starts a new match.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li></ul>
+            <h3>Basic steps</h3><ol><li>Make two variables, <code>home</code> and <code>away</code>. Set both to 0 in <span class="blk blk-basic">on start</span>.</li><li>In <span class="blk blk-input">on button A pressed</span>: <span class="blk blk-vars">change home by 1</span>, then <span class="blk blk-basic">show number</span> with <code>home</code> in the gap.</li><li>Build the same for button B with <code>away</code>.</li><li>In <span class="blk blk-input">on button A+B pressed</span>, set both variables to 0 and clear the screen.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g5-score.png" width="645" height="364" loading="lazy" alt="MakeCode blocks. Two variables, one for each team."></div><figcaption>Two variables, one for each team.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Each press shows that team's new score. A and B together sets both back to 0.</p>
+            <p class="idea"><strong>The idea.</strong> One variable for each thing the game has to remember.</p>
+            <h3>Now change it</h3><ul><li>Show both scores on shake, one after the other.</li><li>Show a trophy when a team reaches 5.</li><li>Add a way to take a point away after a mistake.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-6">
+            <summary><span class="num">6</span><span class="st">Reaction Timer<span>Press B the moment the dot appears.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">Press A and the micro:bit counts 3, 2, 1, then waits for a random time and lights one dot. Press B as fast as you can. The micro:bit shows how many milliseconds you took: 1000 milliseconds is one second.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li></ul>
+            <h3>Basic steps</h3><ol><li>Make two variables, <code>start</code> and <code>running</code>.</li><li>In <span class="blk blk-input">on button A pressed</span>: show 3, 2, 1, clear the screen, then pause for <span class="blk blk-math">pick random 1000 to 3000</span> milliseconds.</li><li>Straight after the pause, set <code>start</code> to <span class="blk blk-input">running time (ms)</span>, set <code>running</code> to true and <span class="blk blk-led">plot x 2 y 2</span>. Running time is the micro:bit's own stopwatch.</li><li>In <span class="blk blk-input">on button B pressed</span>, add <span class="blk blk-logic">if running then</span>. Inside it, set <code>running</code> to false and show <span class="blk blk-input">running time (ms)</span> minus <code>start</code>.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g6-reaction.png" width="784" height="374" loading="lazy" alt="MakeCode blocks. The time now, minus the time the dot appeared, is your reaction time."></div><figcaption>The time now, minus the time the dot appeared, is your reaction time.</figcaption></figure>
+            <h3>What happens</h3><p class="see">A dot appears after a wait of 1 to 3 seconds. Pressing B scrolls your time, usually between 200 and 400.</p>
+            <p class="idea"><strong>The idea.</strong> <strong>running</strong> is a true-or-false variable. It lets B work only while a round is on.</p>
+            <h3>Now change it</h3><ul><li>Show a happy face for times under 300.</li><li>Keep the best time in a variable called <code>best</code> and show it on shake.</li><li>Light the dot in a random place with pick random 0 to 4 for x and y.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-7">
+            <summary><span class="num">7</span><span class="st">Catch the Dot<span>Move left and right to catch the falling dots.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">You are a dot on the bottom row, moved left with A and right with B. Another dot appears somewhere on the top row and falls one row at a time. If it lands on you, you score a point.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li></ul>
+            <h3>Basic steps</h3><ol><li>Open <strong>Advanced</strong>, then <strong>Game</strong>. In <span class="blk blk-basic">on start</span>, set a variable called <code>player</code> to <span class="blk blk-game">create sprite at x: 2 y: 4</span>. A sprite is a dot the game can move and test.</li><li>Button A: <span class="blk blk-game">player move by -1</span>. Button B: <span class="blk blk-game">player move by 1</span>.</li><li>In <span class="blk blk-basic">forever</span>, set <code>item</code> to a new sprite at a random x from 0 to 4, with y 0, and pause.</li><li>Add <span class="blk blk-loops">repeat 4 times</span> holding <span class="blk blk-game">item change y by 1</span> and a pause. Four steps take the dot from the top row to the bottom.</li><li>After the loop, add <span class="blk blk-logic">if player touching item then</span> with <span class="blk blk-game">change score by 1</span> inside, then <span class="blk blk-game">delete item</span>.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g7-catch.png" width="966" height="575" loading="lazy" alt="MakeCode blocks. Forever makes one dot fall, checks for a catch, deletes the dot and starts again."></div><figcaption>Forever makes one dot fall, checks for a catch, deletes the dot and starts again.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Dots fall one after another, and each catch adds a point.</p>
+            <p class="idea"><strong>The idea.</strong> The 5 × 5 screen is a grid. x counts across from 0 to 4 and y counts down from 0 to 4.</p>
+            <h3>Now change it</h3><ul><li>Make the dots fall faster by shortening the pause.</li><li>Take a life for each dot you miss with remove life.</li><li>Show the score when A and B are pressed together.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-8">
+            <summary><span class="num">8</span><span class="st">Heads Up<span>Hold it to your forehead and guess the word from your friends' clues.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">Hold the micro:bit upright on your forehead so that only your friends can read it. They give clues and you guess the word. Tip it face down for a correct guess, which scores a point, or face up to pass, which costs a life. Stand it upright again for the next word. A countdown ends the game after 30 seconds.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li><li>Two or more players</li></ul>
+            <h3>Basic steps</h3><ol><li>In <span class="blk blk-basic">on start</span>, set a variable called <code>wordList</code> to an <span class="blk blk-arrays">array of</span> words. An array is a list kept in one variable. Then add <span class="blk blk-game">start countdown (ms) 30000</span>.</li><li>In <span class="blk blk-input">on logo up</span>, set <code>index</code> to a random number from 0 to <span class="blk blk-arrays">length of array wordList</span> minus 1. Positions in a list start at 0, so a list of five words has positions 0 to 4.</li><li>Still in logo up, <span class="blk blk-basic">show string</span> the word at that position: <span class="blk blk-arrays">wordList get value at index</span>.</li><li><span class="blk blk-input">on screen down</span>: <span class="blk blk-game">change score by 1</span>. <span class="blk blk-input">on screen up</span>: <span class="blk blk-game">remove life 1</span>.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g8-words.png" width="978" height="473" loading="lazy" alt="MakeCode blocks. Three tilts do three jobs: next word, correct, pass."></div><figcaption>Three tilts do three jobs: next word, correct, pass.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Each time the micro:bit stands upright a word scrolls across. When the 30 seconds are up it shows the score.</p>
+            <p class="idea"><strong>The idea.</strong> The micro:bit knows which way up it is, so tilting it works like three more buttons.</p>
+            <h3>Now change it</h3><ul><li>Write a word list on one theme, such as animals or films.</li><li>Change the countdown to 60000 for a one-minute round.</li><li>Add more words with the + on the array block.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="game-9">
+            <summary><span class="num">9</span><span class="st">Twenty-One<span>Draw cards and get as close to 21 as you dare.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>How the game works</h3><p class="how">Each press of A draws a card worth 1 to 10 and adds it to your total. You choose when to stop. Go over 21 and the game is over. The player who stops closest to 21 wins.</p>
+            <h3>You need</h3><ul class="need"><li>micro:bit</li><li>Battery pack</li></ul>
+            <h3>Basic steps</h3><ol><li>Make two variables, <code>score</code> and <code>card</code>. Set <code>score</code> to 0 in <span class="blk blk-basic">on start</span>.</li><li>In <span class="blk blk-input">on button A pressed</span>, set <code>card</code> to <span class="blk blk-math">pick random 1 to 10</span>, then <span class="blk blk-vars">change score by</span> <code>card</code>.</li><li>Add <span class="blk blk-logic">if … then … else</span> with the condition <code>score &gt; 21</code>. In <em>then</em>, show GAME OVER and set the score back to 0. In <em>else</em>, show the score.</li><li>In <span class="blk blk-input">on button B pressed</span>, set <code>score</code> to 0 and show 0, ready for the next player.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/g9-21.png" width="786" height="368" loading="lazy" alt="MakeCode blocks. Every card is added to the total, then the total is checked against 21."></div><figcaption>Every card is added to the total, then the total is checked against 21.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The total climbs with each press of A. Above 21 it scrolls GAME OVER and starts again from 0.</p>
+            <p class="idea"><strong>The idea.</strong> <strong>change score by card</strong> adds a different amount each time, because the amount is itself a variable.</p>
+            <h3>Now change it</h3><ul><li>Show the card you drew before showing the total.</li><li>Play a sad sound on GAME OVER.</li><li>Show a star when the total is exactly 21.</li></ul>
+            </div></details>
+
+        <div class="credit-note">Block pictures are drawn by <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>. Lessons 1 and 2 are adapted from <em>Intro to Computer Science with MakeCode for micro:bit</em> by Douglas Kiang and Mary Kiang, published by Microsoft MakeCode. The full course is on the <a href="../">Robotics &amp; Control</a> page.</div>
+
+        <footer class="site-footer">The Vault · MYP Design · Robotics &amp; Control · 2026</footer>
+    </div>
+
+    <script>
+    (function () {
+        var all = Array.prototype.slice.call(document.querySelectorAll('details.lesson'));
+        var btn = document.getElementById('toggle-all');
+        function label() { btn.textContent = all.every(function (d) { return d.open; }) ? 'Close all' : 'Open all'; }
+        function fromHash() {
+            var d = location.hash && document.getElementById(location.hash.slice(1));
+            if (d && d.tagName === 'DETAILS') { d.open = true; d.scrollIntoView(); }
+        }
+        btn.addEventListener('click', function () {
+            var open = !all.every(function (d) { return d.open; });
+            all.forEach(function (d) { d.open = open; });
+        });
+        all.forEach(function (d) {
+            d.addEventListener('toggle', function () {
+                label();
+                if (d.open && history.replaceState) history.replaceState(null, '', '#' + d.id);
+            });
+        });
+        window.addEventListener('hashchange', fromHash);
+        fromHash(); label();
+    })();
+    </script>
+</body>
+</html>
