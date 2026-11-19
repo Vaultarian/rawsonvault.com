@@ -34,6 +34,9 @@ UNIT = "myp/design/y8-robotics"
 HUB = f"{UNIT}/index.html"
 M_START, M_END = "<!-- DESIGN8-LESSONS:START -->", "<!-- DESIGN8-LESSONS:END -->"
 ANCHOR = "        <!-- UNITS:START -->"
+# Which pages are live. Alex, 19 Nov 2026: publish the TPBot page; the MakeCode page is
+# built and approved by eye but waits for his word. Add "makecode" to publish it.
+LIVE = ("tpbot",)
 TPBOT_PKG = "tpbot=github:elecfreaks/pxt-tpbot#v2.0.7"
 WIKI = "https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/"
 FILES = "../../../../classes/design-8a/files/"
@@ -646,13 +649,16 @@ TPBOT_TOP = """
         </ol>
 """
 
-BLOCK = f"""{M_START}
+ROWS = dict(
+    makecode='<tr><td class="lt"><a href="makecode/">micro:bit with MakeCode</a><span>The lessons so far, from the first name badge to Carousel Play Day. Open a lesson to see its steps and blocks.</span></td></tr>',
+    tpbot='<tr><td class="lt"><a href="tpbot/">Coding the TPBot</a><span>Eleven lessons for the robot car: driving, headlights, line tracking and the sonar.</span></td></tr>')
+BLOCK = (f"""{M_START}
         <h2>Lesson pages</h2>
         <table class="lesson-table">
-            <tr><td class="lt"><a href="makecode/">micro:bit with MakeCode</a><span>The lessons so far, from the first name badge to Carousel Play Day. Open a lesson to see its steps and blocks.</span></td></tr>
-            <tr><td class="lt"><a href="tpbot/">Coding the TPBot</a><span>Eleven lessons for the robot car: driving, headlights, line tracking and the sonar.</span></td></tr>
-        </table>
-        {M_END}"""
+"""
+         + "".join(f"            {ROWS[k]}\n" for k in ("makecode", "tpbot") if k in LIVE)
+         + f"""        </table>
+        {M_END}""")
 
 
 def write_if_changed(path, text):
@@ -668,7 +674,8 @@ def write_if_changed(path, text):
 def main():
     with open(MANIFEST, encoding="utf-8") as f:
         man = json.load(f)
-    used = [p for L in MAKECODE + TPBOT for p, _ in L["progs"]]
+    sets = dict(makecode=MAKECODE, tpbot=TPBOT)
+    used = [p for k in LIVE for L in sets[k] for p, _ in L["progs"]]
     for pid in used:
         png = os.path.join(ROOT, UNIT, "blocks", pid + ".png")
         if pid not in man or man[pid]["hash"] != code_hash(pid) or not os.path.exists(png):
@@ -694,6 +701,8 @@ def main():
             'instructions written for this class. Block pictures are drawn by <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>.'),
     }
     for rel, text in pages.items():
+        if rel.split("/")[-2] not in LIVE:
+            continue
         write_if_changed(os.path.join(ROOT, rel), text)
         print(f"PUBLISH: {rel}")
     for pid in used:
