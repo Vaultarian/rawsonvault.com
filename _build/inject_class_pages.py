@@ -500,12 +500,12 @@ CALENDARS = {
         "Paper 2: algorithms and programming, to the Christmas break"),
     "design-9b": (
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
-              / "y9b-design-calendar-autumn-1.pdf",
-        "Autumn term to the October break"),
+              / "y9b-design-calendar-autumn-2.pdf",
+        "From the digital card to animation, to the Christmas break"),
     "design-9a": (
         VAULT / "01-Teaching/Computer Science - MYP/Y9 MYP Design/Calendar"
-              / "y9a-design-calendar-autumn-1.pdf",
-        "Autumn term to the October break"),
+              / "y9a-design-calendar-autumn-2.pdf",
+        "From the digital card to animation, to the Christmas break"),
     "design-8a": (
         VAULT / "01-Teaching/Computer Science - MYP/Y8 MYP Design/Calendar"
               / "y8a-design-calendar-autumn-1.pdf",
