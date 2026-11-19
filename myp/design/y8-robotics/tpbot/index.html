@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding the TPBot — MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        body { animation: none; }
+        .summary, .lesson, .setup li, .key td { font-family: var(--font-body); color: var(--ink-black); }
+        .summary { font-size: 0.95rem; line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-md); }
+        code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.86em; background: #f0ece4; border-radius: 3px; padding: 0.05em 0.3em; }
+        .blk { display: inline-block; font-family: var(--font-ui); font-weight: 600; font-size: 0.8em; color: #fff; border-radius: 4px; padding: 0.05em 0.45em; white-space: nowrap; line-height: 1.5; }
+        .blk-tp { background: #32b9b9; } .blk-basic { background: #1e90ff; } .blk-input { background: #d400d4; }
+        .blk-logic { background: #00a4a6; } .blk-loops { background: #00aa00; } .blk-vars { background: #dc143c; } .blk-math { background: #9400d3; }
+        .setup { counter-reset: step; list-style: none; margin: 0 0 var(--gap-md); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+        .setup li { counter-increment: step; background: #fff; border: 1px solid #e6dfd2; border-radius: 8px; padding: 0.9rem 1rem 1rem; font-size: 0.88rem; line-height: 1.6; }
+        .setup li::before { content: "Step " counter(step); display: block; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); margin-bottom: 0.3rem; }
+        .setup strong.t { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.25rem; }
+        .bar { display: flex; justify-content: space-between; align-items: baseline; margin: var(--gap-md) 0 var(--gap-xs); }
+        .bar h2 { margin: 0; }
+        .bar button { font-family: var(--font-ui); font-weight: 600; font-size: 0.78rem; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer; }
+        .bar button:hover { border-color: var(--bronze-core); }
+        details.lesson { background: #fff; border: 1px solid #e6dfd2; border-radius: 10px; margin: 0 0 0.6rem; scroll-margin-top: 1rem; }
+        details.lesson[open] { border-color: var(--bronze-light); }
+        details.lesson > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 0.9rem; align-items: center; padding: 0.85rem 1rem; }
+        details.lesson > summary::-webkit-details-marker { display: none; }
+        .num { font-family: var(--font-ui); font-weight: 600; font-size: 0.85rem; color: #fff; background: var(--bronze-core); border-radius: 999px; min-width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; }
+        .st { font-family: var(--font-heading); font-size: 1.05rem; color: var(--ink-black); }
+        .st span { display: block; font-family: var(--font-body); font-size: 0.86rem; color: var(--gray-dark); line-height: 1.5; margin-top: 0.1rem; }
+        .chev { width: 0.6rem; height: 0.6rem; border-right: 2px solid var(--bronze-core); border-bottom: 2px solid var(--bronze-core); transform: rotate(45deg); transition: transform 0.15s; margin-right: 0.3rem; }
+        details[open] > summary .chev { transform: rotate(-135deg); }
+        .body { padding: 0.2rem 1.1rem 1.1rem; border-top: 1px solid #f0ece4; font-size: 0.92rem; line-height: 1.7; }
+        .body h3 { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bronze-dark); margin: 1.1rem 0 0.35rem; }
+        .body ol, .body ul { margin: 0; padding-left: 1.3rem; }
+        .body li { margin: 0 0 0.4rem; }
+        .need { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; padding: 0 !important; }
+        .need li { background: #faf7f2; border: 1px solid #e0d6c6; border-radius: 999px; padding: 0.05rem 0.7rem; font-size: 0.82rem; margin: 0; }
+        figure.prog { margin: 0.9rem 0 0; }
+        figure.prog .frame { background: #f7f5f1; border: 1px solid #ece7dd; border-radius: 8px; padding: 0.9rem; overflow-x: auto; }
+        figure.prog img { display: block; max-width: 100%; height: auto; }
+        figure.prog figcaption { font-size: 0.84rem; color: var(--gray-dark); margin-top: 0.35rem; line-height: 1.5; }
+        .see { background: #f3f8f4; border-left: 3px solid #2e7d4f; border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 0; }
+        .idea { background: #faf7f2; border-left: 3px solid var(--bronze-core); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 1rem 0 0; }
+        .key { border-collapse: collapse; margin: 0.9rem 0 0; }
+        .key th { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-dark); text-align: left; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid var(--bronze-light); }
+        .key td { font-size: 0.86rem; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid #ece7dd; }
+        .key td:first-child { font-size: 1rem; letter-spacing: 0.1em; white-space: nowrap; }
+        .docs { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .docs a, a.src { font-family: var(--font-ui); font-weight: 600; font-size: 0.8rem; text-decoration: none; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.3rem 0.7rem; display: inline-block; }
+        .docs a:hover, a.src:hover { border-color: var(--bronze-core); }
+        .srcline { margin: 1.1rem 0 0; }
+        .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-lg) 0 var(--gap-md); line-height: 1.6; }
+        .credit-note a { color: var(--bronze-light); }
+        @media (max-width: 860px) { .setup { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 560px) { .setup { grid-template-columns: 1fr; } details.lesson > summary { gap: 0.6rem; padding: 0.75rem 0.8rem; } }
+    </style>
+</head>
+<body>
+    <div class="container container--wide">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">MYP</a><span>·</span>
+            <a href="../../">Design</a><span>·</span>
+            <a href="../">Robotics &amp; Control</a><span>·</span>
+            Coding the TPBot
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">MYP Design · Year 8 · The robot car</span>
+            <h1>Coding the TPBot</h1>
+        </div>
+        <div class="rule--full"></div>
+
+        <p class="summary">Eleven lessons for the TPBot robot car. Each one is a short program to build, run on the floor and then change. Open a lesson to see what you need, the steps and the blocks.</p>
+
+        <h2>Getting the car ready</h2>
+        <ol class="setup">
+            <li><strong class="t">Add the TPBot blocks</strong>In MakeCode click <strong>Extensions</strong>, type <code>tpbot</code> and click the <strong>TPBot</strong> card. A teal drawer called TPBot joins the list.</li>
+            <li><strong class="t">Download</strong>Build your program and download it to the micro:bit, the same way as for your game.</li>
+            <li><strong class="t">Slot it in</strong>Unplug the micro:bit and push it into the slot on top of the car until it sits firmly.</li>
+            <li><strong class="t">Switch on, on the floor</strong>Put the car on the floor and press the power button once. Press it twice quickly to switch the car off.</li>
+        </ol>
+
+        <div class="bar"><h2>Lessons</h2><button type="button" id="toggle-all">Open all</button></div>
+
+        <details class="lesson" id="lesson-1">
+            <summary><span class="num">1</span><span class="st">Running control<span>Make the car drive: for a set time, on a button press, and round a curve.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>A clear patch of floor</li></ul>
+            <h3>Build it</h3><ol><li>Put <span class="blk blk-tp">Go Forward at speed 50 % for 2 seconds</span> inside <span class="blk blk-basic">on start</span>. Download it, slot the micro:bit into the car and switch the car on.</li><li>Build the second program. <span class="blk blk-tp">Go Forward at speed 50 %</span> starts the wheels and the car keeps going, so the program pauses for 2 seconds and then uses <span class="blk blk-tp">Stop the car immediately</span>.</li><li>Build the third program. <span class="blk blk-tp">Set left wheel speed at 50 % right wheel speed at 20 %</span> gives each wheel its own speed.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t01-a.png" width="392" height="104" loading="lazy" alt="MakeCode blocks. Program A. Drive for 2 seconds as soon as the car starts."></div><figcaption>Program A. Drive for 2 seconds as soon as the car starts.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/t01-b.png" width="263" height="182" loading="lazy" alt="MakeCode blocks. Program B. Drive for 2 seconds when you press A."></div><figcaption>Program B. Drive for 2 seconds when you press A.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/t01-c.png" width="472" height="181" loading="lazy" alt="MakeCode blocks. Program C. Two different wheel speeds make a curve."></div><figcaption>Program C. Two different wheel speeds make a curve.</figcaption></figure>
+            <h3>What happens</h3><p class="see">A: the car drives forward for 2 seconds and stops. B: the same, each time you press A. C: the car curves to the right, because the left wheel is turning faster.</p>
+            <p class="idea"><strong>The idea.</strong> The car remembers its last order. It keeps doing it until a new block tells it something else.</p>
+            <h3>Now change it</h3><ul><li>Change 50 % to 25 % in Program A. Measure how far the car goes each time.</li><li>Change Forward to Backward, Left and Right. Left and Right spin the car on the spot.</li><li>Swap the two wheel speeds in Program C and predict the curve before you run it.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_01" target="_blank" rel="noopener">ELECFREAKS Case 01</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-2">
+            <summary><span class="num">2</span><span class="st">Light control<span>Change the colour of the headlights with the buttons.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li></ul>
+            <h3>Build it</h3><ol><li>Add three button events. In each one put <span class="blk blk-tp">Set headlight color to</span> and click the colour to choose it.</li><li>Put <span class="blk blk-basic">show icon</span> in <span class="blk blk-basic">on start</span> so you can see the program has started.</li><li>Build the second program. <span class="blk blk-tp">Set headlight color to R: G: B:</span> mixes a colour from red, green and blue, each from 0 to 255. <span class="blk blk-tp">Turn off the headlights</span> switches them off.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t02-a.png" width="697" height="254" loading="lazy" alt="MakeCode blocks. Program A. A is red, B is blue, A and B together is green."></div><figcaption>Program A. A is red, B is blue, A and B together is green.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/t02-b.png" width="407" height="229" loading="lazy" alt="MakeCode blocks. Program B. White for 2 seconds, then off."></div><figcaption>Program B. White for 2 seconds, then off.</figcaption></figure>
+            <h3>What happens</h3><p class="see">A: the headlights turn red, blue or green as you press. B: the headlights shine white for 2 seconds and go out.</p>
+            <h3>Now change it</h3><ul><li>Mix your own colour with the R, G and B numbers. Try 255, 100, 0.</li><li>Make the headlights flash three times using a repeat block.</li><li>Make the headlights turn green while the car drives and red when it stops.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_02" target="_blank" rel="noopener">ELECFREAKS Case 02</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-3">
+            <summary><span class="num">3</span><span class="st">Line tracking<span>The car follows a black line using the two sensors underneath it.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>The TPBot map, or black tape on a pale floor</li></ul>
+            <h3>Build it</h3><ol><li>Put <span class="blk blk-basic">show icon</span> in <span class="blk blk-basic">on start</span>.</li><li>In <span class="blk blk-basic">forever</span>, add three <span class="blk blk-logic">if … then</span> blocks. Drop <span class="blk blk-tp">Line sensor state is</span> into each gap and choose a different pattern for each.</li><li>Inside each <span class="blk blk-logic">if</span>, add <span class="blk blk-tp">Set left wheel speed … right wheel speed …</span> with the speeds shown.</li><li>Place the car with the line between its two sensors and switch it on.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t03.png" width="680" height="376" loading="lazy" alt="MakeCode blocks. Black on both sides: drive straight. Black on one side only: slow that wheel to steer back."></div><figcaption>Black on both sides: drive straight. Black on one side only: slow that wheel to steer back.</figcaption></figure>
+            <table class="key"><tr><th>Block shows</th><th>The sensors see</th></tr><tr><td>● ●</td><td>black under both sensors</td></tr><tr><td>● ◌</td><td>black on the left, white on the right</td></tr><tr><td>◌ ●</td><td>white on the left, black on the right</td></tr><tr><td>◌ ◌</td><td>white under both sensors</td></tr></table>
+            <h3>What happens</h3><p class="see">The car drives along the line and steers itself back each time the line drifts to one side.</p>
+            <p class="idea"><strong>The idea.</strong> Stopping one wheel turns the car towards that side.</p>
+            <h3>Now change it</h3><ul><li>Raise all three speeds by 10. Find the fastest speed that still holds the line.</li><li>Turn the headlights a different colour for each sensor pattern.</li><li>If the car hums and stays still, the batteries are low: raise the speeds until it moves.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_03" target="_blank" rel="noopener">ELECFREAKS Case 03</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-4">
+            <summary><span class="num">4</span><span class="st">Obstacle-avoidance driving<span>The car measures the distance ahead and turns away from anything close.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>A box or a wall</li></ul>
+            <h3>Build it</h3><ol><li>Make a variable called <code>distance</code>.</li><li>In <span class="blk blk-basic">on start</span>: show an icon, set the headlights green and <span class="blk blk-tp">Go Forward at speed 40 %</span>.</li><li>In <span class="blk blk-basic">forever</span>, set <code>distance</code> to <span class="blk blk-tp">Sonar distance unit cm</span>. The two round eyes on the front are the sonar.</li><li>Add <span class="blk blk-logic">if … then</span> with the condition <code>distance &lt; 15 and distance ≠ 0</code>. Build it from <span class="blk blk-logic">and</span> with a comparison on each side. The sonar sends 0 when it has no reading, so the second half skips those.</li><li>Inside the if: stop, headlights red, reverse for 1 second, spin left for half a second, headlights green, drive forward again.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t04.png" width="906" height="416" loading="lazy" alt="MakeCode blocks. Drive until something is closer than 15 cm, then back away and turn."></div><figcaption>Drive until something is closer than 15 cm, then back away and turn.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The car drives with green headlights. Close to a box it stops, turns its lights red, reverses, turns left and drives on.</p>
+            <p class="idea"><strong>The idea.</strong> This is <strong>drive until</strong>: the car stops because of what a sensor measures.</p>
+            <h3>Now change it</h3><ul><li>Change 15 to 30 and watch how much earlier the car reacts.</li><li>Change Left to Right.</li><li>Show the distance on the micro:bit with show number.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_04" target="_blank" rel="noopener">ELECFREAKS Case 04</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-5">
+            <summary><span class="num">5</span><span class="st">Automatic lamp<span>The headlights switch on by themselves when it gets dark.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>Your hand, or a tunnel made from a box</li></ul>
+            <h3>Build it</h3><ol><li>In <span class="blk blk-basic">on start</span>, put <span class="blk blk-tp">Go Forward at speed 30 %</span>.</li><li>In <span class="blk blk-basic">forever</span>, add <span class="blk blk-logic">if … then … else</span>. The condition is <span class="blk blk-input">light level</span> <code>&lt; 30</code>. Light level runs from 0 for dark to 255 for bright.</li><li>In the <em>then</em> gap set the headlights white. In the <em>else</em> gap put <span class="blk blk-tp">Turn off the headlights</span>.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t05.png" width="620" height="250" loading="lazy" alt="MakeCode blocks. Dark: headlights on. Bright: headlights off."></div><figcaption>Dark: headlights on. Bright: headlights off.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The car drives forward. Cover the micro:bit's screen with your hand, or drive into the tunnel, and the headlights come on.</p>
+            <p class="idea"><strong>The idea.</strong> The micro:bit measures light with its own LED screen.</p>
+            <h3>Now change it</h3><ul><li>Show the light level on the micro:bit to find the number for your classroom.</li><li>Change 30 so the lights come on in the tunnel and go off outside it.</li><li>Choose a different headlight colour for the dark.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_05" target="_blank" rel="noopener">ELECFREAKS Case 05</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-6">
+            <summary><span class="num">6</span><span class="st">Drive at random<span>Each wheel gets a random speed, and the car makes up its own dance.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>A wide clear patch of floor</li></ul>
+            <h3>Build it</h3><ol><li>Make two variables, <code>left</code> and <code>right</code>.</li><li>In <span class="blk blk-basic">forever</span>, set each one to <span class="blk blk-math">pick random -100 to 100</span>.</li><li>Add <span class="blk blk-tp">Set left wheel speed … right wheel speed …</span> and drag the two variables into its gaps, then <span class="blk blk-basic">pause (ms) 2000</span>.</li><li>To finish, press the car's power button twice quickly.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t06.png" width="738" height="218" loading="lazy" alt="MakeCode blocks. New random speeds for both wheels every 2 seconds."></div><figcaption>New random speeds for both wheels every 2 seconds.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Every 2 seconds the car changes what it is doing: forward, backward, a curve or a spin.</p>
+            <p class="idea"><strong>The idea.</strong> A negative speed turns the wheel backwards.</p>
+            <h3>Now change it</h3><ul><li>Change the pause to 500 for a jumpier car.</li><li>Change the range to 0 to 100 so the car only goes forwards.</li><li>Give the headlights a random colour on each change, with three more random numbers from 0 to 255.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_06" target="_blank" rel="noopener">ELECFREAKS Case 06</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-7">
+            <summary><span class="num">7</span><span class="st">Here comes the police<span>A police car: driving forward with red and blue flashing lights.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li></ul>
+            <h3>Build it</h3><ol><li>In <span class="blk blk-basic">on start</span>: show an icon and <span class="blk blk-tp">Go Forward at speed 50 %</span>.</li><li>In <span class="blk blk-basic">forever</span>: headlights red, <span class="blk blk-basic">pause (ms) 100</span>, headlights blue, <span class="blk blk-basic">pause (ms) 100</span>.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t07.png" width="532" height="218" loading="lazy" alt="MakeCode blocks. The wheels are started once. The lights change inside forever."></div><figcaption>The wheels are started once. The lights change inside forever.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The car drives forward while its headlights flash red and blue.</p>
+            <p class="idea"><strong>The idea.</strong> The driving block is in on start because the car remembers it. Only the lights need repeating.</p>
+            <h3>Now change it</h3><ul><li>Change both pauses to 300 for a slower flash.</li><li>Make the car drive for 3 seconds and stop while the lights carry on flashing.</li><li>Design the lights for an ambulance or a recovery truck.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_07" target="_blank" rel="noopener">ELECFREAKS Case 07</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-8">
+            <summary><span class="num">8</span><span class="st">Parking at a set point<span>The car drives forward and parks itself on a black line.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>A strip of black tape across the car's path</li></ul>
+            <h3>Build it</h3><ol><li>In <span class="blk blk-basic">on start</span>: show an icon and <span class="blk blk-tp">Go Forward at speed 30 %</span>.</li><li>In <span class="blk blk-basic">forever</span>, add <span class="blk blk-logic">if … then</span> with <span class="blk blk-tp">Line sensor state is ● ●</span>. That pattern means black under both sensors.</li><li>Inside the if, put <span class="blk blk-tp">Stop the car immediately</span>.</li><li>Start the car about a metre back from the tape, pointing straight at it.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t08.png" width="638" height="168" loading="lazy" alt="MakeCode blocks. Drive until both sensors see black."></div><figcaption>Drive until both sensors see black.</figcaption></figure>
+            <table class="key"><tr><th>Block shows</th><th>The sensors see</th></tr><tr><td>● ●</td><td>black under both sensors</td></tr><tr><td>● ◌</td><td>black on the left, white on the right</td></tr><tr><td>◌ ●</td><td>white on the left, black on the right</td></tr><tr><td>◌ ◌</td><td>white under both sensors</td></tr></table>
+            <h3>What happens</h3><p class="see">The car drives forward and stops on the tape.</p>
+            <p class="idea"><strong>The idea.</strong> <strong>Drive until</strong> again, this time with the line sensors.</p>
+            <h3>Now change it</h3><ul><li>Raise the speed to 60 and measure how far past the tape the car rolls.</li><li>Turn the headlights green while driving and red once parked.</li><li>Make the car wait 2 seconds on the tape and then drive on to a second strip.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_08" target="_blank" rel="noopener">ELECFREAKS Case 08</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-9">
+            <summary><span class="num">9</span><span class="st">Seeking light<span>The car spins until it finds a bright light, then drives towards it.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>A torch, or a phone torch</li></ul>
+            <h3>Build it</h3><ol><li>In <span class="blk blk-basic">on start</span>, set the headlights white.</li><li>In <span class="blk blk-basic">forever</span>, add <span class="blk blk-logic">if … then … else</span> with the condition <span class="blk blk-input">light level</span> <code>&gt; 40</code>.</li><li>In the <em>then</em> gap put <span class="blk blk-tp">Go Forward at speed 50 %</span>. In the <em>else</em> gap put <span class="blk blk-tp">Go Left at speed 30 %</span>, which spins the car on the spot.</li><li>Put the car on the floor and shine the torch at the micro:bit's screen.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t09.png" width="590" height="253" loading="lazy" alt="MakeCode blocks. Bright: drive forward. Dim: spin and look for the light."></div><figcaption>Bright: drive forward. Dim: spin and look for the light.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The car spins on the spot. When the torch shines on the micro:bit it drives forward, and it spins again when the light moves away.</p>
+            <h3>Now change it</h3><ul><li>Show the light level on the micro:bit to find the number that suits your room.</li><li>Change 40 so that only the torch sets the car driving.</li><li>Lead the car round a chair with the torch.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_09" target="_blank" rel="noopener">ELECFREAKS Case 09</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-10">
+            <summary><span class="num">10</span><span class="st">Fall-arrest TPBot<span>The car stays inside a border of black tape.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>Black tape laid as a large box on a pale floor</li></ul>
+            <h3>Build it</h3><ol><li>In <span class="blk blk-basic">on start</span>: show an icon and set the headlights white.</li><li>In <span class="blk blk-basic">forever</span>, add <span class="blk blk-logic">if … then … else</span>. Build the condition from <span class="blk blk-logic">not</span> with <span class="blk blk-tp">Line sensor state is ◌ ◌</span> inside it. It reads: the sensors are <em>not</em> both on white.</li><li>In the <em>then</em> gap: reverse at 30 % for 1 second, then spin left at 30 % for half a second.</li><li>In the <em>else</em> gap: <span class="blk blk-tp">Go Forward at speed 30 %</span>.</li><li>Place the car inside the tape box and switch it on.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t10.png" width="682" height="294" loading="lazy" alt="MakeCode blocks. Any black under the car: back away and turn. All white: drive on."></div><figcaption>Any black under the car: back away and turn. All white: drive on.</figcaption></figure>
+            <table class="key"><tr><th>Block shows</th><th>The sensors see</th></tr><tr><td>● ●</td><td>black under both sensors</td></tr><tr><td>● ◌</td><td>black on the left, white on the right</td></tr><tr><td>◌ ●</td><td>white on the left, black on the right</td></tr><tr><td>◌ ◌</td><td>white under both sensors</td></tr></table>
+            <h3>What happens</h3><p class="see">The car wanders inside the box. Each time a sensor reaches the tape it reverses, turns and sets off in a new direction.</p>
+            <p class="idea"><strong>The idea.</strong> ELECFREAKS call this fall-arrest because tape along a table edge keeps the car on the table. A tape box on the floor shows the same idea.</p>
+            <h3>Now change it</h3><ul><li>Change the half second of turning to a random time between 0.3 and 1 second.</li><li>Flash the headlights red each time the car reaches the tape.</li><li>Count the number of times the car reaches the tape and show the count on the micro:bit.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_10" target="_blank" rel="noopener">ELECFREAKS Case 10</a></p>
+            </div></details>
+
+        <details class="lesson" id="lesson-11">
+            <summary><span class="num">11</span><span class="st">Following with a fixed distance<span>The car keeps a steady gap behind whatever is in front of it.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>micro:bit</li><li>A book to hold in front of the car, or a second car</li></ul>
+            <h3>Build it</h3><ol><li>Make a variable called <code>distance</code>.</li><li>In <span class="blk blk-basic">forever</span>, set <code>distance</code> to <span class="blk blk-tp">Sonar distance unit cm</span>.</li><li>Add <span class="blk blk-logic">if … then … else</span> and press its <strong>+</strong> to make an <em>else if</em>. First condition: <code>distance &gt; 10 and distance &lt; 20</code>. Second condition: <code>distance &lt; 10</code>.</li><li>Set both wheels to 0 in the first gap, to -30 in the second and to 30 in the else gap.</li><li>Hold the book about 15 cm in front of the car, then move it slowly away and slowly back.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/t11.png" width="805" height="379" loading="lazy" alt="MakeCode blocks. Between 10 and 20 cm: stay. Closer: back away. Further: catch up."></div><figcaption>Between 10 and 20 cm: stay. Closer: back away. Further: catch up.</figcaption></figure>
+            <h3>What happens</h3><p class="see">The car follows the book forwards and backs away when the book comes close, keeping a gap of 10 to 20 cm.</p>
+            <p class="idea"><strong>The idea.</strong> Three answers to one measurement: too close, just right, too far.</p>
+            <h3>Now change it</h3><ul><li>Change the gap to between 20 and 30 cm.</li><li>Use a headlight colour for each of the three answers.</li><li>Line up two cars, one following the other, with a person leading the front car.</li></ul>
+            <p class="srcline"><a class="src" href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/TPBot_tianpeng_case_11" target="_blank" rel="noopener">ELECFREAKS Case 11</a></p>
+            </div></details>
+
+        <div class="credit-note">These eleven lessons follow Cases 01 to 11 of the <a href="https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/" target="_blank" rel="noopener">TPBot guide by ELECFREAKS</a>, who make the car. Each lesson links to its original case. The programs here were rebuilt with the current TPBot blocks and the instructions written for this class. Block pictures are drawn by <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>.</div>
+
+        <footer class="site-footer">The Vault · MYP Design · Robotics &amp; Control · 2026</footer>
+    </div>
+
+    <script>
+    (function () {
+        var all = Array.prototype.slice.call(document.querySelectorAll('details.lesson'));
+        var btn = document.getElementById('toggle-all');
+        function label() { btn.textContent = all.every(function (d) { return d.open; }) ? 'Close all' : 'Open all'; }
+        function fromHash() {
+            var d = location.hash && document.getElementById(location.hash.slice(1));
+            if (d && d.tagName === 'DETAILS') { d.open = true; d.scrollIntoView(); }
+        }
+        btn.addEventListener('click', function () {
+            var open = !all.every(function (d) { return d.open; });
+            all.forEach(function (d) { d.open = open; });
+        });
+        all.forEach(function (d) {
+            d.addEventListener('toggle', function () {
+                label();
+                if (d.open && history.replaceState) history.replaceState(null, '', '#' + d.id);
+            });
+        });
+        window.addEventListener('hashchange', fromHash);
+        fromHash(); label();
+    })();
+    </script>
+</body>
+</html>
