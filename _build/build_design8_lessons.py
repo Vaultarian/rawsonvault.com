@@ -36,7 +36,7 @@ M_START, M_END = "<!-- DESIGN8-LESSONS:START -->", "<!-- DESIGN8-LESSONS:END -->
 ANCHOR = "        <!-- UNITS:START -->"
 # Which pages are live. Alex, 19 Nov 2026: publish the TPBot page; the MakeCode page is
 # built and approved by eye but waits for his word. Add "makecode" to publish it.
-LIVE = tuple(os.environ.get("DESIGN8_LIVE", "tpbot").split(","))  # preview both: DESIGN8_LIVE=makecode,tpbot
+LIVE = tuple(os.environ.get("DESIGN8_LIVE", "makecode,tpbot").split(","))  # preview both: DESIGN8_LIVE=makecode,tpbot
 TPBOT_PKG = "tpbot=github:elecfreaks/pxt-tpbot#v2.0.7"
 WIKI = "https://wiki.elecfreaks.com/en/microbit/microbit-smart-car/microbit-tpbot/"
 FILES = "../../../../classes/design-8a/files/"
