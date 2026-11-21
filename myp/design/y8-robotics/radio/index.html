@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio: micro:bits talking — MYP Design — The Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../vault.css">
+    <style>
+        body { animation: none; }
+        .summary, .lesson, .setup li, .key td { font-family: var(--font-body); color: var(--ink-black); }
+        .summary { font-size: 0.95rem; line-height: 1.7; margin: var(--gap-xs) 0 var(--gap-md); }
+        code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.86em; background: #f0ece4; border-radius: 3px; padding: 0.05em 0.3em; }
+        .blk { display: inline-block; font-family: var(--font-ui); font-weight: 600; font-size: 0.8em; color: #fff; border-radius: 4px; padding: 0.05em 0.45em; white-space: nowrap; line-height: 1.5; }
+        .blk-tp { background: #32b9b9; } .blk-basic { background: #1e90ff; } .blk-input { background: #d400d4; }
+        .blk-logic { background: #00a4a6; } .blk-loops { background: #00aa00; } .blk-vars { background: #dc143c; } .blk-math { background: #9400d3; }
+        .blk-radio { background: #e3008c; } .blk-game { background: #007a4b; } .blk-arrays { background: #e65722; } .blk-led { background: #5c2d91; }
+        .setup { counter-reset: step; list-style: none; margin: 0 0 var(--gap-md); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+        .setup li { counter-increment: step; background: #fff; border: 1px solid #e6dfd2; border-radius: 8px; padding: 0.9rem 1rem 1rem; font-size: 0.88rem; line-height: 1.6; }
+        .setup li::before { content: "Step " counter(step); display: block; font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--bronze-core); margin-bottom: 0.3rem; }
+        .setup strong.t { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.25rem; }
+        .bar { display: flex; justify-content: space-between; align-items: baseline; margin: var(--gap-md) 0 var(--gap-xs); }
+        .bar h2 { margin: 0; }
+        .group-intro { font-family: var(--font-body); font-size: 0.92rem; line-height: 1.7; color: var(--ink-black); margin: 0 0 var(--gap-xs); }
+        .bar button { font-family: var(--font-ui); font-weight: 600; font-size: 0.78rem; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer; }
+        .bar button:hover { border-color: var(--bronze-core); }
+        details.lesson { background: #fff; border: 1px solid #e6dfd2; border-radius: 10px; margin: 0 0 0.6rem; scroll-margin-top: 1rem; }
+        details.lesson[open] { border-color: var(--bronze-light); }
+        details.lesson > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 0.9rem; align-items: center; padding: 0.85rem 1rem; }
+        details.lesson > summary::-webkit-details-marker { display: none; }
+        .num { font-family: var(--font-ui); font-weight: 600; font-size: 0.85rem; color: #fff; background: var(--bronze-core); border-radius: 999px; min-width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; }
+        .st { font-family: var(--font-heading); font-size: 1.05rem; color: var(--ink-black); }
+        .st span { display: block; font-family: var(--font-body); font-size: 0.86rem; color: var(--gray-dark); line-height: 1.5; margin-top: 0.1rem; }
+        .chev { width: 0.6rem; height: 0.6rem; border-right: 2px solid var(--bronze-core); border-bottom: 2px solid var(--bronze-core); transform: rotate(45deg); transition: transform 0.15s; margin-right: 0.3rem; }
+        details[open] > summary .chev { transform: rotate(-135deg); }
+        .body { padding: 0.2rem 1.1rem 1.1rem; border-top: 1px solid #f0ece4; font-size: 0.92rem; line-height: 1.7; }
+        .body p.how { margin: 0; }
+        .body h3 { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bronze-dark); margin: 1.1rem 0 0.35rem; }
+        .body ol, .body ul { margin: 0; padding-left: 1.3rem; }
+        .body li { margin: 0 0 0.4rem; }
+        .need { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; padding: 0 !important; }
+        .need li { background: #faf7f2; border: 1px solid #e0d6c6; border-radius: 999px; padding: 0.05rem 0.7rem; font-size: 0.82rem; margin: 0; }
+        figure.prog { margin: 0.9rem 0 0; }
+        figure.prog .frame { background: #f7f5f1; border: 1px solid #ece7dd; border-radius: 8px; padding: 0.9rem; overflow-x: auto; }
+        figure.prog img { display: block; max-width: 100%; height: auto; }
+        figure.prog figcaption { font-size: 0.84rem; color: var(--gray-dark); margin-top: 0.35rem; line-height: 1.5; }
+        .see { background: #f3f8f4; border-left: 3px solid #2e7d4f; border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 0; }
+        .idea { background: #faf7f2; border-left: 3px solid var(--bronze-core); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin: 1rem 0 0; }
+        .key { border-collapse: collapse; margin: 0.9rem 0 0; }
+        .key th { font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-dark); text-align: left; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid var(--bronze-light); }
+        .key td { font-size: 0.86rem; padding: 0.25rem 0.9rem 0.25rem 0; border-bottom: 1px solid #ece7dd; }
+        .key td:first-child { font-size: 1rem; letter-spacing: 0.1em; white-space: nowrap; }
+        .docs { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .docs a, a.src { font-family: var(--font-ui); font-weight: 600; font-size: 0.8rem; text-decoration: none; color: var(--bronze-dark); background: #fff; border: 1px solid #e0d6c6; border-radius: 6px; padding: 0.3rem 0.7rem; display: inline-block; }
+        .docs a:hover, a.src:hover { border-color: var(--bronze-core); }
+        .srcline { margin: 1.1rem 0 0; }
+        .credit-note { font-family: var(--font-body); font-size: 0.85rem; color: var(--gray-dark); font-style: italic; background: #faf7f2; border: 1px solid #f0ece4; border-radius: 4px; padding: var(--gap-sm) var(--gap-md); margin: var(--gap-lg) 0 var(--gap-md); line-height: 1.6; }
+        .credit-note a { color: var(--bronze-light); }
+        @media (max-width: 860px) { .setup { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 560px) { .setup { grid-template-columns: 1fr; } details.lesson > summary { gap: 0.6rem; padding: 0.75rem 0.8rem; } }
+    </style>
+</head>
+<body>
+    <div class="container container--wide">
+        <nav class="breadcrumb">
+            <a href="../../../../">The Vault</a><span>·</span>
+            <a href="../../../">MYP</a><span>·</span>
+            <a href="../../">Design</a><span>·</span>
+            <a href="../">Robotics &amp; Control</a><span>·</span>
+            Radio
+        </nav>
+        <div class="section-header">
+            <span class="eyebrow">MYP Design · Year 8 · Radio</span>
+            <h1>Radio: micro:bits talking</h1>
+        </div>
+        <div class="rule--full"></div>
+
+        <p class="summary">Two micro:bits can talk by radio. Start by sending a number from one to the other, then build a tilt remote and drive the TPBot with it. Open a lesson to see what you need, the steps and the blocks.</p>
+
+        <div class="idea" style="margin:0 0 var(--gap-md);"><strong>Download first.</strong> Each pair needs one laptop
+        that downloads code to the micro:bit. If your laptop will not download to the micro:bit, join a classmate
+        whose laptop does, and build on theirs together.</div>
+
+        <h2>Getting the car ready</h2>
+        <ol class="setup">
+            <li><strong class="t">Open Extensions</strong>At the bottom of the block list, click <strong>Extensions</strong>.
+                <img src="../blocks/radio-ext-list.png" width="160" alt="The Extensions button at the bottom of the MakeCode block list." style="display:block;margin-top:0.5rem;max-width:100%;height:auto"></li>
+            <li><strong class="t">Search for TPBot</strong>Type <code>TPBot</code> in the search box and press Enter.
+                <img src="../blocks/radio-ext-search.png" width="220" alt="The Extensions search box with TPBot typed in it." style="display:block;margin-top:0.5rem;max-width:100%;height:auto"></li>
+            <li><strong class="t">Click the TPBot card</strong>Click the picture of the blue car.
+                <img src="../blocks/radio-ext-card.png" width="150" alt="The TPBot extension card." style="display:block;margin-top:0.5rem;max-width:100%;height:auto"></li>
+            <li><strong class="t">The teal drawer appears</strong>A teal <strong>TPBot</strong> drawer joins the list. The pink <strong>Radio</strong> drawer is already there.
+                <img src="../blocks/radio-ext-drawer.png" width="160" alt="The teal TPBot drawer in the block list, above Extensions." style="display:block;margin-top:0.5rem;max-width:100%;height:auto"></li>
+        </ol>
+
+        <h2>Your radio group</h2>
+        <p class="summary" style="margin-top:0">Two micro:bits hear each other only when they are on the same <strong>radio group</strong>.
+        Use your <strong>car's number</strong> as the group, in both programs, so every pair drives only its own car.
+        <span class="blk blk-radio">radio set group</span> is the first block in the pink Radio drawer.</p>
+
+        <div class="bar"><h2>Lessons</h2><button type="button" id="toggle-all">Open all</button></div>
+
+        <details class="lesson" id="lesson-1">
+            <summary><span class="num">1</span><span class="st">Two micro:bits talking<span>Press a button on one micro:bit and a number appears on the other.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>Two micro:bits</li><li>USB cable</li><li>A battery pack, or a second laptop</li></ul>
+            <h3>Build it</h3><ol><li>Start a new project called <code>talk</code>. Put <span class="blk blk-radio">radio set group 1</span> in <span class="blk blk-basic">on start</span>. Change 1 to your car's number.</li><li>Add <span class="blk blk-input">on button A pressed</span> with <span class="blk blk-radio">radio send number 1</span> inside, and the same for B with 2.</li><li>Add <span class="blk blk-radio">on radio received receivedNumber</span> with <span class="blk blk-basic">show number</span> inside. Drag <code>receivedNumber</code> from the pink block into the gap.</li><li>Download the <strong>same program to both</strong> micro:bits. Press A on one and watch the other.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/r1-talk.png" width="640" height="249" loading="lazy" alt="MakeCode blocks. One program for both micro:bits: each one can send and receive."></div><figcaption>One program for both micro:bits: each one can send and receive.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Press A on one micro:bit and the other shows 1. Press B and it shows 2. It works both ways.</p>
+            <p class="idea"><strong>The idea.</strong> The radio sends a <strong>message</strong>, and the group number decides <strong>who hears it</strong>.</p>
+            <h3>Now change it</h3><ul><li>Send a different number on A+B.</li><li>Show an icon instead of the number when 1 arrives.</li><li>Try <span class="blk blk-radio">radio send string</span> to send a word, and <span class="blk blk-radio">on radio received receivedString</span> to show it.</li></ul>
+            </div></details>
+
+        <details class="lesson" id="lesson-2">
+            <summary><span class="num">2</span><span class="st">A tilt remote for the TPBot<span>Tip one micro:bit like a steering wheel and the car drives.</span></span><span class="chev"></span></summary>
+            <div class="body">
+            
+            <h3>You need</h3><ul class="need"><li>TPBot</li><li>Two micro:bits</li><li>USB cable</li><li>A clear patch of floor</li></ul>
+            <h3>Build it</h3><ol><li>Build the <strong>remote</strong> in a project called <code>remote</code>. Each <span class="blk blk-basic">forever</span> holds a <span class="blk blk-loops">while</span> with <span class="blk blk-input">is logo down gesture</span> and <span class="blk blk-radio">radio send</span>.</li><li>To name a message, click the dropdown in <span class="blk blk-radio">radio send</span>, choose <strong>New message</strong> and type <code>forward</code>. Make <code>back</code>, <code>left</code>, <code>right</code> and <code>stop</code> the same way, in small letters.</li><li>Download the remote to the micro:bit that stays in your hand.</li><li>Build the <strong>car</strong> in a project called <code>car-2</code>, with the TPBot extension. Add one <span class="blk blk-radio">on radio … received</span> for each message, using exactly the same five names.</li><li>Use the same group number in both projects. Download the car program to the second micro:bit and slot it into the car.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/radio-remote.png" width="562" loading="lazy" alt="The remote. Tip forward, back, left or right to drive; shake to stop."></div><figcaption>The remote. Tip forward, back, left or right to drive; shake to stop.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/radio-car.png" width="760" loading="lazy" alt="The car. Each message sets the two wheel speeds."></div><figcaption>The car. Each message sets the two wheel speeds.</figcaption></figure>
+            <h3>What happens</h3><p class="see">Tip the remote forward and the car drives forward. Tip it back, left or right and the car follows. Shake it and the car stops.</p>
+            <p class="idea"><strong>The idea.</strong> The car keeps doing its last order until a new message arrives, so <strong>stop</strong> is a message too.</p>
+            <h3>Now change it</h3><ul><li>Change 50 to 30 in every block for a slower, easier car.</li><li>Make the left and right turns gentler: try 0 and 50 instead of −50 and 50.</li><li>Turn the headlights green on forward and red on stop.</li></ul>
+            </div></details>
+
+        <div class="credit-note">The tilt remote and car programs are Mr. Rawson's. Block pictures are from <a href="https://makecode.microbit.org" target="_blank" rel="noopener">Microsoft MakeCode</a>. The robot car lessons are on the <a href="../tpbot/">Coding the TPBot</a> page.</div>
+
+        <footer class="site-footer">The Vault · MYP Design · Robotics &amp; Control · 2026</footer>
+    </div>
+
+    <script>
+    (function () {
+        var all = Array.prototype.slice.call(document.querySelectorAll('details.lesson'));
+        var btn = document.getElementById('toggle-all');
+        function label() { btn.textContent = all.every(function (d) { return d.open; }) ? 'Close all' : 'Open all'; }
+        function fromHash() {
+            var d = location.hash && document.getElementById(location.hash.slice(1));
+            if (d && d.tagName === 'DETAILS') { d.open = true; d.scrollIntoView(); }
+        }
+        btn.addEventListener('click', function () {
+            var open = !all.every(function (d) { return d.open; });
+            all.forEach(function (d) { d.open = open; });
+        });
+        all.forEach(function (d) {
+            d.addEventListener('toggle', function () {
+                label();
+                if (d.open && history.replaceState) history.replaceState(null, '', '#' + d.id);
+            });
+        });
+        window.addEventListener('hashchange', fromHash);
+        fromHash(); label();
+    })();
+    </script>
+</body>
+</html>
