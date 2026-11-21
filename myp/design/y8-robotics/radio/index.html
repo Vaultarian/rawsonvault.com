@@ -79,9 +79,15 @@
 
         <p class="summary">Two micro:bits can talk by radio. Start by sending a number from one to the other, then build a tilt remote and drive the TPBot with it. Open a lesson to see what you need, the steps and the blocks.</p>
 
-        <div class="idea" style="margin:0 0 var(--gap-md);"><strong>Download first.</strong> Each pair needs one laptop
-        that downloads code to the micro:bit. If your laptop will not download to the micro:bit, join a classmate
-        whose laptop does, and build on theirs together.</div>
+        <div style="border:1px solid #333;border-radius:6px;padding:0.7rem 1rem;margin:0 0 var(--gap-md);font-family:var(--font-body);line-height:1.6"><strong>Computer access.</strong>
+        If your laptop will not connect to the micro:bit, sit with a classmate whose laptop has downloaded code before,
+        and build on theirs together.</div>
+
+        <h2>Radio on the micro:bit</h2>
+        <p class="summary" style="margin-top:0">Every micro:bit has a small <strong>radio</strong> built in. It sends short
+        messages through the air to other micro:bits nearby: no wires and no internet. In lesson 2 one micro:bit is a
+        <strong>remote</strong> in your hand. You tip it, it sends a message such as <code>forward</code>, and the
+        micro:bit in the car hears it and drives.</p>
 
         <h2>Getting the car ready</h2>
         <ol class="setup">
@@ -119,8 +125,8 @@
             <div class="body">
             
             <h3>You need</h3><ul class="need"><li>TPBot</li><li>Two micro:bits</li><li>USB cable</li><li>A clear patch of floor</li></ul>
-            <h3>Build it</h3><ol><li>Build the <strong>remote</strong> in a project called <code>remote</code>. Each <span class="blk blk-basic">forever</span> holds a <span class="blk blk-loops">while</span> with <span class="blk blk-input">is logo down gesture</span> and <span class="blk blk-radio">radio send</span>.</li><li>To name a message, click the dropdown in <span class="blk blk-radio">radio send</span>, choose <strong>New message</strong> and type <code>forward</code>. Make <code>back</code>, <code>left</code>, <code>right</code> and <code>stop</code> the same way, in small letters.</li><li>Download the remote to the micro:bit that stays in your hand.</li><li>Build the <strong>car</strong> in a project called <code>car-2</code>, with the TPBot extension. Add one <span class="blk blk-radio">on radio … received</span> for each message, using exactly the same five names.</li><li>Use the same group number in both projects. Download the car program to the second micro:bit and slot it into the car.</li></ol>
-            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/radio-remote.png" width="562" loading="lazy" alt="The remote. Tip forward, back, left or right to drive; shake to stop."></div><figcaption>The remote. Tip forward, back, left or right to drive; shake to stop.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/radio-car.png" width="500" loading="lazy" alt="The car. Each message sets the two wheel speeds."></div><figcaption>The car. Each message sets the two wheel speeds.</figcaption></figure>
+            <h3>Build it</h3><ol><li>Build the <strong>remote</strong> in a project called <code>remote</code>. Each <span class="blk blk-basic">forever</span> holds a <span class="blk blk-loops">while</span> with <span class="blk blk-input">is logo down gesture</span> and <span class="blk blk-radio">radio send</span>.</li><li>To name a message, click the dropdown in <span class="blk blk-radio">radio send</span>, choose <strong>New message</strong> and type <code>forward</code>. Make <code>back</code>, <code>left</code>, <code>right</code> and <code>stop</code> the same way, in small letters.</li><li>Above each <span class="blk blk-radio">radio send</span>, add <span class="blk blk-basic">show arrow</span> pointing the way the car will go, and <span class="blk blk-basic">show icon</span> with a cross for <code>stop</code>. The remote's screen shows what you are sending.</li><li>Download the remote to the micro:bit that stays in your hand.</li><li>Build the <strong>car</strong> in a project called <code>car-2</code>, with the TPBot extension. Add one <span class="blk blk-radio">on radio … received</span> for each message, using exactly the same five names.</li><li>Use the same group number in both projects. Download the car program to the second micro:bit and slot it into the car.</li></ol>
+            <h3>The blocks</h3><figure class="prog"><div class="frame"><img src="../blocks/radio-remote.png" width="520" loading="lazy" alt="The remote. Tip forward, back, left or right to drive, and the screen shows an arrow; shake to stop."></div><figcaption>The remote. Tip forward, back, left or right to drive, and the screen shows an arrow; shake to stop.</figcaption></figure><figure class="prog"><div class="frame"><img src="../blocks/radio-car.png" width="500" loading="lazy" alt="The car. Each message sets the two wheel speeds."></div><figcaption>The car. Each message sets the two wheel speeds.</figcaption></figure>
             <h3>What happens</h3><p class="see">Tip the remote forward and the car drives forward. Tip it back, left or right and the car follows. Shake it and the car stops.</p>
             <p class="idea"><strong>The idea.</strong> The car keeps doing its last order until a new message arrives, so <strong>stop</strong> is a message too.</p>
             <h3>Now change it</h3><ul><li>Change 50 to 30 in every block for a slower, easier car.</li><li>Make the left and right turns gentler: try 0 and 50 instead of −50 and 50.</li><li>Turn the headlights green on forward and red on stop.</li></ul>
