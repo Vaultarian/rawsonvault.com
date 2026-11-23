@@ -149,6 +149,18 @@ PHET_URL = re.compile(r"^https?://([a-z0-9-]+\.)*phet\.colorado\.edu/", re.I)
 ICON_PHET = ('<img class="doc-ico" width="22" height="22" alt="" '
              'src="data:image/png;base64,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">')
 
+# Patrick Smith's sites (physicalsmithness.github.io -- the Trilogy Physics app,
+# "Smithics") render as a document row whose icon is his own 3x3 green mark, the
+# way PhET gets its favicon. The mark is the app's rel=icon SVG
+# (https://physicalsmithness.github.io/trilogyphysics/app/smithics-product-favicon.svg),
+# inlined so the class pages carry no extra file; copies of the SVG and the
+# 180px PNG sit in images/third-party/smithics*.  Used only to label a link to
+# his own site. Added 2026-11-23 for the Trilogy App beside the Forces 2 review.
+SMITHICS_URL = re.compile(r"^https?://physicalsmithness\.github\.io/", re.I)
+ICON_SMITHICS = ('<svg class="doc-ico" viewBox="0 0 64 64" width="22" height="22" '
+                 'aria-hidden="true" focusable="false">'
+                 '<rect x="9" y="9" width="13" height="13" rx="2" fill="#2E7D57"></rect><rect x="26" y="9" width="13" height="13" rx="2" fill="#A8CBB7"></rect><rect x="43" y="9" width="13" height="13" rx="2" fill="#EDE9DD"></rect><rect x="9" y="26" width="13" height="13" rx="2" fill="#5BA07E"></rect><rect x="26" y="26" width="13" height="13" rx="2" fill="#2E7D57"></rect><rect x="43" y="26" width="13" height="13" rx="2" fill="#A8CBB7"></rect><rect x="9" y="43" width="13" height="13" rx="2" fill="#EDE9DD"></rect><rect x="26" y="43" width="13" height="13" rx="2" fill="#5BA07E"></rect><rect x="43" y="43" width="13" height="13" rx="2" fill="#2E7D57"></rect></svg>')
+
 # Slides: hand-built, not copied from images/third-party/google-slides.svg --
 # that swap (2026-09-20) turned out to have the exact same bug as the first
 # ICON_VIDEO attempt (a line-split silently dropped a required path-data
@@ -938,7 +950,9 @@ def render_class(name, subtitle, weeks):
             webs = [(u, lbl) for u, lbl in webs if not INTERNAL_URL.search(u)]
             phets = [(u, lbl) for u, lbl in webs if PHET_URL.search(u)]
             webs = [(u, lbl) for u, lbl in webs if not PHET_URL.search(u)]
-            if en["docs"] or vids or drives or internal or phets:
+            smiths = [(u, lbl) for u, lbl in webs if SMITHICS_URL.search(u)]
+            webs = [(u, lbl) for u, lbl in webs if not SMITHICS_URL.search(u)]
+            if en["docs"] or vids or drives or internal or phets or smiths:
                 # Group by label, not by item. Two Publish: entries that share
                 # the EXACT same label text land on one row with both icons,
                 # in the order they were listed -- this is how a lesson gets
@@ -992,6 +1006,10 @@ def render_class(name, subtitle, weeks):
                     _add(lbl, f'<a class="doc-link" href="{e(u)}" target="_blank"'
                               f' rel="noopener noreferrer" title="PhET simulation"'
                               f' aria-label="{e(lbl)} — PhET simulation">{ICON_PHET}</a>')
+                for u, lbl in smiths:
+                    _add(lbl, f'<a class="doc-link" href="{e(u)}" target="_blank"'
+                              f' rel="noopener noreferrer" title="Trilogy Physics, Patrick Smith"'
+                              f' aria-label="{e(lbl)} — Trilogy Physics, Patrick Smith">{ICON_SMITHICS}</a>')
                 for u, lbl in vids:
                     _add(lbl, f'<a class="doc-link" href="{e(u)}" target="_blank"'
                               f' rel="noopener noreferrer" title="Video"'
