@@ -27,6 +27,34 @@
      what = the headline (in bold), more = the detail underneath */
 (function () {
   var NEWS = [
+    { emoji:'✂️', when:'21 Nov', title:'LDLC: Crop and shape, and infinity tilt',
+      what:'New in Advanced: Crop and shape, next to the Eraser. Click a block and drag its green circles to change its shape, as big as the whole level.',
+      more:'Click a line to add a circle, and choose Curved (a bump) or Hard (a point). The hero walks up slopes and bumps, and a shape only hits you where it really is. ' +
+           'Tilt can be infinity: click in the Tilt box and press I, and it keeps turning forever. ' +
+           'Back to how it was puts the shape back, and a new circle has Curved and Hard buttons under it.',
+      look:'ldlc/levels.html' },
+    { emoji:'🕳️', when:'20 Nov', title:'Throw It In: no emoji, a box, red tape and hitboxes',
+      what:'All 150 pieces of junk are real 3D shapes now, and junk is solid: every piece has a hitbox that fits its shape.',
+      more:'The yard starts 16 metres by 10 metres and grows. The money waits in the hole until the bonus bar runs out. ' +
+           'Vacuum cleaners are see-through, so you can see what they sucked up, and their eyebrows slant down when you pick them up. 30 out of 100 put dust on a machine, and it is broken for as long as they were on it. ' +
+           'Press X at the cleaner box to return it: it leaves 5 vacuum cleaners that tape up the hole, and you click each piece of tape 10 times to pull it off. ' +
+           'New tool: a box that holds junk. Press F to flip it and tip the junk out. Put it in the hole and it bonks you on the head! ' +
+           'Each machine has a red X where its junk lands, the tools are half the size, and junk, coins, the box and the tape are still there when you reload. ' +
+           'HOLE GROWS BIGGER now shows the three words one under the other, over the game.',
+      play:'throw-it-in/' },
+    { emoji:'🕳️', when:'19 Nov', title:'Throw It In: a brand new 3D game',
+      what:'Turn the wheels on the machine, junk shoots out, and you throw it in the hole. The hole chucks coins back out!',
+      more:'There are 150 pieces of junk, plus gold junk (times 3) and silver junk (times 2). The coins are bronze, silver, gold and plasma. ' +
+           'Buy fans, trampolines, panels and a junk magnet, and get combos by throwing junk in quickly. ' +
+           'At 100 pieces of junk the screen says HOLE GROWS BIGGER, the hedge moves out and the hole zooms to a new place. ' +
+           'Watch out for the cleaner box and its vacuum cleaners. And you can jump down the hole yourself!',
+      play:'throw-it-in/' },
+    { emoji:'🚀', when:'19 Nov', title:'Trampoline Tramp: the sky update',
+      what:'With zero gravity, a GO BACK DOWN button appears when you are over 30 feet up. And the air runs out if you go too high!',
+      more:'The game tells you when you pass each layer of the sky: the troposphere, the stratosphere, the mesosphere and the thermosphere. ' +
+           'Above the troposphere a pulsing red air bar appears. It empties in 15 seconds, and then the game starts over. Come back down and it fills up again. ' +
+           'The flickering on the far-away mountains is fixed too.',
+      play:'trampoline-tramp/' },
     { emoji:'✨', when:'17 Nov', title:'Trampoline Tramp: power orbs, getting sick, and pick your season',
       what:'Catch a glowing power orb and watch an ad for 1 minute of every upgrade and infinite coins and money. But bounce too much and you get sick!',
       more:'A small glowing orb with spinning rings waits in front of you when you press Play, and every minute there is a 1 in 4 chance another one appears in the yard. ' +

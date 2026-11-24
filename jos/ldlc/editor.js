@@ -194,6 +194,72 @@ function find(type) {
   return f ? { x:f.x, y:f.y, c:f.c } : null;
 }
 
+/* ---------- Jos (21 Nov): Crop and shape ----------
+   A shaped block keeps a list of corners (green circles), in its own square: 0,0 is the top left and 1,1 the bottom right.
+   A corner can go anywhere in the level (Jos, 21 Nov: no limit), so a block can be pulled huge as well as cut smaller.
+   Each corner is Hard (a sharp point, like a triangle) or Curved (the line bends through it, like a bump). */
+let shapeId = null, shapeDrag = null;        // the block being shaped, and the circle being dragged
+let shapePick = null;                        // Jos (23 Nov): the circle with the Curved and Hard buttons under it
+const SQUARE = () => [{ x:0, y:0, k:'hard' }, { x:1, y:0, k:'hard' }, { x:1, y:1, k:'hard' }, { x:0, y:1, k:'hard' }];
+function shapeOutline(pts) {                // the outline as lots of short straight lines (a curve is 16 of them)
+  const n = pts.length, out = [];
+  pts.forEach((P, i) => {
+    if (P.k !== 'curve') { out.push([P.x, P.y]); return; }
+    const A = pts[(i + n - 1) % n], B = pts[(i + 1) % n];
+    const qx = 2 * P.x - (A.x + B.x) / 2, qy = 2 * P.y - (A.y + B.y) / 2;        // so the curve goes right through the circle
+    for (let k = 1; k < 16; k++) { const t = k / 16, u = 1 - t; out.push([u * u * A.x + 2 * u * t * qx + t * t * B.x, u * u * A.y + 2 * u * t * qy + t * t * B.y]); }
+  });
+  return out;
+}
+function outlineBounds(o) {
+  return { x0:Math.min(...o.map(q => q[0])), y0:Math.min(...o.map(q => q[1])), x1:Math.max(...o.map(q => q[0])), y1:Math.max(...o.map(q => q[1])) };
+}
+/* Draw a block inside its shape: the picture is cut to the outline. Pulled bigger, the picture stretches to fill it. */
+function withShape(c2, shape, X, Y, Sw, Sh, draw) {
+  const o = shapeOutline(shape), b = outlineBounds(o);
+  const rx0 = Math.min(0, b.x0), ry0 = Math.min(0, b.y0), rw = Math.max(1, b.x1) - rx0, rh = Math.max(1, b.y1) - ry0;
+  c2.save();
+  c2.beginPath(); o.forEach(([u, v], i) => c2[i ? 'lineTo' : 'moveTo'](X + u * Sw, Y + v * Sh)); c2.closePath(); c2.clip();
+  c2.translate(X + rx0 * Sw, Y + ry0 * Sh); c2.scale(rw, rh); c2.translate(-X, -Y);
+  draw();
+  c2.restore();
+}
+function inPoly(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function segBox(a, b, x, y, w, h) {         // does the line from a to b go through the inside of the box?
+  let t0 = 0, t1 = 1; const dx = b[0] - a[0], dy = b[1] - a[1];
+  const P = [-dx, dx, -dy, dy], Q = [a[0] - x, x + w - a[0], a[1] - y, y + h - a[1]];
+  for (let i = 0; i < 4; i++) {
+    if (P[i] === 0) { if (Q[i] <= 0) return false; continue; }
+    const r = Q[i] / P[i];
+    if (P[i] < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; }
+  }
+  return t1 - t0 > 1e-9;
+}
+function boxPoly(x, y, w, h, poly) {        // does a box overlap a shape? (just touching the edge doesn't count)
+  const e = 1e-4; x += e; y += e; w -= 2 * e; h -= 2 * e;
+  for (const [px, py] of poly) if (px > x && px < x + w && py > y && py < y + h) return true;
+  for (const [cx, cy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h], [x + w / 2, y + h / 2]]) if (inPoly(cx, cy, poly)) return true;
+  for (let i = 0; i < poly.length; i++) if (segBox(poly[i], poly[(i + 1) % poly.length], x, y, w, h)) return true;
+  return false;
+}
+function surfaceAt(poly, x, top) {          // the top (or bottom) of a shape straight above or below x; null if the shape isn't there
+  let best = null;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    if (a[0] === b[0] || x < Math.min(a[0], b[0]) || x > Math.max(a[0], b[0])) continue;
+    const y = a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+    if (best === null || (top ? y < best : y > best)) best = y;
+  }
+  return best;
+}
+
 /* ---------- drawing the blocks ----------
    Every block is Jos's own picture, in LDLC's colours. x, y = top-left corner, s = block size. */
 const COL = {
@@ -831,7 +897,9 @@ function setTool(t) {
   if (t !== 'cursor' || openIds) closePanel();
   if (t === 'select') banner('Click and drag to make a box round the blocks you want');
   if (t === 'link') linkBanner();
-  cv.style.cursor = t === 'select' ? 'crosshair' : t === 'cursor' || t === 'link' ? 'pointer' : 'default';
+  shapeId = null; shapeDrag = null; shapePick = null;
+  if (t === 'shape') shapeBanner();
+  cv.style.cursor = t === 'select' || t === 'shape' ? 'crosshair' : t === 'cursor' || t === 'link' ? 'pointer' : 'default';
   refreshButtons();
 }
 function applyDifficulty() {                  // the palette shows only what this level's difficulty has
@@ -1014,6 +1082,7 @@ cv.addEventListener('pointerdown', e => {
     return;
   }
   if (tool === 'place' || tool === 'erase') { painting = true; stroke = new Set(); paint(a, true); return; }
+  if (tool === 'shape') { shapeDown(e, a, c); return; }
   if (tool === 'cursor') {
     // Jos: the cursor shows a block's properties, and can drag that one block somewhere else.
     // The properties open when you let go: opening them makes the level smaller, which would
@@ -1044,9 +1113,11 @@ cv.addEventListener('pointermove', e => {
   if (painting && !onlyOne(chosen)) paint(hover);
   if (boxDrag) { const p = pointAt(e); boxDrag.x1 = p.x; boxDrag.y1 = p.y; }
   if (moveDrag && hover) moveDrag.off = { x:hover.x - moveDrag.from.x, y:hover.y - moveDrag.from.y };
+  if (shapeDrag !== null) shapeMove(e);
 });
 cv.addEventListener('pointerup', () => {
   painting = false;
+  if (shapeDrag !== null) { shapeDrag = null; save(); }
   if (panning) { if (!panning.moved && panning.closeIfClick) closePanel(); panning = null; return; }
   if (boxDrag) { finishBox(); boxDrag = null; }
   if (moveDrag) {
@@ -1058,6 +1129,115 @@ cv.addEventListener('pointerup', () => {
   }
 });
 cv.addEventListener('pointerleave', () => { hover = null; });
+
+/* ---------- Jos (21 Nov): the Crop and shape tool ----------
+   Click a block: green circles show its corners. Drag a circle and the two lines joined to it follow.
+   Click on a line where there is no circle: a new circle goes there, with two buttons under it, Curved and Hard (Jos, 23 Nov).
+   Curved: drag it and the line bends into a bump. Hard: drag it and the line makes a sharp point, like a triangle.
+   Right-click a circle to take it away. Back to how it was (Jos, 23 Nov: not 'Back to a square', a block might not be a square) takes the shape away, so the block is its own size and shape again. */
+const shapeOf = c => c.shape || SQUARE();
+function shapeBanner() {
+  if (tool !== 'shape') return;
+  const f = shapeId && byId(shapeId);
+  if (!f) { banner('Click a block to crop and shape it'); return; }
+  banner('Drag a green circle · click a line to add a circle · right-click a circle to take it away',
+         [['↩️ Back to how it was', () => { delete f.c.shape; shapePick = null; save(); shapeBanner(); }]]);
+}
+function shapeLocal(e, f) { const p = pointAt(e); return { x:p.x - f.x, y:p.y - f.y }; }
+function shapeHitCircle(f, q) {             // which circle is under the mouse (or -1)
+  const pts = shapeOf(f.c); let best = -1, far = .2;
+  pts.forEach((P, i) => { const d = Math.hypot(P.x - q.x, P.y - q.y); if (d < far) { far = d; best = i; } });
+  return best;
+}
+function shapeDown(e, a, c) {
+  const f = shapeId && byId(shapeId);
+  if (f) {
+    const b = shapeButtonAt(f, e);
+    if (b) { f.c.shape = shapeOf(f.c); const P = f.c.shape[shapePick]; if (P) { P.k = b; save(); } return; }
+    const q = shapeLocal(e, f), i = shapeHitCircle(f, q);
+    if (i >= 0) { f.c.shape = shapeOf(f.c); shapeDrag = i; shapePick = i; return; }
+    // near a line: a new circle there, then Curved or Hard
+    const o = shapeOutline(shapeOf(f.c)); let near = Infinity, at = null;
+    for (let k = 0; k < o.length; k++) {
+      const A = o[k], B = o[(k + 1) % o.length], abx = B[0] - A[0], aby = B[1] - A[1];
+      const t = Math.max(0, Math.min(1, ((q.x - A[0]) * abx + (q.y - A[1]) * aby) / (abx * abx + aby * aby || 1)));
+      const px = A[0] + abx * t, py = A[1] + aby * t, d = Math.hypot(q.x - px, q.y - py);
+      if (d < near) { near = d; at = { x:px, y:py }; }
+    }
+    if (near < .25) { addShapeCircle(f, at, e); return; }
+  }
+  // not near the block you are shaping: choose the block you clicked (or nothing)
+  shapeId = c && c.t !== 'hero' ? c.id : null; shapeDrag = null; shapePick = null;
+  if (c && c.t === 'hero') say("The Hero can't be shaped 😈");
+  shapeBanner();
+}
+function addShapeCircle(f, at, e) {
+  const pts = f.c.shape = shapeOf(f.c).slice(), n = pts.length;
+  let best = 0, cost = Infinity;                       // it goes between the two circles it is closest to being on the line between
+  for (let i = 0; i < n; i++) {
+    const A = pts[i], B = pts[(i + 1) % n];
+    const k = Math.hypot(A.x - at.x, A.y - at.y) + Math.hypot(B.x - at.x, B.y - at.y) - Math.hypot(A.x - B.x, A.y - B.y);
+    if (k < cost) { cost = k; best = i; }
+  }
+  const P = { x:Math.round(at.x * 100) / 100, y:Math.round(at.y * 100) / 100, k:'hard' };
+  pts.splice(best + 1, 0, P); save();
+  shapePick = best + 1;                                // Jos (23 Nov): the Curved and Hard buttons show under the new circle
+}
+/* Jos (23 Nov): two little buttons under the circle you added (or clicked): Curved and Hard.
+   The one it is now glows purple; the other one is green. Click the green one to swap. */
+function shapeButtons(f) {
+  const P = shapePick !== null && shapeOf(f.c)[shapePick]; if (!P) return [];
+  const cx = (f.x + P.x) * cell, cy = (f.y + P.y) * cell, r = Math.max(5, cell * .11) * 1.3;
+  const bottom = (f.y + outlineBounds(shapeOutline(shapeOf(f.c))).y1) * cell;   // under the whole shape, so they never cover a line you want to click
+  const w = 62, h = 24, gap = 6, y = Math.max(cy + r, bottom) + 8;
+  return [{ k:'curve', label:'Curved', x:cx - w - gap / 2, y, w, h }, { k:'hard', label:'Hard', x:cx + gap / 2, y, w, h }];
+}
+function shapeButtonAt(f, e) {
+  const p = pointAt(e), px = p.x * cell, py = p.y * cell;
+  const hit = shapeButtons(f).find(B => px >= B.x && px <= B.x + B.w && py >= B.y && py <= B.y + B.h);
+  return hit ? hit.k : null;
+}
+function drawShapeButtons(f) {
+  const P = shapePick !== null && shapeOf(f.c)[shapePick]; if (!P) return;
+  shapeButtons(f).forEach(B => {
+    const on = (P.k === 'curve') === (B.k === 'curve');
+    ctx.save();
+    if (on) { ctx.shadowColor = '#c56bff'; ctx.shadowBlur = 16; }
+    ctx.fillStyle = on ? '#a43dff' : COL.green; roundRect(ctx, B.x, B.y, B.w, B.h, B.h / 2); ctx.fill();
+    ctx.shadowBlur = 0; ctx.lineWidth = 2; ctx.strokeStyle = on ? '#e9c8ff' : '#1d7a3c'; roundRect(ctx, B.x, B.y, B.w, B.h, B.h / 2); ctx.stroke();
+    ctx.fillStyle = on ? '#fff' : '#0b3a1b'; ctx.font = '800 13px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(B.label, B.x + B.w / 2, B.y + B.h / 2 + 1);
+    ctx.restore();
+  });
+}
+function shapeMove(e) {
+  const f = byId(shapeId); if (!f || !f.c.shape) return;
+  const q = shapeLocal(e, f), P = f.c.shape[shapeDrag]; if (!P) return;
+  // Jos (21 Nov): no limit. A circle can go as far as you like, right to the edges of the level (it snaps to twentieths of a block)
+  const snap = (v, lo, hi) => Math.round(Math.max(lo, Math.min(hi, v)) * 20) / 20;
+  P.x = snap(q.x, -f.x, T.cols - f.x); P.y = snap(q.y, -f.y, T.rows - f.y);
+}
+function shapeRightClick(e) {
+  const f = shapeId && byId(shapeId); if (!f) return;
+  const i = shapeHitCircle(f, shapeLocal(e, f)); if (i < 0) return;
+  const pts = shapeOf(f.c);
+  if (pts.length <= 3) { say('A shape needs at least 3 circles 😈'); return; }
+  f.c.shape = pts.filter((_, k) => k !== i); shapePick = null; save();
+}
+function drawShapeTool(time) {               // the shape's outline and its green circles
+  const f = shapeId && byId(shapeId); if (!f) return;
+  const pts = shapeOf(f.c), o = shapeOutline(pts), X = f.x * cell, Y = f.y * cell;
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1; ctx.strokeRect(X, Y, cell, cell); ctx.setLineDash([]);
+  ctx.strokeStyle = COL.green; ctx.lineWidth = 2; ctx.beginPath();
+  o.forEach(([u, v], i) => ctx[i ? 'lineTo' : 'moveTo'](X + u * cell, Y + v * cell)); ctx.closePath(); ctx.stroke();
+  pts.forEach((P, i) => {
+    const r = Math.max(5, cell * .11) * (i === shapeDrag ? 1.3 : 1);
+    ctx.beginPath(); ctx.arc(X + P.x * cell, Y + P.y * cell, r, 0, Math.PI * 2);
+    ctx.fillStyle = P.k === 'curve' ? '#fff' : COL.green; ctx.fill();            // a Curved circle is white in the middle
+    ctx.lineWidth = 2.5; ctx.strokeStyle = COL.green; ctx.stroke();
+  });
+  drawShapeButtons(f);
+}
 
 /* ---------- Jos (12 Nov): right-click a block (Cursor or Select blocks): Copy, Paste ----------
    Copy takes everything about the block: its properties, its text or number, what it does when a trigger fires, which
@@ -1105,6 +1285,7 @@ function pasteAt(a) {
 cv.addEventListener('contextmenu', e => {
   e.preventDefault();
   closeBlockMenu();
+  if (!play && !chomp && tool === 'shape') { shapeRightClick(e); return; }
   if (play || chomp || (tool !== 'cursor' && tool !== 'select')) return;
   const a = cellAt(e), c = a && pickAt(a.x, a.y);
   if (!a) return;
@@ -1374,6 +1555,23 @@ function number(value, min, max, step, change) {
   return n;
 }
 
+/* Jos (21 Nov): a Tilt number can be infinity. Click in the box and a message says Press I. Press I and it becomes ∞
+   (or -∞ if the number was below 0, so it turns the other way). Click the ∞ to go back to a number. */
+function tiltNumber(value, inf, change, setInf) {
+  if (inf) {
+    const b = el('button', { className:'p-cmd', textContent:inf < 0 ? '-∞' : '∞', title:'Click to go back to a number',
+                             style:'font-size:1.2rem;min-width:3.2rem', onclick:() => setInf(0) });
+    return b;
+  }
+  const n = number(value, -720, 720, 5, change);
+  n.addEventListener('focus', () => say('Press I to turn it to infinity ∞'));
+  n.addEventListener('keydown', e => {
+    if (e.code !== 'KeyI') return;
+    e.preventDefault(); e.stopPropagation();
+    setInf(parseFloat(n.value) < 0 ? -1 : 1);
+  });
+  return n;
+}
 function openPanel(id) { openId = id; openIds = null; copyFrom = null; renderPanel(); }
 /* Jos: the selected blocks' properties, all at once. Only if they all have the same properties. */
 function openSelection(ids = sel) {
@@ -1453,8 +1651,10 @@ function renderPanel() {
 
   /* Jos (12 Nov): Tilt: any angle, in degrees. + turns it clockwise, - anticlockwise. Every block has it except the Hero. */
   if (cells.every(x => x.t !== 'hero' && x.t !== 'startpos')) {
-    panel.append(row('Tilt', number(common(cells.map(x => x.tilt || 0)), -720, 720, 5, v => { cells.forEach(x => { x.tilt = v; }); save(); }),
-                     el('span', { className:'p-or', textContent:'degrees' })));
+    const inf = common(cells.map(x => x.tiltInf || 0));
+    panel.append(row('Tilt', tiltNumber(common(cells.map(x => x.tilt || 0)), inf, v => { cells.forEach(x => { x.tilt = v; }); save(); },
+                                        v => { cells.forEach(x => { if (v) x.tiltInf = v; else delete x.tiltInf; }); save(); renderPanel(); }),
+                     el('span', { className:'p-or', textContent:inf ? 'it keeps turning, half a turn a second' : 'degrees' })));
   }
   /* Jos (9 Nov): a ball that uses triggers and portals needs Gravity on, or a connected trigger that turns it on */
   if (cells.some(x => x.t === 'ball' && props(x).triggers && !ballHasGravity(x))) {
@@ -1923,9 +2123,10 @@ function actionBox(link, a, j, target, saved = save, steps = false) {
   }
   if (a.do === 'tilt') {
     box.append(row('Do', pick([['to', 'Tilt to'], ['by', 'Tilt by']], a.tmode || 'to', v => { a.tmode = v; saved(); })));
-    box.append(row(a.tmode === 'by' ? 'By' : 'To', number(a.deg === undefined ? 90 : a.deg, -720, 720, 5, v => { a.deg = v; saved(); }),
-                   el('span', { className:'p-or', textContent:'degrees' })));
-    box.append(row('Takes', number(a.secs === undefined ? .5 : a.secs, 0, 30, .1, v => { a.secs = v; saved(); }),
+    box.append(row(a.tmode === 'by' ? 'By' : 'To', tiltNumber(a.deg === undefined ? 90 : a.deg, a.inf || 0, v => { a.deg = v; saved(); },
+                                                              v => { if (v) { a.inf = v; if (!(a.secs >= 1)) a.secs = 2; } else delete a.inf; saved(); renderPanel(); }),
+                   el('span', { className:'p-or', textContent:a.inf ? 'it keeps tilting forever' : 'degrees' })));
+    box.append(row(a.inf ? 'One turn takes' : 'Takes', number(a.secs === undefined ? .5 : a.secs, a.inf ? .1 : 0, 30, .1, v => { a.secs = v; saved(); }),
                    el('span', { className:'p-or', textContent:'seconds' })));
   }
   if (a.do === 'text') {
@@ -1976,6 +2177,8 @@ let startPos = LDLC.read(LDLC.key('start', levelId));   // Jos's Start pos (each
 function saveStart() { if (playAll) return; localStorage.setItem(LDLC.key('start', levelId), JSON.stringify(startPos)); }
 function showEditor() {
   document.getElementById('editorCmds').hidden = !editorOn;
+  document.getElementById('shapeBtn').hidden = !editorOn;              // Jos (21 Nov): Crop and shape is only in Advanced
+  if (!editorOn && tool === 'shape') setTool('cursor');
   document.querySelector('.block[data-id=startpos]').style.display = editorOn ? '' : 'none';
   if (!editorOn && chosen === 'startpos') { chosen = 'tile'; refreshButtons(); }
   // Jos: off means off on the blocks too: the editor buttons in their properties go (and a
@@ -2067,7 +2270,7 @@ function makeThings() {
         const pr = props(c);
         list.push({ id:c.id, t:c.t, x, y, w:1, h:1, pr, as:pr.disguise ? (c.as || 'tile') : null,
                     cam:c.cam, cmoving:c.cmoving, cdir:c.cdir, cspeed:c.cspeed, coff:c.coff,
-                    tm:c.tm || 'text', tt:c.tt || '', tn:c.tn === undefined ? null : c.tn, ts:c.ts || 100, ctype:c.ctype, att:c.att, attm:c.attm, atype:c.atype, dtime:c.dtime === undefined ? 2 : c.dtime, view:c.view || 'platformer', djump:c.jumpH === undefined ? 3 : c.jumpH, dspeed:c.speed === undefined ? 100 : c.speed, dmax:c.dmax === undefined ? 3 : c.dmax, tilt:c.tilt || 0, vis:c.vis === undefined ? 100 : c.vis, rep:c.rep || 'once', repEvery:c.repEvery || 1,
+                    tm:c.tm || 'text', tt:c.tt || '', tn:c.tn === undefined ? null : c.tn, ts:c.ts || 100, ctype:c.ctype, att:c.att, attm:c.attm, atype:c.atype, dtime:c.dtime === undefined ? 2 : c.dtime, view:c.view || 'platformer', djump:c.jumpH === undefined ? 3 : c.jumpH, dspeed:c.speed === undefined ? 100 : c.speed, dmax:c.dmax === undefined ? 3 : c.dmax, shape:c.shape || null, tilt:c.tilt || 0, spin:c.tiltInf ? c.tiltInf * 180 : 0, vis:c.vis === undefined ? 100 : c.vis, rep:c.rep || 'once', repEvery:c.repEvery || 1,
                     links:c.links || [], does:c.does || (c.controls ? [Object.assign({ do:'controls' }, c.controls)] : []), pair:c.pair, r:c.r || 0, out:c.out || '',
                     dx:0, dy:0 });
       });
@@ -2373,7 +2576,21 @@ function boxesTouch(ax, ay, aw, ah, bx, by, bw, bh) {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
 function touching(x, y, w, h, fn) {
-  for (const t of play.things) if (!t.gone && boxesTouch(x, y, w, h, t.x, t.y, t.w, t.h)) fn(t);
+  for (const t of play.things) if (!t.gone && thingTouch(x, y, w, h, t)) fn(t);
+}
+/* Jos (21 Nov): a shaped block only touches you where its shape is, not its whole square */
+function shapePoly(t) {
+  if (!t._o) t._o = shapeOutline(t.shape);
+  return t._o.map(([u, v]) => [t.x + u * t.w, t.y + v * t.h]);
+}
+function thingTouch(x, y, w, h, t) { return t.shape ? boxPoly(x, y, w, h, shapePoly(t)) : boxesTouch(x, y, w, h, t.x, t.y, t.w, t.h); }
+function shapeSurface(t, x, w, top) {         // the highest top (or lowest bottom) of a shape under a box from x to x + w
+  const poly = shapePoly(t); let best = null;
+  for (let k = 0; k <= 6; k++) {
+    const y = surfaceAt(poly, x + .01 + (w - .02) * k / 6, top);
+    if (y !== null && (best === null || (top ? y < best : y > best))) best = y;
+  }
+  return best;
 }
 function fire(t) {
   if (t.fired) return;            // a trigger goes off once per try (a trigger's Repeat type can let it go off again)
@@ -2387,7 +2604,7 @@ function fire(t) {
 const CHASER = { size:.8, speed:2.8, jump:3, caught:2.8 };      // a tiny bit slower than before; Jos (12 Nov): it jumps 3 blocks high
 /* Jos (12 Nov): Collision has a Type: All, Only player or Only devil. A block with Collision on stops whoever its Type lets it stop. */
 function blocks(t, who) { return !!t.pr.collision && (!t.ctype || t.ctype === 'all' || t.ctype === who); }
-function solidHit(x, y, w, h) { return play.things.some(t => !t.gone && blocks(t, 'devil') && boxesTouch(x, y, w, h, t.x, t.y, t.w, t.h)); }
+function solidHit(x, y, w, h) { return play.things.some(t => !t.gone && blocks(t, 'devil') && thingTouch(x, y, w, h, t)); }
 /* What the devil is going after right now: a block (a thing in the level) or, with null, the player.
    Attraction type: Player, Anything, or a kind of block (it goes for the nearest one). Attraction block: one block you chose. */
 function devilTarget(d, p) {
@@ -2549,7 +2766,10 @@ function applyAction(g, a) {
     g.pr = Object.assign({}, g.pr, { collision:!!a.col });
     if (a.col) g.ctype = a.ctype || 'all';
   }
-  if (a.do === 'tilt') {                                       // Jos (12 Nov): it turns smoothly, to an angle or by an angle
+  if (a.do === 'tilt' && a.inf) {                             // Jos (21 Nov): tilt to infinity: it starts turning and never stops
+    g.tilting = null; g.spin = a.inf * 360 / Math.max(.1, Number(a.secs) || 2);
+  } else if (a.do === 'tilt') {                                // Jos (12 Nov): it turns smoothly, to an angle or by an angle
+    g.spin = 0;                                                // (a normal tilt stops an infinity one)
     const from = g.tilt || 0, deg = a.deg === undefined ? 90 : Number(a.deg) || 0;
     g.tilting = { from, to:a.tmode === 'by' ? from + deg : deg, t:0, d:Math.max(.01, a.secs === undefined ? .5 : Number(a.secs) || 0) };
   }
@@ -2600,6 +2820,7 @@ function moveThings(dt) {
       t.w = t.h = s; t.x = mid - s / 2; t.y = bottom - s;
       if (k >= 1) t.grow = null;
     }
+    if (t.spin) t.tilt = ((t.tilt || 0) + t.spin * dt) % 360;   // Jos (21 Nov): tilting to infinity
     if (t.tilting) {
       t.tilting.t += dt;
       const k = Math.min(1, t.tilting.t / t.tilting.d), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;   // slow, fast, slow
@@ -2713,7 +2934,7 @@ function stepBalls(dt) {                     // true if one of them killed the h
     const r = BALL_R * b.w;
     let cx = b.x + b.w / 2, cy = b.y + b.h / 2;
     const shapes = p.things.filter(t => t !== b && !t.gone && blocks(t, 'ball') && t.t !== 'ball')
-                           .map(t => t.t === 'hill' ? hillPoly(t) : rectPoly(t.x, t.y, t.w, t.h));
+                           .map(t => t.shape ? shapePoly(t) : t.t === 'hill' ? hillPoly(t) : rectPoly(t.x, t.y, t.w, t.h));
     const STEPS = 4, h = dt / STEPS;
     const bounce = vn => -vn > 2 ? BALL_BOUNCE : 0;                    // a gentle landing doesn't bounce
     for (let k = 0; k < STEPS && !killed; k++) {
@@ -2853,7 +3074,7 @@ function heroStep(p, dt) {
   const G = GDIRS[p.gdir], [W, H] = heroBox(p);
   // Jos's hill is a slope when gravity pulls down. Any other way (or a hill turned onto the ceiling), it is a plain block.
   const slopes = G[0] === 0 && G[1] > 0;
-  const solid = t => blocks(t, 'player') && !(slopes && t.t === 'hill' && (t.r || 0) < 2);
+  const solid = t => blocks(t, 'player') && !t.shape && !(slopes && t.t === 'hill' && (t.r || 0) < 2);      // a shaped block has its own part below
   // ride along on whatever you're standing on
   if (p.on && p.ground) { p.x += p.on.dx; p.y += p.on.dy; }
   // a moving block that runs into you pushes you out of the way
@@ -2923,16 +3144,23 @@ function heroStep(p, dt) {
   }
   touching(p.x, p.y, W, H, t => {
     if (!solid(t)) return;
+    if (slopes && wasGround && p.y + H - t.y > 0 && p.y + H - t.y <= .08) { p.y = t.y - H; return; }   // Jos (21 Nov): a tiny step (coming out of a dip) he just steps up
     if (mx > 0) { p.x = t.x - W; if (horiz) { p.vx = 0; if (G[0] > 0) { p.ground = true; p.on = t; } } }
     else if (mx < 0) { p.x = t.x + t.w; if (horiz) { p.vx = 0; if (G[0] < 0) { p.ground = true; p.on = t; } } }
     p.kx = 0;
   });
   // the straight side of a hill is a wall (the slope itself is walked up in the y part below)
   if (slopes) touching(p.x, p.y, W, H, t => {
-    if (t.t !== 'hill' || !blocks(t, 'player') || (t.r || 0) > 1) return;
+    if (t.t !== 'hill' || t.shape || !blocks(t, 'player') || (t.r || 0) > 1) return;
     if (p.y + H <= t.y + .02 || p.y >= t.y + t.h) return;
     if (!t.r && mx < 0) { const wall = t.x + t.w; if (oldX >= wall - .01 && p.x < wall) p.x = wall; }
     if (t.r === 1 && mx > 0) { if (oldX + W <= t.x + .01 && p.x + W > t.x) p.x = t.x - W; }
+  });
+  // Jos (21 Nov): a shaped block. A gentle slope or a bump he walks up (in the y part below); a steep side is a wall.
+  touching(p.x, p.y, W, H, t => {
+    if (!t.shape || !blocks(t, 'player')) return;
+    if (slopes) { const top = shapeSurface(t, p.x, W, true); if (top !== null && p.y + H - top <= Math.max(.1, Math.abs(p.x - oldX) * 2.6)) return; }   // not steeper than about 70 degrees
+    p.x = oldX; p.kx = 0; if (horiz) p.vx = 0;
   });
   // a one way turned on its side: you go through one way, and it stops you coming back
   touching(p.x, p.y, W, H, t => {
@@ -2961,7 +3189,7 @@ function heroStep(p, dt) {
   });
   // Jos's hill: he walks up and down it. He keeps hold of the slope going downhill, and not when he jumps.
   if (slopes) touching(p.x, p.y, W, H, t => {
-    if (t.t !== 'hill' || !blocks(t, 'player') || (t.r || 0) > 1) return;
+    if (t.t !== 'hill' || t.shape || !blocks(t, 'player') || (t.r || 0) > 1) return;
     const high = !t.r;                                           // turned 0: high on the right. Turned 1: high on the left
     const foot = high ? Math.min(p.x + W, t.x + t.w) : Math.max(p.x, t.x);   // the foot nearest the high side
     const k = (high ? foot - t.x : t.x + t.w - foot) / t.w;
@@ -2969,6 +3197,18 @@ function heroStep(p, dt) {
     if (my < 0) { if (oldTop >= t.y + t.h - .05 && p.y < t.y + t.h) { p.y = t.y + t.h; p.vy = 0; } return; }   // bump the flat underside
     if (p.y + H > surface - (wasGround ? .25 : 0) && p.y < t.y + t.h) { p.y = surface - H; p.vy = 0; p.ground = true; p.on = t; }
   });
+  // Jos (21 Nov): a shaped block: stand on its top (and keep hold of it going downhill), bump your head on its underneath
+  for (const t of play.things) {
+    if (t.gone || !t.shape || !blocks(t, 'player')) continue;
+    if (!slopes) { if (thingTouch(p.x, p.y, W, H, t)) { p.y = oldTop; if (my > 0) floorY(t); else ceilY(t); } continue; }
+    const top = shapeSurface(t, p.x, W, true);
+    if (top === null) continue;
+    if (my >= 0 && p.y + H > top - (wasGround ? .25 : 0) && oldBottom <= top + .5) { p.y = top - H; floorY(t); continue; }
+    if (thingTouch(p.x, p.y, W, H, t)) {
+      const bot = shapeSurface(t, p.x, W, false);
+      if (my < 0 && bot !== null && oldTop >= bot - .1) { p.y = bot; ceilY(t); } else { p.y = oldTop; if (!horiz) p.vy = Math.max(0, p.vy); }
+    }
+  }
   // one way: you only land on it coming down from above
   if (my >= 0) {
     touching(p.x, p.y, W, H, t => {
@@ -2999,7 +3239,8 @@ function heroStep(p, dt) {
 
     if (pr.deadly) {
       let hit;
-      if (t.t === 'sawblade' || t.t === 'ball') { // round: only the circle gets you
+      if (t.shape) hit = true;                    // Jos (21 Nov): a shaped block only gets you where its shape is (touching already checked that)
+      else if (t.t === 'sawblade' || t.t === 'ball') { // round: only the circle gets you
         const cx = t.x + t.w / 2, cy = t.y + t.h / 2;
         const nx = Math.max(p.x, Math.min(cx, p.x + W)), ny = Math.max(p.y, Math.min(cy, p.y + H));
         hit = Math.hypot(nx - cx, ny - cy) < .42 * t.w;
@@ -3202,6 +3443,9 @@ function drawThing(t, time) {
     drawBlock(ctx, t.as || t.t, X, Y, S, time, t.r, t);
     if (t.t === 'coin' && t.pr.needed && !t.as) drawNeededRing(ctx, X, Y, S, time);
 }
+function drawShaped(t, time) {                    // Jos (21 Nov): a shaped block is drawn cut to its shape
+  if (t.shape) withShape(ctx, t.shape, t.x * cell, t.y * cell, t.w * cell, t.h * cell, () => drawThing(t, time)); else drawThing(t, time);
+}
 function renderPlay(time) {
   const drawOne = t => {
     if (play.state === 'caught' && play.caught && play.caught.d === t) return;      // it is drawn laughing, on top of the grey
@@ -3209,9 +3453,9 @@ function renderPlay(time) {
     if (t.tilt) {                                 // Jos (12 Nov): Tilt turns it round its middle, by any angle (how it looks; it still hits like a square)
       const cx = (t.x + t.w / 2) * cell, cy = (t.y + t.h / 2) * cell;
       ctx.save(); ctx.translate(cx, cy); ctx.rotate(t.tilt * Math.PI / 180); ctx.translate(-cx, -cy);
-      drawThing(t, time);
+      drawShaped(t, time);
       ctx.restore();
-    } else drawThing(t, time);
+    } else drawShaped(t, time);
     ctx.globalAlpha = 1;
   };
   const seen = play.things.filter(t => !t.gone && t.pr.visible);      // triggers can't be seen when you play
@@ -3286,6 +3530,7 @@ function renderEditor(time) {
   });
   if (camPick && hover) pulse(hover.x, hover.y, true);
   if (editorOn && startPos) drawBlock(ctx, 'startpos', startPos.x * cell, startPos.y * cell, cell, time);
+  if (tool === 'shape') drawShapeTool(time);
   drawEdges();
   if (portalSwitch.checked) drawPortalLinks();
   if (triggerSwitch.checked) drawAllLinks();
@@ -3302,7 +3547,7 @@ function renderEditor(time) {
     const hx = hover.x * cell, hy = hover.y * cell;
     if (tool === 'erase') outline(hover.x, hover.y, '#ff2a3d');
     else if (tool === 'place') { ctx.globalAlpha = .45; drawBlock(ctx, chosen, hx, hy, cell, time, chosenTurn); ctx.globalAlpha = 1; }
-    else if ((tool === 'cursor' || tool === 'link') && grid[hover.y][hover.x] && !moveDrag) {
+    else if ((tool === 'cursor' || tool === 'link' || (tool === 'shape' && !shapeId)) && grid[hover.y][hover.x] && !moveDrag) {
       const s = stackAt(hover.x, hover.y);
       if (s.length < 2) outline(hover.x, hover.y, '#fff');
       else {
@@ -3344,15 +3589,16 @@ function drawCell(c, x, y, time, late) {
   // (triggers and Edit controls always look normal here: they start invisible)
   const faded = !props(c).visible && (DEFAULTS[c.t] || {}).visible !== false;
   const al = faded ? .35 : (c.vis === undefined ? 1 : c.vis / 100);        // Jos (12 Nov): Visibility = how see-through it is
-  const paint = () => {
+  const paint0 = () => {
     drawBlock(ctx, looksLike(c), x * cell, y * cell, cell, time, c.r, { tm:c.tm, tt:c.tt, tn:c.tn === undefined ? null : c.tn, ts:c.ts });
     if (c.t === 'coin' && props(c).needed && !props(c).disguise) drawNeededRing(ctx, x * cell, y * cell, cell, time);
   };
+  const paint = () => c.shape ? withShape(ctx, c.shape, x * cell, y * cell, cell, cell, paint0) : paint0();     // Jos (21 Nov): Crop and shape
   ctx.globalAlpha = al;
   paint();                                                                  // the regular block, as it is
-  if (c.tilt) {                                                             // Jos (12 Nov): Tilt: the tilted version is see-through on top of it
-    const cx = (x + .5) * cell, cy = (y + .5) * cell;
-    ctx.globalAlpha = al * .4; ctx.save(); ctx.translate(cx, cy); ctx.rotate(c.tilt * Math.PI / 180); ctx.translate(-cx, -cy);
+  if (c.tilt || c.tiltInf) {                                               // Jos (12 Nov): Tilt: the tilted version is see-through on top of it
+    const cx = (x + .5) * cell, cy = (y + .5) * cell, deg = (c.tilt || 0) + (c.tiltInf ? c.tiltInf * 180 * (time || 0) : 0);   // ∞: it shows it turning
+    ctx.globalAlpha = al * .4; ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.translate(-cx, -cy);
     paint();
     ctx.restore();
   }

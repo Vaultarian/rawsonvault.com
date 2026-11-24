@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Throw It In</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; background:#87ceeb; font-family:'Trebuchet MS',Arial,sans-serif; user-select:none; }
+  canvas#gl { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  #hud { position:fixed; top:14px; left:16px; color:#fff; font-size:26px; font-weight:bold; text-shadow:0 2px 0 #0007; pointer-events:none; line-height:1.4; }
+  #hud small { font-size:16px; }
+  #cross { position:fixed; left:50%; top:50%; width:8px; height:8px; margin:-4px 0 0 -4px; border-radius:50%; background:#fff; border:2px solid #0006; pointer-events:none; }
+  #hint { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); color:#fff; font-size:20px; font-weight:bold; text-shadow:0 2px 0 #000a; pointer-events:none; transition:opacity .2s; opacity:0; background:#0005; padding:6px 16px; border-radius:20px; white-space:nowrap; }
+  #msg { position:fixed; left:50%; top:28%; transform:translate(-50%,0); font-size:40px; font-weight:bold; color:#fff; text-shadow:0 3px 0 #000a; pointer-events:none; opacity:0; text-align:center; white-space:nowrap; }
+  #msg.go { animation:msgpop 1.4s ease-out; }
+  @keyframes msgpop { 0% { opacity:1; transform:translate(-50%,10px) scale(.7); } 12% { transform:translate(-50%,0) scale(1.1); } 75% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-30px) scale(1); } }
+  #crank { position:fixed; left:50%; bottom:70px; transform:translateX(-50%); width:360px; height:26px; border-radius:14px; background:#0007; border:3px solid #fff; overflow:hidden; display:none; pointer-events:none; }
+  #crankFill { height:100%; width:0; background:#ffb300; }
+  #menu, #shop { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; color:#fff; text-align:center; gap:14px; z-index:5; background:#000b; }
+  #menu h1 { font-size:68px; margin:0; letter-spacing:3px; text-shadow:0 5px 0 #000a; }
+  #menu h2, #shop h2 { font-size:46px; margin:0; }
+  #menu p { font-size:19px; margin:0; max-width:600px; line-height:1.5; }
+  #menu b.k { background:#fff; color:#000; padding:2px 10px; border-radius:6px; }
+  .mbtn { font-family:inherit; font-size:28px; font-weight:bold; padding:12px 44px; border-radius:16px; border:5px solid #fff; background:#2f7bff; color:#fff; cursor:pointer; box-shadow:0 6px 0 #0007; min-width:280px; }
+  .mbtn.alt { background:#555; font-size:20px; min-width:0; padding:8px 28px; }
+  #shop { background:#1b2a41f2; justify-content:flex-start; padding-top:26px; overflow:auto; }
+  #tabs { display:flex; gap:10px; }
+  .tab { font-family:inherit; font-size:22px; font-weight:bold; padding:8px 24px; border-radius:12px 12px 0 0; border:4px solid #fff; border-bottom:none; background:#345; color:#fff; cursor:pointer; }
+  .tab.on { background:#2f7bff; }
+  #list { width:min(780px,92vw); max-height:56vh; overflow-y:auto; background:#0b1a2e; border:4px solid #fff; border-radius:0 0 14px 14px; margin-top:-14px; }
+  .row { display:flex; align-items:center; gap:14px; padding:10px 16px; border-bottom:2px solid #fff3; text-align:left; }
+  .row .tx { flex:1; font-size:16px; line-height:1.35; }
+  .row .tx b { font-size:21px; display:block; }
+  .row button { font-family:inherit; font-size:20px; font-weight:bold; padding:8px 0; width:130px; border-radius:12px; border:4px solid #fff; background:#27ae60; color:#fff; cursor:pointer; }
+  .row button:disabled { background:#666; border-color:#aaa; cursor:not-allowed; }
+  #fall { position:fixed; inset:0; z-index:25; display:none; pointer-events:none; overflow:hidden; }
+  .gc { position:absolute; border-radius:50%; transform:translate(-50%,-50%); animation:gcpulse .6s ease-in-out infinite alternate; }
+  @keyframes gcpulse { from { transform:translate(-50%,-50%) scale(.8); } to { transform:translate(-50%,-50%) scale(1.15); } }
+  #splat { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; opacity:0; z-index:4; image-rendering:pixelated; }
+  #odds { position:fixed; top:14px; right:16px; color:#fff; font-size:17px; font-weight:bold; text-shadow:0 2px 0 #0008; pointer-events:none; background:#0004; padding:8px 14px; border-radius:12px; line-height:1.5; text-align:right; }
+  #boxInfo { position:fixed; left:50%; top:56%; transform:translateX(-50%); display:none; color:#fff; text-align:center; font-weight:bold; font-size:18px; text-shadow:0 2px 0 #000a; background:#0007; padding:10px 18px; border-radius:14px; pointer-events:none; max-width:440px; line-height:1.4; }
+  #boxInfo b { font-size:26px; display:block; }
+  #boxInfo .bar { height:16px; border-radius:9px; background:#0007; border:3px solid #fff; overflow:hidden; margin:6px 0; }
+  #boxInfo .bar div { height:100%; background:#ffb300; }
+  #boxInfo .ret { display:inline-block; margin-top:8px; background:#c62828; border:3px solid #fff; border-radius:10px; padding:4px 16px; font-size:20px; }
+  #combo { position:fixed; top:14px; left:50%; transform:translateX(-50%); width:380px; display:none; text-align:center; color:#fff; font-weight:bold; font-size:18px; text-shadow:0 2px 0 #000a; pointer-events:none; }
+  #combo .bar { height:20px; border-radius:11px; background:#0007; border:3px solid #fff; overflow:hidden; }
+  #comboFill { height:100%; background:#43a047; }
+  #stars { position:fixed; inset:0; z-index:20; pointer-events:none; display:none; }
+  #stars div { position:absolute; width:54px; height:54px; margin:-27px 0 0 -27px; background:#ffd600; clip-path:polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+  #big { position:fixed; inset:0; z-index:30; background:transparent; color:#000; -webkit-text-stroke:3px #fff; paint-order:stroke fill; display:none; flex-direction:column; align-items:center; justify-content:center; font-family:'Arial Black','Arial Bold',Arial,sans-serif; font-weight:900; line-height:1; white-space:nowrap; overflow:hidden; }
+  .card button:disabled { background:#666; border-color:#aaa; cursor:not-allowed; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="hud"></div>
+<div id="cross"></div>
+<div id="crank"><div id="crankFill"></div></div>
+<div id="combo"><div class="bar"><div id="comboFill"></div></div><span id="comboTxt">BONUS</span></div>
+<canvas id="splat"></canvas>
+<div id="odds"></div>
+<div id="boxInfo"></div>
+<div id="hint"></div>
+<div id="msg"></div>
+<div id="menu"></div>
+<div id="shop"></div>
+<div id="big"></div>
+<div id="fall"></div>
+<div id="stars"></div>
+<script src="lib/three.min.js"></script>
+<script src="junk3d.js?v=3"></script>
+<script>
+// =====================================================================
+// THROW IT IN — a game by Jos.
+// Turn the wheels on the machine. Junk comes out. Throw it in the hole. Coins fly out. Pick them up.
+// =====================================================================
+
+// ---- the 150 pieces of junk. Each one has its own 3D shape. The shapes are in junk3d.js. ----
+// Every 10th one is rare and worth more.
+const JUNK = `
+Tin can, Old shoe, Broken TV, Banana peel, Soggy box, Smelly sock, Flat tyre, Old newspaper, Mouldy pizza, One-eyed teddy,
+Crackly radio, Old phone, Floppy disk, Video tape, Dead battery, Blown bulb, Wobbly chair, Cracked toilet, Soggy loo roll, Muddy boot,
+Squashed hat, Lost glove, Bent glasses, Stopped watch, Broken camera, Stringless guitar, Dented trumpet, Burst drum, Toy piano, Broken banjo,
+Rotten apple, Bendy carrot, Stinky cheese, Bad egg, Stale bread, Chewed bone, Fish bones, Sour milk, Empty juice box, Crushed cup,
+Empty bottle, Sticky jar, Old takeaway, Rock-hard donut, Nibbled corn, Chicken bone, Sprouting onion, Green potato, Squeezed lemon, Cracked coconut,
+Rusty spanner, Headless hammer, Bent screwdriver, Blunt saw, Rusty cog, Loose bolt, Rusty chain, Weak magnet, Leaky bucket, Bald broom,
+Crusty sponge, Old toothbrush, Empty shampoo, Hairy soap, Blunt razor, Cracked mirror, Tiny bath, Drippy shower, Plunger, Empty extinguisher,
+Flat football, Flat basketball, Bald tennis ball, Broken bat, Three-wheel skateboard, One roller skate, Chipped bowling ball, Lonely boxing glove, Bent racket, Rusty ice skate,
+Bent bike, Wobbly scooter, Wonky trolley, Toy car, Toy train, Toy plane, Toy rocket, Toy UFO, Toy boat, Toy helicopter,
+Old monitor, Sticky keyboard, Broken computer mouse, Jammed printer, Scratched CD, Smashed phone, Sticky controller, Wobbly joystick, Chewed plug, Bent dish,
+Soggy books, Boring book, Tiny pencil, Snapped crayon, Blunt scissors, Giant paperclip, Snapped ruler, Crusty paintbrush, Bent pin, Bin lid,
+Holey T-shirt, Ripped jeans, Faded cap, Ugly tie, Itchy scarf, Broken handbag, Ripped backpack, Inside-out umbrella, Plastic crown, Toy ring,
+Dead plant, Spiky cactus, Bag of leaves, Rotten log, Boring rock, Chipped shell, Empty nest, Squashed pumpkin, Old Christmas tree, Droopy sunflower,
+Popped balloon, Empty present, Tangled yo-yo, Ripped kite, Lonely jigsaw piece, Lucky dice, Bent card, Chipped doll, Rusty robot, Glitchy game,
+Stopped clock, Loud alarm clock, Cracked bell, Melted candle, Dim torch, Confused compass, Mystery key, Rusty padlock, Fake trophy, Fake diamond
+`.split(',').map((s, i) => ({ name: s.trim(), value: i % 10 === 9 ? 25 : 2 + (i*37) % 9, rare: i % 10 === 9 }));
+
+// ---- numbers you can change ----
+const CRANK_TIMES = [7, 6, 5, 4, 3, 2];      // seconds of turning the wheels before junk comes out
+const POP_GAPS = [1.5, 1.2, 1, .7, .5, .3, .1];      // the machine pops while you turn it. These are the waits between pops (seconds). Each pop is higher.
+const AUTO_TIMES = [15, 12, 9, 6, 3];        // seconds the automatic junk thrower waits between junk
+const MAX_JUNK = 60;                          // the machines stop when this much junk is lying in the yard
+const goalFor = n => 100 + 200*n;             // HOLE GROWS BIGGER at 100 pieces of junk, then 300, then 500, then 700...
+const HOLE_GROW = .15;                        // how much wider the hole gets each time (half a foot, in metres)
+const YARD_ACROSS = 16, YARD_DEEP = 10;       // how big the yard is at the start: 16 metres across, 10 metres from the garage to the front hedge
+const YARD_GROW = 2;                          // how far the hedge moves out each time (metres)
+const CLOCK_AT = 200;                         // the alarm clock drops from the sky at this many pieces of junk
+const AUTO_AT = 3;                            // the automatic junk thrower arrives the 3rd time the hole grows (that is 500)
+const COIN_WALK = 1.2;                         // automatic coin pick up: how close you have to walk to a coin (metres)
+const COINS = [                               // name, how many pounds it is worth, colour
+  { name: 'bronze', v: 1,  col: 0xcd7f32, ink: '#5a3410' },
+  { name: 'silver', v: 2,  col: 0xcfd4d8, ink: '#555' },
+  { name: 'gold',   v: 5,  col: 0xffc400, ink: '#7a5200' },
+  { name: 'plasma', v: 10, col: 0x3a3f47, ink: '#cfd8dc' },
+];
+const UPGRADES = [                            // id, name, what it does, first price, how many levels, when you can see it
+  ['arm',   'Stronger arm',   'You throw further.',                                   20, 5],
+  ['speed', 'Faster machine', 'Junk comes out one second sooner.',                    30, 5],
+  ['fancy', 'Fancier junk',   'Every piece of junk is worth more.',                   50, 5],
+  ['coins', 'Automatic coin pick up', 'Walk over a coin and you pick it up. No clicking.',             120, 1],
+  ['fan',   'Stronger fans',  'Fans push a little bit harder.',                       40, 5],
+  ['mstr',  'Magnet strength', 'The magnet holds on tighter when you turn fast.',     40, 5, () => hasMagnet],
+  ['mrad',  'Magnet pull radius', 'The magnet reaches further.',                      40, 5, () => hasMagnet],
+  ['auto',  'Faster automatic junk thrower', 'It waits 3 seconds less.',              80, 4, () => ms >= AUTO_AT],
+  ['walk',  'Faster walking', 'You walk faster.',                                     25, 5],
+  ['reach', 'Longer reach',   'Pick up junk from 1 metre further away.',              30, 4],
+  ['lucky', 'Lucky machine',  'Rare junk comes out more often.',                      60, 5],
+  ['rare',  'Richer rare junk', 'Rare junk is worth £10 more.',                       60, 5],
+  ['double','Double junk',    'A bigger chance that two pieces come out at once.',    70, 5],
+  ['room',  'More room',      'The machines keep going with 20 more junk in the yard.', 35, 4],
+  ['scoop', 'Coin scoop',     'Click one coin and the coins near it come too.',       40, 3],
+  ['rim',   'Slippery rim',   'Junk that stops right at the edge of the hole slides in.', 45, 3],
+  ['fanlen','Longer fans',    'Fans blow 1 metre further.',                           40, 5],
+  ['bouncy','Bouncier trampolines', 'Trampolines throw junk higher.',                 30, 5],
+  ['bigbox','Bigger box',     'Your box gets half a metre bigger each way.',          60, 4, () => placed.some(o => o.t === 'box')],
+];
+const BONUSES = [                             // these go in the Bonus list. Same shape as the upgrades.
+  ['bdur', 'Bonus duration', 'You get 1 more second to keep a combo going.',         50, 5],
+  ['b20',  'Twice money',    'Every 20th piece of junk pays 2 times as much.',      100, 1],
+  ['b30',  'Times 3',        'Every 30th piece of junk pays 3 times as much.',      200, 1],
+  ['b50',  'Times 5',        'Every 50th piece of junk pays 5 times as much.',      400, 1],
+  ['gch',  'More gold junk',   'More chance to spawn a gold junk. 1% more each time.',   90, 5],
+  ['sch',  'More silver junk', 'More chance to spawn a silver junk. 1% more each time.', 60, 5],
+];
+const BONUS_SECONDS = 3;                      // how long the green bonus bar lasts (each Bonus duration upgrade adds 1 second)
+const COMBO_STEP = .5;                        // COMBO x2 pays 1.5 times, x3 pays 2 times, x4 pays 2.5 times...
+const TOOLS = [                               // id, name, what it does, price
+  ['fan',    'Fan',         'Blows junk along. One fan is weak, so use a few.',        40],
+  ['tramp',  'Trampoline',  'Junk bounces off it.',                                    30],
+  ['panel',  'Panel',       'Just a wall. Junk bounces off it. You can tilt it.',      20],
+  ['magnet', 'Junk magnet', 'Space takes it out. Space twice quickly turns it on.',    60],
+  ['box',    'Box',         'Holds junk in a small space. 1 metre by 1 metre. You can only have one.', 50],
+];
+const TOOL_NAME = { fan: 'Fan', tramp: 'Trampoline', panel: 'Panel', box: 'Box' };
+const BOX_WALL = .7, boxSize = () => 1 + .5*up.bigbox;      // how tall the walls of the box are, and how wide the box is (metres)
+const X_FAR = 4;                                               // how far in front of a machine its X is (metres). Junk always lands on the X.
+const DUSTER_CHANCE = 30;                                      // out of 100 vacuum cleaners, this many go and put dust on a machine
+const FLIP_SECONDS = 1.5;                                      // how long the box stays upside down when you flip it
+const STUN_SECONDS = 3;                                        // how long you cannot move after the box hits you on the head
+const TOOL_SIZE = { fan: .25, tramp: .5, panel: .5, box: 1 };      // how big each tool is. 1 is the old full size, .5 is half of that.
+const CLOCK = { name: 'ALARM CLOCK', shape: 'Loud alarm clock', value: 1, clock: true };
+
+// ---- your save ----
+const SAVE = 'throw-it-in-v2';
+let money = 0, up = {};
+for (const u of UPGRADES.concat(BONUSES)) up[u[0]] = 0;
+let pot = 0, sunk = 0, ms = 0, hasMagnet = false, clock = 0, autoOn = false, savedTools = [];
+let savedJunk = null, savedCoins = [], savedBox = null, savedBoxWait = 60, savedTape = null;      // what was lying in the yard when you left, and the cleaner box
+const ZB = -10, yardW = () => YARD_ACROSS/2 + YARD_GROW*ms, yardZ1 = () => ZB + YARD_DEEP + YARD_GROW*ms;      // ZB is the back of the yard. yardW is half way across. yardZ1 is the front.
+const HOLE = { x: YARD_ACROSS*.15, z: ZB + YARD_DEEP*.6, r: .7 };
+try {
+  const s = JSON.parse(localStorage.getItem(SAVE) || 'null');
+  if (s) { money = (s.money || 0) + (s.pot || 0); Object.assign(up, s.up || {}); sunk = s.sunk || 0; ms = s.ms || 0; hasMagnet = !!s.hasMagnet; clock = s.clock || 0; autoOn = !!s.autoOn; savedTools = s.tools || [];
+    savedJunk = s.junk || null; savedCoins = s.coins || []; savedBox = s.box || null; savedTape = s.tape || null; if (s.boxWait > 0) savedBoxWait = s.boxWait;
+    if (s.hole && Math.abs(s.hole.x) < yardW() - s.hole.r && s.hole.z > ZB + s.hole.r && s.hole.z < yardZ1() - s.hole.r) Object.assign(HOLE, s.hole); }      // only if the saved hole is inside the yard
+  else { const old = JSON.parse(localStorage.getItem('throw-it-in-v1') || 'null'); if (old) money = old.money || 0; }
+} catch (e) {}
+// Jos asked (21 Nov) to go back to zero junk in the hole after testing. This happens once: the hole goes back to its first size and the clock starts again.
+// Your money, upgrades and tools stay. Anything you got from the test (the automatic junk thrower) goes, and comes back when you earn it.
+if (!localStorage.getItem('throw-it-in-zero-1')) { sunk = 0; ms = 0; clock = 0; HOLE.r = .7; HOLE.x = YARD_ACROSS*.15; HOLE.z = ZB + YARD_DEEP*.6; try { localStorage.setItem('throw-it-in-zero-1', '1'); } catch (e) {} }
+function save() {
+  try {
+    const r2 = n => Math.round(n*100)/100;                      // 2 numbers after the dot is plenty
+    localStorage.setItem(SAVE, JSON.stringify({ money, pot, up, sunk, ms, hasMagnet, clock, autoOn, hole: HOLE, tools: placed.map(o => ({ t: o.t, x: o.x, z: o.z, yaw: o.yaw, pitch: o.pitch })),
+      // every piece of junk in the yard (the one in your hand too), every coin, and the cleaner box with the time it has left
+      junk: junk.filter(j => !j.d.vac && !j.d.clock && j.state !== 'sink').map(j => ({ n: JUNK.indexOf(j.d), t: j.tint, x: r2(j === held ? P.x : j.mesh.position.x), z: r2(j === held ? P.z : j.mesh.position.z) })),
+      coins: coins.map(o => ({ c: COINS.indexOf(o.c), x: r2(o.mesh.position.x), z: r2(o.mesh.position.z) })),
+      box: cbox ? { x: cbox.x, z: cbox.z, t: r2(cbox.t), roll: r2(cbox.roll), ret: !!cbox.ret } : null, boxWait: r2(boxWait),
+      // the red tape on the hole: how many clicks each piece has had, whether the hole is shut, and how many pieces the vacuum cleaners still want to stick on
+      tape: { clicks: tapes.filter(t => !t.going).map(t => t.clicks), taped, want: tapeJob ? tapeJob.want : 0 } }));
+  } catch (e) {}
+}
+const maxJunk = () => MAX_JUNK + 20*up.room, bonusDur = () => BONUS_SECONDS + up.bdur;
+const crankTime = () => CRANK_TIMES[up.speed], throwSpeed = () => 8 + 2*up.arm, valueMul = () => 1 + .5*up.fancy;
+const magR = () => .3 + .25*up.mrad, magK = () => 14 + 22*up.mstr;          // the magnet reaches one foot (0.3 m) to start with
+
+const $ = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.random()*(b - a), lerp = (a, b, k) => a + (b - a)*k;
+
+// ====================== THE WORLD ======================
+const cv = $('gl');
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, logarithmicDepthBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 60, 400);
+const camera = new THREE.PerspectiveCamera(70, 1, .05, 1200);
+scene.add(camera);
+function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x557744, .78));
+{ const sun = new THREE.DirectionalLight(0xffffff, .6); sun.position.set(30, 50, 20); scene.add(sun); }
+
+const M = (c, o) => new THREE.MeshLambertMaterial(Object.assign({ color: c }, o || {}));
+const HIT = new THREE.MeshBasicMaterial({ visible: false });       // see-through shapes, only used to tell what you are looking at
+function box(w, h, d, c, x, y, z, parent) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), M(c)); m.position.set(x, y, z); (parent || scene).add(m); return m; }
+
+// things that happen over time (the hedge sinking, the tube from the sky...)
+const anims = [];
+function after(sec, fn) { let t = 0; anims.push(dt => (t += dt) >= sec ? (fn(), true) : false); }
+function tween(sec, fn, done) { let t = 0; anims.push(dt => { t += dt; const k = Math.min(1, t/sec); fn(k); if (k >= 1) { if (done) done(); return true; } return false; }); }
+
+// Metal: every 2 feet there is a black line round it, with black dots (rivets) above and below the line.
+// The tube from the sky is made of it, and so is the inside of the hole.
+function metalTex(around, length) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 128, 0);
+  gr.addColorStop(0, '#aeb6bb'); gr.addColorStop(.5, '#d5dadd'); gr.addColorStop(1, '#aeb6bb'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  g.fillStyle = '#000'; g.fillRect(0, 61, 128, 6);
+  for (const x of [32, 96]) for (const y of [42, 86]) { g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(around, length/.61); return t;       // 0.61 metres is 2 feet
+}
+const PIT_DEEP = 16, PIT_TEX = metalTex(4, PIT_DEEP);
+const PIT_METAL = new THREE.MeshBasicMaterial({ map: PIT_TEX, vertexColors: true, side: THREE.BackSide, fog: false }), PIT_DARK = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide, fog: false });
+
+// the grass, with a real hole cut in it. It is rebuilt whenever the hole moves or grows.
+let groundM = null, pitG = null;
+function buildGround() {
+  if (groundM) { scene.remove(groundM); groundM.geometry.dispose(); scene.remove(pitG); pitG.traverse(o => o.geometry && o.geometry.dispose()); }
+  const R = HOLE.r;
+  const sh = new THREE.Shape(); sh.moveTo(-500, -500); sh.lineTo(500, -500); sh.lineTo(500, 500); sh.lineTo(-500, 500); sh.lineTo(-500, -500);
+  const h = new THREE.Path(); h.absarc(HOLE.x, -HOLE.z, R, 0, Math.PI*2, true); sh.holes.push(h);
+  groundM = new THREE.Mesh(new THREE.ShapeGeometry(sh, 32), GRASS); groundM.rotation.x = -Math.PI/2; scene.add(groundM);
+  pitG = new THREE.Group(); pitG.position.set(HOLE.x, 0, HOLE.z);
+  // the top of the hole is a metal tube that gets darker and darker as it goes down. Below that it is black, 300 metres deep, so you never see a bottom.
+  const tg = new THREE.CylinderGeometry(R, R, PIT_DEEP, 32, 16, true), pos = tg.attributes.position, col = new Float32Array(pos.count*3);
+  for (let i = 0; i < pos.count; i++) { const k = Math.pow(Math.max(0, (pos.getY(i) + PIT_DEEP/2)/PIT_DEEP), 1.6); col[i*3] = col[i*3 + 1] = col[i*3 + 2] = k; }
+  tg.setAttribute('color', new THREE.BufferAttribute(col, 3)); PIT_TEX.repeat.x = Math.max(3, Math.round(2*Math.PI*R/1.1));
+  const top = new THREE.Mesh(tg, PIT_METAL); top.position.y = -PIT_DEEP/2; pitG.add(top);
+  const wall = new THREE.Mesh(new THREE.CylinderGeometry(R, R, 300, 32, 1, true), PIT_DARK); wall.position.y = -PIT_DEEP - 150; pitG.add(wall);
+  const bot = new THREE.Mesh(new THREE.CircleGeometry(R, 32), PIT_BOT); bot.rotation.x = -Math.PI/2; bot.position.y = -300; pitG.add(bot);
+  scene.add(pitG);
+}
+const GRASS = M(0x5fae3e), PIT_BOT = new THREE.MeshBasicMaterial({ color: 0x000000, fog: false });
+buildGround();
+
+// ---- the hedge: a thick wall of leaves all the way round the yard ----
+const GAR = { x: 0 };
+const LEAF_GEO = new THREE.IcosahedronGeometry(.44, 0), LEAF_MAT = new THREE.MeshLambertMaterial({ flatShading: true }), HEDGE_CORE = M(0x1b5e20);
+let hedgeG = null;
+function buildHedge() {
+  if (hedgeG) { scene.remove(hedgeG); hedgeG.traverse(o => { if (o.isMesh && o.geometry !== LEAF_GEO) o.geometry.dispose(); }); }
+  hedgeG = new THREE.Group(); scene.add(hedgeG);
+  const W = yardW(), Z1 = yardZ1(), H = 3, pts = [];
+  const core = (w, d, x, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, H, d), HEDGE_CORE); m.position.set(x, H/2, z); hedgeG.add(m); };
+  core(2*W + 2.4, 1.2, 0, Z1 + .6);
+  { const a = -W - 1.2, b = GAR.x - 4, c2 = GAR.x + 4, d = W + 1.2; if (b > a) core(b - a, 1.2, (a + b)/2, ZB - .6); if (d > c2) core(d - c2, 1.2, (c2 + d)/2, ZB - .6); }      // the back hedge has a gap for the garage
+  core(1.2, Z1 - ZB, -W - .6, (Z1 + ZB)/2); core(1.2, Z1 - ZB, W + .6, (Z1 + ZB)/2);
+  const ys = [.25, .75, 1.25, 1.75, 2.25, 2.75, 3.1];
+  for (let x = -W - .5; x <= W + .5; x += .55) for (const y of ys) { pts.push([x, y, Z1 + .15]); if (!(Math.abs(x - GAR.x) < 4.5)) pts.push([x, y, ZB - .15]); }
+  for (let z = ZB; z <= Z1; z += .55) for (const y of ys) { pts.push([-W - .15, y, z]); pts.push([W + .15, y, z]); }
+  const im = new THREE.InstancedMesh(LEAF_GEO, LEAF_MAT, pts.length), o = new THREE.Object3D(), c = new THREE.Color();
+  pts.forEach(([x, y, z], i) => {
+    o.position.set(x + rnd(-.12, .12), y + rnd(-.1, .1), z + rnd(-.12, .12)); o.rotation.set(rnd(0, 6), rnd(0, 6), rnd(0, 6)); o.scale.setScalar(rnd(.8, 1.25)); o.updateMatrix(); im.setMatrixAt(i, o.matrix);
+    im.setColorAt(i, c.setHSL(rnd(.29, .36), rnd(.5, .7), rnd(.2, .34)));
+  });
+  hedgeG.add(im);
+}
+buildHedge();
+// the little garage, poking through the hedge at the back. It is hollow: the door rolls up and the shop computer is inside.
+const GZ0 = ZB - 4.9, GZ1 = ZB + .1;                               // the back and the front of the garage
+box(.15, 3.6, 5, 0xd9c7a0, GAR.x - 3.93, 1.8, ZB - 2.4); box(.15, 3.6, 5, 0xd9c7a0, GAR.x + 3.93, 1.8, ZB - 2.4);     // side walls
+box(8, 3.6, .15, 0xd9c7a0, GAR.x, 1.8, GZ0); box(8, .15, 5, 0xbfae8a, GAR.x, 3.55, ZB - 2.4);                          // back wall and ceiling
+box(1.5, 3.6, .15, 0xd9c7a0, GAR.x - 3.25, 1.8, GZ1); box(1.5, 3.6, .15, 0xd9c7a0, GAR.x + 3.25, 1.8, GZ1); box(5, .8, .15, 0xd9c7a0, GAR.x, 3.2, GZ1);   // the front wall, round the door
+box(7.8, .04, 4.9, 0x9e9e9e, GAR.x, .02, ZB - 2.4);                                                                   // concrete floor
+{ const roof = new THREE.Mesh(new THREE.CylinderGeometry(.01, 4.6, 1.8, 4, 1), M(0x8d4b3a)); roof.rotation.y = Math.PI/4; roof.scale.set(1, 1, .75); roof.position.set(GAR.x, 4.5, ZB - 2.4); scene.add(roof); }
+const doorG = new THREE.Group(); doorG.position.set(GAR.x, 2.8, GZ1 + .06); scene.add(doorG);                         // the door hangs from its top edge, so it can roll up
+const door = box(5, 2.8, .12, 0x90a4ae, 0, -1.4, 0, doorG); door.userData.shop = true;
+for (let k = 0; k < 4; k++) box(5, .05, .14, 0x607d8b, 0, -2.25 + k*.6, .01, doorG);
+{ const c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#263238'; g.fillRect(0, 0, 512, 128); g.fillStyle = '#ffd54f'; g.font = 'bold 84px Trebuchet MS, Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('SHOP', 256, 68);
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, .65), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) })); sign.position.set(GAR.x, 3.2, GZ1 + .09); scene.add(sign); }
+// the shop computer, on a desk at the back of the garage
+box(2.2, .08, .9, 0x8d6e63, GAR.x, .9, GZ0 + .7); for (const sx of [-1, 1]) box(.1, .9, .8, 0x6d4c41, GAR.x + sx*1.0, .45, GZ0 + .7);
+box(1.3, .85, .08, 0x263238, GAR.x, 1.55, GZ0 + .5); box(.12, .25, .12, 0x263238, GAR.x, 1.05, GZ0 + .5); box(.5, .04, .3, 0x263238, GAR.x, .96, GZ0 + .5); box(.9, .04, .3, 0xeceff1, GAR.x, .96, GZ0 + .95);
+{ const c = document.createElement('canvas'); c.width = 512; c.height = 320; const g = c.getContext('2d'); g.fillStyle = '#0b1a2e'; g.fillRect(0, 0, 512, 320); g.fillStyle = '#2f7bff'; g.fillRect(0, 0, 512, 70);
+  g.fillStyle = '#fff'; g.font = 'bold 46px Trebuchet MS, Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('THE SHOP', 256, 38); g.font = '34px Trebuchet MS, Arial'; g.fillText('Upgrades · Tools · Bonus', 256, 190);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.2, .75), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) })); scr.position.set(GAR.x, 1.55, GZ0 + .545); scene.add(scr); }
+// trees and clouds, just to look nice
+for (let i = 0; i < 40; i++) { const a = rnd(0, Math.PI*2), d = rnd(70, 200), x = Math.cos(a)*d, z = Math.sin(a)*d, s = rnd(1.2, 2.4);
+  box(.5*s, 2.4*s, .5*s, 0x6d4c41, x, 1.2*s, z); const t = new THREE.Mesh(new THREE.ConeGeometry(2*s, 5*s, 8), M(0x2e7d32)); t.position.set(x, 4.6*s, z); scene.add(t); }
+{ const cm = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false }), sg = new THREE.SphereGeometry(1, 10, 8);
+  for (let i = 0; i < 18; i++) { const g = new THREE.Group(); g.position.set(rnd(-500, 500), rnd(90, 140), rnd(-500, 500));
+    for (let k = 0; k < 5; k++) { const b = new THREE.Mesh(sg, cm), r = rnd(9, 16); b.scale.set(r*1.4, r*.7, r); b.position.set(rnd(-20, 20), rnd(-3, 3), rnd(-9, 9)); g.add(b); } scene.add(g); } }
+
+// ---- the machines ----
+// Shaped like an arcade machine. Where the screen would be, a tube points up at a slant.
+// The first one has a wheel on each side, like the wheel on a boat. The automatic one has a switch.
+const X_MAT = new THREE.MeshBasicMaterial({ color: 0xe53935 });
+const SIGN_TEX = (() => {                                       // a flat yellow and black ! sign
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  g.beginPath(); g.moveTo(64, 8); g.lineTo(122, 116); g.lineTo(6, 116); g.closePath(); g.fillStyle = '#ffd600'; g.fill(); g.lineWidth = 9; g.lineJoin = 'round'; g.strokeStyle = '#000'; g.stroke();
+  g.fillStyle = '#000'; g.fillRect(57, 42, 14, 40); g.beginPath(); g.arc(64, 98, 8, 0, 7); g.fill();
+  return new THREE.CanvasTexture(c);
+})();
+const TUBE_A = new THREE.Vector3(0, 1.45, .15), TUBE_D = new THREE.Vector3(0, Math.cos(.8), Math.sin(.8));
+function buildMachine(x, z, rotY, auto) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY; scene.add(g);
+  box(1.3, 1.1, 1.0, auto ? 0x1565c0 : 0xd32f2f, 0, .55, 0, g);
+  box(1.3, 1.0, .6, auto ? 0x0d47a1 : 0xb71c1c, 0, 1.6, -.2, g);
+  box(1.4, .25, .7, 0xffca28, 0, 2.2, -.2, g);
+  { const p = box(1.1, .75, .08, 0x212121, 0, 1.5, .18, g); p.rotation.x = -.5; }
+  { const t = new THREE.Mesh(new THREE.CylinderGeometry(.24, .24, 1.8, 18, 1, true), M(0xb0bec5, { side: THREE.DoubleSide })); t.rotation.x = .8; t.position.copy(TUBE_A).addScaledVector(TUBE_D, .9); g.add(t);
+    for (const k of [.15, 1.75]) { const r = new THREE.Mesh(new THREE.TorusGeometry(.26, .04, 8, 18), M(0x546e7a)); r.rotation.x = .8 - Math.PI/2; r.position.copy(TUBE_A).addScaledVector(TUBE_D, k); g.add(r); } }
+  const m = { g, x, z, rotY, auto, prog: 0, wheels: [], lever: null, dusted: false, broken: 0 };
+  // the X on the grass. The junk from this machine always lands on it.
+  m.X = { x: x + Math.sin(rotY)*X_FAR, z: z + Math.cos(rotY)*X_FAR };
+  for (const a of [-1, 1]) { const b = box(1.1, .02, .16, 0xffffff, 0, .025, X_FAR, g); b.rotation.y = a*Math.PI/4; b.material = X_MAT; }
+  // the ! sign. It bobs up and down over the machine when a vacuum cleaner is putting dust on it, or when it is broken.
+  m.sign = new THREE.Sprite(new THREE.SpriteMaterial({ map: SIGN_TEX, fog: false })); m.sign.scale.set(1, 1, 1); m.sign.position.set(x, 3.3, z); m.sign.visible = false; scene.add(m.sign);
+  if (!auto) for (const sx of [-1, 1]) {
+    const w = new THREE.Group(); w.position.set(sx*.78, 1.0, .1); g.add(w); m.wheels.push(w);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.42, .05, 8, 24), M(0x8d6e63)); ring.rotation.y = Math.PI/2; w.add(ring);
+    for (let k = 0; k < 4; k++) { const s = new THREE.Mesh(new THREE.BoxGeometry(.05, 1.06, .05), M(0xa1887f)); s.rotation.x = k*Math.PI/4; w.add(s);      // the lines going to the middle
+      for (const e of [-1, 1]) { const b = new THREE.Mesh(new THREE.SphereGeometry(.07, 8, 6), M(0x5d4037)); b.position.set(0, Math.cos(k*Math.PI/4)*.55*e, Math.sin(k*Math.PI/4)*.55*e); w.add(b); } }
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, .14, 12), M(0x4e342e)); hub.rotation.z = Math.PI/2; w.add(hub);
+  } else {                                                      // the switch
+    box(.34, .5, .1, 0x263238, .82, 1.0, .1, g).rotation.y = Math.PI/2;
+    m.lever = new THREE.Group(); m.lever.position.set(.9, 1.0, .1); g.add(m.lever);
+    box(.06, .34, .06, 0xeceff1, 0, .17, 0, m.lever); const knob = new THREE.Mesh(new THREE.SphereGeometry(.09, 10, 8), M(0xe53935)); knob.position.y = .36; m.lever.add(knob);
+  }
+  box(.96, .16, .04, 0x212121, 0, .72, .51, g);
+  m.barG = new THREE.Group(); m.barG.position.set(-.45, .72, .53); g.add(m.barG);
+  { const f = box(.9, .1, .03, 0xffb300, .45, 0, 0, m.barG); f.material = new THREE.MeshBasicMaterial({ color: auto ? 0x40c4ff : 0xffb300 }); }
+  m.barG.scale.x = .001;
+  m.hit = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.4, 2.4), HIT); m.hit.position.set(x, 1.7, z); m.hit.userData.mach = m; scene.add(m.hit);
+  return m;
+}
+const mach = buildMachine(-YARD_ACROSS/2 + .9, ZB + YARD_DEEP/2, Math.PI/2, false);    // it is at the left end of the yard, and faces the right end
+const AUTO = { x: YARD_ACROSS/2 - .9, z: ZB + YARD_DEEP/2 };
+let autoM = null;
+if (ms >= AUTO_AT) autoM = buildMachine(AUTO.x, AUTO.z, -Math.PI/2, true);
+// how many seconds before the junk comes out each pop happens. The last pop is right when the junk comes out.
+const POP_ALL = POP_GAPS.reduce((a, b) => a + b, 0), POP_BEFORE = [POP_ALL]; for (const g of POP_GAPS) POP_BEFORE.push(POP_BEFORE[POP_BEFORE.length - 1] - g);
+let popI = 0;
+const ODDS = { vac: 5, gold: 2, silver: 3 };                     // what comes out of a machine, in percent. Everything else is ordinary junk.
+const goldOdds = () => ODDS.gold + up.gch, silverOdds = () => ODDS.silver + up.sch;          // the Bonus list can make these bigger
+function drawOdds() { $('odds').innerHTML = 'Junk chance ' + (100 - ODDS.vac - goldOdds() - silverOdds()) + '%<br>Vacuum cleaner ' + ODDS.vac + '%<br>Gold junk ' + goldOdds() + '%<br>Silver junk ' + silverOdds() + '%'; }
+function spit(m, again) {                                       // a machine shoots something out of its tube
+  if (again !== true && Math.random() < .1*up.double) spit(m, true);          // the Double junk upgrade
+  const top = TUBE_A.clone().addScaledVector(TUBE_D, 1.9); m.g.localToWorld(top);
+  const fall = top.y - .3, t = (5 + Math.sqrt(25 + 40*fall))/20, vel = new THREE.Vector3((m.X.x - top.x)/t, 5, (m.X.z - top.z)/t);      // just the right speed to come down on the X
+  const roll = Math.random()*100; thunk();
+  if (roll < ODDS.vac) { if (vacCount() < MAX_VACS) { mkJunk(VAC, top, vel).sticky = true; say('A vacuum cleaner came out!', '#80cbc4'); return; } }
+  const tint = roll < ODDS.vac ? null : roll < ODDS.vac + goldOdds() ? 'gold' : roll < ODDS.vac + goldOdds() + silverOdds() ? 'silver' : null;
+  let i = Math.floor(Math.random()*JUNK.length); if (Math.random() < .08*up.lucky) i = Math.floor(Math.random()*15)*10 + 9;      // the Lucky machine upgrade: more rare junk
+  const d = JUNK[i];
+  mkJunk(d, top, vel, tint).sticky = true;          // sticky: it stops where it lands (on the X) and does not roll on
+  if (tint) say((tint === 'gold' ? 'GOLD ' : 'SILVER ') + d.name + '!', tint === 'gold' ? '#ffd54f' : '#eceff1');
+  else if (!m.auto) say(d.name + '!', i % 10 === 9 ? '#ffd54f' : '#fff');
+  save();
+}
+
+// a tube that zooms down from the top of the sky, drops something, and zooms back up
+const TUBE_METAL = new THREE.MeshLambertMaterial({ map: metalTex(5, 90), side: THREE.DoubleSide });
+function skyTube(x, z, hold, onArrive) {
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(.8, .8, 90, 24, 1, true), TUBE_METAL); t.position.set(x, 160, z); scene.add(t);
+  const low = 3.4 + 45; whoosh();
+  tween(.9, k => { t.position.y = lerp(160, low, k*k); }, () => { thunk(); onArrive(new THREE.Vector3(x, 3.2, z));
+    after(hold, () => tween(.9, k => { t.position.y = lerp(low, 160, k*k); }, () => { scene.remove(t); t.geometry.dispose(); })); });
+}
+
+// ---- junk ----
+// Each piece of junk is a real 3D shape (they are all in junk3d.js). It tumbles when it flies.
+const junk = [], HITGEO = new THREE.SphereGeometry(.4, 8, 6), JUNK_MAT = new THREE.MeshLambertMaterial({ vertexColors: true });
+const junkMesh = (d, tint) => new THREE.Mesh(JUNK3D.shape(d.shape || d.name, tint), JUNK_MAT);
+function tumble(j, a) { if (j.model) { j.model.rotation.x += a; j.model.rotation.z += a*.6; } }
+function buildVac(mesh) {                                       // a vacuum cleaner: a see-through ball with wheels, eyes, eyebrows, and a little tube for a mouth
+  const body = new THREE.Mesh(new THREE.SphereGeometry(.3, 24, 18), new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: .22, shininess: 120, specular: 0xffffff, depthWrite: false })); mesh.add(body);
+  const inside = new THREE.Group(); mesh.add(inside);          // whatever it has sucked up goes in here, so you can see it through the ball
+  const wheels = [], brows = [];
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, .06, 12), M(0x212121)); w.rotation.z = Math.PI/2; w.position.set(sx*.25, -.23, sz*.16); mesh.add(w); wheels.push(w); }
+  const tube = new THREE.Group(); tube.position.set(0, -.06, .26); mesh.add(tube);
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(.07, .09, .3, 12, 1, true), M(0x455a64, { side: THREE.DoubleSide })); t.rotation.x = Math.PI/2; t.position.z = .13; tube.add(t);
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(.075, 10, 8), M(0xffffff)); eye.position.set(sx*.11, .13, .235); mesh.add(eye);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(.036, 8, 6), new THREE.MeshBasicMaterial({ color: 0x000000 })); pupil.position.set(sx*.11, .135, .3); mesh.add(pupil);
+    const b = box(.15, .04, .04, 0x111111, sx*.11, .245, .285, mesh); b.userData.sx = sx; brows.push(b);      // eyebrows. They are flat, and they slant down when you pick it up.
+  }
+  mesh.userData.vac = { body, inside, wheels, tube, brows, mad: 0 };
+}
+function setCargo(j, cargo) {                                   // put something inside a vacuum cleaner (or take it out again)
+  j.cargo = cargo; const g = j.mesh.userData.vac.inside; while (g.children.length) g.remove(g.children[0]);
+  if (!cargo) return;
+  if (cargo.coin) { const m = new THREE.Mesh(COIN_GEO, cargo.coin.mats); m.rotation.x = 1.1; m.scale.setScalar(.85); g.add(m); }
+  else { const m = junkMesh(cargo.d, cargo.tint); m.scale.setScalar(.55); g.add(m); }
+}
+function mkJunk(d, pos, vel, tint) {
+  const s = d.vac ? 1 : d.clock ? 1.5 : .85 + (d.name.length*13 % 7)*.05;
+  const mesh = new THREE.Group(); mesh.position.copy(pos); mesh.scale.setScalar(s);
+  let model = null;
+  if (d.vac) buildVac(mesh);
+  else { model = junkMesh(d, tint); model.rotation.y = rnd(0, 6); mesh.add(model); }
+  const hit = new THREE.Mesh(HITGEO, HIT); mesh.add(hit);
+  const duster = !!d.vac && Math.random()*100 < DUSTER_CHANCE;
+  const j = { duster, d, s, mesh, model, hit, v: vel.clone(), state: 'fly', r: (d.vac ? .32 : .3)*s, spin: rnd(-5, 5), pushed: false, tint: tint || null, cargo: null, angry: 0, shake: 0 };
+  // its hitbox: a box the same size as its shape. hx and hz are half how wide it is each way, hh is how tall, wide is its widest half.
+  const hb = model ? model.geometry.userData.hb : { x: .3, z: .3, h: .6 }; j.hx = Math.max(.04, hb.x*s); j.hz = Math.max(.04, hb.z*s); j.hh = Math.max(.05, hb.h*s); j.wide = Math.max(j.hx, j.hz); j.reach = Math.hypot(j.hx, j.hz);
+  hit.userData.j = j; scene.add(mesh); junk.push(j); return j;
+}
+function killJunk(j) { scene.remove(j.mesh); junk.splice(junk.indexOf(j), 1); }
+
+// ---- coins ----
+// When junk goes in the hole, the hole chucks out coins. The coins add up to what the junk was worth,
+// but which coins you get is random: £4 could be 4 bronze, or 2 silver, or 2 bronze and 1 silver...
+const coins = [], COIN_GEO = new THREE.CylinderGeometry(.24, .24, .06, 22), COIN_HIT = new THREE.SphereGeometry(.42, 8, 6);
+for (const c of COINS) {
+  const cnv = document.createElement('canvas'); cnv.width = cnv.height = 64; const g = cnv.getContext('2d'), hex = '#' + c.col.toString(16).padStart(6, '0');
+  g.fillStyle = hex; g.fillRect(0, 0, 64, 64); g.strokeStyle = c.ink; g.lineWidth = 4; g.beginPath(); g.arc(32, 32, 25, 0, 7); g.stroke();
+  g.fillStyle = c.ink; g.font = 'bold 34px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(c.v, 32, 34);
+  const face = new THREE.MeshLambertMaterial({ map: new THREE.CanvasTexture(cnv) }); c.mats = [M(c.col), face, face];
+}
+function coinsFor(v) { const out = []; while (v > 0) { const ok = COINS.filter(c => c.v <= v), c = ok[Math.floor(Math.random()*ok.length)]; out.push(c); v -= c.v; } return out; }
+function mkCoin(c, pos, vel) {
+  const mesh = new THREE.Mesh(COIN_GEO, c.mats); mesh.position.copy(pos);
+  const hit = new THREE.Mesh(COIN_HIT, HIT); mesh.add(hit);
+  const o = { c, mesh, hit, v: vel, state: 'fly' }; hit.userData.coin = o; scene.add(mesh); coins.push(o); return o;
+}
+function chuckCoins(v) {
+  for (const c of coinsFor(v)) {
+    if (coins.length > 220) { money += c.v; continue; }        // far too many coins lying about: just give the money
+    const vy = rnd(7, 10), a = rnd(0, Math.PI*2), vh = (HOLE.r + rnd(.8, 3.2))/(2*vy/20);
+    mkCoin(c, new THREE.Vector3(HOLE.x, .2, HOLE.z), new THREE.Vector3(Math.cos(a)*vh, vy, Math.sin(a)*vh));
+  }
+}
+function coinStep(dt) {
+  const W = yardW() - .4, Z1 = yardZ1() - .4;
+  for (let n = coins.length - 1; n >= 0; n--) {
+    const o = coins[n], p = o.mesh.position;
+    if (o.state === 'fly') {
+      o.v.y -= 20*dt; p.addScaledVector(o.v, dt); o.mesh.rotation.x += 9*dt; o.mesh.rotation.z += 5*dt;
+      p.x = Math.max(-W, Math.min(W, p.x)); p.z = Math.max(ZB + .4, Math.min(Z1, p.z));
+      if (p.y <= .04 && o.v.y < 0) { p.y = .04; o.mesh.rotation.set(0, rnd(0, 6), 0); o.state = 'rest'; tink(); }
+    } else if (o.state === 'rest') { if (up.coins && Math.hypot(P.x - p.x, P.z - p.z) < COIN_WALK) o.state = 'toYou'; }      // automatic coin pick up: walk over a coin and it comes to you
+    else {                                                      // flying to you
+      const tx = P.x - p.x, ty = 1.1 - p.y, tz = P.z - p.z, d = Math.hypot(tx, ty, tz);
+      if (d < .5) { money += o.c.v; scene.remove(o.mesh); coins.splice(n, 1); coinSound(o.c.v); continue; }
+      const sp = Math.min(d, 16*dt)/d; p.x += tx*sp; p.y += ty*sp; p.z += tz*sp; o.mesh.rotation.x += 12*dt;
+    }
+  }
+}
+
+// ---- tools you put in the yard: fan, trampoline, panel ----
+// Look at one and press E to carry it. Click to put it down. K and L turn it. O and M tilt it.
+const placed = [];
+let carried = null;
+function mkTool(t, x, z, yaw, pitch) {
+  const g = new THREE.Group(), piv = new THREE.Group(); g.add(piv); scene.add(g);
+  const o = { t, g, piv, x, z, yaw, pitch, co: 0, blades: null };
+  if (t === 'panel') {
+    piv.position.y = 1.1; box(2.4, 2.0, .08, 0x90a4ae, 0, 0, 0, piv); box(2.5, .1, .12, 0x546e7a, 0, 1.0, 0, piv); box(2.5, .1, .12, 0x546e7a, 0, -1.0, 0, piv);
+    box(.12, 1.1, .12, 0x455a64, 0, .55, 0, g);
+  } else if (t === 'tramp') {
+    piv.position.y = .6;
+    const mat = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .05, 28), M(0x212121)); mat.rotation.x = Math.PI/2; piv.add(mat);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, .09, 8, 28), M(0x1e88e5)); piv.add(ring);
+    box(.14, .6, .14, 0x455a64, 0, .3, 0, g);
+  } else if (t === 'box') {                                       // a wooden box with no lid. It is built 1 metre wide, and stretched if you buy Bigger box.
+    box(1, .04, 1, 0x8d6e63, 0, .02, 0, piv);
+    for (const sz of [-1, 1]) { box(1, BOX_WALL, .05, 0xb5894f, 0, BOX_WALL/2, sz*.475, piv); box(.05, BOX_WALL, 1, 0xb5894f, sz*.475, BOX_WALL/2, 0, piv); box(1.02, .05, .07, 0x6d4c41, 0, BOX_WALL, sz*.475, piv); box(.07, .05, 1.02, 0x6d4c41, sz*.475, BOX_WALL, 0, piv); }
+  } else {
+    piv.position.y = 1.1;
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.72, .05, 8, 24), M(0xeceff1)); piv.add(ring);
+    const back = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .3, 12), M(0x455a64)); back.rotation.x = Math.PI/2; back.position.z = -.12; piv.add(back);
+    for (let k = 0; k < 4; k++) { const s = box(1.44, .03, .03, 0xeceff1, 0, 0, .1, piv); s.rotation.z = k*Math.PI/4; }      // the cage
+    o.blades = new THREE.Group(); piv.add(o.blades);
+    for (let k = 0; k < 3; k++) { const b = new THREE.Group(); b.rotation.z = k*Math.PI*2/3; o.blades.add(b); const bl = box(.24, .6, .03, 0x29b6f6, 0, .34, 0, b); bl.rotation.y = .35; }
+    box(.12, 1.1, .12, 0x455a64, 0, .55, -.15, g); box(.8, .08, .6, 0x455a64, 0, .04, -.15, g);
+  }
+  o.sc = TOOL_SIZE[t]; g.scale.setScalar(o.sc);                   // how big it is (the fan is half the size of the other tools)
+  const hit = new THREE.Mesh(t === 'box' ? new THREE.BoxGeometry(1.06, BOX_WALL + .1, 1.06) : new THREE.BoxGeometry(2.5, 2.2, .6), HIT); if (t === 'box') hit.position.y = BOX_WALL/2; hit.userData.tool = o; piv.add(hit); o.hit = hit;
+  placed.push(o); applyTool(o); return o;
+}
+function applyTool(o) {
+  if (o.t === 'box') { o.pitch = o.flipA || 0; o.piv.position.y = o.flipY || 0; const w = boxSize(); o.half = w/2; o.g.scale.set(w, 1, w); }          // a box cannot tilt. It can flip right over (press F).
+  o.g.position.set(o.x, 0, o.z); o.g.rotation.y = o.yaw; o.piv.rotation.x = o.pitch; o.g.updateMatrixWorld(true);
+}
+// Flip the box over: F. It turns upside down, so everything in it drops out. After 1.5 seconds it flips back.
+function flipBox(o) {
+  if (o.flipping || o.falling) return; o.flipping = true; whoosh();
+  const turn = (from, to, done) => tween(.35, k => { const e = lerp(from, to, k*k*(3 - 2*k)); o.flipA = e*Math.PI; o.flipY = BOX_WALL*e + Math.sin(e*Math.PI)*.45; applyTool(o); }, done);
+  turn(0, 1, () => { thunk(); after(FLIP_SECONDS - .35, () => { whoosh(); turn(1, 0, () => { o.flipping = false; o.flipA = o.flipY = 0; applyTool(o); }); }); });
+}
+const theBox = () => placed.find(o => o.t === 'box' && !o.falling);
+for (const s of savedTools) if (s.t !== 'box' || !placed.some(o => o.t === 'box')) mkTool(s.t, Math.max(-yardW() + 1, Math.min(yardW() - 1, s.x)), Math.max(ZB + 1, Math.min(yardZ1() - .6, s.z)), s.yaw, s.pitch);
+
+// ---- the red tube over the hole ----
+// You cannot put a tool on the hole. If you try, a dark red tube shows up over the hole and goes up into the sky.
+// It has light red slanted lines that move up. The tool slides round it.
+const BAR_GAP = .35;                                            // how far from the edge of the hole a tool has to stay (metres)
+const barTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  g.fillStyle = '#6d0b0b'; g.fillRect(0, 0, 64, 64); g.strokeStyle = '#ff7b7b'; g.lineWidth = 7;
+  for (const k of [-64, 0, 64]) { g.beginPath(); g.moveTo(k - 8, 72); g.lineTo(k + 72, -8); g.stroke(); }      // one slanted line, drawn so the picture joins up with itself
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+})();
+const barM = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 600, 40, 1, true), new THREE.MeshBasicMaterial({ map: barTex, transparent: true, opacity: 0, fog: false, depthWrite: false }));
+barM.visible = false; scene.add(barM);
+let barShow = 0;                                                // 0 = hidden, 1 = fully there. It fades in and out.
+function offTheHole(o, fx, fz) {                                // push a tool off the hole. It tells you if it had to. (fx, fz is which way to push if it is dead in the middle.)
+  let dx = o.x - HOLE.x, dz = o.z - HOLE.z, d = Math.hypot(dx, dz); const R = HOLE.r + BAR_GAP;
+  if (d >= R) return false;
+  if (d < .001) { dx = fx || 1; dz = fz || 0; d = Math.hypot(dx, dz); }
+  o.x = HOLE.x + dx/d*R; o.z = HOLE.z + dz/d*R; return true;
+}
+function barStep(dt, blocked) {
+  barShow = Math.max(0, Math.min(1, barShow + (blocked ? 5 : -2.5)*dt));
+  barM.visible = barShow > 0; if (!barM.visible) return;
+  barM.position.set(HOLE.x, 300, HOLE.z); barM.scale.set(HOLE.r, 1, HOLE.r); barM.material.opacity = .85*barShow;
+  barTex.repeat.set(Math.max(4, Math.round(2*Math.PI*HOLE.r/.55)), 600/.55); barTex.offset.y -= dt*.9;          // the lines move up
+}
+
+const _q = new THREE.Quaternion(), _qi = new THREE.Quaternion(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
+function fanStep(dt) {
+  const F = 7 + 1.5*up.fan, far = 7 + up.fanlen;                                     // how hard a fan pushes
+  for (const o of placed) {
+    if (o.t !== 'fan') continue; o.blades.rotation.z += dt*22; if (o === carried) continue;
+    o.piv.getWorldPosition(_a); _b.set(0, 0, 1).applyQuaternion(o.piv.getWorldQuaternion(_q));
+    for (const j of junk) {
+      if (j.state === 'held' || j.state === 'sink' || j.state === 'mag' || j.taper) continue;          // (a vacuum cleaner with red tape is too busy to be blown away)
+      _c.copy(j.mesh.position).sub(_a); const along = _c.dot(_b); if (along < 0 || along > far) continue;
+      if (_c.addScaledVector(_b, -along).length() > .6) continue;          // the wind is a beam 0.6 metres wide all round
+      j.v.addScaledVector(_b, F*(1 - along/far/2)*dt); j.pushed = true; if (j.state === 'rest') j.state = 'fly';
+    }
+  }
+}
+function toolBounce(j) {                                        // junk bounces off panels and trampolines
+  const p = j.mesh.position;
+  for (const o of placed) {
+    if (o.t === 'fan' || o.t === 'box' || o === carried) continue;
+    _a.copy(p); o.piv.worldToLocal(_a);
+    const on = o.t === 'panel' ? Math.abs(_a.x) < 1.2 + j.r*.3/o.sc && Math.abs(_a.y) < 1.0 + j.r*.3/o.sc : Math.hypot(_a.x, _a.y) < 1.1;
+    const thick = j.r/o.sc + .04;                               // (the tool is shrunk, so inside it the junk counts as bigger)
+    if (!on || Math.abs(_a.z) > thick) continue;
+    const side = _a.z >= 0 ? 1 : -1; o.piv.getWorldQuaternion(_q); _qi.copy(_q).invert(); _b.copy(j.v).applyQuaternion(_qi);
+    if (_b.z*side < 0) {
+      if (o.t === 'tramp') { _b.z = Math.max(6 + 1.5*up.bouncy, Math.abs(_b.z)*(1.15 + .1*up.bouncy))*side; boing(); } else _b.z = -_b.z*.45;
+      j.v.copy(_b).applyQuaternion(_q);
+    }
+    _a.z = side*thick; o.piv.localToWorld(_a); p.copy(_a); if (j.state === 'rest') j.state = 'fly';
+  }
+}
+
+// ---- the junk magnet, in your left hand ----
+let magOut = false, magOn = false, lastSpace = -9999;
+const magG = new THREE.Group(); magG.position.set(-.5, -.38, -1.0); magG.visible = false; camera.add(magG);
+{ const arc = new THREE.Mesh(new THREE.TorusGeometry(.12, .04, 8, 16, Math.PI), M(0xe53935)); arc.rotation.x = Math.PI; arc.position.y = -.02; magG.add(arc);       // a horseshoe magnet, the open end pointing forward
+  magG.rotation.x = -Math.PI/2;
+  for (const sx of [-1, 1]) { box(.08, .14, .08, 0xe53935, sx*.12, .05, 0, magG); box(.09, .07, .09, 0xcfd8dc, sx*.12, .15, 0, magG); } }
+// The glow is one see-through ball. In the middle it is dark blue. Then it fades to blue, and then to light blue at the edge.
+// It is a real fade, not stripes: a tiny program (a shader) works out the colour of every single pixel.
+const glowG = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 32), new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  uniforms: { dark: { value: new THREE.Color(0x0d2a8a) }, mid: { value: new THREE.Color(0x1e88e5) }, light: { value: new THREE.Color(0xb3e5fc) } },
+  vertexShader: `#include <common>
+    #include <logdepthbuf_pars_vertex>
+    varying vec3 vN; varying vec3 vV;
+    void main() { vec4 mv = modelViewMatrix*vec4(position, 1.0); vN = normalize(normalMatrix*normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv;
+      #include <logdepthbuf_vertex>
+    }`,
+  fragmentShader: `#include <common>
+    #include <logdepthbuf_pars_fragment>
+    uniform vec3 dark; uniform vec3 mid; uniform vec3 light; varying vec3 vN; varying vec3 vV;
+    void main() {
+      #include <logdepthbuf_fragment>
+      float t = 1.0 - abs(dot(normalize(vN), normalize(vV)));          // 0 in the middle of the ball, 1 at its edge
+      vec3 c = t < 0.5 ? mix(dark, mid, smoothstep(0.0, 0.5, t)) : mix(mid, light, smoothstep(0.5, 1.0, t));
+      gl_FragColor = vec4(c, mix(0.6, 0.3, t)*(gl_FrontFacing ? 1.0 : 0.3));          // the far side of the ball is fainter, so a big glow does not turn your whole screen blue
+    }`,
+}));
+glowG.visible = false; magG.add(glowG);
+const magW = new THREE.Vector3();
+
+// ---- sounds (made by the computer, no sound files) ----
+let ac = null;
+function tone(f0, f1, t, vol, type) {
+  if (!ac) return; const o = ac.createOscillator(), g = ac.createGain(), n = ac.currentTime;
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f0, n); o.frequency.exponentialRampToValueAtTime(f1, n + t);
+  g.gain.setValueAtTime(vol, n); g.gain.exponentialRampToValueAtTime(.001, n + t); o.connect(g); g.connect(ac.destination); o.start(n); o.stop(n + t);
+}
+const pop = () => tone(rnd(500, 1100), rnd(120, 220), .07, .16), thunk = () => tone(180, 60, .25, .3, 'triangle'), whoosh = () => tone(300, 700, .15, .08, 'triangle'), plop = () => tone(260, 70, .35, .22);
+function ching() { tone(1320, 1320, .12, .14, 'square'); setTimeout(() => tone(1760, 1760, .25, .14, 'square'), 90); }
+const tink = () => tone(rnd(2200, 3000), 1800, .05, .04), boing = () => tone(160, 420, .22, .16), coinSound = v => tone(1200 + v*90, 1800 + v*90, .1, .09, 'square');
+function ring() { for (let k = 0; k < 14; k++) setTimeout(() => tone(k % 2 ? 1900 : 2300, 2000, .06, .12, 'square'), k*70); }
+
+// ====================== YOU ======================
+const P = { x: 0, z: ZB + YARD_DEEP*.8, yaw: 0, pitch: 0 }, EYE = 1.65, keys = {};
+let locked = false, started = false, menuMode = 'home', shopOpen = false, mouseDown = false, cover = false, growing = false;
+let held = null, aim = null, wheelA = 0, gameT = 0, comboN = 0, comboT = 0, cut = false, shopTab = 'up';
+addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+  keys[e.code] = true;
+  if (!locked || menuMode || shopOpen || cut || e.repeat) return;
+  if (e.code === 'Space' && hasMagnet) {                        // Space: take the magnet out. Space twice in one second: turn it on. Space again: turn it off.
+    const now = performance.now();
+    if (magOn) { magOn = false; lastSpace = -9999; }
+    else if (!magOut) { magOut = true; lastSpace = -9999; say('Press Space twice quickly to turn it on', '#81d4fa'); }
+    else if (now - lastSpace < 1000) { magOn = true; lastSpace = -9999; tone(300, 900, .2, .1); }
+    else lastSpace = now;
+  }
+  if (e.code === 'KeyE' && !carried && aim && aim.tool) { carried = aim.tool; carried.co = carried.yaw - (P.yaw + Math.PI); }
+  if (e.code === 'KeyM' && held && held.d.clock && clock === 1) useClock(held);
+  if (e.code === 'KeyX' && aim && aim.box && cbox && !cbox.ret) returnBox();
+  if (e.code === 'KeyF') { const o = carried && carried.t === 'box' ? carried : aim && aim.tool && aim.tool.t === 'box' ? aim.tool : null; if (o) flipBox(o); }
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; mouseDown = false; });
+addEventListener('mousemove', e => { if (!locked) return; P.yaw -= e.movementX*.0024; P.pitch = Math.max(-1.45, Math.min(1.45, P.pitch - e.movementY*.0024)); });
+addEventListener('mouseup', () => { mouseDown = false; });
+addEventListener('mousedown', () => {
+  if (!locked || menuMode || shopOpen || cover || cut) return;
+  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  mouseDown = true;
+  if (carried) { const o = carried; carried = null; if (o.t === 'box' && !taped && Math.hypot(o.x - HOLE.x, o.z - HOLE.z) < HOLE.r) boxInHole(o); save(); mouseDown = false; }
+  else if (held) throwIt();
+  else if (aim && aim.junk) pickUp(aim.junk);
+  else if (aim && aim.coin) { const a = aim.coin.mesh.position; for (const o of coins) if (o === aim.coin || (o.state === 'rest' && o.mesh.position.distanceTo(a) < 1.2*up.scoop)) o.state = 'toYou'; mouseDown = false; }
+  else if (aim && aim.tape) { pullTape(aim.tape); mouseDown = false; }
+  else if (aim && aim.shop) openShop();
+  else if (aim && aim.mach && aim.mach.auto) { autoOn = !autoOn; tone(autoOn ? 500 : 300, autoOn ? 900 : 150, .12, .14, 'square'); save(); mouseDown = false; }
+});
+function say(text, col) { const m = $('msg'); m.textContent = text; m.style.color = col || '#fff'; m.classList.remove('go'); void m.offsetWidth; m.classList.add('go'); }
+
+function pickUp(j) {
+  held = j; j.state = 'held'; camera.add(j.mesh); j.mesh.position.set(.52, -.4, -1.05); j.mesh.scale.setScalar(j.s*.7); if (j.model) j.model.rotation.set(0, -.5, 0); mouseDown = false;
+  if (j.d.vac && j.dustTime > 0 && j.dm) {                      // you took it off a machine: the machine is broken for as long as the vacuum cleaner was on it
+    j.dm.broken += j.dustTime; say('The machine is broken for ' + Math.ceil(j.dm.broken) + ' seconds!', '#ffd600'); j.dustTime = 0; thunk();
+  }
+  if (j.d.vac) {                                                // a vacuum cleaner: whatever it had sucked up drops out, and it gets angry
+    j.mesh.rotation.set(0, -.3, 0); j.angry = 2;          // it waits 2 seconds before it spits pixels at you
+    if (j.cargo) { const at = new THREE.Vector3(P.x - Math.sin(P.yaw)*1.6, .6, P.z - Math.cos(P.yaw)*1.6);
+      if (j.cargo.coin) mkCoin(j.cargo.coin, at, new THREE.Vector3(0, 3, 0)); else mkJunk(j.cargo.d, at, new THREE.Vector3(0, 2, 0), j.cargo.tint);
+      setCargo(j, null); pop(); }
+  }
+}
+function throwIt() {
+  const j = held, d = new THREE.Vector3(); held = null; camera.getWorldDirection(d);
+  scene.add(j.mesh); j.mesh.scale.setScalar(j.s); j.mesh.position.copy(camera.position).addScaledVector(d, .9); j.mesh.position.y = Math.max(j.r, j.mesh.position.y - .2);
+  j.v.copy(d).multiplyScalar(throwSpeed()); j.v.y += 2; j.state = 'fly'; whoosh(); mouseDown = false;
+}
+function inHole(j) {                                            // a piece of junk has gone all the way down the hole
+  const d = j.d, tint = j.tint; killJunk(j);
+  if (d.vac) { say('£2  vacuum cleaner', '#ffd54f'); if (comboT > 0) pot += 2; else chuckCoins(2); save(); return; }          // a vacuum cleaner is always worth £2
+  if (d.clock) { if (clock === 1) after(1.5, dropClock); return; }          // you threw the alarm clock away before using it, so another one comes
+  sunk++;
+  // the bonus bar: get another piece in before it runs out and it is a combo
+  comboN = comboT > 0 ? comboN + 1 : 1; comboT = bonusDur();
+  const combo = 1 + COMBO_STEP*(comboN - 1);
+  const nth = up.b50 && sunk % 50 === 0 ? 5 : up.b30 && sunk % 30 === 0 ? 3 : up.b20 && sunk % 20 === 0 ? 2 : 1;      // the "every 20th / 30th / 50th" bonuses
+  const base = (d.value + (d.rare ? 10*up.rare : 0))*(tint === 'gold' ? 3 : tint === 'silver' ? 2 : 1), v = Math.round(base*valueMul()*combo*nth);      // gold junk is times 3, silver junk is times 2
+  say((nth > 1 ? 'TIMES ' + nth + '!  ' : '') + (comboN > 1 ? 'COMBO ×' + comboN + '  ' : '') + (tint ? tint.toUpperCase() + '  ' : '') + '£' + v + '  ' + d.name, nth > 1 ? '#ff80ab' : comboN > 1 ? '#69f0ae' : '#ffd54f'); pot += v;      // the money waits in the hole. It comes out when the bonus bar runs out.
+  if (clock === 0 && sunk >= CLOCK_AT) { clock = 1; dropClock(); }
+  if (!growing && sunk >= goalFor(ms)) holeGrowsBigger();
+  save();
+}
+
+// ---- the alarm clock: use it once, and about 100 pieces of junk fall from the sky ----
+function dropClock() {
+  const W = yardW() - 1, x = Math.max(-W, Math.min(W, P.x + 2)), z = Math.max(ZB + 1.2, Math.min(yardZ1() - 1, P.z - 2));
+  skyTube(x, z, .8, top => { mkJunk(CLOCK, top, new THREE.Vector3(rnd(-1, 1), 0, rnd(-1, 1))); say('An alarm clock fell out of the sky!', '#ffd54f'); });
+}
+function useClock(j) {
+  clock = 2; save(); ring(); say('BRRRRING!', '#ff8a80');
+  tween(1.1, k => { if (held === j) { j.mesh.position.x = .52 + Math.sin(k*70)*.06; j.model.rotation.z = Math.sin(k*55)*.35; } }, () => {
+    if (held === j) { j.mesh.position.x = .52; j.model.rotation.z = 0; }
+    let n = 0; const x = 0, z = (ZB + yardZ1())/2;
+    skyTube(x, z, 3.4, top => tween(3, k => { while (n < Math.floor(k*100)) { n++; const i = Math.floor(Math.random()*JUNK.length); mkJunk(JUNK[i], top, new THREE.Vector3(rnd(-7, 7), rnd(-2, 3), rnd(-7, 7))); } if (Math.random() < .3) pop(); }));
+  });
+}
+
+// ---- HOLE GROWS BIGGER ----
+// The words go one under the other: HOLE on top, GROWS in the middle, BIGGER at the bottom. You can see the game behind them.
+function bigWords(words) {
+  const b = $('big'); b.style.display = 'flex'; b.innerHTML = ''; ['HOLE', 'GROWS', 'BIGGER'].forEach((w, i) => { const d = document.createElement('div'); d.textContent = w; d.style.visibility = i < words.length ? 'visible' : 'hidden'; b.appendChild(d); });      // the words that are not here yet still keep their place, so nothing jumps
+  const g = document.createElement('canvas').getContext('2d'); g.font = "900 100px 'Arial Black','Arial Bold',Arial,sans-serif";
+  b.style.fontSize = Math.min(innerWidth*.95/(g.measureText('BIGGER').width/100), innerHeight*.31) + 'px';      // all three words the same size, as big as will fit
+}
+function holeGrowsBigger() {
+  growing = true; cover = true; mouseDown = false;
+  bigWords(['HOLE']); after(.7, () => bigWords(['HOLE', 'GROWS'])); after(1.4, () => bigWords(['HOLE', 'GROWS', 'BIGGER']));
+  after(2.6, () => { $('big').style.display = 'none'; cover = false; growNow(); });
+}
+function growNow() {
+  // the hedge breaks down, and comes back up 2 metres further out
+  tween(.8, k => { hedgeG.position.y = -3.7*k; }, () => { ms++; buildHedge(); hedgeG.position.y = -3.7; tween(.8, k => { hedgeG.position.y = -3.7*(1 - k); }); });
+  // the hole gets a bit bigger, and zooms to a random place in the yard
+  const from = { x: HOLE.x, z: HOLE.z, r: HOLE.r }, to = { r: HOLE.r + HOLE_GROW }, W = yardW() + YARD_GROW - 1.3, Z1 = yardZ1() + YARD_GROW - 1.3;      // the yard is about to be 2 metres bigger
+  for (let tries = 0; tries < 60; tries++) {
+    to.x = rnd(-W, W); to.z = rnd(ZB + 1.3, Z1);
+    const far = (x, z, d) => Math.hypot(to.x - x, to.z - z) > d;
+    if (far(mach.x, mach.z, 2.3) && far(AUTO.x, AUTO.z, 2.3) && far(from.x, from.z, 2.5) && far(GAR.x, ZB, 2.5) && placed.every(o => far(o.x, o.z, 1.6))) break;
+  }
+  whoosh();
+  tween(1.2, k => { const e = k*k*(3 - 2*k); HOLE.x = lerp(from.x, to.x, e); HOLE.z = lerp(from.z, to.z, e); HOLE.r = lerp(from.r, to.r, e); buildGround(); }, () => {
+    for (const j of junk) if (j.state === 'rest') j.state = 'fly';          // anything lying where the hole is now falls in
+    if (ms >= AUTO_AT && !autoM) skyTube(AUTO.x, AUTO.z, .9, () => { autoM = buildMachine(AUTO.x, AUTO.z, -Math.PI/2, true); tween(.5, k => autoM.g.scale.setScalar(Math.max(.01, k))); say('An automatic junk thrower!', '#40c4ff'); });
+    growing = false; save();
+    if (sunk >= goalFor(ms)) holeGrowsBigger();
+  });
+}
+
+// ---- vacuum cleaners and the cleaner box ----
+const VAC = { name: 'vacuum cleaner', value: 2, vac: true };
+const BOX_MINUTES = 2, MAX_VACS = 6;                           // how long a cleaner box stays, and the most vacuum cleaners at once
+let cbox = null, boxWait = savedBoxWait;                        // the first cleaner box comes after 60 seconds
+const vacCount = () => junk.filter(j => j.d.vac).length;
+const groundJunk = () => junk.filter(j => !j.d.vac && !j.d.clock && j.state === 'rest').length;
+const vacChance = () => Math.min(95, Math.round(groundJunk()*1.2));          // 25 pieces of junk on the ground = 30% chance
+function spawnBox(old) {                                        // old: a box that was here when you left. It comes back in the same place, with the same time left.
+  const W = yardW() - 1.3, Z1 = yardZ1() - 1.3; let x, z;
+  if (old) { x = Math.max(-W, Math.min(W, old.x)); z = Math.max(ZB + 1.3, Math.min(Z1, old.z)); }
+  else for (let tries = 0; tries < 40; tries++) {                    // it goes by a hedge, but not on top of a machine or the hole
+    const side = Math.floor(Math.random()*3); x = side === 0 ? -W : side === 1 ? W : rnd(-W, W); z = side === 2 ? Z1 : rnd(ZB + 1.3, Z1);
+    const far = (ox, oz, d) => Math.hypot(x - ox, z - oz) > d;
+    if (far(mach.x, mach.z, 2) && far(AUTO.x, AUTO.z, 2) && far(HOLE.x, HOLE.z, HOLE.r + 1.2)) break;
+  }
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  box(1.3, 1.0, 1.3, 0xc49a6c, 0, .5, 0, g); box(1.32, .02, .22, 0x4fc3f7, 0, 1.005, 0, g); box(.22, 1.01, 1.32, 0x4fc3f7, 0, .5, 0, g).scale.x = 1;      // a cardboard box with blue tape
+  box(.5, .28, .04, 0x3e2723, 0, .2, .66, g); box(.5, .28, .04, 0x3e2723, 0, .2, -.66, g); box(.04, .28, .5, 0x3e2723, .66, .2, 0, g); box(.04, .28, .5, 0x3e2723, -.66, .2, 0, g);   // little doors for the vacuum cleaners
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 1.6), HIT); hit.position.y = .6; hit.userData.box = true; g.add(hit);
+  cbox = { g, hit, x, z, t: BOX_MINUTES*60, roll: 10, took: 0 }; g.scale.setScalar(.01); tween(.4, k => g.scale.setScalar(Math.max(.01, k)));
+  if (old) { if (old.ret) returnBox(true); cbox.t = old.t; cbox.roll = old.roll || 10; return; }
+  say('A cleaner box has arrived!', '#ffcc80'); thunk();
+}
+function boxStep(dt) {
+  if (!cbox) { boxWait -= dt; if (boxWait <= 0) spawnBox(); return; }
+  cbox.t -= dt; cbox.roll -= dt;
+  if (cbox.roll <= 0 && !cbox.ret) {                                         // every 10 seconds, the box might send out a vacuum cleaner
+    cbox.roll = 10;
+    if (vacCount() < MAX_VACS && Math.random()*100 < vacChance()) { const l = Math.hypot(cbox.x, cbox.z) || 1, j = mkJunk(VAC, new THREE.Vector3(cbox.x, 1.5, cbox.z), new THREE.Vector3(-cbox.x/l*3, 4, -cbox.z/l*3)); j.fromBox = true; pop(); }
+  }
+  if (cbox.t <= 0) {                                            // time is up: the box goes, and takes its vacuum cleaners and everything they collected
+    for (const j of junk.slice()) if (j.d.vac && j.fromBox && j.state !== 'held') killJunk(j);
+    if (cbox.ret) sendTapers(cbox.x, cbox.z);                   // you returned it... so it leaves you 5 vacuum cleaners with red tape
+    const g = cbox.g; cbox = null; boxWait = rnd(120, 240); say('The cleaner box has gone', '#ffcc80');
+    // it gets bigger, then smaller and smaller until it is nothing, and little sparks fly out of where it was
+    tween(.3, k => g.scale.setScalar(1 + .45*k), () => { whoosh(); tween(.4, k => g.scale.setScalar(Math.max(.01, 1.45*(1 - k))), () => { scene.remove(g); sparks(g.position.x, .5, g.position.z); }); });
+  }
+}
+const SPARK_GEO = new THREE.BoxGeometry(.07, .07, .07), SPARK_MATS = [0xffee58, 0xffa726, 0xffffff].map(c => new THREE.MeshBasicMaterial({ color: c }));
+function sparks(x, y, z) {                                       // 30 little sparks shoot out, fall, and fade away
+  const list = [];
+  for (let i = 0; i < 30; i++) { const m = new THREE.Mesh(SPARK_GEO, SPARK_MATS[i % 3]), a = rnd(0, 6.28), sp = rnd(1.5, 4.5); scene.add(m); list.push({ m, vx: Math.cos(a)*sp, vy: rnd(2.5, 7), vz: Math.sin(a)*sp }); }
+  for (let k = 0; k < 5; k++) setTimeout(() => tone(rnd(2500, 4000), 1500, .05, .06), k*60);
+  tween(.9, k => { const t = k*.9; for (const o of list) { o.m.position.set(x + o.vx*t, Math.max(.04, y + o.vy*t - 10*t*t), z + o.vz*t); o.m.rotation.set(t*9, t*7, 0); o.m.scale.setScalar(Math.max(.01, 1 - k*k)); } }, () => { for (const o of list) scene.remove(o.m); });
+}
+// Return the box: look at it and press X. It gets a red RETURN stamp, and it goes after 30 seconds.
+const STAMP_TEX = (() => {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 96; const g = c.getContext('2d');
+  g.fillStyle = '#d32f2f'; g.fillRect(0, 0, 256, 96); g.strokeStyle = '#000'; g.lineWidth = 6; g.strokeRect(9, 9, 238, 78);
+  g.fillStyle = '#000'; g.font = '900 54px Arial Black, Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('RETURN', 128, 51);
+  return new THREE.CanvasTexture(c);
+})();
+function returnBox(quiet) {
+  cbox.ret = true; cbox.t = RETURN_SECONDS; if (!quiet) { thunk(); say('RETURN', '#ff5252'); }
+  const mat = new THREE.MeshBasicMaterial({ map: STAMP_TEX }), geo = new THREE.PlaneGeometry(.95, .36);
+  for (let k = 0; k < 4; k++) { const m = new THREE.Mesh(geo, mat), a = k*Math.PI/2; m.position.set(Math.sin(a)*.66, .68, Math.cos(a)*.66); m.rotation.set(0, a, .18, 'YXZ'); cbox.g.add(m); }      // a stamp on each side
+  { const m = new THREE.Mesh(geo, mat); m.position.set(0, 1.03, 0); m.rotation.set(-Math.PI/2, 0, .3); cbox.g.add(m); }                                                                        // and one on the top
+}
+
+// ---- red tape on the hole ----
+// The 5 vacuum cleaners from a returned box drive to the hole, go round and round it, and stick red tape across it.
+// When all the tape is on, nothing can go in the hole. Not junk, and not you.
+// Click a piece of tape 10 times and it comes off. The hole opens again when there is no tape left.
+const RETURN_SECONDS = 30, TAPERS = 5, TAPE_CLICKS = 10;
+const TAPE_MAT = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+const ROLL_MAT = M(0xd32f2f), tapeG = new THREE.Group(); scene.add(tapeG);
+const tapes = [];
+let tapeJob = null, taped = false;                              // tapeJob: how many pieces they are going to stick on. taped: the hole is shut.
+function sendTapers(x, z, want) {
+  tapeJob = { want: want || 7 + Math.floor(Math.random()*4), wait: 1.5 };          // 7, 8, 9 or 10 pieces
+  for (let i = 0; i < TAPERS; i++) {
+    const a = rnd(0, 6.28), j = mkJunk(VAC, new THREE.Vector3(x, 1.5, z), new THREE.Vector3(Math.cos(a)*3, 4, Math.sin(a)*3)); j.taper = true;
+    const roll = new THREE.Mesh(new THREE.TorusGeometry(.1, .05, 8, 16), ROLL_MAT); roll.rotation.x = Math.PI/2; roll.position.y = .34; j.mesh.add(roll);      // a roll of red tape on its head
+  }
+  say('5 vacuum cleaners with red tape!', '#ff5252'); pop();
+}
+function addTape() {
+  const R = HOLE.r, n = tapes.length, ang = n*Math.PI/tapeJob.want + rnd(-.2, .2), off = (n % 3 - 1)*R*.5 + rnd(-.1, .1), len = 2*R + .5, wide = R*.42;
+  const g = new THREE.Group(); g.rotation.y = ang; g.position.set(Math.sin(ang)*off, .03 + n*.007, Math.cos(ang)*off); tapeG.add(g);
+  // the tape is made of 24 little bits in a row, so it can really bend. Its two ends are darker.
+  const geo = new THREE.BoxGeometry(len, .012, wide, 24, 1, 1), pos = geo.attributes.position, col = new Float32Array(pos.count*3);
+  for (let i = 0; i < pos.count; i++) { const end = Math.abs(pos.getX(i)) > len/2 - .21; col[i*3] = end ? .56 : .83; col[i*3 + 1] = end ? 0 : .18; col[i*3 + 2] = end ? 0 : .18; }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const strip = new THREE.Mesh(geo, TAPE_MAT); g.add(strip);
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(len, .25, wide), HIT); g.add(hit);
+  const t = { g, hit, strip, base: pos.array.slice(), len, clicks: 0, peel: 0, side: n % 2 ? 1 : -1, going: false }; hit.userData.tape = t; tapes.push(t);
+  g.scale.x = .01; tween(.35, k => { g.scale.x = Math.max(.01, k); }); tone(900, 500, .12, .1, 'sawtooth');          // it rolls out across the hole
+}
+// Bend a piece of tape. "peel" is how much of it has come unstuck (0 = none, 1 = all of it).
+// The stuck part stays flat. The loose part curls up and over, like real tape. "curl" is how tight the curl is.
+function bendTape(t, peel, curl) {
+  const pos = t.strip.geometry.attributes.position, b = t.base, u0 = 1 - peel;
+  for (let i = 0; i < pos.count; i++) {
+    const x0 = b[i*3], y0 = b[i*3 + 1], u = t.side*x0/t.len + .5;          // u: 0 is the end that stays stuck, 1 is the end that comes loose
+    if (u <= u0) { pos.setXYZ(i, x0, y0, b[i*3 + 2]); continue; }
+    const a = (u - u0)*t.len/curl;                              // how far round the curl this bit is
+    pos.setXYZ(i, t.side*((u0 - .5)*t.len + (curl - y0)*Math.sin(a)), curl - (curl - y0)*Math.cos(a), b[i*3 + 2]);
+  }
+  pos.needsUpdate = true; t.strip.geometry.computeVertexNormals();
+}
+function pullTape(t) {
+  if (t.going) return; t.clicks++;
+  tone(300 + 60*t.clicks, 200 + 60*t.clicks, .08, .14, 'square');
+  const from = t.peel, to = t.clicks/TAPE_CLICKS*.8;
+  if (t.clicks < TAPE_CLICKS) {                                 // looser and looser: a bit more of it comes unstuck and curls up, and it flaps
+    tween(.3, q => { t.peel = lerp(from, to, Math.min(1, q*2)); bendTape(t, t.peel, .34 + Math.sin(q*16)*.07*(1 - q)); });
+    return;
+  }
+  t.going = true; whoosh();                                     // the 10th click: the rest rips off, it curls right up, and it is gone
+  tween(.7, q => { t.peel = lerp(from, 1, Math.min(1, q*1.6)); bendTape(t, t.peel, lerp(.34, .09, q)); if (q > .6) { const e = (q - .6)/.4; t.g.position.y += .03*e; t.g.scale.setScalar(Math.max(.01, 1 - e)); } }, () => {
+    tapeG.remove(t.g); t.strip.geometry.dispose(); tapes.splice(tapes.indexOf(t), 1);
+    if (!tapes.length && taped) { taped = false; say('The hole is open again!', '#69f0ae'); ching(); for (const j of junk) if (j.state === 'rest') j.state = 'fly'; }      // anything lying on the tape falls in
+  });
+}
+function tapeStep(dt) {
+  tapeG.position.set(HOLE.x, 0, HOLE.z);
+  if (!tapeJob) return;
+  const tapers = junk.filter(j => j.taper), going = tapers.filter(j => j.circling).length;
+  if (!tapers.length) { tapeJob = null; return; }               // you got rid of them all before they finished
+  tapeJob.wait -= dt*going/TAPERS;                              // more vacuum cleaners going round = tape goes on faster
+  if (tapeJob.wait <= 0) { tapeJob.wait = 1.1; addTape(); }
+  if (tapes.length >= tapeJob.want) {                           // all the tape is on: the hole is shut, and the vacuum cleaners go
+    tapeJob = null; taped = true; say('The hole is taped up! Click the tape.', '#ff5252'); thunk();
+    for (const j of tapers) { j.taper = false; if (j.state === 'held') continue; j.gone = true; tween(.5, k => j.mesh.scale.setScalar(Math.max(.01, 1 - k)), () => { if (junk.includes(j) && held !== j) killJunk(j); }); }
+  }
+}
+function vacStep(dt) {
+  const W = yardW() - .5, Z1 = yardZ1() - .5;
+  mach.dusted = false; if (autoM) autoM.dusted = false;
+  for (const j of junk.filter(j => j.d.vac)) {
+    const u = j.mesh.userData.vac;
+    u.mad = Math.max(0, Math.min(1, u.mad + (j.state === 'held' ? 3 : -3)*dt));          // the eyebrows take a third of a second to slant down, and to go flat again
+    for (const b of u.brows) { b.rotation.z = b.userData.sx*.6*u.mad; b.position.y = .245 - .025*u.mad; }
+    u.body.scale.setScalar(j.cargo ? 1.12 : 1); u.inside.rotation.y += dt*1.5;
+    if (j.shake > 0) { j.shake -= dt; u.tube.rotation.y = Math.sin(gameT*90)*.4; } else u.tube.rotation.y = 0;
+    if (j.state !== 'rest') { j.circling = false; continue; }
+    if (j.gone) continue;
+    if (j.duster && !j.taper) {                                 // this one does not collect things. It drives to a machine and puts dust on it, on and on.
+      if (!j.dm || (j.dm.auto && !autoM)) { j.dm = autoM && Math.random() < .5 ? autoM : mach; j.dside = Math.random() < .5 ? -1 : 1; }
+      const m = j.dm, c = Math.cos(m.rotY), sn = Math.sin(m.rotY), p = j.mesh.position, tx = m.x + j.dside*1.35*c + .1*sn, tz = m.z - j.dside*1.35*sn + .1*c, dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz);      // a spot next to one of its wheels
+      if (d > .12) { const sp = Math.min(d, 1.7*dt); p.x += dx/d*sp; p.z += dz/d*sp; j.mesh.rotation.y = Math.atan2(dx, dz); for (const w of u.wheels) w.rotation.x += sp*9;
+        if (!taped && Math.hypot(p.x - HOLE.x, p.z - HOLE.z) < HOLE.r) j.state = 'fly'; }
+      else {                                                    // it is there: dust, dust, dust
+        j.mesh.rotation.y = Math.atan2(m.x - p.x, m.z - p.z); m.dusted = true; j.dustTime = (j.dustTime || 0) + dt; j.shake = .1;
+        j.puffT = (j.puffT || 0) - dt; if (j.puffT <= 0) { j.puffT = .16; puff(lerp(p.x, m.x, .45) + rnd(-.1, .1), rnd(.5, 1.1), lerp(p.z, m.z, .45) + rnd(-.1, .1)); }
+      }
+      continue;
+    }
+    if (j.taper) {                                              // it has red tape: drive to the hole, then go round and round it
+      const p = j.mesh.position, ring = HOLE.r + .5, dx = p.x - HOLE.x, dz = p.z - HOLE.z, d = Math.hypot(dx, dz) || .01;
+      if (Math.abs(d - ring) > .25) { const sp = 2.4*dt*Math.sign(ring - d); p.x += dx/d*sp; p.z += dz/d*sp; j.mesh.rotation.y = Math.atan2(dx*Math.sign(ring - d), dz*Math.sign(ring - d)); j.circling = false; }
+      else { const a = Math.atan2(dz, dx) + 1.3/ring*dt; p.x = HOLE.x + Math.cos(a)*ring; p.z = HOLE.z + Math.sin(a)*ring; j.mesh.rotation.y = Math.atan2(-Math.sin(a), Math.cos(a)); j.circling = true; }
+      for (const w of u.wheels) w.rotation.x += dt*9;
+      continue;
+    }
+    const p = j.mesh.position; let tx, tz, goal = null, best = 1e9;
+    if (j.cargo) { if (cbox) { tx = cbox.x; tz = cbox.z; goal = 'box'; } }                     // it has something: take it to the box
+    else {                                                      // it has nothing: go to the nearest junk or coin on the ground
+      for (const o of junk) if (o.state === 'rest' && !o.d.vac && !o.d.clock) { const d = Math.hypot(o.mesh.position.x - p.x, o.mesh.position.z - p.z); if (d < best) { best = d; goal = o; } }
+      for (const o of coins) if (o.state === 'rest') { const d = Math.hypot(o.mesh.position.x - p.x, o.mesh.position.z - p.z); if (d < best) { best = d; goal = o; } }
+      if (goal) { tx = goal.mesh.position.x; tz = goal.mesh.position.z; }
+    }
+    if (!goal) { j.wa = (j.wa === undefined ? rnd(0, 6) : j.wa) + rnd(-2, 2)*dt; tx = p.x + Math.sin(j.wa)*3; tz = p.z + Math.cos(j.wa)*3; }      // nothing to do: wander about
+    const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz);
+    if (goal === 'box' && d < 1.2) { setCargo(j, null); cbox.took++; tink(); continue; }                  // it goes in the box, and it will not come back
+    if (goal && goal !== 'box' && d < .65) {                    // suck it up
+      if (goal.c) { setCargo(j, { coin: goal.c }); scene.remove(goal.mesh); coins.splice(coins.indexOf(goal), 1); } else { const c = { d: goal.d, tint: goal.tint }; killJunk(goal); setCargo(j, c); }
+      tone(200, 900, .18, .1, 'sawtooth'); continue;
+    }
+    if (d > .01) { const sp = (goal ? 1.7 : .6)*dt; p.x += dx/d*sp; p.z += dz/d*sp; j.mesh.rotation.y = Math.atan2(dx, dz); for (const w of u.wheels) w.rotation.x += sp*9; }
+    if (Math.abs(p.x) > W || p.z > Z1 || p.z < ZB + .6) { p.x = Math.max(-W, Math.min(W, p.x)); p.z = Math.max(ZB + .6, Math.min(Z1, p.z)); j.wa = rnd(0, 6); }
+    if (!taped && Math.hypot(p.x - HOLE.x, p.z - HOLE.z) < HOLE.r) j.state = 'fly';                   // oops, it drove over the hole
+  }
+  if (held && held.d.vac) {                                     // holding one: every 5 seconds it gets angry, shakes its tube, and splats grey pixels on your screen
+    held.angry -= dt; if (held.angry <= 0) { held.angry = 5; held.shake = .7; splat(held); tone(140, 90, .4, .16, 'sawtooth'); }
+  }
+}
+function splat(j) {
+  const c = $('splat'); c.width = Math.ceil(innerWidth/3); c.height = Math.ceil(innerHeight/3); const g = c.getContext('2d');
+  // where is the end of its tube on the screen? The pixels all start there.
+  const from = new THREE.Vector3(0, 0, .3); j.mesh.userData.vac.tube.localToWorld(from); from.project(camera);
+  const x0 = (from.x*.5 + .5)*c.width, y0 = (-from.y*.5 + .5)*c.height, dots = [];
+  for (let b = 0; b < 26; b++) {                                // 26 splats of grey pixels, all over the screen
+    const cx = Math.random()*c.width, cy = Math.random()*c.height, spread = c.width*(.1 + Math.random()*.12), wait = b/26*.4;      // the splats leave one after another
+    for (let n = 0; n < 330; n++) { const a = Math.random()*7, r = Math.pow(Math.random(), .7)*spread, v = 70 + Math.floor(Math.random()*140);
+      dots.push({ x: Math.round(cx + Math.cos(a)*r), y: Math.round(cy + Math.sin(a)*r), s: 2 + Math.floor(Math.random()*3), col: 'rgb(' + v + ',' + v + ',' + v + ')', wait: wait + Math.random()*.08 }); }
+  }
+  c.style.transition = 'none'; c.style.opacity = 1;
+  tween(.9, k => {                                              // every pixel flies from the tube to its place, and gets bigger as it comes at you
+    g.clearRect(0, 0, c.width, c.height);
+    for (const d of dots) { const t = Math.min(1, (k - d.wait)/.45); if (t <= 0) continue; const e = 1 - (1 - t)*(1 - t), sz = Math.max(1, Math.round(d.s*(.3 + .7*e)));
+      g.fillStyle = d.col; g.fillRect(Math.round(x0 + (d.x - x0)*e), Math.round(y0 + (d.y - y0)*e), sz, sz); }
+  }, () => { void c.offsetWidth; c.style.transition = 'opacity 3s ease-in 1s'; c.style.opacity = 0; });      // they stay for a second, then fade away
+}
+
+// ---- dust ----
+const DUST_GEO = new THREE.SphereGeometry(.09, 7, 5);
+function puff(x, y, z) {                                        // one little grey cloud. It floats up, gets bigger, and fades.
+  const m = new THREE.Mesh(DUST_GEO, new THREE.MeshBasicMaterial({ color: 0x9e9e9e, transparent: true, opacity: .75, depthWrite: false })), vx = rnd(-.3, .3), vz = rnd(-.3, .3);
+  m.position.set(x, y, z); scene.add(m);
+  tween(.9, k => { m.position.set(x + vx*k, y + .8*k, z + vz*k); m.scale.setScalar(1 + 2*k); m.material.opacity = .75*(1 - k); }, () => { scene.remove(m); m.material.dispose(); });
+}
+
+// ---- the box goes down the hole... and comes back ----
+// The tube comes out of the sky over your head. The box drops out and hits you. Stars, a tilted screen, and no walking for 3 seconds.
+let stun = 0;
+{ const st = $('stars'); for (let i = 0; i < 12; i++) st.appendChild(document.createElement('div')); }
+function stunStep(dt) {
+  const st = $('stars'); if (stun <= 0) { if (st.style.display !== 'none') st.style.display = 'none'; return; }
+  stun -= dt; camera.rotation.z = (.32 + Math.sin(gameT*7)*.08)*Math.min(1, stun*2);          // your screen tilts, and wobbles
+  st.style.display = 'block'; const kids = st.children;        // 12 stars go round the edge of your screen
+  for (let i = 0; i < kids.length; i++) { const a = i/kids.length*Math.PI*2 + gameT*2.2; kids[i].style.left = (50 + Math.cos(a)*44) + '%'; kids[i].style.top = (50 + Math.sin(a)*41) + '%'; kids[i].style.transform = 'rotate(' + (gameT*200 + i*30) + 'deg) scale(' + (.8 + .3*Math.sin(gameT*9 + i)) + ')'; }
+}
+function boxInHole(o) {
+  o.falling = true; plop(); for (const j of junk) if (j.inBox === o && j.state === 'rest') { j.inBox = null; j.state = 'fly'; }      // the junk that was in it falls in the hole
+  tween(.6, k => { o.g.position.y = -7*k*k; }, () => { o.g.visible = false;
+    after(.6, () => skyTube(P.x, P.z, 1.3, () => {
+      o.g.visible = true;
+      tween(.22, k => { o.g.position.set(P.x, lerp(3.4, 1.95, k), P.z); }, () => {
+        stun = STUN_SECONDS; tone(220, 60, .35, .35, 'square'); tone(900, 300, .5, .12); say('BONK!', '#ffd600');
+        const a = P.yaw + Math.PI; o.x = Math.max(-yardW() + 1, Math.min(yardW() - 1, P.x + Math.sin(a)*1.7)); o.z = Math.max(ZB + 1, Math.min(yardZ1() - 1, P.z + Math.cos(a)*1.7)); offTheHole(o, Math.sin(a), Math.cos(a));
+        const x0 = P.x, z0 = P.z;
+        tween(.45, k => { o.g.position.set(lerp(x0, o.x, k), 1.95*(1 - k*k), lerp(z0, o.z, k)); }, () => { o.falling = false; applyTool(o); thunk(); save(); });      // it falls off your head and lands in front of you
+      });
+    }));
+  });
+}
+
+// ---- bumping ----
+// Junk bumps into other junk, into coins, into the walls of your box, and into you. So you can push junk and coins around.
+function boxWalls(b, j) {                                       // keep a piece of junk inside the box if it is inside, and outside if it is outside
+  const p = j.mesh.position; if (p.y - j.r > BOX_WALL) return;  // it is above the walls: it can fly over, drop in, or roll off the top of a full box
+  const c = Math.cos(b.yaw), s = Math.sin(b.yaw), dx = p.x - b.x, dz = p.z - b.z; let lx = dx*c - dz*s, lz = dx*s + dz*c, vx = j.v.x*c - j.v.z*s, vz = j.v.x*s + j.v.z*c;      // where it is, seen from the box
+  const h = b.half, ax = Math.abs(lx), az = Math.abs(lz);
+  if (ax < h && az < h) {                                       // inside
+    j.inBox = b; const lim = Math.max(.03, h - .05 - Math.min(j.wide, h - .15));
+    if (ax > lim) { lx = Math.sign(lx)*lim; if (vx*lx > 0) vx *= -.4; j.atWall = true; } if (az > lim) { lz = Math.sign(lz)*lim; if (vz*lz > 0) vz *= -.4; j.atWall = true; }
+  } else if (ax < h + j.wide && az < h + j.wide) {              // outside, and touching a wall: it is pushed back out
+    if (ax - h > az - h) { lx = Math.sign(lx)*(h + j.wide); if (vx*lx < 0) vx *= -.4; } else { lz = Math.sign(lz)*(h + j.wide); if (vz*lz < 0) vz *= -.4; }
+  } else return;
+  p.x = b.x + lx*c + lz*s; p.z = b.z - lx*s + lz*c; j.v.x = vx*c + vz*s; j.v.z = -vx*s + vz*c;
+}
+function bumpStep() {
+  const bx = theBox(), b = bx && !bx.flipping ? bx : null, live = junk.filter(j => (j.state === 'rest' || j.state === 'fly') && !j.taper && !j.gone), W = yardW() - .3, Z1 = yardZ1() - .3;
+  for (const j of live) { j.inBox = null; j.atWall = false; if (b) boxWalls(b, j); }
+  // Junk bumps junk. Every piece has a HITBOX: a box that fits right round its shape. A flat thing has a flat box, a tall thin thing a tall thin box.
+  // Two hitboxes can never be in the same place. If they overlap, the pieces are pushed apart the shortest way:
+  // sideways, or the top one goes up and sits on the bottom one. So junk stacks, and nothing floats.
+  // (Vacuum cleaners do not bump junk, or they could never reach the junk they want.)
+  const solid = live.filter(j => !j.d.vac);
+  for (const j of solid) { j.sup = false; const a = j.model ? j.model.rotation.y : 0; j.c = Math.cos(a); j.s2 = Math.sin(a); j.y0 = j.mesh.position.y - j.r; }      // which way it is turned, and where its bottom is
+  for (let pass = 0; pass < 3; pass++) for (let i = 0; i < solid.length; i++) for (let k = i + 1; k < solid.length; k++) {
+    const A = solid[i], B = solid[k], pa = A.mesh.position, pb = B.mesh.position, dx = pb.x - pa.x, dz = pb.z - pa.z, far = A.reach + B.reach;
+    if (Math.abs(dx) > far || Math.abs(dz) > far) continue;
+    const oy = Math.min(A.y0 + A.hh, B.y0 + B.hh) - Math.max(A.y0, B.y0);      // how much they overlap up and down
+    if (oy < -.03) continue;
+    // how much do they overlap sideways? Look along the 4 edges of the two boxes. If there is a gap along any of them, they are not touching.
+    let pen = 1e9, ux = 0, uz = 0, apart = false;
+    for (let e = 0; e < 4; e++) {
+      const J = e < 2 ? A : B, ex = e % 2 ? J.s2 : J.c, ez = e % 2 ? J.c : -J.s2, dist = dx*ex + dz*ez;
+      const ra = A.hx*Math.abs(A.c*ex - A.s2*ez) + A.hz*Math.abs(A.s2*ex + A.c*ez), rb = B.hx*Math.abs(B.c*ex - B.s2*ez) + B.hz*Math.abs(B.s2*ex + B.c*ez), o = ra + rb - Math.abs(dist);
+      if (o <= 0) { apart = true; break; }
+      if (o < pen) { pen = o; const sg = dist < 0 ? -1 : 1; ux = ex*sg; uz = ez*sg; }      // (ux, uz) points from A to B
+    }
+    if (apart) continue;
+    const bTop = B.y0 + B.hh/2 >= A.y0 + A.hh/2, top = bTop ? B : A, bot = bTop ? A : B, squashed = A.inBox && B.inBox && (A.atWall || B.atWall);
+    // Is the top one properly ON the bottom one? Only if its middle is over the bottom one. If it is just hanging on by an edge, it slides off.
+    const tx = top.mesh.position.x - bot.mesh.position.x, tz = top.mesh.position.z - bot.mesh.position.z, on = (A.inBox && B.inBox) || (Math.abs(tx*bot.c - tz*bot.s2) < bot.hx && Math.abs(tx*bot.s2 + tz*bot.c) < bot.hz);      // (in the box there is nowhere to slide to, so it stays put)
+    if (!on && (oy <= pen || oy <= 0)) {                        // hanging on by an edge: slide it off, a little bit each time
+      const sg = bTop ? 1 : -1, sl = Math.min(pen, .02); top.mesh.position.x += ux*sg*sl; top.mesh.position.z += uz*sg*sl; if (top.state === 'rest') top.state = 'fly';
+      if (oy > 0) { top.mesh.position.y += oy; top.y0 += oy; if (top.v.y < 0) top.v.y = 0; }
+      continue;
+    }
+    if (oy <= 0) { top.sup = true; continue; }                  // one is sitting right on the other: nothing to push
+    if (oy <= pen || squashed) {                                // the shortest way out is UP: the top one sits on the bottom one
+      top.sup = true; top.mesh.position.y += oy; top.y0 += oy;
+      if (top.v.y < bot.v.y) { const hard = bot.v.y - top.v.y; top.v.y = bot.v.y; if (hard > 4 && bot.state === 'rest' && bot.y0 > .02) bot.state = 'fly'; }
+      if (top.state === 'rest' && oy > .04) top.state = 'fly';
+    } else {                                                    // the shortest way out is sideways: push them apart, half each
+      pa.x -= ux*pen/2; pa.z -= uz*pen/2; pb.x += ux*pen/2; pb.z += uz*pen/2;
+      const vn = (B.v.x - A.v.x)*ux + (B.v.z - A.v.z)*uz;       // are they moving into each other? Then they knock each other.
+      if (vn < 0) { const K = -.58*vn; A.v.x -= K*ux; A.v.z -= K*uz; B.v.x += K*ux; B.v.z += K*uz; }
+      if (pen > .04 || vn < -1) { if (A.state === 'rest') A.state = 'fly'; if (B.state === 'rest') B.state = 'fly'; }      // a real shove wakes up a piece that was lying still
+    }
+  }
+  for (const j of solid) { if (b) boxWalls(b, j); if (j.state === 'rest' && j.mesh.position.y > j.r + .04 && !j.sup) j.state = 'fly'; }      // whatever was under it has gone: it falls
+  // you push junk when you walk into it
+  for (const j of live) { const p = j.mesh.position; if (p.y > 1.3) continue; const dx = p.x - P.x, dz = p.z - P.z, d = Math.hypot(dx, dz), min = .3 + j.wide; if (d < min && d > .001) { p.x += dx/d*(min - d); p.z += dz/d*(min - d); } }
+  // nothing gets pushed out of the yard, and junk pushed over the hole falls in
+  for (const j of live) { const p = j.mesh.position; p.x = Math.max(-W, Math.min(W, p.x)); p.z = Math.max(ZB + .4, Math.min(Z1, p.z));
+    if (j.state === 'rest' && !taped && !j.inBox && Math.hypot(p.x - HOLE.x, p.z - HOLE.z) < HOLE.r - .05) j.state = 'fly'; }
+  // coins: junk pushes them, and so do you (unless you have automatic coin pick up, then you just get them)
+  for (const o of coins) { if (o.state !== 'rest') continue; const p = o.mesh.position;
+    if (!up.coins) { const dx = p.x - P.x, dz = p.z - P.z, d = Math.hypot(dx, dz); if (d < .5 && d > .001) { p.x += dx/d*(.5 - d); p.z += dz/d*(.5 - d); } }
+    for (const j of solid) { const q = j.mesh.position; if (q.y > j.r + .25) continue; const dx = p.x - q.x, dz = p.z - q.z, min = j.wide + .1; if (Math.abs(dx) > min || Math.abs(dz) > min) continue; const d = Math.hypot(dx, dz); if (d < min && d > .001) { p.x += dx/d*(min - d); p.z += dz/d*(min - d); } }
+    p.x = Math.max(-W, Math.min(W, p.x)); p.z = Math.max(ZB + .4, Math.min(Z1, p.z)); }
+}
+
+// ---- falling down the hole yourself ----
+// You fall. Green circles fill the screen (about 3 seconds). Then a tube comes down from the sky and you come out of it.
+function fallIn() {
+  cut = true; mouseDown = false; $('hint').style.opacity = 0; $('crank').style.display = 'none'; plop();
+  const f = $('fall'); f.innerHTML = ''; f.style.background = 'transparent'; f.style.display = 'block'; f.style.opacity = 1;
+  const x0 = P.x, z0 = P.z; let made = 0;
+  // the circles: a ring of really big ones round the edge of the screen first, then smaller and smaller rings, in and in and in to the middle
+  const big = Math.hypot(innerWidth, innerHeight)/2, RINGS = 9, plan = [];
+  for (let i = 0; i < RINGS; i++) {
+    const rad = big*(1 - i/(RINGS - 1)), size = big*lerp(.62, .26, i/(RINGS - 1)), n = Math.max(1, Math.ceil(2*Math.PI*rad/(size*.5)));
+    for (let a = 0; a < n; a++) { const an = a/n*Math.PI*2 + i*.4; plan.push([innerWidth/2 + Math.cos(an)*rad, innerHeight/2 + Math.sin(an)*rad, size, i]); }
+  }
+  tween(3, k => {
+    const t = k*3; camera.position.set(lerp(x0, HOLE.x, Math.min(1, k*4)), EYE - 9*t*t, lerp(z0, HOLE.z, Math.min(1, k*4))); camera.rotation.set(lerp(P.pitch, -.9, Math.min(1, k*2)), P.yaw + t*.8, 0, 'YXZ');
+    while (made < plan.length && made < k*1.06*plan.length) {
+      const [x, y, size, i] = plan[made++], c = document.createElement('div'); c.className = 'gc';
+      c.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + x + 'px;top:' + y + 'px;background:hsl(' + (100 + (i*23 + made*7) % 50) + ',' + (60 + made*13 % 30) + '%,' + (28 + (made*11 + i*5) % 30) + '%);animation-duration:' + (.4 + (made % 5)*.1) + 's';
+      f.appendChild(c);
+    }
+    if (k > .97) f.style.background = '#2e7d32';
+  }, () => {
+    // pick where you come back: somewhere in the yard, away from the hole and the machines
+    const W = yardW() - 1, Z1 = yardZ1() - 1, D = { x: 0, z: 0 };
+    for (let tries = 0; tries < 60; tries++) { D.x = rnd(-W, W); D.z = rnd(ZB + 1.2, Z1); const far = (x, z, d) => Math.hypot(D.x - x, D.z - z) > d; if (far(HOLE.x, HOLE.z, 1.3 + HOLE.r) && far(mach.x, mach.z, 1.9) && (!autoM || far(AUTO.x, AUTO.z, 1.9))) break; }
+    let dx = -D.x, dz = (ZB + yardZ1())/2 - D.z, l = Math.hypot(dx, dz); if (l < 1) { dx = 0; dz = 1; l = 1; } dx /= l; dz /= l;
+    const wx = Math.max(-W, Math.min(W, D.x + dx*8)), wz = Math.max(ZB + 1, Math.min(Z1 + .4, D.z + dz*8));
+    camera.position.set(wx, EYE, wz); camera.rotation.set(0, 0, 0); camera.lookAt(D.x, 7, D.z);                 // you watch the tube come down...
+    tween(.5, k => { f.style.opacity = 1 - k; }, () => { f.style.display = 'none'; f.innerHTML = ''; });
+    const yaw = Math.atan2(-dx, -dz);
+    after(.3, () => skyTube(D.x, D.z, 1.9, () => {
+      after(.6, () => tween(.8, k => { camera.position.set(D.x, lerp(8, EYE, k*k), D.z); camera.rotation.set(0, yaw, 0, 'YXZ'); }, () => { P.x = D.x; P.z = D.z; P.yaw = yaw; P.pitch = 0; cut = false; }));      // ...and then you drop out of it
+    }));
+  });
+}
+
+function junkStep(dt) {
+  const R = HOLE.r, W = yardW() - .3, Z1 = yardZ1() - .3, Rm = magR(), K = magK(), C = 2*Math.sqrt(K)*.8;
+  for (let n = junk.length - 1; n >= 0; n--) {
+    const j = junk[n], p = j.mesh.position;
+    if (j.state === 'held') continue;
+    let dx = p.x - HOLE.x, dz = p.z - HOLE.z, d = Math.hypot(dx, dz);
+    if (j.state === 'sink') {                                   // falling down the hole
+      j.v.y -= 20*dt; p.y += j.v.y*dt; const lim = Math.max(0, R - j.r*.6); if (d > lim && d > 0) { p.x = HOLE.x + dx*lim/d; p.z = HOLE.z + dz*lim/d; }
+      tumble(j, 6*dt);
+      if (p.y < -4) inHole(j);
+      continue;
+    }
+    // the magnet
+    if (magOn) { const md = p.distanceTo(magW); if (j.state === 'mag') { if (md > Rm + .3) j.state = 'fly'; } else if (md < Rm + j.r) j.state = 'mag'; }
+    else if (j.state === 'mag') j.state = 'fly';
+    if (j.state === 'mag') {                                    // pulled towards the magnet. A stronger magnet keeps up when you turn fast.
+      j.v.x += ((magW.x - p.x)*K - j.v.x*C)*dt; j.v.y += ((magW.y - p.y)*K - j.v.y*C)*dt; j.v.z += ((magW.z - p.z)*K - j.v.z*C)*dt;
+      p.addScaledVector(j.v, dt); if (p.y < j.r) p.y = j.r; tumble(j, j.spin*dt*.3); continue;
+    }
+    if (j.state === 'rest') continue;
+    j.v.y -= 20*dt; p.addScaledVector(j.v, dt);
+    tumble(j, j.spin*dt*Math.min(1, j.v.length()/4));
+    toolBounce(j);
+    if (Math.abs(p.x) > W) { p.x = Math.sign(p.x)*W; j.v.x *= -.5; }
+    if (p.z > Z1) { p.z = Z1; j.v.z *= -.5; } if (p.z < ZB + .4) { p.z = ZB + .4; j.v.z *= -.5; }
+    if (p.y <= j.r) {
+      if (!taped && !j.inBox && Math.hypot(p.x - HOLE.x, p.z - HOLE.z) < R + .12*up.rim) { j.state = 'sink'; plop(); continue; }      // (junk in your box is held up by the bottom of the box)       // it is over the hole: in it goes
+      p.y = j.r;
+      if (j.sticky) { j.sticky = false; j.v.x = j.v.z = 0; }
+      if (j.v.y < -2) { j.v.y *= -.35; j.v.x *= .7; j.v.z *= .7; } else j.v.y = 0;
+      const f = Math.max(0, 1 - 5*dt); j.v.x *= f; j.v.z *= f;
+      if (j.v.y === 0 && Math.hypot(j.v.x, j.v.z) < .2 && !j.pushed) { j.v.set(0, 0, 0); j.state = 'rest'; if (j.model) j.model.rotation.x = j.model.rotation.z = 0; }      // it stops, the right way up
+    } else if (j.sup) {                                         // it is sitting on top of other junk: it slows down, and stops there
+      const f = Math.max(0, 1 - 6*dt); j.v.x *= f; j.v.z *= f; if (j.v.y > 0) j.v.y *= f;
+      if (j.v.length() < .45 && !j.pushed) { j.v.set(0, 0, 0); j.state = 'rest'; if (j.model) j.model.rotation.x = j.model.rotation.z = 0; }
+    }
+    j.pushed = false;
+  }
+}
+
+function collide() {
+  const W = yardW() - .4;
+  P.x = Math.max(-W, Math.min(W, P.x)); P.z = Math.max(ZB + .5, Math.min(yardZ1() - .4, P.z));
+  const push = (cx, cz, r) => { const dx = P.x - cx, dz = P.z - cz, d = Math.hypot(dx, dz); if (d < r && d > 0) { P.x = cx + dx/d*r; P.z = cz + dz/d*r; } };
+  const b = theBox(); if (b && b !== carried) push(b.x, b.z, b.half + .3);          // you cannot walk through your box
+  push(mach.x, mach.z, 1.3); if (autoM) push(AUTO.x, AUTO.z, 1.3);          // you cannot walk into a machine. You CAN walk into the hole...
+}
+
+const ray = new THREE.Raycaster();
+const REACH = { junk: 3, coin: 4.5, tool: 5, shop: 5, mach: 3.6, box: 14, tape: 4.5 };
+function update(dt) {
+  gameT += dt;
+  let mx = 0, mz = 0;
+  if (keys.KeyW || keys.ArrowUp) mz -= 1; if (keys.KeyS || keys.ArrowDown) mz += 1;
+  if (keys.KeyA) mx -= 1; if (keys.KeyD) mx += 1;
+  if (stun > 0) mx = mz = 0;                                    // the box hit you on the head: you cannot walk
+  if (keys.ArrowLeft) P.yaw += 1.9*dt; if (keys.ArrowRight) P.yaw -= 1.9*dt;
+  if (mx || mz) { const l = Math.hypot(mx, mz); mx /= l; mz /= l; const sn = Math.sin(P.yaw), cs = Math.cos(P.yaw); const sp = 4.5 + .5*up.walk; P.x += (mx*cs + mz*sn)*sp*dt; P.z += (-mx*sn + mz*cs)*sp*dt; }
+  collide();
+  if (!taped && Math.hypot(P.x - HOLE.x, P.z - HOLE.z) < HOLE.r - .15) { fallIn(); return; }
+  camera.position.set(P.x, EYE, P.z); camera.rotation.set(P.pitch, P.yaw, 0, 'YXZ'); stunStep(dt); camera.updateMatrixWorld();
+
+  // what are you looking at?
+  aim = null; ray.setFromCamera({ x: 0, y: 0 }, camera); ray.far = 14;
+  { const list = [door, mach.hit]; if (autoM) list.push(autoM.hit); if (cbox) list.push(cbox.hit);
+    if (!held) for (const j of junk) if (j.state !== 'sink') list.push(j.hit);
+    for (const o of coins) if (o.state === 'rest') list.push(o.hit);
+    if (!carried) for (const o of placed) if (!o.falling) list.push(o.hit);
+    if (!held) for (const t of tapes) if (!t.going) list.push(t.hit);
+    const hit = ray.intersectObjects(list)[0];
+    if (hit) { const u = hit.object.userData, kind = u.j ? 'junk' : u.coin ? 'coin' : u.tool ? 'tool' : u.tape ? 'tape' : u.shop ? 'shop' : u.box ? 'box' : 'mach';
+      if (hit.distance <= REACH[kind] + (kind === 'junk' ? up.reach : 0)) aim = { [kind]: u.j || u.coin || u.tool || u.tape || u.mach || true }; } }
+
+  // carrying a tool, and turning or tilting one
+  let blocked = false;
+  if (carried) { const a = P.yaw + Math.PI, ox = carried.x, oz = carried.z; carried.x = P.x + Math.sin(a)*3; carried.z = P.z + Math.cos(a)*3; carried.yaw = a + carried.co;
+    if (carried.t !== 'box') blocked = offTheHole(carried, Math.sin(a), Math.cos(a));          // (the box is the one tool that CAN go on the hole. Try it...)
+    else for (const j of junk) if (j.inBox === carried && j.state !== 'held') { j.mesh.position.x += carried.x - ox; j.mesh.position.z += carried.z - oz; } }      // the junk in the box comes with it
+  barStep(dt, blocked);
+  const tool = carried || (aim && aim.tool), clockHeld = held && held.d.clock && clock === 1;
+  if (tool) {
+    const before = tool.yaw + tool.pitch + tool.co;
+    if (keys.KeyK) { tool.yaw += 1.5*dt; tool.co += 1.5*dt; } if (keys.KeyL) { tool.yaw -= 1.5*dt; tool.co -= 1.5*dt; }
+    if (keys.KeyO) tool.pitch -= 1.2*dt; if (keys.KeyM && !clockHeld) tool.pitch += 1.2*dt;
+    tool.pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, tool.pitch));
+    if (carried || before !== tool.yaw + tool.pitch + tool.co) applyTool(tool);
+  }
+
+  // the machines
+  const full = junk.length >= maxJunk(), cranking = mouseDown && aim && aim.mach === mach && !held;
+  for (const m of [mach, autoM]) if (m) { if (m.broken > 0 && !m.dusted) m.broken = Math.max(0, m.broken - dt); m.sign.visible = m.dusted || m.broken > 0; m.sign.position.y = 3.3 + Math.sin(gameT*5)*.16; }
+  const works = m => !m.dusted && !(m.broken > 0);
+  if (cranking && !full && works(mach)) {
+    mach.prog += dt/crankTime(); wheelA += dt*5; mach.wheels[0].rotation.x = wheelA; mach.wheels[1].rotation.x = wheelA;
+    const squeeze = Math.min(1, crankTime()/POP_ALL);          // a fast machine has less time, so the pops squeeze up to fit
+    while (popI < POP_BEFORE.length && (1 - mach.prog)*crankTime() <= POP_BEFORE[popI]*squeeze + .001) { tone(260*Math.pow(2, popI/4), 100*Math.pow(2, popI/4), .09, .2); popI++; }      // the next pop, a bit higher than the last one
+    if (mach.prog >= 1) { mach.prog = 0; popI = 0; spit(mach); }
+  }
+  mach.barG.scale.x = Math.max(.001, mach.prog);
+  if (autoM) {
+    autoM.lever.rotation.x = autoOn ? .6 : -.6;
+    if (autoOn && !full && works(autoM)) { autoM.prog += dt/AUTO_TIMES[up.auto]; if (autoM.prog >= 1) { autoM.prog = 0; spit(autoM); } }
+    autoM.barG.scale.x = Math.max(.001, autoM.prog);
+  }
+
+  // the magnet in your left hand
+  magG.visible = magOut; glowG.visible = magOn; if (magOn) glowG.scale.setScalar(magR() + .3);
+  magG.getWorldPosition(magW);
+
+  boxStep(dt); vacStep(dt); tapeStep(dt); fanStep(dt); junkStep(dt); coinStep(dt); bumpStep();
+  if (comboT > 0) { comboT -= dt; if (comboT <= 0 && pot > 0) { chuckCoins(pot); pot = 0; ching(); } }      // the bonus is over: now the hole chucks out all the money
+  $('combo').style.display = comboT > 0 ? 'block' : 'none'; $('comboFill').style.width = Math.max(0, comboT/bonusDur()*100) + '%'; $('comboTxt').textContent = (comboN > 1 ? 'BONUS · COMBO ×' + comboN : 'BONUS') + ' · £' + pot + ' waiting in the hole';
+
+  let msg = '';
+  if (carried) msg = 'Click to put the ' + TOOL_NAME[carried.t].toLowerCase() + ' down · K L turn it' + (carried.t === 'box' ? ' · F flip it over' : ' · O M tilt it');
+  else if (clockHeld) msg = 'Press M to activate';
+  else if (held && held.d.vac) msg = 'Click to throw the vacuum cleaner. It is always worth £2 in the hole.';
+  else if (held) msg = 'Click to throw the ' + (held.tint ? held.tint + ' ' : '') + held.d.name + '. Aim for the hole!';
+  else if (aim && aim.junk) msg = 'Click to pick up the ' + (aim.junk.tint ? aim.junk.tint + ' ' : '') + aim.junk.d.name;
+  else if (aim && aim.coin) msg = 'Click to pick up the ' + aim.coin.c.name + ' coin (£' + aim.coin.c.v + ')';
+  else if (aim && aim.tool) msg = TOOL_NAME[aim.tool.t] + ' · E carry it · K L turn it' + (aim.tool.t === 'box' ? ' · F flip it over' : ' · O M tilt it');
+  else if (aim && aim.tape) msg = 'Click the red tape to pull it loose · ' + aim.tape.clicks + ' of ' + TAPE_CLICKS + ' · ' + tapes.length + ' pieces left';
+  else if (aim && aim.shop) msg = 'Click to open the shop';
+  else if (aim && aim.mach && aim.mach.dusted) msg = 'A vacuum cleaner is putting dust on it! Pick the vacuum cleaner up.';
+  else if (aim && aim.mach && aim.mach.broken > 0) msg = 'Broken! It works again in ' + Math.ceil(aim.mach.broken) + ' seconds';
+  else if (aim && aim.mach === mach) msg = full ? 'The yard is full of junk! Throw some in the hole.' : 'Hold the mouse button down to turn the wheels';
+  else if (aim && aim.mach) msg = 'Automatic junk thrower · click to switch it ' + (autoOn ? 'OFF' : 'ON');
+  const h = $('hint'); h.textContent = msg; h.style.opacity = msg ? 1 : 0;
+  const bi = $('boxInfo');
+  if (aim && aim.box && cbox && !cbox.ret) { const t = Math.max(0, cbox.t), mm = Math.floor(t/60), ss = String(Math.floor(t % 60)).padStart(2, '0');
+    bi.style.display = 'block'; bi.innerHTML = '<b>Cleaner box</b>' + mm + ':' + ss + ' minutes left<div class="bar"><div style="width:' + (t/(BOX_MINUTES*60)*100) + '%"></div></div>Vacuum cleaners come out depending on how much junk you have on the ground.<br>Right now: ' + groundJunk() + ' pieces of junk = ' + vacChance() + '% chance<div class="ret">Return (Press X)</div>'; }
+  else bi.style.display = 'none';
+  const m = aim && aim.mach; $('crank').style.display = m ? 'block' : 'none'; if (m) $('crankFill').style.width = (m.prog*100) + '%';
+  $('hud').innerHTML = '£' + money.toLocaleString() + (magOut ? '<br><small>Magnet ' + (magOn ? 'ON' : 'off') + '</small>' : '');
+}
+
+// ====================== SHOP AND MENUS ======================
+// Click the garage door: it rolls up, you walk in to the computer, and the shop opens on it.
+function openShop() {
+  cut = true; mouseDown = false; $('hint').style.opacity = 0; $('crank').style.display = 'none'; whoosh();
+  const from = camera.position.clone(), to = new THREE.Vector3(GAR.x, 1.5, GZ0 + 2.1), y0 = P.yaw, p0 = P.pitch;
+  let dy = (0 - y0) % (Math.PI*2); if (dy > Math.PI) dy -= Math.PI*2; if (dy < -Math.PI) dy += Math.PI*2;          // turn the short way round
+  tween(.6, k => { doorG.scale.y = 1 - .95*k; }, () => tween(1.2, k => { const e = k*k*(3 - 2*k); camera.position.lerpVectors(from, to, e); camera.rotation.set(lerp(p0, -.02, e), y0 + dy*e, 0, 'YXZ'); },
+    () => { shopOpen = true; document.exitPointerLock(); drawShop(); $('shop').style.display = 'flex'; }));
+}
+function closeShop() {                                           // you come back out, and the door rolls down behind you
+  cut = false; P.x = GAR.x; P.z = ZB + 2.2; P.yaw = Math.PI; P.pitch = 0;
+  tween(.6, k => { doorG.scale.y = .05 + .95*k; });
+}
+function drawShop(note) {
+  const rows = shopTab === 'tools' ? TOOLS : shopTab === 'bonus' ? BONUSES : UPGRADES.filter(u => !u[5] || u[5]());
+  let h = '<h2>The Shop</h2><div style="font-size:26px;color:#ffd54f;font-weight:bold">£' + money.toLocaleString() + '</div><div style="font-size:19px;min-height:24px">' + (note || '') + '</div>' +
+    '<div id="tabs">' + [['up', 'Upgrades'], ['tools', 'Tools'], ['bonus', 'Bonus']].map(([id, name]) => '<button class="tab' + (shopTab === id ? ' on' : '') + '" data-tab="' + id + '">' + name + '</button>').join('') + '</div><div id="list">';
+  for (const [id, name, what, price, max] of rows) {
+    let cost = price, off = false, label, extra = '';
+    if (shopTab === 'tools') { off = (id === 'magnet' && hasMagnet) || (id === 'box' && placed.some(o => o.t === 'box')); label = off ? 'Got it' : '£' + price; }
+    else { const lv = up[id]; cost = price*Math.pow(2, lv); off = lv >= max; label = off ? 'MAX' : '£' + cost; extra = max > 1 ? ' · level ' + lv + ' of ' + max : ''; }
+    h += '<div class="row"><div class="tx"><b>' + name + '</b>' + what + extra + '</div><button data-buy="' + id + '"' + (off || money < cost ? ' disabled' : '') + '>' + label + '</button></div>';
+  }
+  h += '</div><button class="mbtn" id="bBack">Back to the yard</button>';
+  const top = $('list') ? $('list').scrollTop : 0;
+  $('shop').innerHTML = h; $('list').scrollTop = note === 0 ? 0 : top;
+  $('bBack').onclick = () => cv.requestPointerLock();
+  for (const b of $('shop').querySelectorAll('.tab')) b.onclick = () => { shopTab = b.dataset.tab; drawShop(0); };
+  for (const b of $('shop').querySelectorAll('button[data-buy]')) b.onclick = () => {
+    const id = b.dataset.buy; let note = '';
+    if (shopTab === 'tools') { const t = TOOLS.find(x => x[0] === id); money -= t[3];
+      if (id === 'magnet') { hasMagnet = true; note = 'Press Space to take the magnet out.'; }
+      else { const o = mkTool(id, rnd(-yardW() + 1.3, yardW() - 1.3), rnd(ZB + 1.6, yardZ1() - .7), 0, id === 'tramp' ? -Math.PI/2 : 0); if (offTheHole(o)) applyTool(o); note = 'Your ' + t[1].toLowerCase() + ' is waiting outside the garage. Look at it and press E to carry it.'; } }
+    else { const u = UPGRADES.concat(BONUSES).find(x => x[0] === id); money -= u[3]*Math.pow(2, up[id]); up[id]++; const b = placed.find(o => o.t === 'box'); if (b) applyTool(b); }
+    ching(); save(); drawOdds(); drawShop(note);
+  };
+}
+function showMenu(mode) {
+  menuMode = mode; const m = $('menu'); m.style.display = 'flex';
+  const help = '<p><b class="k">W A S D</b> walk · <b class="k">mouse</b> look · <b class="k">click</b> pick up and throw<br><b class="k">E</b> carry a tool · <b class="k">K L</b> turn it · <b class="k">O M</b> tilt it · <b class="k">Space</b> magnet</p>';
+  if (mode === 'home') {
+    m.innerHTML = '<h1>THROW IT IN</h1>' + help + '<p>Turn the wheels on the machine. Junk comes out. Throw it in the hole, and pick up the coins!</p>' +
+      '<button class="mbtn" id="bPlay">' + (started || money || sunk ? 'Continue' : 'Play') + '</button>' +
+      '<a class="mbtn alt" href="../index.html" style="text-decoration:none">← Jos\'s home page</a>';
+    $('bPlay').onclick = () => { started = true; cv.requestPointerLock(); };
+  } else {
+    m.innerHTML = '<h2>PAUSED</h2>' + help + '<button class="mbtn" id="bRes">Resume</button><button class="mbtn alt" id="bHome">Home screen</button>';
+    $('bRes').onclick = () => cv.requestPointerLock();
+    $('bHome').onclick = () => { save(); showMenu('home'); };
+  }
+}
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === cv;
+  if (locked) { if (shopOpen) closeShop(); menuMode = null; shopOpen = false; $('menu').style.display = 'none'; $('shop').style.display = 'none'; }
+  else if (started && !shopOpen && !menuMode) showMenu('pause');
+});
+document.addEventListener('pointerlockerror', () => { if (!menuMode && !shopOpen) showMenu('pause'); });
+setInterval(save, 4000); addEventListener('beforeunload', save);
+
+// Put back what was in the yard when you left: the junk, the coins and the cleaner box.
+// The very first time you play there is nothing saved, so you get three pieces of junk to throw straight away.
+{ const inX = x => Math.max(-yardW() + .5, Math.min(yardW() - .5, x)), inZ = z => Math.max(ZB + .6, Math.min(yardZ1() - .5, z));
+  if (savedJunk) for (const o of savedJunk) { if (!JUNK[o.n]) continue; const j = mkJunk(JUNK[o.n], new THREE.Vector3(inX(o.x), .4, inZ(o.z)), new THREE.Vector3(), o.t); j.pushed = true; }
+  else for (const [x, z] of [[-.6, ZB + YARD_DEEP*.7], [.7, ZB + YARD_DEEP*.5], [-.9, ZB + YARD_DEEP*.3]]) mkJunk(JUNK[Math.floor(Math.random()*JUNK.length)], new THREE.Vector3(x, .4, z), new THREE.Vector3());
+  for (const o of savedCoins) if (COINS[o.c]) { const c = mkCoin(COINS[o.c], new THREE.Vector3(inX(o.x), .04, inZ(o.z)), new THREE.Vector3()); c.state = 'rest'; c.mesh.rotation.y = rnd(0, 6); }
+  if (savedBox) spawnBox(savedBox);
+  // the red tape comes back, each piece just as loose as you left it
+  if (savedTape && savedTape.clicks.length) {
+    tapeJob = { want: savedTape.want || savedTape.clicks.length, wait: 1.5 };
+    for (const c of savedTape.clicks) { addTape(); const t = tapes[tapes.length - 1]; t.clicks = c; t.peel = c/TAPE_CLICKS*.8; if (c) bendTape(t, t.peel, .34); }
+    taped = !!savedTape.taped; tapeJob = null;
+  }
+  // the vacuum cleaners had not finished: they come back and stick on the rest
+  if (savedTape && savedTape.want > tapes.length) sendTapers(HOLE.x, HOLE.z, savedTape.want); }
+
+if (clock === 1) mkJunk(CLOCK, new THREE.Vector3(0, .6, ZB + YARD_DEEP*.65), new THREE.Vector3());      // you have an alarm clock you have not used yet
+
+let last = performance.now(), homeT = 0;
+function frame(now) {
+  const dt = Math.min(.05, (now - last)/1000); last = now;
+  if (menuMode === 'home') { homeT += dt*.12; const far = 9 + yardW(), mid = (ZB + yardZ1())/2; camera.position.set(Math.sin(homeT)*far, 7, mid + Math.cos(homeT)*far); camera.rotation.set(0, 0, 0); camera.lookAt(0, 1, mid); }
+  else if (!menuMode && !shopOpen) {
+    for (let n = anims.length - 1; n >= 0; n--) if (anims[n](dt)) anims.splice(n, 1);
+    if (!cover && !cut) update(dt);
+  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+drawOdds();
+showMenu('home');
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

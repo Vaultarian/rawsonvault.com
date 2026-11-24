@@ -38,6 +38,12 @@
   .mbtn:hover { filter:brightness(1.15); } .mbtn:active { transform:translateY(4px); box-shadow:0 2px 0 #0007; }
   #dead { position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; font-size:46px; font-weight:bold; text-shadow:0 3px 0 #000; z-index:4; pointer-events:none; text-align:center; }
   #dead small { font-size:24px; }
+  #down { position:fixed; left:50%; bottom:74px; transform:translateX(-50%); display:none; font-size:24px; font-weight:bold; color:#fff; background:#e53935; border:4px solid #fff; border-radius:16px; padding:10px 26px; box-shadow:0 5px 0 #0007; pointer-events:none; z-index:3; white-space:nowrap; }
+  #airBar { position:fixed; top:14px; left:50%; transform:translateX(-50%); display:none; align-items:center; gap:8px; font-size:30px; pointer-events:none; z-index:3; animation:airpulse .45s ease-in-out infinite alternate; }
+  #airBar span { filter:sepia(1) saturate(9) hue-rotate(-50deg); }
+  #airBar .bar { width:260px; height:22px; border-radius:12px; background:#0008; border:3px solid #fff; overflow:hidden; }
+  #airFill { height:100%; background:#e53935; }
+  @keyframes airpulse { from { opacity:1; transform:translateX(-50%) scale(1); } to { opacity:.55; transform:translateX(-50%) scale(1.07); } }
 
   #tree { position:fixed; inset:0; background:#031a45; display:none; z-index:10; overflow:hidden; }
   #tree.open { display:block; }
@@ -99,6 +105,8 @@
 <div id="envTag"></div>
 <div id="cross"></div>
 <div id="hint"></div>
+<div id="down">⬇️ GO BACK DOWN · click, or press X</div>
+<div id="airBar"><span>🫧</span><div class="bar"><div id="airFill"></div></div></div>
 <div id="msg"></div>
 <div id="pestTag">PEST</div>
 <div id="dead"></div>
@@ -213,7 +221,7 @@ let S = stats();
 
 // ====================== 3D WORLD ======================
 const cv = document.getElementById('gl');
-const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, logarithmicDepthBuffer: true })   // the special depth setting stops far-away shapes flickering into each other;
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
@@ -319,7 +327,7 @@ function curlHand(arm, c) {          // 0 = open, 1 = fist
 }
 
 // ====================== PLAYER ======================
-const P = { x: 2, z: 9, y: 0, vy: 0, yaw: 0, pitch: 0, base: 0, air: false, onMat: false, bouncing: false, maxH: 0, boosted: 0, sq: null, dead: null };
+const P = { x: 2, z: 9, y: 0, vy: 0, yaw: 0, pitch: 0, base: 0, air: false, onMat: false, bouncing: false, maxH: 0, boosted: 0, sq: null, dead: null, down: false };
 const EYE = 1.65;
 const keys = {};
 let G = 0, lastPress = -9;                       // game clock (stops when paused) and the time Space was last pressed
@@ -331,6 +339,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (!typing && e.code === 'Space' && !e.repeat && !menuMode && !P.dead) lastPress = G;
   if (e.code === 'Escape' && treeOpen) closeTree();
+  if (!typing && e.code === 'KeyX' && !menuMode && canGoDown()) goDown();
   if (!typing && e.code === 'KeyN' && started && !menuMode) nextSeason();
   // type a season's name while playing (spring, summer, autumn, fall, winter) and it switches to it
   if (!typing && started && !menuMode && e.key.length === 1 && !e.repeat) {
@@ -385,7 +394,8 @@ document.addEventListener('pointerlockerror', () => { if (!treeOpen && !menuMode
 function resetGame() {
   power = null;
   coins = START.coins; bought = {}; money = START.money; food = START.food; S = stats(); save();
-  Object.assign(P, { x: 2, z: 9, y: 0, vy: 0, yaw: 0, pitch: 0, base: 0, air: false, onMat: false, bouncing: false, maxH: 0, boosted: 0, sq: null, dead: null });
+  Object.assign(P, { x: 2, z: 9, y: 0, vy: 0, yaw: 0, pitch: 0, base: 0, air: false, onMat: false, bouncing: false, maxH: 0, boosted: 0, sq: null, dead: null, down: false });
+  air = 100; layer = 0;
   sick = 0; bounceRun = 0; moveRun = 0; ORB.visible = ORBG.visible = false; orbT = 0;
   lastPress = -9; resetTree(); $('dead').style.display = 'none'; endTrip(true);
 }
@@ -411,6 +421,8 @@ function say(text, col) { const m = $('msg'); m.textContent = text; m.style.colo
 
 // what happens when you land on the mat. type: perfect | good | early | plain
 function rebound(vin, type) {
+  if (P.down && type === 'plain') { P.down = false; P.y = TR.h + .03; P.base = P.y; P.air = false; P.vy = 0; P.bouncing = false; return; }   // you came down with the button and did not press Space: you just land
+  P.down = false;
   let v, chance = S.boost;
   if (type === 'perfect')    { v = vin*(.85 + S.rest) + S.kick;     chance += .7; say('PERFECT!', '#ffee58'); }
   else if (type === 'good')  { v = vin*(.85 + S.rest) + S.kick*.7;  chance += .5; say('Almost!', '#fff'); }
@@ -428,6 +440,26 @@ function rebound(vin, type) {
 // Being sick makes the screen woozy and green, and empties your stomach by 2 pixels of the food bar every second.
 const PX = 100/150;                                             // the food bar is 150 pixels wide, so 1 pixel = this much food
 let sick = 0, bounceRun = 0, moveRun = 0;
+// ---- zero gravity: the Go back down button ----
+// With zero gravity nothing pulls you down. Once you are more than 30 feet up, a button appears. It pushes you down.
+const FEET30 = 9.14;                                            // 30 feet, in metres
+const canGoDown = () => S.zero && !trip && !P.dead && P.air && P.bouncing && !P.down && (P.y - TR.h) > FEET30;
+function goDown() { P.vy = -Math.max(15, (P.y - TR.h)/5); P.down = true; say('⬇️ Going down!', '#fff'); }
+
+// ---- the layers of the sky, and running out of air ----
+// Each layer: its name, and how high its top is (in metres). Above AIR_TOP there is not enough air to breathe.
+const LAYERS = [['troposphere', 130], ['stratosphere', 220], ['mesosphere', 310], ['thermosphere', 400], ['exosphere', 1e9]];
+const AIR_TOP = 130, AIR_SECONDS = 15;
+let air = 100, layer = 0;
+function skyStep(dt) {
+  const h = Math.max(0, P.y - TR.h);
+  let L = 0; while (h > LAYERS[L][1]) L++;
+  if (L > layer && !trip) say('🚀 You went past the ' + LAYERS[L - 1][0] + '!', '#b3e5fc');
+  layer = L;
+  if (h > AIR_TOP && !trip) { air -= dt*100/AIR_SECONDS; if (air <= 0) { air = 0; startStarve('air'); return true; } }
+  else air = Math.min(100, air + dt*50);
+  return false;
+}
 function getSick() { if (sick > 0) return; sick = 20; bounceRun = 0; moveRun = 0; say('🤢 You feel sick!', '#9ccc65'); }
 
 // ---- the power orb ----
@@ -552,7 +584,7 @@ function update(dt) {
         if (lastPress > 0 && e >= 0 && e <= .8) {               // you pressed Space before landing
           lastPress = -9; rebound(vin, e <= .12 + S.win ? 'perfect' : e <= .3 + S.win*2 ? 'good' : 'early');
         } else { P.sq = { t: 0, t0: G, vin }; P.vy = 0; P.y = floor; }
-      } else { P.air = false; P.y = floor; P.vy = 0; P.base = floor; P.bouncing = false; }
+      } else { P.air = false; P.y = floor; P.vy = 0; P.base = floor; P.bouncing = false; P.down = false; }
     }
     if (!P.bouncing) bounceRun = 0;
     if (P.bouncing) {                                           // coins: the higher you are above the mat, the faster they come
@@ -561,6 +593,7 @@ function update(dt) {
       coinFrac += h*.6*S.coin*dt; const w = Math.floor(coinFrac); if (w) { coins += w; coinFrac -= w; }
     }
   }
+  if (skyStep(dt)) return;
   P.boosted = Math.max(0, P.boosted - dt*2.5);
   if (trip && !trip.quit) JOB3D[trip.def.id].update(dt);
   placeCamera();
@@ -605,13 +638,16 @@ function hud() {
   { const k = sick > 0 ? Math.min(1, sick/2, (20 - sick)/1) : 0;
     $('sick').style.opacity = k*.16*(1 - Math.cos(performance.now()/1000*2.5));
     $('sickTag').style.display = sick > 0 ? 'block' : 'none'; $('sickTag').textContent = '🤢 Sick · ' + Math.ceil(sick) + 's'; }
+  $('down').style.display = canGoDown() ? 'block' : 'none';
+  $('airBar').style.display = air < 100 ? 'flex' : 'none'; $('airFill').style.width = air + '%';
   const low = food < 30 ? (1 - food/30) : 0; $('hungry').style.opacity = Math.min(1, low*(.75 + .25*Math.sin(performance.now()/260)));
 }
 
 // ---- running out of food ----
-function startStarve() {
+function startStarve(why) {
   sick = 0; $('sick').style.opacity = 0; $('sickTag').style.display = 'none';
-  P.dead = { t: 0 }; P.air = false; P.sq = null; P.bouncing = false;
+  $('down').style.display = 'none'; $('airBar').style.display = 'none';
+  P.dead = { t: 0, why }; P.air = false; P.sq = null; P.bouncing = false;
   if (treeOpen) { treeOpen = false; $('tree').classList.remove('open'); $('tip').style.display = 'none'; }
   $('hungry').style.opacity = 1; $('hint').style.opacity = 0;
 }
@@ -621,7 +657,7 @@ function starve(dt) {
   camera.position.set(P.x, P.y + EYE - e*(EYE - .25), P.z);
   camera.rotation.set(P.pitch*(1 - e), P.yaw, e*Math.PI/2, 'YXZ');          // you fall sideways
   $('hungry').style.opacity = 1;
-  if (d.t > 1.2) { $('dead').style.display = 'flex'; $('dead').innerHTML = 'You ran out of food.<br><small>The game is starting over...</small>'; }
+  if (d.t > 1.2) { $('dead').style.display = 'flex'; $('dead').innerHTML = (d.why === 'air' ? 'You ran out of air.' : 'You ran out of food.') + '<br><small>The game is starting over...</small>'; }
   if (d.t > 4) { document.exitPointerLock(); resetGame(); showMenu('home'); }
 }
 
@@ -647,6 +683,7 @@ setInterval(() => { if (!P.dead) save(); }, 4000); addEventListener('beforeunloa
 
 addEventListener('mouseup', () => { if (trip && trip.phase === 'work' && trip.J.release) trip.J.release(); });
 addEventListener('mousedown', () => {
+  if (locked && !menuMode && canGoDown()) { goDown(); return; }
   if (trip) { if (locked && !menuMode && !P.dead && trip.phase === 'work' && trip.J.click) trip.J.click(); return; }
   if (!locked || treeOpen || P.air || P.dead || menuMode) return;
   const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 6);
@@ -1331,7 +1368,7 @@ let pineSnow;
   for (let i = 0; i < 16; i++) {                                     // mountains, with snowy tops
     const x = -700 + i*100 + rnd(-30, 30), z = rnd(-560, -470), r = rnd(90, 160), h = rnd(110, 220);
     const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 7), new THREE.MeshLambertMaterial({ color: 0x78909c, fog: false })); m.position.set(x, h/2 - 5, z); scene.add(m);
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(r*.32, h*.32, 7), new THREE.MeshLambertMaterial({ color: 0xffffff, fog: false })); cap.position.set(x, h - 5 - h*.16 + .5, z); scene.add(cap);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(r*.32, h*.32, 7), new THREE.MeshLambertMaterial({ color: 0xffffff, fog: false })); cap.position.set(x, h - 5 - h*.16 + 2, z); scene.add(cap);
     SCN.mountains = (SCN.mountains || []).concat(m);
   }
 }
